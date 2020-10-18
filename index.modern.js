@@ -7,16 +7,16 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { persistReducer, persistStore } from 'redux-persist';
 import Axios from 'axios';
 import * as Icon from 'react-feather';
-import { AlertTriangle, Mail, Lock, Disc, Circle, X, ChevronRight, User, Power, Search, Bell, PlusSquare, DownloadCloud, CheckCircle, File, Menu, Star, Heart, Home, List, PlusCircle, Gift, MessageSquare, ArrowUp } from 'react-feather';
+import { AlertTriangle, Mail, Lock, Disc, Circle, X, ChevronRight, Settings, Power, Search, Bell, PlusSquare, DownloadCloud, CheckCircle, File, Menu, Star, Heart, Home, List, PlusCircle, Gift, MessageSquare, ArrowUp, Info, Instagram, Link as Link$2 } from 'react-feather';
 import { toast, ToastContainer } from 'react-toastify';
 export { toast } from 'react-toastify';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
 import { createBrowserHistory } from 'history';
 import sessionStorage from 'redux-persist/es/storage/session';
-import { Link as Link$1, Router, Switch, Route } from 'react-router-dom';
+import { Link as Link$1, NavLink as NavLink$1, Router, Switch, Route } from 'react-router-dom';
 import { FormattedMessage, IntlProvider } from 'react-intl';
 export { FormattedMessage } from 'react-intl';
-import { Row, Col, Card, CardHeader, CardTitle, CardBody, FormGroup, Input, Label, Button, NavLink, Badge, DropdownMenu, DropdownItem, Dropdown, DropdownToggle, NavItem, UncontrolledDropdown, Media, Navbar as Navbar$1, Form, Alert } from 'reactstrap';
+import { Row, Col, Card, CardHeader, CardTitle, CardBody, FormGroup, Input, Label, Button, NavLink, Badge, DropdownMenu, DropdownItem, Dropdown, DropdownToggle, NavItem, UncontrolledDropdown, Media, Navbar as Navbar$1, Form, Alert, CustomInput, Breadcrumb, BreadcrumbItem, Nav, TabContent, TabPane } from 'reactstrap';
 export { Button } from 'reactstrap';
 import classnames from 'classnames';
 import Hammer from 'react-hammerjs';
@@ -25,13 +25,14 @@ import ReactCountryFlag from 'react-country-flag';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import ScrollToTop from 'react-scroll-up';
-import Flatpickr from 'react-flatpickr';
+import { Formik, Form as Form$1, Field } from 'formik';
 import { object, string, ref } from 'yup';
-import { Formik, Field } from 'formik';
+import Select from 'react-select';
+import chroma from 'chroma-js';
+import Flatpickr from 'react-flatpickr';
 import TopBarProgress from 'react-topbar-progress-indicator';
 import Ripples from 'react-ripples';
 import 'react-perfect-scrollbar/dist/css/styles.css';
-import 'prismjs/themes/prism-tomorrow.css';
 import 'react-toastify/dist/ReactToastify.css';
 
 const HttpClient = Axios.create({
@@ -85,10 +86,9 @@ const setUpHttpClient = store => {
       case 500:
         toast.error(errorMessage('Server error !'));
         break;
-
-      default:
-        return e.response;
     }
+
+    return e.response;
   });
 };
 
@@ -1482,25 +1482,14 @@ const UserDropdown = props => {
   }, /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/account-information')
-  }, /*#__PURE__*/React.createElement(User, {
+    onClick: e => handleNavigation(e, '/account-settings')
+  }, /*#__PURE__*/React.createElement(Settings, {
     size: 14,
     className: "mr-50"
   }), /*#__PURE__*/React.createElement("span", {
     className: "align-middle"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "setting.accountInformation"
-  }))), /*#__PURE__*/React.createElement(DropdownItem, {
-    tag: "a",
-    href: "#",
-    onClick: e => handleNavigation(e, '/change-password')
-  }, /*#__PURE__*/React.createElement(Lock, {
-    size: 14,
-    className: "mr-50"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "align-middle"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "setting.changePassword"
+    id: "setting"
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     divider: true
   }), /*#__PURE__*/React.createElement(DropdownItem, {
@@ -2310,12 +2299,27 @@ var messages_en = {
 	"menu.user": "User Management",
 	"menu.buyInsurance": "Buy Insurance",
 	setting: setting,
-	"setting.accountInfromation": "Account Information",
+	"setting.accountInformation": "Account Information",
 	"setting.changePassword": "Change password",
 	"setting.partnerCode": "Partner code",
 	"setting.referralCode": "Referral code",
-	"setting.completeAccount": "Your account had completed information",
-	"setting.unCompleteAccount": "Account need additional information",
+	"setting.personal": "Personal",
+	"setting.application": "Application",
+	"setting.notification": "Notification",
+	"setting.deviceManagement": "Device Management",
+	"setting.language": "Language",
+	"setting.term": "Terms of use",
+	"setting.general": "General",
+	"setting.privacyPolicy": "Privacy Policy",
+	"setting.frequentlyAsked": "Frequently Asked",
+	"setting.conntact": "Contact InOn",
+	"setting.feedback": "Feedback",
+	"setting.share": "Share",
+	"setting.status.COMPLETE": "Your account had completed information",
+	"setting.status.UNCOMPLETE": "Account need additional information",
+	"setting.gender.M": "Male",
+	"setting.gender.F": "FeMale",
+	"setting.gender.O": "Others",
 	"changePassword.passwordMustMatch": "Password must match"
 };
 
@@ -2329,8 +2333,23 @@ var messages_vi = {
 	"setting.changePassword": "Thay đổi mật khẩu",
 	"setting.partnerCode": "Mã đối tác",
 	"setting.referralCode": "Mã giới thiệu",
-	"setting.completeAccount": "Tài khoản đã hoàn thiện thông tin",
-	"setting.unCompleteAccount": "Tài khoản cần bổ sung thông tin",
+	"setting.personal": "Cá nhân",
+	"setting.application": "Ứng dụng",
+	"setting.notification": "Thông báo",
+	"setting.deviceManagement": "Quản lý thiết bị",
+	"setting.language": "Ngôn ngữ",
+	"setting.term": "Điều khoản sử dụng",
+	"setting.general": "Chung",
+	"setting.privacyPolicy": "Chính sách bảo mật",
+	"setting.frequentlyAsked": "Câu hỏi thường gặp",
+	"setting.conntact": "Liên hệ InOn",
+	"setting.feedback": "Góp ý, báo lỗi",
+	"setting.share": "Chia sẻ",
+	"setting.status.COMPLETE": "Tài khoản đã hoàn thiện thông tin",
+	"setting.status.UNCOMPLE": "Tài khoản cần bổ sung thông tin",
+	"setting.gender.M": "Name",
+	"setting.gender.F": "Nữ",
+	"setting.gender.O": "Khác",
 	"changePassword.passwordMustMatch": "Mật khẩu không trùng khớp"
 };
 
@@ -2374,7 +2393,166 @@ const getNativgationConfig = appId => {
   });
 };
 
-const DatePicker = props => /*#__PURE__*/React.createElement(Flatpickr, props);
+class General extends React.Component {
+  constructor(...args) {
+    super(...args);
+    this.state = {
+      visible: true
+    };
+
+    this.dismissAlert = () => {
+      this.setState({
+        visible: false
+      });
+    };
+  }
+
+  render() {
+    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Media, null, /*#__PURE__*/React.createElement(Media, {
+      className: "mr-1",
+      left: true,
+      href: "#"
+    }, /*#__PURE__*/React.createElement(Media, {
+      className: "rounded-circle",
+      object: true,
+      src: '',
+      alt: "User",
+      height: "64",
+      width: "64"
+    })), /*#__PURE__*/React.createElement(Media, {
+      className: "mt-25",
+      body: true
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "d-flex flex-sm-row flex-column justify-content-start px-0"
+    }, /*#__PURE__*/React.createElement(Button.Ripple, {
+      tag: "label",
+      className: "mr-50 cursor-pointer",
+      color: "primary",
+      outline: true
+    }, "Upload Photo", /*#__PURE__*/React.createElement(Input, {
+      type: "file",
+      name: "file",
+      id: "uploadImg",
+      hidden: true
+    })), /*#__PURE__*/React.createElement(Button.Ripple, {
+      color: "flat-danger"
+    }, "Remove")), /*#__PURE__*/React.createElement("p", {
+      className: "text-muted mt-50"
+    }, /*#__PURE__*/React.createElement("small", null, "Allowed JPG, GIF or PNG. Max size of 800kB")))), /*#__PURE__*/React.createElement(Form, {
+      className: "mt-2",
+      onSubmit: e => e.preventDefault()
+    }, /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
+      for: "userName"
+    }, "Username"), /*#__PURE__*/React.createElement(Input, {
+      id: "userName",
+      defaultValue: "johny_01"
+    }))), /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
+      for: "name"
+    }, "Name"), /*#__PURE__*/React.createElement(Input, {
+      id: "name",
+      defaultValue: "John Doe"
+    }))), /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
+      for: "email"
+    }, "Email"), /*#__PURE__*/React.createElement(Input, {
+      id: "email",
+      defaultValue: "john@admin.com"
+    }))), /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(Alert, {
+      className: "mb-2",
+      color: "warning",
+      isOpen: this.state.visible,
+      toggle: this.dismissAlert
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "mb-0"
+    }, "Your email is not confirmed. Please check your inbox.", /*#__PURE__*/React.createElement("span", {
+      className: "text-primary"
+    }, " Resend Confirmation")))), /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
+      for: "company"
+    }, "Company"), /*#__PURE__*/React.createElement(Input, {
+      id: "company",
+      defaultValue: "SnowMash Technologies Pvt Ltd"
+    }))), /*#__PURE__*/React.createElement(Col, {
+      className: "d-flex justify-content-start flex-wrap",
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(Button.Ripple, {
+      className: "mr-50",
+      type: "submit",
+      color: "primary"
+    }, "Save Changes"), /*#__PURE__*/React.createElement(Button.Ripple, {
+      type: "submit",
+      color: "danger"
+    }, "Cancel")))));
+  }
+
+}
+
+const formSchema = object().shape({
+  oldpass: string().required("Required"),
+  newpass: string().required("Required"),
+  confirmpass: string().oneOf([ref("newpass"), null], "Passwords must match").required("Required")
+});
+
+class ChangePassword extends React.Component {
+  render() {
+    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Row, {
+      className: "pt-1"
+    }, /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(Formik, {
+      initialValues: {
+        oldpass: "",
+        newpass: "",
+        confirmpass: ""
+      },
+      validationSchema: formSchema
+    }, ({
+      errors,
+      touched
+    }) => /*#__PURE__*/React.createElement(Form$1, null, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Field, {
+      name: "oldpass",
+      id: "oldpass",
+      className: `form-control ${errors.oldpass && touched.oldpass && "is-invalid"}`,
+      placeholder: "Old Password"
+    }), errors.oldpass && touched.oldpass ? /*#__PURE__*/React.createElement("div", {
+      className: "text-danger"
+    }, errors.oldpass) : null), /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Field, {
+      name: "newpass",
+      placeholder: "New Password",
+      id: "newpass",
+      className: `form-control ${errors.newpass && touched.newpass && "is-invalid"}`
+    }), errors.newpass && touched.newpass ? /*#__PURE__*/React.createElement("div", {
+      className: "text-danger"
+    }, errors.newpass) : null), /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Field, {
+      name: "confirmpass",
+      id: "confirmpass",
+      className: `form-control ${errors.confirmpass && touched.confirmpass && "is-invalid"}`,
+      placeholder: "Confirm Password"
+    }), errors.confirmpass && touched.confirmpass ? /*#__PURE__*/React.createElement("div", {
+      className: "text-danger"
+    }, errors.confirmpass) : null), /*#__PURE__*/React.createElement("div", {
+      className: "d-flex justify-content-start flex-wrap"
+    }, /*#__PURE__*/React.createElement(Button.Ripple, {
+      className: "mr-1 mb-1",
+      color: "primary",
+      type: "submit"
+    }, "Save Changes"), /*#__PURE__*/React.createElement(Button.Ripple, {
+      className: "mb-1",
+      color: "danger",
+      type: "reset",
+      outline: true
+    }, "Cancel")))))));
+  }
+
+}
 
 class Radio extends React.Component {
   render() {
@@ -2404,186 +2582,527 @@ class Radio extends React.Component {
 
 }
 
-const AccountInfo = () => {
-  return /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardBody, null, /*#__PURE__*/React.createElement(Media, null, /*#__PURE__*/React.createElement(Media, {
-    className: "mr-1",
-    left: true,
-    href: "#"
-  }, /*#__PURE__*/React.createElement(Media, {
-    className: "rounded-circle",
-    object: true,
-    src: 'https://storage.live.com/Users/-6155523327610065665/MyProfile/ExpressionProfile/ProfilePhoto:Win8Static,UserTileMedium,UserTileStatic',
-    alt: "User",
-    height: "64",
-    width: "64"
-  })), /*#__PURE__*/React.createElement(Media, {
-    className: "mt-25",
-    body: true
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "d-flex flex-sm-row flex-column justify-content-start px-0"
-  }, /*#__PURE__*/React.createElement(Button, {
-    tag: "label",
-    className: "mr-50 cursor-pointer",
-    color: "primary",
-    outline: true
-  }, "Upload Photo", /*#__PURE__*/React.createElement(Input, {
-    type: "file",
-    name: "file",
-    id: "uploadImg",
-    hidden: true
-  })), /*#__PURE__*/React.createElement(Button, {
-    color: "flat-danger"
-  }, "Remove")), /*#__PURE__*/React.createElement("p", {
-    className: "text-muted mt-50"
-  }, /*#__PURE__*/React.createElement("small", null, "Allowed JPG, GIF or PNG. Max size of 800kB")))), /*#__PURE__*/React.createElement(Form, {
-    className: "mt-2",
-    onSubmit: e => e.preventDefault()
-  }, /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
-    sm: "12"
-  }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
-    for: "userName"
-  }, "Username"), /*#__PURE__*/React.createElement(Input, {
-    id: "userName",
-    defaultValue: "johny_01"
-  }))), /*#__PURE__*/React.createElement(Col, {
-    sm: "12"
-  }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
-    for: "name"
-  }, "Name"), /*#__PURE__*/React.createElement(Input, {
-    id: "name",
-    defaultValue: "John Doe"
-  }))), /*#__PURE__*/React.createElement(Col, {
-    sm: "12"
-  }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement("div", {
-    className: "d-inline-block mr-1"
-  }, /*#__PURE__*/React.createElement(Radio, {
-    label: "Male",
-    defaultChecked: true,
-    name: "gender"
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "d-inline-block mr-1"
-  }, /*#__PURE__*/React.createElement(Radio, {
-    label: "Female",
-    defaultChecked: false,
-    name: "gender"
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "d-inline-block"
-  }, /*#__PURE__*/React.createElement(Radio, {
-    label: "Other",
-    defaultChecked: false,
-    name: "gender"
-  })))), /*#__PURE__*/React.createElement(Col, {
-    sm: "12"
-  }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
-    className: "d-block",
-    for: "date"
-  }, "Date"), /*#__PURE__*/React.createElement(DatePicker, {
-    className: "form-control bg-white",
-    value: new Date(),
-    options: {
-      dateFormat: 'M \\ d \\, Y'
-    },
-    onChange: date => {}
-  }))), /*#__PURE__*/React.createElement(Col, {
-    sm: "12"
-  }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
-    for: "email"
-  }, "Email"), /*#__PURE__*/React.createElement(Input, {
-    id: "email",
-    defaultValue: "john@admin.com"
-  }))), /*#__PURE__*/React.createElement(Col, {
-    sm: "12"
-  }, /*#__PURE__*/React.createElement(Alert, {
-    className: "mb-2",
-    color: "warning",
-    isOpen: false,
-    toggle: false
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "mb-0"
-  }, "Your email is not confirmed. Please check your inbox.", /*#__PURE__*/React.createElement("span", {
-    className: "text-primary"
-  }, " Resend Confirmation")))), /*#__PURE__*/React.createElement(Col, {
-    sm: "12"
-  }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
-    for: "company"
-  }, "Company"), /*#__PURE__*/React.createElement(Input, {
-    id: "company",
-    defaultValue: "SnowMash Technologies Pvt Ltd"
-  }))), /*#__PURE__*/React.createElement(Col, {
-    className: "d-flex justify-content-start flex-wrap",
-    sm: "12"
-  }, /*#__PURE__*/React.createElement(Button.Ripple, {
-    onClick: () => history.push('/'),
-    className: "mr-50",
-    type: "submit",
-    color: "danger"
-  }, "Cancel"), /*#__PURE__*/React.createElement(Button.Ripple, {
-    type: "submit",
-    color: "primary"
-  }, "Save Changes"))))));
+const languages = [{
+  value: 'english',
+  label: 'English',
+  color: '#7367f0'
+}, {
+  value: 'french',
+  label: 'French',
+  color: '#7367f0'
+}, {
+  value: 'spanish',
+  label: 'Spanish',
+  color: '#7367f0'
+}, {
+  value: 'russian',
+  label: 'Russian',
+  color: '#7367f0'
+}, {
+  value: 'italian',
+  label: 'Italian',
+  color: '#7367f0'
+}];
+const colourStyles = {
+  control: styles => ({ ...styles,
+    backgroundColor: 'white'
+  }),
+  option: (styles, {
+    data,
+    isDisabled,
+    isFocused,
+    isSelected
+  }) => {
+    const color = data.color ? chroma(data.color) : '#7367f0';
+    return { ...styles,
+      backgroundColor: isDisabled ? null : isSelected ? data.color : isFocused ? color.alpha(0.1).css() : null,
+      color: isDisabled ? '#ccc' : isSelected ? chroma.contrast(color, 'white') > 2 ? 'white' : 'black' : data.color,
+      cursor: isDisabled ? 'not-allowed' : 'default',
+      ':active': { ...styles[':active'],
+        backgroundColor: !isDisabled && (isSelected ? data.color : '#7367f0')
+      }
+    };
+  },
+  multiValue: (styles, {
+    data
+  }) => {
+    const color = data.color ? chroma(data.color) : '#7367f0';
+    return { ...styles,
+      backgroundColor: color.alpha(0.1).css()
+    };
+  },
+  multiValueLabel: (styles, {
+    data
+  }) => ({ ...styles,
+    color: data.color ? data.color : '#7367f0'
+  }),
+  multiValueRemove: (styles, {
+    data
+  }) => ({ ...styles,
+    color: data.color,
+    ':hover': {
+      backgroundColor: data.color ? data.color : '#7367f0',
+      color: 'white'
+    }
+  })
 };
 
-const formSchema = object().shape({
-  oldpass: string().required('Required'),
-  newpass: string().required('Required'),
-  confirmpass: string().oneOf([ref('newpass'), null], () => /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "changePassword.passwordMustMatch"
-  })).required('Required')
-});
+class InfoTab extends React.Component {
+  constructor(...args) {
+    super(...args);
+    this.state = {
+      dob: new Date()
+    };
 
-const ChangePassword = () => {
-  return /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardBody, null, /*#__PURE__*/React.createElement(Row, {
-    className: "pt-1"
-  }, /*#__PURE__*/React.createElement(Col, {
-    sm: "12"
-  }, /*#__PURE__*/React.createElement(Formik, {
-    initialValues: {
-      oldpass: '',
-      newpass: '',
-      confirmpass: ''
-    },
-    validationSchema: formSchema
-  }, ({
-    errors,
-    touched
-  }) => /*#__PURE__*/React.createElement(Form, {
-    className: "mt-2",
-    onSubmit: e => e.preventDefault()
-  }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Field, {
-    name: "oldpass",
-    id: "oldpass",
-    className: `form-control ${errors.oldpass && touched.oldpass && 'is-invalid'}`,
-    placeholder: "Old Password"
-  }), errors.oldpass && touched.oldpass ? /*#__PURE__*/React.createElement("div", {
-    className: "text-danger"
-  }, errors.oldpass) : null), /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Field, {
-    name: "newpass",
-    placeholder: "New Password",
-    id: "newpass",
-    className: `form-control ${errors.newpass && touched.newpass && 'is-invalid'}`
-  }), errors.newpass && touched.newpass ? /*#__PURE__*/React.createElement("div", {
-    className: "text-danger"
-  }, errors.newpass) : null), /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Field, {
-    name: "confirmpass",
-    id: "confirmpass",
-    className: `form-control ${errors.confirmpass && touched.confirmpass && 'is-invalid'}`,
-    placeholder: "Confirm Password"
-  }), errors.confirmpass && touched.confirmpass ? /*#__PURE__*/React.createElement("div", {
-    className: "text-danger"
-  }, errors.confirmpass) : null), /*#__PURE__*/React.createElement("div", {
-    className: "d-flex justify-content-start flex-wrap"
-  }, /*#__PURE__*/React.createElement(Button.Ripple, {
-    onClick: () => history.push('/'),
-    className: "mb-1 mr-1 ",
-    color: "danger",
-    type: "reset",
-    outline: true
-  }, "Cancel"), /*#__PURE__*/React.createElement(Button.Ripple, {
-    className: "mb-1",
-    color: "primary",
-    type: "submit"
-  }, "Save Changes"))))))));
-};
+    this.handleDob = date => {
+      this.setState({
+        dob: date
+      });
+    };
+  }
+
+  render() {
+    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Form, {
+      onSubmit: e => e.preventDefault()
+    }, /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
+      for: "bio"
+    }, "Bio"), /*#__PURE__*/React.createElement(Input, {
+      type: "textarea",
+      name: "bio",
+      id: "bio",
+      rows: "3",
+      placeholder: "Your bio data here..."
+    }))), /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
+      className: "d-block",
+      for: "date"
+    }, "Date"), /*#__PURE__*/React.createElement(Flatpickr, {
+      className: "form-control",
+      options: {
+        dateFormat: 'M \\ d \\, Y'
+      },
+      value: this.state.dob,
+      onChange: date => this.handleDob(date)
+    }))), /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
+      for: "country"
+    }, "Country"), /*#__PURE__*/React.createElement(Input, {
+      type: "select",
+      name: "country",
+      id: "country"
+    }, /*#__PURE__*/React.createElement("option", null, "US"), /*#__PURE__*/React.createElement("option", null, "UK"), /*#__PURE__*/React.createElement("option", null, "France")))), /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
+      for: "languages"
+    }, "Favourite Languages"), /*#__PURE__*/React.createElement(Select, {
+      isMulti: true,
+      defaultValue: [languages[0], languages[1]],
+      isClearable: true,
+      styles: colourStyles,
+      options: languages,
+      className: "React",
+      classNamePrefix: "select",
+      id: "languages"
+    }))), /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
+      for: "number"
+    }, "Phone Number"), /*#__PURE__*/React.createElement(Input, {
+      type: "number",
+      name: "number",
+      id: "number",
+      placeholder: "Phone Number"
+    }))), /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
+      for: "url"
+    }, "Website URL"), /*#__PURE__*/React.createElement(Input, {
+      type: "url",
+      name: "url",
+      id: "url",
+      placeholder: "Website URL"
+    }))), /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement("div", {
+      className: "d-inline-block mr-1"
+    }, /*#__PURE__*/React.createElement(Radio, {
+      label: "Male",
+      defaultChecked: true,
+      name: "gender"
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "d-inline-block mr-1"
+    }, /*#__PURE__*/React.createElement(Radio, {
+      label: "Female",
+      defaultChecked: false,
+      name: "gender"
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "d-inline-block"
+    }, /*#__PURE__*/React.createElement(Radio, {
+      label: "Other",
+      defaultChecked: false,
+      name: "gender"
+    })))), /*#__PURE__*/React.createElement(Col, {
+      className: "d-flex justify-content-start flex-wrap",
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(Button.Ripple, {
+      className: "mr-50",
+      type: "submit",
+      color: "primary"
+    }, "Save Changes"), /*#__PURE__*/React.createElement(Button.Ripple, {
+      type: "submit",
+      color: "danger"
+    }, "Cancel")))));
+  }
+
+}
+
+class SocialLinks extends React.Component {
+  render() {
+    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Form, {
+      onSubmit: e => e.preventDefault()
+    }, /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
+      for: "twitter"
+    }, "Twitter"), /*#__PURE__*/React.createElement(Input, {
+      id: "twitter",
+      defaultValue: "https://www.twitter.com"
+    }))), /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
+      for: "facebook"
+    }, "Facebook"), /*#__PURE__*/React.createElement(Input, {
+      id: "facebook",
+      placeholder: "Add Link"
+    }))), /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
+      for: "google"
+    }, "Google+"), /*#__PURE__*/React.createElement(Input, {
+      id: "google",
+      placeholder: "Add Link"
+    }))), /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
+      for: "linkedin"
+    }, "Linkedin"), /*#__PURE__*/React.createElement(Input, {
+      id: "linkedin",
+      defaultValue: "https://www.linkedin.com"
+    }))), /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
+      for: "instagram"
+    }, "Instagram"), /*#__PURE__*/React.createElement(Input, {
+      id: "instagram",
+      placeholder: "Add Link"
+    }))), /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
+      for: "quora"
+    }, "Quora"), /*#__PURE__*/React.createElement(Input, {
+      id: "quora",
+      placeholder: "Add Link"
+    }))), /*#__PURE__*/React.createElement(Col, {
+      className: "d-flex justify-content-start flex-wrap",
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(Button.Ripple, {
+      className: "mr-50",
+      type: "submit",
+      color: "primary"
+    }, "Save Changes"), /*#__PURE__*/React.createElement(Button.Ripple, {
+      type: "submit",
+      color: "danger"
+    }, "Cancel")))));
+  }
+
+}
+
+class Connection extends React.Component {
+  render() {
+    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "d-flex flex-wrap justify-content-between align-items-center mb-3"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "social-media"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "mb-0"
+    }, "Account is connected with Google."), /*#__PURE__*/React.createElement("p", {
+      className: "text-bold-500"
+    }, "john@gmail.com")), /*#__PURE__*/React.createElement("div", {
+      className: "disconnect"
+    }, /*#__PURE__*/React.createElement(Button.Ripple, {
+      color: "danger",
+      outline: true
+    }, "Disconnect")))), /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "d-flex flex-wrap justify-content-between align-items-center mb-3"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "social-media"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "mb-0"
+    }, "Account is connected with Facebook."), /*#__PURE__*/React.createElement("p", {
+      className: "text-bold-500"
+    }, "@pixinvents")), /*#__PURE__*/React.createElement("div", {
+      className: "disconnect"
+    }, /*#__PURE__*/React.createElement(Button.Ripple, {
+      color: "danger",
+      outline: true
+    }, "Disconnect")))), /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(Button.Ripple, {
+      color: "info"
+    }, "Connect to Twitter")), /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(Button.Ripple, {
+      className: "mt-2",
+      color: "primary"
+    }, "Connect to Instagram"))));
+  }
+
+}
+
+class Notification extends React.Component {
+  render() {
+    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement("h6", {
+      className: "mb-1"
+    }, "Activity"), /*#__PURE__*/React.createElement(CustomInput, {
+      type: "switch",
+      className: "d-block mb-2",
+      id: "article",
+      name: "article",
+      inline: true
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "mb-0 ml-sm-0 switch-label"
+    }, "Email me when someone comments on my article")), /*#__PURE__*/React.createElement(CustomInput, {
+      type: "switch",
+      className: "d-block mb-2",
+      id: "form",
+      name: "form",
+      inline: true
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "mb-0 switch-label"
+    }, "Email me when someone answers on my form")), /*#__PURE__*/React.createElement(CustomInput, {
+      type: "switch",
+      className: "d-block mb-2",
+      id: "follow",
+      name: "follow",
+      inline: true
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "mb-0 switch-label"
+    }, "Email me when someone follows me"))), /*#__PURE__*/React.createElement(Col, {
+      className: "mt-1",
+      sm: "12"
+    }, /*#__PURE__*/React.createElement("h6", {
+      className: "mb-1"
+    }, "Application"), /*#__PURE__*/React.createElement(CustomInput, {
+      type: "switch",
+      className: "d-block mb-2",
+      id: "news",
+      name: "news",
+      inline: true
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "mb-0 switch-label"
+    }, "News and announcements")), /*#__PURE__*/React.createElement(CustomInput, {
+      type: "switch",
+      className: "d-block mb-2",
+      id: "update",
+      name: "update",
+      inline: true
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "mb-0 switch-label"
+    }, "Weekly product updates")), /*#__PURE__*/React.createElement(CustomInput, {
+      type: "switch",
+      className: "d-block mb-2",
+      id: "blog",
+      name: "blog",
+      inline: true
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "mb-0 switch-label"
+    }, "Weekly blog digest"))), /*#__PURE__*/React.createElement(Col, {
+      sm: "12"
+    }, /*#__PURE__*/React.createElement(Button.Ripple, {
+      className: "mr-1",
+      color: "primary"
+    }, "Save Changes"), /*#__PURE__*/React.createElement(Button.Ripple, {
+      color: "danger",
+      outline: true
+    }, "Cancel"))));
+  }
+
+}
+
+class BreadCrumbs extends React.Component {
+  render() {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "content-header row"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "content-header-left col-md-9 col-12 mb-2"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "row breadcrumbs-top"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "col-12"
+    }, this.props.breadCrumbTitle ? /*#__PURE__*/React.createElement("h2", {
+      className: "content-header-title float-left mb-0"
+    }, this.props.breadCrumbTitle) : '', /*#__PURE__*/React.createElement("div", {
+      className: "breadcrumb-wrapper vx-breadcrumbs d-sm-block d-none col-12"
+    }, /*#__PURE__*/React.createElement(Breadcrumb, {
+      tag: "ol"
+    }, /*#__PURE__*/React.createElement(BreadcrumbItem, {
+      tag: "li"
+    }, /*#__PURE__*/React.createElement(NavLink$1, {
+      to: "/"
+    }, /*#__PURE__*/React.createElement(Home, {
+      className: "align-top",
+      size: 15
+    }))), this.props.breadCrumbParent ? /*#__PURE__*/React.createElement(BreadcrumbItem, {
+      tag: "li",
+      className: "text-primary"
+    }, this.props.breadCrumbParent2) : '', this.props.breadCrumbParent2 ? /*#__PURE__*/React.createElement(BreadcrumbItem, {
+      tag: "li",
+      className: "text-primary"
+    }, this.props.breadCrumbParent2) : '', this.props.breadCrumbParent3 ? /*#__PURE__*/React.createElement(BreadcrumbItem, {
+      tag: "li",
+      className: "text-primary"
+    }, this.props.breadCrumbParent3) : '', /*#__PURE__*/React.createElement(BreadcrumbItem, {
+      tag: "li",
+      active: true
+    }, this.props.breadCrumbActive)))))));
+  }
+
+}
+
+class AccountSettings extends React.Component {
+  constructor(...args) {
+    super(...args);
+    this.state = {
+      activeTab: '1',
+      windowWidth: null
+    };
+
+    this.toggle = tab => {
+      this.setState({
+        activeTab: tab
+      });
+    };
+
+    this.updateWidth = () => {
+      this.setState({
+        windowWidth: window.innerWidth
+      });
+    };
+  }
+
+  componentDidMount() {
+    if (window !== undefined) {
+      this.updateWidth();
+      window.addEventListener('resize', this.updateWidth);
+    }
+  }
+
+  render() {
+    let {
+      windowWidth
+    } = this.state;
+    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(BreadCrumbs, {
+      breadCrumbTitle: "Account Settings",
+      breadCrumbActive: "Account Settings"
+    }), /*#__PURE__*/React.createElement("div", {
+      className: `${windowWidth >= 769 ? 'nav-vertical' : 'account-setting-wrapper'}`
+    }, /*#__PURE__*/React.createElement(Nav, {
+      className: "account-settings-tab nav-left mr-0 mr-sm-3",
+      tabs: true
+    }, /*#__PURE__*/React.createElement(NavItem, null, /*#__PURE__*/React.createElement(NavLink, {
+      className: classnames({
+        active: this.state.activeTab === '1'
+      }),
+      onClick: () => {
+        this.toggle('1');
+      }
+    }, /*#__PURE__*/React.createElement(Settings, {
+      size: 16
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "d-md-inline-block d-none align-middle ml-1"
+    }, "General"))), /*#__PURE__*/React.createElement(NavItem, null, /*#__PURE__*/React.createElement(NavLink, {
+      className: classnames({
+        active: this.state.activeTab === '2'
+      }),
+      onClick: () => {
+        this.toggle('2');
+      }
+    }, /*#__PURE__*/React.createElement(Lock, {
+      size: 16
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "d-md-inline-block d-none align-middle ml-1"
+    }, "Change Password"))), /*#__PURE__*/React.createElement(NavItem, null, /*#__PURE__*/React.createElement(NavLink, {
+      className: classnames({
+        active: this.state.activeTab === '3'
+      }),
+      onClick: () => {
+        this.toggle('3');
+      }
+    }, /*#__PURE__*/React.createElement(Info, {
+      size: 16
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "d-md-inline-block d-none align-middle ml-1"
+    }, "Info"))), /*#__PURE__*/React.createElement(NavItem, null, /*#__PURE__*/React.createElement(NavLink, {
+      className: classnames({
+        active: this.state.activeTab === '4'
+      }),
+      onClick: () => {
+        this.toggle('4');
+      }
+    }, /*#__PURE__*/React.createElement(Instagram, {
+      size: 16
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "d-md-inline-block d-none align-middle ml-1"
+    }, "Social Links"))), /*#__PURE__*/React.createElement(NavItem, null, /*#__PURE__*/React.createElement(NavLink, {
+      className: classnames({
+        active: this.state.activeTab === '5'
+      }),
+      onClick: () => {
+        this.toggle('5');
+      }
+    }, /*#__PURE__*/React.createElement(Link$2, {
+      size: 16
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "d-md-inline-block d-none align-middle ml-1"
+    }, "Connections"))), /*#__PURE__*/React.createElement(NavItem, null, /*#__PURE__*/React.createElement(NavLink, {
+      className: classnames({
+        active: this.state.activeTab === '6'
+      }),
+      onClick: () => {
+        this.toggle('6');
+      }
+    }, /*#__PURE__*/React.createElement(Bell, {
+      size: 16
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "d-md-inline-block d-none align-middle ml-1"
+    }, "Notifications")))), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardBody, null, /*#__PURE__*/React.createElement(TabContent, {
+      activeTab: this.state.activeTab
+    }, /*#__PURE__*/React.createElement(TabPane, {
+      tabId: "1"
+    }, /*#__PURE__*/React.createElement(General, null)), /*#__PURE__*/React.createElement(TabPane, {
+      tabId: "2"
+    }, /*#__PURE__*/React.createElement(ChangePassword, null)), /*#__PURE__*/React.createElement(TabPane, {
+      tabId: "3"
+    }, /*#__PURE__*/React.createElement(InfoTab, null)), /*#__PURE__*/React.createElement(TabPane, {
+      tabId: "4"
+    }, /*#__PURE__*/React.createElement(SocialLinks, null)), /*#__PURE__*/React.createElement(TabPane, {
+      tabId: "5"
+    }, /*#__PURE__*/React.createElement(Connection, null)), /*#__PURE__*/React.createElement(TabPane, {
+      tabId: "6"
+    }, /*#__PURE__*/React.createElement(Notification, null)))))));
+  }
+
+}
 
 const AppRouter = ({
   checkLoginStatus,
@@ -2626,11 +3145,8 @@ const AppRouter = ({
     render: props => isAuthentication ? /*#__PURE__*/React.createElement(Layout$1, Object.assign({
       navigationConfig: navConfigs
     }, props), /*#__PURE__*/React.createElement(Switch, null, /*#__PURE__*/React.createElement(Route, {
-      path: "/account-information",
-      component: AccountInfo
-    }), /*#__PURE__*/React.createElement(Route, {
-      path: "/change-password",
-      component: ChangePassword
+      path: "/account-settings",
+      component: AccountSettings
     }), /*#__PURE__*/React.createElement(Route, {
       path: "/",
       render: () => children
@@ -2747,6 +3263,8 @@ class FallbackSpinner extends React.Component {
   }
 
 }
+
+const DatePicker = props => /*#__PURE__*/React.createElement(Flatpickr, props);
 
 function getWindowDimensions() {
   const {

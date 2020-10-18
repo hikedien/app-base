@@ -24,13 +24,14 @@ var ReactCountryFlag = _interopDefault(require('react-country-flag'));
 var ReactDOM = _interopDefault(require('react-dom'));
 var PropTypes = _interopDefault(require('prop-types'));
 var ScrollToTop = _interopDefault(require('react-scroll-up'));
-var Flatpickr = _interopDefault(require('react-flatpickr'));
-var Yup = require('yup');
 var formik = require('formik');
+var Yup = require('yup');
+var Select = _interopDefault(require('react-select'));
+var chroma = _interopDefault(require('chroma-js'));
+var Flatpickr = _interopDefault(require('react-flatpickr'));
 var TopBarProgress = _interopDefault(require('react-topbar-progress-indicator'));
 var Ripples = _interopDefault(require('react-ripples'));
 require('react-perfect-scrollbar/dist/css/styles.css');
-require('prismjs/themes/prism-tomorrow.css');
 require('react-toastify/dist/ReactToastify.css');
 
 var HttpClient = Axios.create({
@@ -84,10 +85,9 @@ var setUpHttpClient = function setUpHttpClient(store) {
       case 500:
         reactToastify.toast.error(errorMessage('Server error !'));
         break;
-
-      default:
-        return e.response;
     }
+
+    return e.response;
   });
 };
 
@@ -1679,28 +1679,15 @@ var UserDropdown = function UserDropdown(props) {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/account-information');
+      return handleNavigation(e, '/account-settings');
     }
-  }, /*#__PURE__*/React__default.createElement(Icon.User, {
+  }, /*#__PURE__*/React__default.createElement(Icon.Settings, {
     size: 14,
     className: "mr-50"
   }), /*#__PURE__*/React__default.createElement("span", {
     className: "align-middle"
   }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "setting.accountInformation"
-  }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
-    tag: "a",
-    href: "#",
-    onClick: function onClick(e) {
-      return handleNavigation(e, '/change-password');
-    }
-  }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
-    size: 14,
-    className: "mr-50"
-  }), /*#__PURE__*/React__default.createElement("span", {
-    className: "align-middle"
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "setting.changePassword"
+    id: "setting"
   }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
     divider: true
   }), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
@@ -2565,12 +2552,27 @@ var messages_en = {
 	"menu.user": "User Management",
 	"menu.buyInsurance": "Buy Insurance",
 	setting: setting,
-	"setting.accountInfromation": "Account Information",
+	"setting.accountInformation": "Account Information",
 	"setting.changePassword": "Change password",
 	"setting.partnerCode": "Partner code",
 	"setting.referralCode": "Referral code",
-	"setting.completeAccount": "Your account had completed information",
-	"setting.unCompleteAccount": "Account need additional information",
+	"setting.personal": "Personal",
+	"setting.application": "Application",
+	"setting.notification": "Notification",
+	"setting.deviceManagement": "Device Management",
+	"setting.language": "Language",
+	"setting.term": "Terms of use",
+	"setting.general": "General",
+	"setting.privacyPolicy": "Privacy Policy",
+	"setting.frequentlyAsked": "Frequently Asked",
+	"setting.conntact": "Contact InOn",
+	"setting.feedback": "Feedback",
+	"setting.share": "Share",
+	"setting.status.COMPLETE": "Your account had completed information",
+	"setting.status.UNCOMPLETE": "Account need additional information",
+	"setting.gender.M": "Male",
+	"setting.gender.F": "FeMale",
+	"setting.gender.O": "Others",
 	"changePassword.passwordMustMatch": "Password must match"
 };
 
@@ -2584,8 +2586,23 @@ var messages_vi = {
 	"setting.changePassword": "Thay đổi mật khẩu",
 	"setting.partnerCode": "Mã đối tác",
 	"setting.referralCode": "Mã giới thiệu",
-	"setting.completeAccount": "Tài khoản đã hoàn thiện thông tin",
-	"setting.unCompleteAccount": "Tài khoản cần bổ sung thông tin",
+	"setting.personal": "Cá nhân",
+	"setting.application": "Ứng dụng",
+	"setting.notification": "Thông báo",
+	"setting.deviceManagement": "Quản lý thiết bị",
+	"setting.language": "Ngôn ngữ",
+	"setting.term": "Điều khoản sử dụng",
+	"setting.general": "Chung",
+	"setting.privacyPolicy": "Chính sách bảo mật",
+	"setting.frequentlyAsked": "Câu hỏi thường gặp",
+	"setting.conntact": "Liên hệ InOn",
+	"setting.feedback": "Góp ý, báo lỗi",
+	"setting.share": "Chia sẻ",
+	"setting.status.COMPLETE": "Tài khoản đã hoàn thiện thông tin",
+	"setting.status.UNCOMPLE": "Tài khoản cần bổ sung thông tin",
+	"setting.gender.M": "Name",
+	"setting.gender.F": "Nữ",
+	"setting.gender.O": "Khác",
 	"changePassword.passwordMustMatch": "Mật khẩu không trùng khớp"
 };
 
@@ -2629,9 +2646,191 @@ var getNativgationConfig = function getNativgationConfig(appId) {
   });
 };
 
-var DatePicker = function DatePicker(props) {
-  return /*#__PURE__*/React__default.createElement(Flatpickr, props);
-};
+var General = /*#__PURE__*/function (_React$Component) {
+  _inheritsLoose(General, _React$Component);
+
+  function General() {
+    var _this;
+
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    _this = _React$Component.call.apply(_React$Component, [this].concat(args)) || this;
+    _this.state = {
+      visible: true
+    };
+
+    _this.dismissAlert = function () {
+      _this.setState({
+        visible: false
+      });
+    };
+
+    return _this;
+  }
+
+  var _proto = General.prototype;
+
+  _proto.render = function render() {
+    return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Media, null, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      className: "mr-1",
+      left: true,
+      href: "#"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      className: "rounded-circle",
+      object: true,
+      src: '',
+      alt: "User",
+      height: "64",
+      width: "64"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      className: "mt-25",
+      body: true
+    }, /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex flex-sm-row flex-column justify-content-start px-0"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      tag: "label",
+      className: "mr-50 cursor-pointer",
+      color: "primary",
+      outline: true
+    }, "Upload Photo", /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "file",
+      name: "file",
+      id: "uploadImg",
+      hidden: true
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      color: "flat-danger"
+    }, "Remove")), /*#__PURE__*/React__default.createElement("p", {
+      className: "text-muted mt-50"
+    }, /*#__PURE__*/React__default.createElement("small", null, "Allowed JPG, GIF or PNG. Max size of 800kB")))), /*#__PURE__*/React__default.createElement(reactstrap.Form, {
+      className: "mt-2",
+      onSubmit: function onSubmit(e) {
+        return e.preventDefault();
+      }
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "userName"
+    }, "Username"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      id: "userName",
+      defaultValue: "johny_01"
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "name"
+    }, "Name"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      id: "name",
+      defaultValue: "John Doe"
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "email"
+    }, "Email"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      id: "email",
+      defaultValue: "john@admin.com"
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Alert, {
+      className: "mb-2",
+      color: "warning",
+      isOpen: this.state.visible,
+      toggle: this.dismissAlert
+    }, /*#__PURE__*/React__default.createElement("p", {
+      className: "mb-0"
+    }, "Your email is not confirmed. Please check your inbox.", /*#__PURE__*/React__default.createElement("span", {
+      className: "text-primary"
+    }, " Resend Confirmation")))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "company"
+    }, "Company"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      id: "company",
+      defaultValue: "SnowMash Technologies Pvt Ltd"
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      className: "d-flex justify-content-start flex-wrap",
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      className: "mr-50",
+      type: "submit",
+      color: "primary"
+    }, "Save Changes"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      type: "submit",
+      color: "danger"
+    }, "Cancel")))));
+  };
+
+  return General;
+}(React__default.Component);
+
+var formSchema = Yup.object().shape({
+  oldpass: Yup.string().required("Required"),
+  newpass: Yup.string().required("Required"),
+  confirmpass: Yup.string().oneOf([Yup.ref("newpass"), null], "Passwords must match").required("Required")
+});
+
+var ChangePassword = /*#__PURE__*/function (_React$Component) {
+  _inheritsLoose(ChangePassword, _React$Component);
+
+  function ChangePassword() {
+    return _React$Component.apply(this, arguments) || this;
+  }
+
+  var _proto = ChangePassword.prototype;
+
+  _proto.render = function render() {
+    return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Row, {
+      className: "pt-1"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(formik.Formik, {
+      initialValues: {
+        oldpass: "",
+        newpass: "",
+        confirmpass: ""
+      },
+      validationSchema: formSchema
+    }, function (_ref) {
+      var errors = _ref.errors,
+          touched = _ref.touched;
+      return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(formik.Field, {
+        name: "oldpass",
+        id: "oldpass",
+        className: "form-control " + (errors.oldpass && touched.oldpass && "is-invalid"),
+        placeholder: "Old Password"
+      }), errors.oldpass && touched.oldpass ? /*#__PURE__*/React__default.createElement("div", {
+        className: "text-danger"
+      }, errors.oldpass) : null), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(formik.Field, {
+        name: "newpass",
+        placeholder: "New Password",
+        id: "newpass",
+        className: "form-control " + (errors.newpass && touched.newpass && "is-invalid")
+      }), errors.newpass && touched.newpass ? /*#__PURE__*/React__default.createElement("div", {
+        className: "text-danger"
+      }, errors.newpass) : null), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(formik.Field, {
+        name: "confirmpass",
+        id: "confirmpass",
+        className: "form-control " + (errors.confirmpass && touched.confirmpass && "is-invalid"),
+        placeholder: "Confirm Password"
+      }), errors.confirmpass && touched.confirmpass ? /*#__PURE__*/React__default.createElement("div", {
+        className: "text-danger"
+      }, errors.confirmpass) : null), /*#__PURE__*/React__default.createElement("div", {
+        className: "d-flex justify-content-start flex-wrap"
+      }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+        className: "mr-1 mb-1",
+        color: "primary",
+        type: "submit"
+      }, "Save Changes"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+        className: "mb-1",
+        color: "danger",
+        type: "reset",
+        outline: true
+      }, "Cancel")));
+    }))));
+  };
+
+  return ChangePassword;
+}(React__default.Component);
 
 var Radio = /*#__PURE__*/function (_React$Component) {
   _inheritsLoose(Radio, _React$Component);
@@ -2670,197 +2869,599 @@ var Radio = /*#__PURE__*/function (_React$Component) {
   return Radio;
 }(React__default.Component);
 
-var AccountInfo = function AccountInfo() {
-  return /*#__PURE__*/React__default.createElement(reactstrap.Card, null, /*#__PURE__*/React__default.createElement(reactstrap.CardBody, null, /*#__PURE__*/React__default.createElement(reactstrap.Media, null, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    className: "mr-1",
-    left: true,
-    href: "#"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    className: "rounded-circle",
-    object: true,
-    src: 'https://storage.live.com/Users/-6155523327610065665/MyProfile/ExpressionProfile/ProfilePhoto:Win8Static,UserTileMedium,UserTileStatic',
-    alt: "User",
-    height: "64",
-    width: "64"
-  })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    className: "mt-25",
-    body: true
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "d-flex flex-sm-row flex-column justify-content-start px-0"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
-    tag: "label",
-    className: "mr-50 cursor-pointer",
-    color: "primary",
-    outline: true
-  }, "Upload Photo", /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-    type: "file",
-    name: "file",
-    id: "uploadImg",
-    hidden: true
-  })), /*#__PURE__*/React__default.createElement(reactstrap.Button, {
-    color: "flat-danger"
-  }, "Remove")), /*#__PURE__*/React__default.createElement("p", {
-    className: "text-muted mt-50"
-  }, /*#__PURE__*/React__default.createElement("small", null, "Allowed JPG, GIF or PNG. Max size of 800kB")))), /*#__PURE__*/React__default.createElement(reactstrap.Form, {
-    className: "mt-2",
-    onSubmit: function onSubmit(e) {
-      return e.preventDefault();
-    }
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-    sm: "12"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-    "for": "userName"
-  }, "Username"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-    id: "userName",
-    defaultValue: "johny_01"
-  }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-    sm: "12"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-    "for": "name"
-  }, "Name"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-    id: "name",
-    defaultValue: "John Doe"
-  }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-    sm: "12"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement("div", {
-    className: "d-inline-block mr-1"
-  }, /*#__PURE__*/React__default.createElement(Radio, {
-    label: "Male",
-    defaultChecked: true,
-    name: "gender"
-  })), /*#__PURE__*/React__default.createElement("div", {
-    className: "d-inline-block mr-1"
-  }, /*#__PURE__*/React__default.createElement(Radio, {
-    label: "Female",
-    defaultChecked: false,
-    name: "gender"
-  })), /*#__PURE__*/React__default.createElement("div", {
-    className: "d-inline-block"
-  }, /*#__PURE__*/React__default.createElement(Radio, {
-    label: "Other",
-    defaultChecked: false,
-    name: "gender"
-  })))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-    sm: "12"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-    className: "d-block",
-    "for": "date"
-  }, "Date"), /*#__PURE__*/React__default.createElement(DatePicker, {
-    className: "form-control bg-white",
-    value: new Date(),
-    options: {
-      dateFormat: 'M \\ d \\, Y'
-    },
-    onChange: function onChange(date) {}
-  }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-    sm: "12"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-    "for": "email"
-  }, "Email"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-    id: "email",
-    defaultValue: "john@admin.com"
-  }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-    sm: "12"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Alert, {
-    className: "mb-2",
-    color: "warning",
-    isOpen: false,
-    toggle: false
-  }, /*#__PURE__*/React__default.createElement("p", {
-    className: "mb-0"
-  }, "Your email is not confirmed. Please check your inbox.", /*#__PURE__*/React__default.createElement("span", {
-    className: "text-primary"
-  }, " Resend Confirmation")))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-    sm: "12"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-    "for": "company"
-  }, "Company"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-    id: "company",
-    defaultValue: "SnowMash Technologies Pvt Ltd"
-  }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-    className: "d-flex justify-content-start flex-wrap",
-    sm: "12"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-    onClick: function onClick() {
-      return history.push('/');
-    },
-    className: "mr-50",
-    type: "submit",
-    color: "danger"
-  }, "Cancel"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-    type: "submit",
-    color: "primary"
-  }, "Save Changes"))))));
+var languages = [{
+  value: 'english',
+  label: 'English',
+  color: '#7367f0'
+}, {
+  value: 'french',
+  label: 'French',
+  color: '#7367f0'
+}, {
+  value: 'spanish',
+  label: 'Spanish',
+  color: '#7367f0'
+}, {
+  value: 'russian',
+  label: 'Russian',
+  color: '#7367f0'
+}, {
+  value: 'italian',
+  label: 'Italian',
+  color: '#7367f0'
+}];
+var colourStyles = {
+  control: function control(styles) {
+    return _extends({}, styles, {
+      backgroundColor: 'white'
+    });
+  },
+  option: function option(styles, _ref) {
+    var data = _ref.data,
+        isDisabled = _ref.isDisabled,
+        isFocused = _ref.isFocused,
+        isSelected = _ref.isSelected;
+    var color = data.color ? chroma(data.color) : '#7367f0';
+    return _extends({}, styles, {
+      backgroundColor: isDisabled ? null : isSelected ? data.color : isFocused ? color.alpha(0.1).css() : null,
+      color: isDisabled ? '#ccc' : isSelected ? chroma.contrast(color, 'white') > 2 ? 'white' : 'black' : data.color,
+      cursor: isDisabled ? 'not-allowed' : 'default',
+      ':active': _extends({}, styles[':active'], {
+        backgroundColor: !isDisabled && (isSelected ? data.color : '#7367f0')
+      })
+    });
+  },
+  multiValue: function multiValue(styles, _ref2) {
+    var data = _ref2.data;
+    var color = data.color ? chroma(data.color) : '#7367f0';
+    return _extends({}, styles, {
+      backgroundColor: color.alpha(0.1).css()
+    });
+  },
+  multiValueLabel: function multiValueLabel(styles, _ref3) {
+    var data = _ref3.data;
+    return _extends({}, styles, {
+      color: data.color ? data.color : '#7367f0'
+    });
+  },
+  multiValueRemove: function multiValueRemove(styles, _ref4) {
+    var data = _ref4.data;
+    return _extends({}, styles, {
+      color: data.color,
+      ':hover': {
+        backgroundColor: data.color ? data.color : '#7367f0',
+        color: 'white'
+      }
+    });
+  }
 };
 
-var formSchema = Yup.object().shape({
-  oldpass: Yup.string().required('Required'),
-  newpass: Yup.string().required('Required'),
-  confirmpass: Yup.string().oneOf([Yup.ref('newpass'), null], function () {
-    return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "changePassword.passwordMustMatch"
-    });
-  }).required('Required')
-});
+var InfoTab = /*#__PURE__*/function (_React$Component) {
+  _inheritsLoose(InfoTab, _React$Component);
 
-var ChangePassword = function ChangePassword() {
-  return /*#__PURE__*/React__default.createElement(reactstrap.Card, null, /*#__PURE__*/React__default.createElement(reactstrap.CardBody, null, /*#__PURE__*/React__default.createElement(reactstrap.Row, {
-    className: "pt-1"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-    sm: "12"
-  }, /*#__PURE__*/React__default.createElement(formik.Formik, {
-    initialValues: {
-      oldpass: '',
-      newpass: '',
-      confirmpass: ''
-    },
-    validationSchema: formSchema
-  }, function (_ref) {
-    var errors = _ref.errors,
-        touched = _ref.touched;
-    return /*#__PURE__*/React__default.createElement(reactstrap.Form, {
-      className: "mt-2",
+  function InfoTab() {
+    var _this;
+
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    _this = _React$Component.call.apply(_React$Component, [this].concat(args)) || this;
+    _this.state = {
+      dob: new Date()
+    };
+
+    _this.handleDob = function (date) {
+      _this.setState({
+        dob: date
+      });
+    };
+
+    return _this;
+  }
+
+  var _proto = InfoTab.prototype;
+
+  _proto.render = function render() {
+    var _this2 = this;
+
+    return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Form, {
       onSubmit: function onSubmit(e) {
         return e.preventDefault();
       }
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(formik.Field, {
-      name: "oldpass",
-      id: "oldpass",
-      className: "form-control " + (errors.oldpass && touched.oldpass && 'is-invalid'),
-      placeholder: "Old Password"
-    }), errors.oldpass && touched.oldpass ? /*#__PURE__*/React__default.createElement("div", {
-      className: "text-danger"
-    }, errors.oldpass) : null), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(formik.Field, {
-      name: "newpass",
-      placeholder: "New Password",
-      id: "newpass",
-      className: "form-control " + (errors.newpass && touched.newpass && 'is-invalid')
-    }), errors.newpass && touched.newpass ? /*#__PURE__*/React__default.createElement("div", {
-      className: "text-danger"
-    }, errors.newpass) : null), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(formik.Field, {
-      name: "confirmpass",
-      id: "confirmpass",
-      className: "form-control " + (errors.confirmpass && touched.confirmpass && 'is-invalid'),
-      placeholder: "Confirm Password"
-    }), errors.confirmpass && touched.confirmpass ? /*#__PURE__*/React__default.createElement("div", {
-      className: "text-danger"
-    }, errors.confirmpass) : null), /*#__PURE__*/React__default.createElement("div", {
-      className: "d-flex justify-content-start flex-wrap"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      onClick: function onClick() {
-        return history.push('/');
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "bio"
+    }, "Bio"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "textarea",
+      name: "bio",
+      id: "bio",
+      rows: "3",
+      placeholder: "Your bio data here..."
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      className: "d-block",
+      "for": "date"
+    }, "Date"), /*#__PURE__*/React__default.createElement(Flatpickr, {
+      className: "form-control",
+      options: {
+        dateFormat: 'M \\ d \\, Y'
       },
-      className: "mb-1 mr-1 ",
+      value: this.state.dob,
+      onChange: function onChange(date) {
+        return _this2.handleDob(date);
+      }
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "country"
+    }, "Country"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "select",
+      name: "country",
+      id: "country"
+    }, /*#__PURE__*/React__default.createElement("option", null, "US"), /*#__PURE__*/React__default.createElement("option", null, "UK"), /*#__PURE__*/React__default.createElement("option", null, "France")))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "languages"
+    }, "Favourite Languages"), /*#__PURE__*/React__default.createElement(Select, {
+      isMulti: true,
+      defaultValue: [languages[0], languages[1]],
+      isClearable: true,
+      styles: colourStyles,
+      options: languages,
+      className: "React",
+      classNamePrefix: "select",
+      id: "languages"
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "number"
+    }, "Phone Number"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "number",
+      name: "number",
+      id: "number",
+      placeholder: "Phone Number"
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "url"
+    }, "Website URL"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "url",
+      name: "url",
+      id: "url",
+      placeholder: "Website URL"
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement("div", {
+      className: "d-inline-block mr-1"
+    }, /*#__PURE__*/React__default.createElement(Radio, {
+      label: "Male",
+      defaultChecked: true,
+      name: "gender"
+    })), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-inline-block mr-1"
+    }, /*#__PURE__*/React__default.createElement(Radio, {
+      label: "Female",
+      defaultChecked: false,
+      name: "gender"
+    })), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-inline-block"
+    }, /*#__PURE__*/React__default.createElement(Radio, {
+      label: "Other",
+      defaultChecked: false,
+      name: "gender"
+    })))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      className: "d-flex justify-content-start flex-wrap",
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      className: "mr-50",
+      type: "submit",
+      color: "primary"
+    }, "Save Changes"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      type: "submit",
+      color: "danger"
+    }, "Cancel")))));
+  };
+
+  return InfoTab;
+}(React__default.Component);
+
+var SocialLinks = /*#__PURE__*/function (_React$Component) {
+  _inheritsLoose(SocialLinks, _React$Component);
+
+  function SocialLinks() {
+    return _React$Component.apply(this, arguments) || this;
+  }
+
+  var _proto = SocialLinks.prototype;
+
+  _proto.render = function render() {
+    return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Form, {
+      onSubmit: function onSubmit(e) {
+        return e.preventDefault();
+      }
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "twitter"
+    }, "Twitter"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      id: "twitter",
+      defaultValue: "https://www.twitter.com"
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "facebook"
+    }, "Facebook"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      id: "facebook",
+      placeholder: "Add Link"
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "google"
+    }, "Google+"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      id: "google",
+      placeholder: "Add Link"
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "linkedin"
+    }, "Linkedin"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      id: "linkedin",
+      defaultValue: "https://www.linkedin.com"
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "instagram"
+    }, "Instagram"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      id: "instagram",
+      placeholder: "Add Link"
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "quora"
+    }, "Quora"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      id: "quora",
+      placeholder: "Add Link"
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      className: "d-flex justify-content-start flex-wrap",
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      className: "mr-50",
+      type: "submit",
+      color: "primary"
+    }, "Save Changes"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      type: "submit",
+      color: "danger"
+    }, "Cancel")))));
+  };
+
+  return SocialLinks;
+}(React__default.Component);
+
+var Connection = /*#__PURE__*/function (_React$Component) {
+  _inheritsLoose(Connection, _React$Component);
+
+  function Connection() {
+    return _React$Component.apply(this, arguments) || this;
+  }
+
+  var _proto = Connection.prototype;
+
+  _proto.render = function render() {
+    return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex flex-wrap justify-content-between align-items-center mb-3"
+    }, /*#__PURE__*/React__default.createElement("div", {
+      className: "social-media"
+    }, /*#__PURE__*/React__default.createElement("p", {
+      className: "mb-0"
+    }, "Account is connected with Google."), /*#__PURE__*/React__default.createElement("p", {
+      className: "text-bold-500"
+    }, "john@gmail.com")), /*#__PURE__*/React__default.createElement("div", {
+      className: "disconnect"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
       color: "danger",
-      type: "reset",
       outline: true
-    }, "Cancel"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      className: "mb-1",
-      color: "primary",
-      type: "submit"
-    }, "Save Changes")));
-  })))));
-};
+    }, "Disconnect")))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex flex-wrap justify-content-between align-items-center mb-3"
+    }, /*#__PURE__*/React__default.createElement("div", {
+      className: "social-media"
+    }, /*#__PURE__*/React__default.createElement("p", {
+      className: "mb-0"
+    }, "Account is connected with Facebook."), /*#__PURE__*/React__default.createElement("p", {
+      className: "text-bold-500"
+    }, "@pixinvents")), /*#__PURE__*/React__default.createElement("div", {
+      className: "disconnect"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      color: "danger",
+      outline: true
+    }, "Disconnect")))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      color: "info"
+    }, "Connect to Twitter")), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      className: "mt-2",
+      color: "primary"
+    }, "Connect to Instagram"))));
+  };
+
+  return Connection;
+}(React__default.Component);
+
+var Notification = /*#__PURE__*/function (_React$Component) {
+  _inheritsLoose(Notification, _React$Component);
+
+  function Notification() {
+    return _React$Component.apply(this, arguments) || this;
+  }
+
+  var _proto = Notification.prototype;
+
+  _proto.render = function render() {
+    return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement("h6", {
+      className: "mb-1"
+    }, "Activity"), /*#__PURE__*/React__default.createElement(reactstrap.CustomInput, {
+      type: "switch",
+      className: "d-block mb-2",
+      id: "article",
+      name: "article",
+      inline: true
+    }, /*#__PURE__*/React__default.createElement("span", {
+      className: "mb-0 ml-sm-0 switch-label"
+    }, "Email me when someone comments on my article")), /*#__PURE__*/React__default.createElement(reactstrap.CustomInput, {
+      type: "switch",
+      className: "d-block mb-2",
+      id: "form",
+      name: "form",
+      inline: true
+    }, /*#__PURE__*/React__default.createElement("span", {
+      className: "mb-0 switch-label"
+    }, "Email me when someone answers on my form")), /*#__PURE__*/React__default.createElement(reactstrap.CustomInput, {
+      type: "switch",
+      className: "d-block mb-2",
+      id: "follow",
+      name: "follow",
+      inline: true
+    }, /*#__PURE__*/React__default.createElement("span", {
+      className: "mb-0 switch-label"
+    }, "Email me when someone follows me"))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      className: "mt-1",
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement("h6", {
+      className: "mb-1"
+    }, "Application"), /*#__PURE__*/React__default.createElement(reactstrap.CustomInput, {
+      type: "switch",
+      className: "d-block mb-2",
+      id: "news",
+      name: "news",
+      inline: true
+    }, /*#__PURE__*/React__default.createElement("span", {
+      className: "mb-0 switch-label"
+    }, "News and announcements")), /*#__PURE__*/React__default.createElement(reactstrap.CustomInput, {
+      type: "switch",
+      className: "d-block mb-2",
+      id: "update",
+      name: "update",
+      inline: true
+    }, /*#__PURE__*/React__default.createElement("span", {
+      className: "mb-0 switch-label"
+    }, "Weekly product updates")), /*#__PURE__*/React__default.createElement(reactstrap.CustomInput, {
+      type: "switch",
+      className: "d-block mb-2",
+      id: "blog",
+      name: "blog",
+      inline: true
+    }, /*#__PURE__*/React__default.createElement("span", {
+      className: "mb-0 switch-label"
+    }, "Weekly blog digest"))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      className: "mr-1",
+      color: "primary"
+    }, "Save Changes"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      color: "danger",
+      outline: true
+    }, "Cancel"))));
+  };
+
+  return Notification;
+}(React__default.Component);
+
+var BreadCrumbs = /*#__PURE__*/function (_React$Component) {
+  _inheritsLoose(BreadCrumbs, _React$Component);
+
+  function BreadCrumbs() {
+    return _React$Component.apply(this, arguments) || this;
+  }
+
+  var _proto = BreadCrumbs.prototype;
+
+  _proto.render = function render() {
+    return /*#__PURE__*/React__default.createElement("div", {
+      className: "content-header row"
+    }, /*#__PURE__*/React__default.createElement("div", {
+      className: "content-header-left col-md-9 col-12 mb-2"
+    }, /*#__PURE__*/React__default.createElement("div", {
+      className: "row breadcrumbs-top"
+    }, /*#__PURE__*/React__default.createElement("div", {
+      className: "col-12"
+    }, this.props.breadCrumbTitle ? /*#__PURE__*/React__default.createElement("h2", {
+      className: "content-header-title float-left mb-0"
+    }, this.props.breadCrumbTitle) : '', /*#__PURE__*/React__default.createElement("div", {
+      className: "breadcrumb-wrapper vx-breadcrumbs d-sm-block d-none col-12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Breadcrumb, {
+      tag: "ol"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.BreadcrumbItem, {
+      tag: "li"
+    }, /*#__PURE__*/React__default.createElement(reactRouterDom.NavLink, {
+      to: "/"
+    }, /*#__PURE__*/React__default.createElement(Icon.Home, {
+      className: "align-top",
+      size: 15
+    }))), this.props.breadCrumbParent ? /*#__PURE__*/React__default.createElement(reactstrap.BreadcrumbItem, {
+      tag: "li",
+      className: "text-primary"
+    }, this.props.breadCrumbParent2) : '', this.props.breadCrumbParent2 ? /*#__PURE__*/React__default.createElement(reactstrap.BreadcrumbItem, {
+      tag: "li",
+      className: "text-primary"
+    }, this.props.breadCrumbParent2) : '', this.props.breadCrumbParent3 ? /*#__PURE__*/React__default.createElement(reactstrap.BreadcrumbItem, {
+      tag: "li",
+      className: "text-primary"
+    }, this.props.breadCrumbParent3) : '', /*#__PURE__*/React__default.createElement(reactstrap.BreadcrumbItem, {
+      tag: "li",
+      active: true
+    }, this.props.breadCrumbActive)))))));
+  };
+
+  return BreadCrumbs;
+}(React__default.Component);
+
+var AccountSettings = /*#__PURE__*/function (_React$Component) {
+  _inheritsLoose(AccountSettings, _React$Component);
+
+  function AccountSettings() {
+    var _this;
+
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    _this = _React$Component.call.apply(_React$Component, [this].concat(args)) || this;
+    _this.state = {
+      activeTab: '1',
+      windowWidth: null
+    };
+
+    _this.toggle = function (tab) {
+      _this.setState({
+        activeTab: tab
+      });
+    };
+
+    _this.updateWidth = function () {
+      _this.setState({
+        windowWidth: window.innerWidth
+      });
+    };
+
+    return _this;
+  }
+
+  var _proto = AccountSettings.prototype;
+
+  _proto.componentDidMount = function componentDidMount() {
+    if (window !== undefined) {
+      this.updateWidth();
+      window.addEventListener('resize', this.updateWidth);
+    }
+  };
+
+  _proto.render = function render() {
+    var _this2 = this;
+
+    var windowWidth = this.state.windowWidth;
+    return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(BreadCrumbs, {
+      breadCrumbTitle: "Account Settings",
+      breadCrumbActive: "Account Settings"
+    }), /*#__PURE__*/React__default.createElement("div", {
+      className: "" + (windowWidth >= 769 ? 'nav-vertical' : 'account-setting-wrapper')
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Nav, {
+      className: "account-settings-tab nav-left mr-0 mr-sm-3",
+      tabs: true
+    }, /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
+      className: classnames({
+        active: this.state.activeTab === '1'
+      }),
+      onClick: function onClick() {
+        _this2.toggle('1');
+      }
+    }, /*#__PURE__*/React__default.createElement(Icon.Settings, {
+      size: 16
+    }), /*#__PURE__*/React__default.createElement("span", {
+      className: "d-md-inline-block d-none align-middle ml-1"
+    }, "General"))), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
+      className: classnames({
+        active: this.state.activeTab === '2'
+      }),
+      onClick: function onClick() {
+        _this2.toggle('2');
+      }
+    }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
+      size: 16
+    }), /*#__PURE__*/React__default.createElement("span", {
+      className: "d-md-inline-block d-none align-middle ml-1"
+    }, "Change Password"))), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
+      className: classnames({
+        active: this.state.activeTab === '3'
+      }),
+      onClick: function onClick() {
+        _this2.toggle('3');
+      }
+    }, /*#__PURE__*/React__default.createElement(Icon.Info, {
+      size: 16
+    }), /*#__PURE__*/React__default.createElement("span", {
+      className: "d-md-inline-block d-none align-middle ml-1"
+    }, "Info"))), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
+      className: classnames({
+        active: this.state.activeTab === '4'
+      }),
+      onClick: function onClick() {
+        _this2.toggle('4');
+      }
+    }, /*#__PURE__*/React__default.createElement(Icon.Instagram, {
+      size: 16
+    }), /*#__PURE__*/React__default.createElement("span", {
+      className: "d-md-inline-block d-none align-middle ml-1"
+    }, "Social Links"))), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
+      className: classnames({
+        active: this.state.activeTab === '5'
+      }),
+      onClick: function onClick() {
+        _this2.toggle('5');
+      }
+    }, /*#__PURE__*/React__default.createElement(Icon.Link, {
+      size: 16
+    }), /*#__PURE__*/React__default.createElement("span", {
+      className: "d-md-inline-block d-none align-middle ml-1"
+    }, "Connections"))), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
+      className: classnames({
+        active: this.state.activeTab === '6'
+      }),
+      onClick: function onClick() {
+        _this2.toggle('6');
+      }
+    }, /*#__PURE__*/React__default.createElement(Icon.Bell, {
+      size: 16
+    }), /*#__PURE__*/React__default.createElement("span", {
+      className: "d-md-inline-block d-none align-middle ml-1"
+    }, "Notifications")))), /*#__PURE__*/React__default.createElement(reactstrap.Card, null, /*#__PURE__*/React__default.createElement(reactstrap.CardBody, null, /*#__PURE__*/React__default.createElement(reactstrap.TabContent, {
+      activeTab: this.state.activeTab
+    }, /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
+      tabId: "1"
+    }, /*#__PURE__*/React__default.createElement(General, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
+      tabId: "2"
+    }, /*#__PURE__*/React__default.createElement(ChangePassword, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
+      tabId: "3"
+    }, /*#__PURE__*/React__default.createElement(InfoTab, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
+      tabId: "4"
+    }, /*#__PURE__*/React__default.createElement(SocialLinks, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
+      tabId: "5"
+    }, /*#__PURE__*/React__default.createElement(Connection, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
+      tabId: "6"
+    }, /*#__PURE__*/React__default.createElement(Notification, null)))))));
+  };
+
+  return AccountSettings;
+}(React__default.Component);
 
 var AppRouter = function AppRouter(_ref) {
   var checkLoginStatus = _ref.checkLoginStatus,
@@ -2903,11 +3504,8 @@ var AppRouter = function AppRouter(_ref) {
       return isAuthentication ? /*#__PURE__*/React__default.createElement(Layout$1, _extends({
         navigationConfig: navConfigs
       }, props), /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
-        path: "/account-information",
-        component: AccountInfo
-      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
-        path: "/change-password",
-        component: ChangePassword
+        path: "/account-settings",
+        component: AccountSettings
       }), /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
         path: "/",
         render: function render() {
@@ -3036,6 +3634,10 @@ var FallbackSpinner = /*#__PURE__*/function (_React$Component) {
 
   return FallbackSpinner;
 }(React__default.Component);
+
+var DatePicker = function DatePicker(props) {
+  return /*#__PURE__*/React__default.createElement(Flatpickr, props);
+};
 
 function getWindowDimensions() {
   var _window = window,
