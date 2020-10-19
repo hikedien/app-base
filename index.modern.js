@@ -446,13 +446,12 @@ class SidebarHeader extends Component {
     }, /*#__PURE__*/React.createElement("li", {
       className: "nav-item mr-auto"
     }, /*#__PURE__*/React.createElement(NavLink, {
-      to: "/",
-      className: "navbar-brand"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "brand-logo"
-    }), /*#__PURE__*/React.createElement("h2", {
-      className: "brand-text mb-0"
-    }, "Vuexy"))), /*#__PURE__*/React.createElement("li", {
+      to: "/"
+    }, /*#__PURE__*/React.createElement("img", {
+      className: "img-fluid",
+      src: "https://sit.inon.vn/PortalWeb/nth/assets/images/InOn-logo.png",
+      alt: "logo"
+    }))), /*#__PURE__*/React.createElement("li", {
       className: "nav-item nav-toggle"
     }, /*#__PURE__*/React.createElement("div", {
       className: "nav-link modern-nav-toggle"
@@ -461,13 +460,13 @@ class SidebarHeader extends Component {
         toggleSidebarMenu(true);
         toggle();
       },
-      className: classnames("toggle-icon icon-x d-none d-xl-block font-medium-4", {
-        "text-primary": activeTheme === "primary",
-        "text-success": activeTheme === "success",
-        "text-danger": activeTheme === "danger",
-        "text-info": activeTheme === "info",
-        "text-warning": activeTheme === "warning",
-        "text-dark": activeTheme === "dark"
+      className: classnames('toggle-icon icon-x d-none d-xl-block font-medium-4', {
+        'text-primary': activeTheme === 'primary',
+        'text-success': activeTheme === 'success',
+        'text-danger': activeTheme === 'danger',
+        'text-info': activeTheme === 'info',
+        'text-warning': activeTheme === 'warning',
+        'text-dark': activeTheme === 'dark'
       }),
       size: 20,
       "data-tour": "toggle-icon"
@@ -476,29 +475,29 @@ class SidebarHeader extends Component {
         toggleSidebarMenu(false);
         toggle();
       },
-      className: classnames("toggle-icon icon-x d-none d-xl-block font-medium-4", {
-        "text-primary": activeTheme === "primary",
-        "text-success": activeTheme === "success",
-        "text-danger": activeTheme === "danger",
-        "text-info": activeTheme === "info",
-        "text-warning": activeTheme === "warning",
-        "text-dark": activeTheme === "dark"
+      className: classnames('toggle-icon icon-x d-none d-xl-block font-medium-4', {
+        'text-primary': activeTheme === 'primary',
+        'text-success': activeTheme === 'success',
+        'text-danger': activeTheme === 'danger',
+        'text-info': activeTheme === 'info',
+        'text-warning': activeTheme === 'warning',
+        'text-dark': activeTheme === 'dark'
       }),
       size: 20
     }), /*#__PURE__*/React.createElement(X, {
       onClick: sidebarVisibility,
-      className: classnames("toggle-icon icon-x d-block d-xl-none font-medium-4", {
-        "text-primary": activeTheme === "primary",
-        "text-success": activeTheme === "success",
-        "text-danger": activeTheme === "danger",
-        "text-info": activeTheme === "info",
-        "text-warning": activeTheme === "warning",
-        "text-dark": activeTheme === "dark"
+      className: classnames('toggle-icon icon-x d-block d-xl-none font-medium-4', {
+        'text-primary': activeTheme === 'primary',
+        'text-success': activeTheme === 'success',
+        'text-danger': activeTheme === 'danger',
+        'text-info': activeTheme === 'info',
+        'text-warning': activeTheme === 'warning',
+        'text-dark': activeTheme === 'dark'
       }),
       size: 20
     })))), /*#__PURE__*/React.createElement("div", {
-      className: classnames("shadow-bottom", {
-        "d-none": menuShadow === false
+      className: classnames('shadow-bottom', {
+        'd-none': menuShadow === false
       })
     }));
   }
@@ -1500,7 +1499,9 @@ const UserDropdown = props => {
     className: "mr-50"
   }), /*#__PURE__*/React.createElement("span", {
     className: "align-middle"
-  }, "Log Out")));
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "navbar.logout"
+  }))));
 };
 
 class NavbarUser extends React.PureComponent {
@@ -1509,21 +1510,12 @@ class NavbarUser extends React.PureComponent {
     this.state = {
       navbarSearch: false,
       langDropdown: false,
-      shoppingCart: [],
       suggestions: []
     };
 
     this.handleNavbarSearch = () => {
       this.setState({
         navbarSearch: !this.state.navbarSearch
-      });
-    };
-
-    this.removeItem = id => {
-      let cart = this.state.shoppingCart;
-      let updatedCart = cart.filter(i => i.id !== id);
-      this.setState({
-        shoppingCart: updatedCart
       });
     };
 
@@ -1546,10 +1538,6 @@ class NavbarUser extends React.PureComponent {
     return /*#__PURE__*/React.createElement("ul", {
       className: "nav navbar-nav navbar-nav-user float-right"
     }, /*#__PURE__*/React.createElement(Context.Consumer, null, context => {
-      let langArr = {
-        en: 'English',
-        vi: 'Vietnamese'
-      };
       return /*#__PURE__*/React.createElement(Dropdown, {
         tag: "li",
         className: "dropdown-language nav-item",
@@ -1565,7 +1553,9 @@ class NavbarUser extends React.PureComponent {
         svg: true
       }), /*#__PURE__*/React.createElement("span", {
         className: "d-sm-inline-block d-none text-capitalize align-middle ml-50"
-      }, langArr[context.state.locale])), /*#__PURE__*/React.createElement(DropdownMenu, {
+      }, /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: `navbar.language.${context.state.locale}`
+      }))), /*#__PURE__*/React.createElement(DropdownMenu, {
         right: true
       }, /*#__PURE__*/React.createElement(DropdownItem, {
         tag: "a",
@@ -1576,7 +1566,9 @@ class NavbarUser extends React.PureComponent {
         svg: true
       }), /*#__PURE__*/React.createElement("span", {
         className: "ml-1"
-      }, "English")), /*#__PURE__*/React.createElement(DropdownItem, {
+      }, /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "navbar.language.en"
+      }))), /*#__PURE__*/React.createElement(DropdownItem, {
         tag: "a",
         onClick: e => context.switchLanguage('vi')
       }, /*#__PURE__*/React.createElement(ReactCountryFlag, {
@@ -1585,7 +1577,9 @@ class NavbarUser extends React.PureComponent {
         svg: true
       }), /*#__PURE__*/React.createElement("span", {
         className: "ml-1"
-      }, "Vietnamese"))));
+      }, /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "navbar.language.vi"
+      })))));
     }), /*#__PURE__*/React.createElement(NavItem, {
       className: "nav-search",
       onClick: this.handleNavbarSearch
@@ -1936,15 +1930,15 @@ const Footer = props => {
     className: classnames('footer footer-light', {
       'd-none': isMobile
     })
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "mb-0 clearfix"
-  }, /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "d-flex justify-content-between"
+  }, /*#__PURE__*/React.createElement("div", {
     className: "float-md-left d-block d-md-inline-block mt-25"
-  }, "COPYRIGHT \xA9 ", new Date().getFullYear(), /*#__PURE__*/React.createElement("a", {
-    href: "https://themeforest.net/user/pixinvent/portfolio?ref=pixinvent",
-    target: "_blank",
-    rel: "noopener noreferrer"
-  }, "Pixinvent,"), "All rights reserved"), /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "footer.copyRight"
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "footer.companySlogan"
+  }))), /*#__PURE__*/React.createElement("div", {
     className: "float-md-right d-none d-md-block"
   }, /*#__PURE__*/React.createElement("span", {
     className: "align-middle"
@@ -2298,6 +2292,11 @@ var messages_en = {
 	"menu.home": "Home",
 	"menu.user": "User Management",
 	"menu.buyInsurance": "Buy Insurance",
+	"navbar.language.vi": "Vietnamese",
+	"navbar.language.en": "English",
+	"navbar.logout": "Logout",
+	"footer.copyRight": "© 2020 InOn-All rights reserved",
+	"footer.companySlogan": "Leading insurance provider in Vietnam",
 	setting: setting,
 	"setting.accountInformation": "Account Information",
 	"setting.changePassword": "Change password",
@@ -2328,6 +2327,11 @@ var messages_vi = {
 	"menu.home": "Trang chủ",
 	"menu.user": "Tài khoản",
 	"menu.buyInsurance": "Mua bảo hiểm",
+	"navbar.language.vi": "Tiếng Việt",
+	"navbar.language.en": "Tiếng Anh",
+	"navbar.logout": "Đăng xuất",
+	"footer.copyRight": "©2020 InOn-Đã đăng ký bản quyền",
+	"footer.companySlogan": "Nhà cung cấp bảo hiểm hàng đầu Việt Nam",
 	setting: setting$1,
 	"setting.accountInformation": "Thông tin tài khoản",
 	"setting.changePassword": "Thay đổi mật khẩu",
@@ -2354,15 +2358,14 @@ var messages_vi = {
 };
 
 const AppId = {
-  HOME: 'HOME',
-  USER: 'USER',
-  ACCOUNT: 'ACCOUNT',
-  BUY_INSURANCE: 'BUY_INSURANCE',
-  INSURANCE_FEE: 'INSURANCE_FEE'
+  APP_NO1: 'APP_NO1',
+  INSURANCE_APP: 'INSURANCE_APP',
+  SUPPLEMENT_APP: 'SUPPLEMENT_APP'
 };
 
 const navigationConfig = [{
-  id: AppId.HOME,
+  id: 'home',
+  appId: AppId.APP_NO1,
   type: 'item',
   title: 'menu.home',
   icon: /*#__PURE__*/React.createElement(Home, {
@@ -2370,19 +2373,20 @@ const navigationConfig = [{
   }),
   navLink: '/'
 }, {
-  id: AppId.USER,
+  id: 'user',
+  appId: AppId.APP_NO1,
   type: 'item',
   title: 'menu.user',
   icon: /*#__PURE__*/React.createElement(Mail, {
     size: 20
   }),
   permissions: ['admin', 'editor'],
-  navLink: '/'
+  navLink: '/user'
 }];
 
 const getNativgationConfig = appId => {
   return [...navigationConfig].map(item => {
-    if (item.id === appId) {
+    if (item.appId === appId) {
       item.type = 'item';
     } else {
       item.type = 'external-link';
