@@ -33,6 +33,7 @@ var TopBarProgress = _interopDefault(require('react-topbar-progress-indicator'))
 var Ripples = _interopDefault(require('react-ripples'));
 require('react-perfect-scrollbar/dist/css/styles.css');
 require('react-toastify/dist/ReactToastify.css');
+require('prismjs/themes/prism-tomorrow.css');
 
 var HttpClient = Axios.create({
   timeout: 5000,
@@ -231,9 +232,9 @@ function _catch(body, recover) {
 var API_LOGIN_URL = 'https://api.mocki.io/v1/5e448c60';
 var API_LOGOUT_URL = 'https://api.mocki.io/v1/5e448c60';
 var API_R_200 = 200;
-var APP_URL = {
-  HOME: 'http://localhost:3000',
-  USER: 'http://localhost:3001'
+var APP_URL = 'http://localhost:3000';
+var IMAGE = {
+  LOGO: 'https://sit.inon.vn/PortalWeb/nth/assets/images/InOn-logo.png'
 };
 
 var history = history$1.createBrowserHistory({
@@ -360,16 +361,304 @@ var authReducers = function authReducers(state, action) {
   }
 };
 
-var defaultStarred = [].filter(function (item) {
-  return item.starred === true;
-});
+var AppId = {
+  APP_NO1: 'APP_NO1',
+  INSURANCE_APP: 'INSURANCE_APP',
+  SUPPLEMENT_APP: 'SUPPLEMENT_APP'
+};
+
+var _ref;
+var navigationConfig = [{
+  id: 'buyInsurance',
+  appId: AppId.INSURANCE_APP,
+  type: 'item',
+  title: 'menu.buyInsurance',
+  icon: /*#__PURE__*/React__default.createElement(Icon.ShoppingCart, {
+    size: 20
+  }),
+  navLink: '/buy-insurance'
+}, {
+  id: 'contractManagement',
+  appId: AppId.INSURANCE_APP,
+  title: 'menu.contractManagement',
+  icon: /*#__PURE__*/React__default.createElement(Icon.FileText, {
+    size: 20
+  }),
+  permissions: ['admin', 'editor'],
+  navLink: '/contracts',
+  type: 'collapse',
+  children: [{
+    id: 'personalContracts',
+    type: 'item',
+    title: 'menu.personalContracts',
+    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
+      size: 20
+    }),
+    navLink: '/contracts/personal'
+  }, {
+    id: 'partnerContracts',
+    type: 'item',
+    title: 'menu.partnerContracts',
+    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
+      size: 20
+    }),
+    navLink: '/contracts/partner'
+  }, {
+    id: 'allContracts',
+    type: 'item',
+    title: 'menu.allContracts',
+    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
+      size: 20
+    }),
+    navLink: '/contracts/all'
+  }]
+}, {
+  id: 'account',
+  appId: AppId.APP_NO1,
+  title: 'menu.account',
+  icon: /*#__PURE__*/React__default.createElement(Icon.User, {
+    size: 20
+  }),
+  permissions: ['admin', 'editor'],
+  navLink: '/accounts',
+  type: 'collapse',
+  children: [{
+    id: 'createAccount',
+    type: 'item',
+    title: 'menu.createAccount',
+    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
+      size: 20
+    }),
+    navLink: '/accounts/create'
+  }, {
+    id: 'accountManagement',
+    type: 'item',
+    title: 'menu.accountManagement',
+    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
+      size: 20
+    }),
+    navLink: '/accounts/management'
+  }]
+}, {
+  id: 'insuranceFeeManagement',
+  appId: AppId.INSURANCE_APP,
+  title: 'menu.insuranceFeeManagement',
+  icon: /*#__PURE__*/React__default.createElement(Icon.DollarSign, {
+    size: 20
+  }),
+  permissions: ['admin', 'editor'],
+  navLink: '/insurance-fee',
+  type: 'collapse',
+  children: [{
+    id: 'systemFee',
+    type: 'item',
+    title: 'menu.systemFee',
+    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
+      size: 20
+    }),
+    navLink: '/insurance-fee/system'
+  }, {
+    id: 'personalFee',
+    type: 'item',
+    title: 'menu.personalFee',
+    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
+      size: 20
+    }),
+    navLink: '/insurance-fee/personal'
+  }, {
+    id: 'partnerFee',
+    type: 'item',
+    title: 'menu.partnerFee',
+    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
+      size: 20
+    }),
+    navLink: '/insurance-fee/partner'
+  }, {
+    id: 'allFee',
+    type: 'item',
+    title: 'menu.allFee',
+    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
+      size: 20
+    }),
+    navLink: '/insurance-fee/all'
+  }]
+}, {
+  id: 'bonusManagement',
+  appId: AppId.SUPPLEMENT_APP,
+  title: 'menu.bonusManagement',
+  icon: /*#__PURE__*/React__default.createElement(Icon.TrendingUp, {
+    size: 20
+  }),
+  permissions: ['admin', 'editor'],
+  navLink: '/bonus',
+  type: 'collapse',
+  children: [{
+    id: 'systemBonus',
+    type: 'item',
+    title: 'menu.systemBonus',
+    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
+      size: 20
+    }),
+    navLink: '/bonus/system'
+  }, {
+    id: 'personalBonus',
+    type: 'item',
+    title: 'menu.personalBonus',
+    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
+      size: 20
+    }),
+    navLink: '/bonus/personal'
+  }, {
+    id: 'partnerBonus',
+    type: 'item',
+    title: 'menu.partnerBonus',
+    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
+      size: 20
+    }),
+    navLink: '/bonus/partner'
+  }, {
+    id: 'allBonus',
+    type: 'item',
+    title: 'menu.allBonus',
+    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
+      size: 20
+    }),
+    navLink: '/bonus/all'
+  }]
+}, (_ref = {
+  id: 'insuranceCertificate',
+  appId: AppId.INSURANCE_APP,
+  type: 'item',
+  title: 'menu.insuranceCertificate',
+  icon: /*#__PURE__*/React__default.createElement(Icon.Award, {
+    size: 20
+  }),
+  permissions: ['admin', 'editor'],
+  navLink: '/insurance-certificate'
+}, _ref["type"] = 'collapse', _ref.children = [{
+  id: 'newImport',
+  type: 'item',
+  title: 'menu.insuranceCertificate.newImport',
+  icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
+    size: 20
+  }),
+  navLink: '/insurance-certificate/new-import'
+}, {
+  id: 'newExport',
+  type: 'item',
+  title: 'menu.insuranceCertificate.newImport',
+  icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
+    size: 20
+  }),
+  navLink: '/insurance-certificate/new-export'
+}, {
+  id: 'wrongImport',
+  type: 'item',
+  title: 'menu.insuranceCertificate.wrongImport',
+  icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
+    size: 20
+  }),
+  navLink: '/insurance-certificate/wrong-import'
+}, {
+  id: 'wrongExport',
+  type: 'item',
+  title: 'menu.insuranceCertificate.wrongExport',
+  icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
+    size: 20
+  }),
+  navLink: '/insurance-certificate/wrong-export'
+}], _ref), {
+  id: 'debt',
+  appId: AppId.SUPPLEMENT_APP,
+  title: 'menu.debt',
+  icon: /*#__PURE__*/React__default.createElement(Icon.CreditCard, {
+    size: 20
+  }),
+  permissions: ['admin', 'editor'],
+  type: 'collapse',
+  navLink: '/debt',
+  children: [{
+    id: 'createDebt',
+    type: 'item',
+    title: 'menu.createDebt',
+    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
+      size: 20
+    }),
+    navLink: '/debt/create'
+  }, {
+    id: 'debtManagement',
+    type: 'item',
+    title: 'menu.debtManagement',
+    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
+      size: 20
+    }),
+    navLink: '/debt/management'
+  }]
+}, {
+  id: 'permissionGoup',
+  appId: AppId.SUPPLEMENT_APP,
+  type: 'collapse',
+  title: 'menu.permissionGoup',
+  icon: /*#__PURE__*/React__default.createElement(Icon.Share2, {
+    size: 20
+  }),
+  permissions: ['admin', 'editor'],
+  navLink: '/permission-group',
+  children: [{
+    id: 'creatPermissionGoup',
+    type: 'item',
+    title: 'menu.creatPermissionGoup',
+    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
+      size: 20
+    }),
+    navLink: '/permission-group/create'
+  }, {
+    id: 'permissionGoupManagement',
+    type: 'item',
+    title: 'menu.permissionGoupManagement',
+    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
+      size: 20
+    }),
+    navLink: '/permission-group/management'
+  }]
+}];
+
+var getNativgationConfig = function getNativgationConfig(appId, navConfigs) {
+  if (navConfigs === void 0) {
+    navConfigs = navigationConfig;
+  }
+
+  return navConfigs.map(function (item) {
+    item.isExternalApp = item.appId !== appId;
+    item.type = 'item';
+
+    if (item.children) {
+      item.children.map(function (child) {
+        return child.isExternalApp = child.appId !== appId;
+      });
+
+      if (item.children.length === 1) {
+        item.type = 'item';
+        item.navLink = item.children[0].navLink;
+      } else {
+        item.type = 'collapse';
+      }
+    }
+
+    return item;
+  });
+};
+
+var NavBarService = function NavBarService() {};
+
+NavBarService.getNativagtion = function () {
+  return HttpClient.post(API_LOGIN_URL);
+};
+
+var LOAD_NATIVGATION = 'LOAD_NATIVGATION';
+
 var initialState = {
-  suggestions: [],
-  isLoading: false,
-  value: "",
-  starred: defaultStarred,
-  noSuggestions: false,
-  extraStarred: []
+  navConfigs: []
 };
 
 var navbarReducer = function navbarReducer(state, action) {
@@ -378,61 +667,10 @@ var navbarReducer = function navbarReducer(state, action) {
   }
 
   switch (action.type) {
-    case "MAYBE_UPDATE_SUGGESTIONS":
+    case LOAD_NATIVGATION:
       return _extends({}, state, {
-        suggestions: action.suggestions,
-        isLoading: false
+        navConfigs: [].concat(action.payload)
       });
-
-    case "UPDATE_STARRED":
-      var starredState = state.starred.map(function (i) {
-        return i.id;
-      });
-      var extraStarredState = state.extraStarred.map(function (j) {
-        return j.id;
-      });
-
-      if (state) {
-        state.suggestions.find(function (i) {
-          if (i.id === action.object.id) {
-            i.starred = !action.object.starred;
-            return _extends({}, state);
-          } else {
-            return null;
-          }
-        });
-      }
-
-      if (!starredState.includes(action.object.id) && state.starred.length < 10) {
-        var newState = state.starred.push(action.object);
-        return _extends({}, state, {
-          newState: newState
-        });
-      } else if (starredState.includes(action.object.id)) {
-          if (state.extraStarred.length === 0) {
-            var _newState = state.starred.splice(starredState.indexOf(action.object.id), 1);
-
-            return _extends({}, state, {
-              newState: _newState
-            });
-          } else if (state.extraStarred.length > 0) {
-            var getBookmark = state.extraStarred.splice(0, 1);
-            state.starred.splice(starredState.indexOf(action.object.id), 1);
-            var updatedState = state.starred.push(getBookmark[0]);
-            return _extends({}, state, {
-              updatedState: updatedState
-            });
-          } else {
-            return _extends({}, state);
-          }
-        } else if (!extraStarredState.includes(action.object.id) && state.starred.length >= 10) {
-            var extraStarred = state.extraStarred.concat(action.object);
-            return _extends({}, state, {
-              extraStarred: extraStarred
-            });
-          } else {
-            return _extends({}, state);
-          }
 
     default:
       return state;
@@ -451,16 +689,44 @@ var rootReducer = function rootReducer(appReducer) {
   });
 };
 
+var CheckBox = /*#__PURE__*/function (_React$Component) {
+  _inheritsLoose(CheckBox, _React$Component);
+
+  function CheckBox() {
+    return _React$Component.apply(this, arguments) || this;
+  }
+
+  var _proto = CheckBox.prototype;
+
+  _proto.render = function render() {
+    return /*#__PURE__*/React__default.createElement("div", {
+      className: "vx-checkbox-con " + (this.props.className ? this.props.className : '') + " vx-checkbox-" + this.props.color
+    }, /*#__PURE__*/React__default.createElement("input", {
+      type: "checkbox",
+      defaultChecked: this.props.defaultChecked,
+      checked: this.props.checked,
+      value: this.props.value,
+      disabled: this.props.disabled,
+      onClick: this.props.onClick ? this.props.onClick : null,
+      onChange: this.props.onChange ? this.props.onChange : null
+    }), /*#__PURE__*/React__default.createElement("span", {
+      className: "vx-checkbox vx-checkbox-" + (this.props.size ? this.props.size : 'md')
+    }, /*#__PURE__*/React__default.createElement("span", {
+      className: "vx-checkbox--check"
+    }, this.props.icon)), /*#__PURE__*/React__default.createElement("span", null, this.props.label));
+  };
+
+  return CheckBox;
+}(React__default.Component);
+
 var Login = function Login(_ref) {
   var loginAction = _ref.loginAction;
 
   var _useState = React.useState(''),
-      username = _useState[0],
-      setUsername = _useState[1];
+      username = _useState[0];
 
   var _useState2 = React.useState(''),
-      password = _useState2[0],
-      setPassword = _useState2[1];
+      password = _useState2[0];
 
   var onClickLogin = function onClickLogin() {
     loginAction({
@@ -485,7 +751,7 @@ var Login = function Login(_ref) {
     lg: "6",
     className: "d-lg-block d-none text-center align-self-center px-1 py-0"
   }, /*#__PURE__*/React__default.createElement("img", {
-    src: "https://pixinvent.com/demo/vuexy-react-admin-dashboard-template/demo-4/static/media/login.fd58a052.png",
+    src: '',
     alt: "loginImg"
   })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
     lg: "6",
@@ -497,39 +763,62 @@ var Login = function Login(_ref) {
     className: "pb-1"
   }, /*#__PURE__*/React__default.createElement(reactstrap.CardTitle, null, /*#__PURE__*/React__default.createElement("h4", {
     className: "mb-0"
-  }, "Login"))), /*#__PURE__*/React__default.createElement(reactstrap.CardBody, {
+  }, "Login"))), /*#__PURE__*/React__default.createElement("p", {
+    className: "px-2 auth-title"
+  }, "Welcome back, please login to your account."), /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.CardBody, {
     className: "pt-1"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Form, {
+    action: "/",
+    onSubmit: function onSubmit(e) {
+      return e.preventDefault();
+    }
   }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
     className: "form-label-group position-relative has-icon-left"
   }, /*#__PURE__*/React__default.createElement(reactstrap.Input, {
     type: "email",
     placeholder: "Email",
-    value: username,
-    onChange: function onChange(e) {
-      return setUsername(e.target.value);
-    },
     required: true
-  }), /*#__PURE__*/React__default.createElement(Icon.Mail, {
+  }), /*#__PURE__*/React__default.createElement("div", {
+    className: "form-control-position"
+  }, /*#__PURE__*/React__default.createElement(Icon.Mail, {
     size: 15
-  }), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, "Email")), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+  })), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, "Email")), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
     className: "form-label-group position-relative has-icon-left"
   }, /*#__PURE__*/React__default.createElement(reactstrap.Input, {
     type: "password",
     placeholder: "Password",
-    value: password,
-    onChange: function onChange(e) {
-      return setPassword(e.target.value);
-    },
     required: true
-  }), /*#__PURE__*/React__default.createElement(Icon.Lock, {
+  }), /*#__PURE__*/React__default.createElement("div", {
+    className: "form-control-position"
+  }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
     size: 15
-  }), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, "Password")), /*#__PURE__*/React__default.createElement(reactstrap.Button, {
+  })), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, "Password")), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+    className: "d-flex justify-content-between align-items-center"
+  }, /*#__PURE__*/React__default.createElement(CheckBox, {
     color: "primary",
-    type: "button",
+    icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+      className: "vx-icon",
+      size: 16
+    }),
+    label: "Remember me",
+    defaultChecked: false
+  }), /*#__PURE__*/React__default.createElement("div", {
+    className: "float-right"
+  }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
+    to: "/pages/forgot-password"
+  }, "Forgot Password?"))), /*#__PURE__*/React__default.createElement("div", {
+    className: "d-flex justify-content-between"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+    color: "primary",
+    outline: true,
+    onClick: function onClick() {
+      history.push('/pages/register');
+    }
+  }, "Register"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+    color: "primary",
+    type: "submit",
     onClick: onClickLogin
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "Login"
-  })))))))));
+  }, "Login")))))))))));
 };
 
 var SidebarHeader = /*#__PURE__*/function (_Component) {
@@ -554,12 +843,12 @@ var SidebarHeader = /*#__PURE__*/function (_Component) {
     }, /*#__PURE__*/React__default.createElement("ul", {
       className: "nav navbar-nav flex-row"
     }, /*#__PURE__*/React__default.createElement("li", {
-      className: "nav-item mr-auto"
+      className: "nav-item my-auto mr-auto"
     }, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
       to: "/"
     }, /*#__PURE__*/React__default.createElement("img", {
-      className: "img-fluid",
-      src: "https://sit.inon.vn/PortalWeb/nth/assets/images/InOn-logo.png",
+      className: "img-fluid logo-img",
+      src: IMAGE.LOGO,
       alt: "logo"
     }))), /*#__PURE__*/React__default.createElement("li", {
       className: "nav-item nav-toggle"
@@ -662,7 +951,7 @@ var SideMenuGroup = /*#__PURE__*/function (_React$Component) {
     return /*#__PURE__*/React__default.createElement("ul", {
       className: "menu-content"
     }, item.children ? item.children.map(function (child) {
-      var CustomAnchorTag = child.type === "external-link" ? "a" : Link;
+      var CustomAnchorTag = child.isExternalApp ? "a" : reactRouterDom.Link;
 
       if (!_this2.parentArray.includes(item.id) && _this2.flag) {
         _this2.parentArray.push(item.id);
@@ -685,10 +974,10 @@ var SideMenuGroup = /*#__PURE__*/function (_React$Component) {
           key: child.id,
           className: classnames({
             hover: _this2.props.hoverIndex === child.id,
-            "has-sub": child.type === "collapse",
-            open: child.type === "collapse" && activeGroup.includes(child.id),
-            "sidebar-group-active": _this2.props.currentActiveGroup.includes(child.id),
-            active: _this2.props.activeItemState === child.navLink && child.type === "item" || item.parentOf && item.parentOf.includes(_this2.props.activeItemState),
+            'has-sub': child.type === 'collapse',
+            open: child.type === 'collapse' && activeGroup.includes(child.id),
+            'sidebar-group-active': _this2.props.currentActiveGroup.includes(child.id),
+            active: _this2.props.activeItemState === child.navLink && child.type === 'item' || item.parentOf && item.parentOf.includes(_this2.props.activeItemState),
             disabled: child.disabled
           }),
           onClick: function onClick(e) {
@@ -699,16 +988,16 @@ var SideMenuGroup = /*#__PURE__*/function (_React$Component) {
               handleActiveItem(child.navLink);
             }
 
-            if (_this2.props.deviceWidth <= 1200 && child.type === "item") {
+            if (_this2.props.deviceWidth <= 1200 && child.type === 'item') {
               _this2.props.toggleMenu();
             }
           }
         }, /*#__PURE__*/React__default.createElement(CustomAnchorTag, {
           className: classnames({
-            "d-flex justify-content-between": child.type === "collapse"
+            'd-flex justify-content-between': child.type === 'collapse'
           }),
-          to: child.navLink && child.type === "item" ? child.navLink : "",
-          href: child.type === "external-link" ? child.navLink : "",
+          to: child.navLink && child.type === 'item' ? child.navLink : '',
+          href: _this2.props.getItemLink(child),
           onMouseEnter: function onMouseEnter() {
             _this2.props.handleSidebarMouseEnter(child.id);
           },
@@ -717,9 +1006,9 @@ var SideMenuGroup = /*#__PURE__*/function (_React$Component) {
           },
           key: child.id,
           onClick: function onClick(e) {
-            return child.type === "collapse" ? e.preventDefault() : "";
+            return child.type === 'collapse' ? e.preventDefault() : '';
           },
-          target: child.newTab ? "_blank" : undefined
+          target: child.newTab ? '_blank' : undefined
         }, /*#__PURE__*/React__default.createElement("div", {
           className: "menu-text"
         }, child.icon, /*#__PURE__*/React__default.createElement("span", {
@@ -730,10 +1019,10 @@ var SideMenuGroup = /*#__PURE__*/function (_React$Component) {
           color: child.badge,
           className: "float-right mr-2",
           pill: true
-        }, child.badgeText) : "", child.type === "collapse" ? /*#__PURE__*/React__default.createElement(Icon.ChevronRight, {
+        }, child.badgeText) : '', child.type === 'collapse' ? /*#__PURE__*/React__default.createElement(Icon.ChevronRight, {
           className: "menu-toggle-icon",
           size: 13
-        }) : ""), child.children ? _this2.renderChild(child, activeGroup, handleGroupClick, handleActiveItem, item.id) : "");
+        }) : ''), child.children ? _this2.renderChild(child, activeGroup, handleGroupClick, handleActiveItem, item.id) : '');
       } else if (child.navLink === _this2.props.activePath && !child.permissions.includes(_this2.props.currentUser)) {
         return _this2.props.redirectUnauthorized();
       } else {
@@ -851,24 +1140,23 @@ var SideMenuContent = /*#__PURE__*/function (_React$Component) {
       });
     };
 
-    _this.getExternalLink = function (link) {
-      return link + "?code=" + _this.props.currentUser.authToken;
+    _this.getItemLink = function (item) {
+      return item.isExternalApp ? APP_URL + item.navLink + "?code=" + _this.props.currentUser.authToken : '';
     };
 
     _this.parentArr = [];
     _this.collapsedPath = null;
-    _this.navigationConfig = props.navigationConfig;
     return _this;
   }
 
   var _proto = SideMenuContent.prototype;
 
   _proto.componentDidMount = function componentDidMount() {
-    this.initRender(this.parentArr[0] ? this.parentArr[0] : []);
+    this.initRender(this.parentArr[0] || []);
   };
 
   _proto.componentDidUpdate = function componentDidUpdate(prevProps, prevState) {
-    if (prevProps.activePath !== this.props.activePath) {
+    if (prevProps.activePath !== this.props.activePath || prevProps.navConfigs !== this.props.navConfigs) {
       if (this.collapsedMenuPaths !== null) {
         this.props.collapsedMenuPaths(this.collapsedMenuPaths);
       }
@@ -880,8 +1168,8 @@ var SideMenuContent = /*#__PURE__*/function (_React$Component) {
   _proto.render = function render() {
     var _this2 = this;
 
-    var menuItems = this.navigationConfig.map(function (item) {
-      var CustomAnchorTag = item.type === 'external-link' ? "a" : reactRouterDom.Link;
+    var menuItems = this.props.navConfigs.map(function (item) {
+      var CustomAnchorTag = item.isExternalApp ? "a" : reactRouterDom.Link;
 
       if (item.type === 'groupHeader') {
         return /*#__PURE__*/React__default.createElement("li", {
@@ -917,7 +1205,7 @@ var SideMenuContent = /*#__PURE__*/function (_React$Component) {
         }
       }, /*#__PURE__*/React__default.createElement(CustomAnchorTag, {
         to: item.filterBase ? item.filterBase : item.navLink && item.type === 'item' ? item.navLink : '',
-        href: item.type === 'external-link' ? _this2.getExternalLink(item.navLink) : '',
+        href: _this2.getItemLink(item),
         className: "d-flex " + (item.badgeText ? 'justify-content-between' : 'justify-content-start'),
         onMouseEnter: function onMouseEnter() {
           _this2.props.handleSidebarMouseEnter(item.id);
@@ -958,6 +1246,7 @@ var SideMenuContent = /*#__PURE__*/function (_React$Component) {
         parentArr: _this2.parentArr,
         triggerActive: undefined,
         currentActiveGroup: _this2.state.currentActiveGroup,
+        getItemLink: _this2.getItemLink,
         permission: _this2.props.permission,
         currentUser: _this2.props.currentUser,
         redirectUnauthorized: _this2.redirectUnauthorized,
@@ -1205,7 +1494,7 @@ var Sidebar = /*#__PURE__*/function (_Component) {
       collapsedMenuPaths: collapsedMenuPaths,
       toggleMenu: sidebarVisibility,
       deviceWidth: this.props.deviceWidth,
-      navigationConfig: this.props.navigationConfig
+      navConfigs: this.props.navConfigs
     }))))));
   };
 
@@ -1214,7 +1503,8 @@ var Sidebar = /*#__PURE__*/function (_Component) {
 
 var mapStateToProps = function mapStateToProps(state) {
   return {
-    currentUser: state.auth
+    currentUser: state.auth,
+    navConfigs: state.navbar.navConfigs
   };
 };
 
@@ -2447,14 +2737,13 @@ var Layout = /*#__PURE__*/function (_PureComponent) {
       sidebarHover: this.sidebarMenuHover,
       sidebarVisibility: this.handleSidebarVisibility,
       visibilityState: this.state.sidebarHidden,
-      activePath: this.props.match.path,
+      activePath: this.props.location.pathname,
       collapsedMenuPaths: this.handleCollapsedMenuPaths,
       currentLang: this.state.currentLang,
       activeTheme: appProps.menuTheme,
       collapsed: this.state.collapsedContent,
       permission: '',
-      deviceWidth: this.state.width,
-      navigationConfig: this.props.navigationConfig
+      deviceWidth: this.state.width
     };
     var navbarProps = {
       toggleSidebarMenu: this.toggleSidebarMenu,
@@ -2513,6 +2802,23 @@ var Layout$1 = reactRedux.connect(mapStateToProps$2, {
   hideScrollToTop: hideScrollToTop
 })(Layout);
 
+var LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
+var loadNavtigation = function loadNavtigation(appId) {
+  return function (dispatch) {
+    try {
+      return Promise.resolve(NavBarService.getNativagtion()).then(function (res) {
+        var navCofigs = getNativgationConfig(appId);
+        dispatch({
+          type: LOAD_NATIVGATION$1,
+          payload: navCofigs
+        });
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+};
+
 var FullPageLayout = function FullPageLayout(_ref) {
   var children = _ref.children,
       rest = _objectWithoutPropertiesLoose(_ref, ["children"]);
@@ -2542,6 +2848,34 @@ var messages_en = {
 	"menu.home": "Home",
 	"menu.user": "User Management",
 	"menu.buyInsurance": "Buy Insurance",
+	"menu.contractManagement": "Contract Management",
+	"menu.personalContracts": "Personal Contracts",
+	"menu.partnerContracts": "Parnter Contracts",
+	"menu.allContracts": "All Contracts",
+	"menu.account": "Account",
+	"menu.createAccount": "Create Account",
+	"menu.accountManagement": "Account Management",
+	"menu.insuranceFeeManagement": "Insurance Fee",
+	"menu.systemFee": "System Fee",
+	"menu.personalFee": "Personal Fee",
+	"menu.partnerFee": "Partner Fee",
+	"menu.allFee": "All Fee",
+	"menu.bonusManagement": "Bonus Mangement",
+	"menu.systemBonus": "System Bonus",
+	"menu.personalBonus": "Personal Bonus",
+	"menu.partnerBonus": "Partner Bonus",
+	"menu.allBonus": "All Bonus",
+	"menu.insuranceCertificate": "Insurance Certification",
+	"menu.insuranceCertificate.newImport": "New Import",
+	"menu.insuranceCertificate.newExport": "New Export",
+	"menu.insuranceCertificate.wrongImport": "Wrong Import",
+	"menu.insuranceCertificate.wrongExport": "Wrong Export",
+	"menu.debt": "Debt",
+	"menu.createDebt": "Create Debt",
+	"menu.debtManagement": "Debt Management",
+	"menu.permissionGoup": "Permission Group",
+	"menu.creatPermissionGoup": "Create Permision Group",
+	"menu.permissionGoupManagement": "Permission Group Management",
 	"navbar.language.vi": "Vietnamese",
 	"navbar.language.en": "English",
 	"navbar.logout": "Logout",
@@ -2577,6 +2911,34 @@ var messages_vi = {
 	"menu.home": "Trang chủ",
 	"menu.user": "Tài khoản",
 	"menu.buyInsurance": "Mua bảo hiểm",
+	"menu.contractManagement": "Quản lý hợp đồng",
+	"menu.personalContracts": "Hợp đồng cá nhân",
+	"menu.partnerContracts": "Hợp đồng đối tác",
+	"menu.allContracts": "Tất cả hợp đồng",
+	"menu.account": "Tài khoản",
+	"menu.createAccount": "Tạo mới tài khoản",
+	"menu.accountManagement": "Quản lý tài khoản",
+	"menu.insuranceFeeManagement": "Quản lý Tỷ lệ phí",
+	"menu.systemFee": "Phí của hệ thống",
+	"menu.personalFee": "Phí của cá nhân",
+	"menu.partnerFee": "Phí của đối tác",
+	"menu.allFee": "Phí của tất cả",
+	"menu.bonusManagement": "Quản lý điểm thưởng",
+	"menu.systemBonus": "Điểm thưởng hệ thống",
+	"menu.personalBonus": "Điểm thưởng cá nhân",
+	"menu.partnerBonus": "Điểm thưởng đối tác",
+	"menu.allBonus": "Điểm thưởng tất cả",
+	"menu.insuranceCertificate": "Giấy chứng nhân BH",
+	"menu.insuranceCertificate.newImport": "Nhập mới",
+	"menu.insuranceCertificate.newExport": "Xuất mới",
+	"menu.insuranceCertificate.wrongImport": "Nhập sai hỏng",
+	"menu.insuranceCertificate.wrongExport": "Xuất sai hỏng",
+	"menu.debt": "Công nợ",
+	"menu.createDebt": "Tạo mới công nợ",
+	"menu.debtManagement": "Quản lý công nợ",
+	"menu.permissionGoup": "Nhóm quyền",
+	"menu.creatPermissionGoup": "Tạo mới nhóm quyền",
+	"menu.permissionGoupManagement": "Quản lý nhóm quyền",
 	"navbar.language.vi": "Tiếng Việt",
 	"navbar.language.en": "Tiếng Anh",
 	"navbar.logout": "Đăng xuất",
@@ -2605,46 +2967,6 @@ var messages_vi = {
 	"setting.gender.F": "Nữ",
 	"setting.gender.O": "Khác",
 	"changePassword.passwordMustMatch": "Mật khẩu không trùng khớp"
-};
-
-var AppId = {
-  APP_NO1: 'APP_NO1',
-  INSURANCE_APP: 'INSURANCE_APP',
-  SUPPLEMENT_APP: 'SUPPLEMENT_APP'
-};
-
-var navigationConfig = [{
-  id: 'home',
-  appId: AppId.APP_NO1,
-  type: 'item',
-  title: 'menu.home',
-  icon: /*#__PURE__*/React__default.createElement(Icon.Home, {
-    size: 20
-  }),
-  navLink: '/'
-}, {
-  id: 'user',
-  appId: AppId.APP_NO1,
-  type: 'item',
-  title: 'menu.user',
-  icon: /*#__PURE__*/React__default.createElement(Icon.Mail, {
-    size: 20
-  }),
-  permissions: ['admin', 'editor'],
-  navLink: '/user'
-}];
-
-var getNativgationConfig = function getNativgationConfig(appId) {
-  return [].concat(navigationConfig).map(function (item) {
-    if (item.appId === appId) {
-      item.type = 'item';
-    } else {
-      item.type = 'external-link';
-      item.navLink = APP_URL[item.id] + item.navLink;
-    }
-
-    return item;
-  });
 };
 
 var General = /*#__PURE__*/function (_React$Component) {
@@ -2681,7 +3003,7 @@ var General = /*#__PURE__*/function (_React$Component) {
     }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
       className: "rounded-circle",
       object: true,
-      src: '',
+      src: 'https://storage.live.com/Users/-6155523327610065665/MyProfile/ExpressionProfile/ProfilePhoto:Win8Static,UserTileMedium,UserTileStatic',
       alt: "User",
       height: "64",
       width: "64"
@@ -3464,16 +3786,17 @@ var AccountSettings = /*#__PURE__*/function (_React$Component) {
   return AccountSettings;
 }(React__default.Component);
 
-var AppRouter = function AppRouter(_ref) {
-  var checkLoginStatus = _ref.checkLoginStatus,
-      appId = _ref.appId,
-      isAuthentication = _ref.isAuthentication,
-      loginAction = _ref.loginAction,
-      authToken = _ref.authToken,
-      children = _ref.children,
-      navigationConfig = _ref.navigationConfig,
-      message = _ref.message;
+var AppRouter = function AppRouter(props) {
+  var checkLoginStatus = props.checkLoginStatus,
+      appId = props.appId,
+      isAuthentication = props.isAuthentication,
+      loginAction = props.loginAction,
+      authToken = props.authToken,
+      children = props.children,
+      loadNavtigation = props.loadNavtigation,
+      message = props.message;
   React.useEffect(function () {
+    loadNavtigation(appId);
     var code = new URLSearchParams(document.location.search).get('code');
     checkLoginStatus(code || authToken);
   }, []);
@@ -3494,7 +3817,6 @@ var AppRouter = function AppRouter(_ref) {
     en: _extends({}, messages_en, setMessages(message.en)),
     vi: _extends({}, messages_vi, setMessages(message.vi))
   };
-  var navConfigs = navigationConfig || getNativgationConfig(appId);
   return /*#__PURE__*/React__default.createElement(IntlProviderWrapper, {
     appMessage: appMessage
   }, /*#__PURE__*/React__default.createElement(reactRouterDom.Router, {
@@ -3502,9 +3824,7 @@ var AppRouter = function AppRouter(_ref) {
   }, /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
     path: "/",
     render: function render(props) {
-      return isAuthentication ? /*#__PURE__*/React__default.createElement(Layout$1, _extends({
-        navigationConfig: navConfigs
-      }, props), /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
+      return isAuthentication ? /*#__PURE__*/React__default.createElement(Layout$1, props, /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
         path: "/account-settings",
         component: AccountSettings
       }), /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
@@ -3528,7 +3848,8 @@ var mapStateToProps$3 = function mapStateToProps(state) {
 
 var AppRouter$1 = reactRedux.connect(mapStateToProps$3, {
   checkLoginStatus: checkLoginStatus,
-  loginAction: loginAction
+  loginAction: loginAction,
+  loadNavtigation: loadNavtigation
 })(AppRouter);
 
 TopBarProgress.config({
@@ -3582,8 +3903,7 @@ var App = function App(_ref) {
   var children = _ref.children,
       appId = _ref.appId,
       appReducer = _ref.appReducer,
-      message = _ref.message,
-      navigationConfig = _ref.navigationConfig;
+      message = _ref.message;
   var middlewares = [thunk, createDebounce()];
   var composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || redux.compose;
   var store = redux.createStore(rootReducer(appReducer), {}, composeEnhancers(redux.applyMiddleware.apply(void 0, middlewares)));
@@ -3597,7 +3917,6 @@ var App = function App(_ref) {
   }, /*#__PURE__*/React__default.createElement(LoadingSpinner$1, null), /*#__PURE__*/React__default.createElement(AppRouter$1, {
     message: message,
     appId: appId,
-    navigationConfig: navigationConfig,
     children: children
   }), /*#__PURE__*/React__default.createElement(reactToastify.ToastContainer, {
     position: "top-right",
@@ -3622,7 +3941,11 @@ var FallbackSpinner = /*#__PURE__*/function (_React$Component) {
   _proto.render = function render() {
     return /*#__PURE__*/React__default.createElement("div", {
       className: "fallback-spinner vh-100"
-    }, /*#__PURE__*/React__default.createElement("div", {
+    }, /*#__PURE__*/React__default.createElement("img", {
+      className: "fallback-logo",
+      src: IMAGE.LOGO,
+      alt: "logo"
+    }), /*#__PURE__*/React__default.createElement("div", {
       className: "loading"
     }, /*#__PURE__*/React__default.createElement("div", {
       className: "effect-1 effects"

@@ -7,16 +7,16 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { persistReducer, persistStore } from 'redux-persist';
 import Axios from 'axios';
 import * as Icon from 'react-feather';
-import { AlertTriangle, Mail, Lock, Disc, Circle, X, ChevronRight, Settings, Power, Search, Bell, PlusSquare, DownloadCloud, CheckCircle, File, Menu, Star, Heart, Home, List, PlusCircle, Gift, MessageSquare, ArrowUp, Info, Instagram, Link as Link$2 } from 'react-feather';
+import { AlertTriangle, ShoppingCart, FileText, Circle, User, DollarSign, TrendingUp, Award, CreditCard, Share2, Mail, Lock, Check, Disc, X, ChevronRight, Settings, Power, Search, Bell, PlusSquare, DownloadCloud, CheckCircle, File, Menu, Star, Heart, Home, List, PlusCircle, Gift, MessageSquare, ArrowUp, Info, Instagram, Link as Link$1 } from 'react-feather';
 import { toast, ToastContainer } from 'react-toastify';
 export { toast } from 'react-toastify';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
 import { createBrowserHistory } from 'history';
 import sessionStorage from 'redux-persist/es/storage/session';
-import { Link as Link$1, NavLink as NavLink$1, Router, Switch, Route } from 'react-router-dom';
+import { Link, NavLink as NavLink$1, Router, Switch, Route } from 'react-router-dom';
 import { FormattedMessage, IntlProvider } from 'react-intl';
 export { FormattedMessage } from 'react-intl';
-import { Row, Col, Card, CardHeader, CardTitle, CardBody, FormGroup, Input, Label, Button, NavLink, Badge, DropdownMenu, DropdownItem, Dropdown, DropdownToggle, NavItem, UncontrolledDropdown, Media, Navbar as Navbar$1, Form, Alert, CustomInput, Breadcrumb, BreadcrumbItem, Nav, TabContent, TabPane } from 'reactstrap';
+import { Row, Col, Card, CardHeader, CardTitle, CardBody, Form, FormGroup, Input, Label, Button, NavLink, Badge, DropdownMenu, DropdownItem, Dropdown, DropdownToggle, NavItem, UncontrolledDropdown, Media, Navbar as Navbar$1, Alert, CustomInput, Breadcrumb, BreadcrumbItem, Nav, TabContent, TabPane } from 'reactstrap';
 export { Button } from 'reactstrap';
 import classnames from 'classnames';
 import Hammer from 'react-hammerjs';
@@ -34,6 +34,7 @@ import TopBarProgress from 'react-topbar-progress-indicator';
 import Ripples from 'react-ripples';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import 'react-toastify/dist/ReactToastify.css';
+import 'prismjs/themes/prism-tomorrow.css';
 
 const HttpClient = Axios.create({
   timeout: 5000,
@@ -163,9 +164,9 @@ const customizerReducer = (state = { ...themeConfig
 const API_LOGIN_URL = 'https://api.mocki.io/v1/5e448c60';
 const API_LOGOUT_URL = 'https://api.mocki.io/v1/5e448c60';
 const API_R_200 = 200;
-const APP_URL = {
-  HOME: 'http://localhost:3000',
-  USER: 'http://localhost:3001'
+const APP_URL = 'http://localhost:3000';
+const IMAGE = {
+  LOGO: 'https://sit.inon.vn/PortalWeb/nth/assets/images/InOn-logo.png'
 };
 
 const history = createBrowserHistory({
@@ -274,73 +275,307 @@ const authReducers = (state = { ...authInitialState
   }
 };
 
-const defaultStarred = [].filter(item => {
-  return item.starred === true;
-});
+const AppId = {
+  APP_NO1: 'APP_NO1',
+  INSURANCE_APP: 'INSURANCE_APP',
+  SUPPLEMENT_APP: 'SUPPLEMENT_APP'
+};
+
+const navigationConfig = [{
+  id: 'buyInsurance',
+  appId: AppId.INSURANCE_APP,
+  type: 'item',
+  title: 'menu.buyInsurance',
+  icon: /*#__PURE__*/React.createElement(ShoppingCart, {
+    size: 20
+  }),
+  navLink: '/buy-insurance'
+}, {
+  id: 'contractManagement',
+  appId: AppId.INSURANCE_APP,
+  title: 'menu.contractManagement',
+  icon: /*#__PURE__*/React.createElement(FileText, {
+    size: 20
+  }),
+  permissions: ['admin', 'editor'],
+  navLink: '/contracts',
+  type: 'collapse',
+  children: [{
+    id: 'personalContracts',
+    type: 'item',
+    title: 'menu.personalContracts',
+    icon: /*#__PURE__*/React.createElement(Circle, {
+      size: 20
+    }),
+    navLink: '/contracts/personal'
+  }, {
+    id: 'partnerContracts',
+    type: 'item',
+    title: 'menu.partnerContracts',
+    icon: /*#__PURE__*/React.createElement(Circle, {
+      size: 20
+    }),
+    navLink: '/contracts/partner'
+  }, {
+    id: 'allContracts',
+    type: 'item',
+    title: 'menu.allContracts',
+    icon: /*#__PURE__*/React.createElement(Circle, {
+      size: 20
+    }),
+    navLink: '/contracts/all'
+  }]
+}, {
+  id: 'account',
+  appId: AppId.APP_NO1,
+  title: 'menu.account',
+  icon: /*#__PURE__*/React.createElement(User, {
+    size: 20
+  }),
+  permissions: ['admin', 'editor'],
+  navLink: '/accounts',
+  type: 'collapse',
+  children: [{
+    id: 'createAccount',
+    type: 'item',
+    title: 'menu.createAccount',
+    icon: /*#__PURE__*/React.createElement(Circle, {
+      size: 20
+    }),
+    navLink: '/accounts/create'
+  }, {
+    id: 'accountManagement',
+    type: 'item',
+    title: 'menu.accountManagement',
+    icon: /*#__PURE__*/React.createElement(Circle, {
+      size: 20
+    }),
+    navLink: '/accounts/management'
+  }]
+}, {
+  id: 'insuranceFeeManagement',
+  appId: AppId.INSURANCE_APP,
+  title: 'menu.insuranceFeeManagement',
+  icon: /*#__PURE__*/React.createElement(DollarSign, {
+    size: 20
+  }),
+  permissions: ['admin', 'editor'],
+  navLink: '/insurance-fee',
+  type: 'collapse',
+  children: [{
+    id: 'systemFee',
+    type: 'item',
+    title: 'menu.systemFee',
+    icon: /*#__PURE__*/React.createElement(Circle, {
+      size: 20
+    }),
+    navLink: '/insurance-fee/system'
+  }, {
+    id: 'personalFee',
+    type: 'item',
+    title: 'menu.personalFee',
+    icon: /*#__PURE__*/React.createElement(Circle, {
+      size: 20
+    }),
+    navLink: '/insurance-fee/personal'
+  }, {
+    id: 'partnerFee',
+    type: 'item',
+    title: 'menu.partnerFee',
+    icon: /*#__PURE__*/React.createElement(Circle, {
+      size: 20
+    }),
+    navLink: '/insurance-fee/partner'
+  }, {
+    id: 'allFee',
+    type: 'item',
+    title: 'menu.allFee',
+    icon: /*#__PURE__*/React.createElement(Circle, {
+      size: 20
+    }),
+    navLink: '/insurance-fee/all'
+  }]
+}, {
+  id: 'bonusManagement',
+  appId: AppId.SUPPLEMENT_APP,
+  title: 'menu.bonusManagement',
+  icon: /*#__PURE__*/React.createElement(TrendingUp, {
+    size: 20
+  }),
+  permissions: ['admin', 'editor'],
+  navLink: '/bonus',
+  type: 'collapse',
+  children: [{
+    id: 'systemBonus',
+    type: 'item',
+    title: 'menu.systemBonus',
+    icon: /*#__PURE__*/React.createElement(Circle, {
+      size: 20
+    }),
+    navLink: '/bonus/system'
+  }, {
+    id: 'personalBonus',
+    type: 'item',
+    title: 'menu.personalBonus',
+    icon: /*#__PURE__*/React.createElement(Circle, {
+      size: 20
+    }),
+    navLink: '/bonus/personal'
+  }, {
+    id: 'partnerBonus',
+    type: 'item',
+    title: 'menu.partnerBonus',
+    icon: /*#__PURE__*/React.createElement(Circle, {
+      size: 20
+    }),
+    navLink: '/bonus/partner'
+  }, {
+    id: 'allBonus',
+    type: 'item',
+    title: 'menu.allBonus',
+    icon: /*#__PURE__*/React.createElement(Circle, {
+      size: 20
+    }),
+    navLink: '/bonus/all'
+  }]
+}, {
+  id: 'insuranceCertificate',
+  appId: AppId.INSURANCE_APP,
+  type: 'item',
+  title: 'menu.insuranceCertificate',
+  icon: /*#__PURE__*/React.createElement(Award, {
+    size: 20
+  }),
+  permissions: ['admin', 'editor'],
+  navLink: '/insurance-certificate',
+  type: 'collapse',
+  children: [{
+    id: 'newImport',
+    type: 'item',
+    title: 'menu.insuranceCertificate.newImport',
+    icon: /*#__PURE__*/React.createElement(Circle, {
+      size: 20
+    }),
+    navLink: '/insurance-certificate/new-import'
+  }, {
+    id: 'newExport',
+    type: 'item',
+    title: 'menu.insuranceCertificate.newImport',
+    icon: /*#__PURE__*/React.createElement(Circle, {
+      size: 20
+    }),
+    navLink: '/insurance-certificate/new-export'
+  }, {
+    id: 'wrongImport',
+    type: 'item',
+    title: 'menu.insuranceCertificate.wrongImport',
+    icon: /*#__PURE__*/React.createElement(Circle, {
+      size: 20
+    }),
+    navLink: '/insurance-certificate/wrong-import'
+  }, {
+    id: 'wrongExport',
+    type: 'item',
+    title: 'menu.insuranceCertificate.wrongExport',
+    icon: /*#__PURE__*/React.createElement(Circle, {
+      size: 20
+    }),
+    navLink: '/insurance-certificate/wrong-export'
+  }]
+}, {
+  id: 'debt',
+  appId: AppId.SUPPLEMENT_APP,
+  title: 'menu.debt',
+  icon: /*#__PURE__*/React.createElement(CreditCard, {
+    size: 20
+  }),
+  permissions: ['admin', 'editor'],
+  type: 'collapse',
+  navLink: '/debt',
+  children: [{
+    id: 'createDebt',
+    type: 'item',
+    title: 'menu.createDebt',
+    icon: /*#__PURE__*/React.createElement(Circle, {
+      size: 20
+    }),
+    navLink: '/debt/create'
+  }, {
+    id: 'debtManagement',
+    type: 'item',
+    title: 'menu.debtManagement',
+    icon: /*#__PURE__*/React.createElement(Circle, {
+      size: 20
+    }),
+    navLink: '/debt/management'
+  }]
+}, {
+  id: 'permissionGoup',
+  appId: AppId.SUPPLEMENT_APP,
+  type: 'collapse',
+  title: 'menu.permissionGoup',
+  icon: /*#__PURE__*/React.createElement(Share2, {
+    size: 20
+  }),
+  permissions: ['admin', 'editor'],
+  navLink: '/permission-group',
+  children: [{
+    id: 'creatPermissionGoup',
+    type: 'item',
+    title: 'menu.creatPermissionGoup',
+    icon: /*#__PURE__*/React.createElement(Circle, {
+      size: 20
+    }),
+    navLink: '/permission-group/create'
+  }, {
+    id: 'permissionGoupManagement',
+    type: 'item',
+    title: 'menu.permissionGoupManagement',
+    icon: /*#__PURE__*/React.createElement(Circle, {
+      size: 20
+    }),
+    navLink: '/permission-group/management'
+  }]
+}];
+
+const getNativgationConfig = (appId, navConfigs = navigationConfig) => {
+  return navConfigs.map(item => {
+    item.isExternalApp = item.appId !== appId;
+    item.type = 'item';
+
+    if (item.children) {
+      item.children.map(child => child.isExternalApp = child.appId !== appId);
+
+      if (item.children.length === 1) {
+        item.type = 'item';
+        item.navLink = item.children[0].navLink;
+      } else {
+        item.type = 'collapse';
+      }
+    }
+
+    return item;
+  });
+};
+
+class NavBarService {}
+
+NavBarService.getNativagtion = () => {
+  return HttpClient.post(API_LOGIN_URL);
+};
+
+const LOAD_NATIVGATION = 'LOAD_NATIVGATION';
+
 const initialState = {
-  suggestions: [],
-  isLoading: false,
-  value: "",
-  starred: defaultStarred,
-  noSuggestions: false,
-  extraStarred: []
+  navConfigs: []
 };
 
 const navbarReducer = (state = initialState, action) => {
   switch (action.type) {
-    case "MAYBE_UPDATE_SUGGESTIONS":
+    case LOAD_NATIVGATION:
       return { ...state,
-        suggestions: action.suggestions,
-        isLoading: false
+        navConfigs: [...action.payload]
       };
-
-    case "UPDATE_STARRED":
-      const starredState = state.starred.map(i => i.id);
-      const extraStarredState = state.extraStarred.map(j => j.id);
-
-      if (state) {
-        state.suggestions.find(i => {
-          if (i.id === action.object.id) {
-            i.starred = !action.object.starred;
-            return { ...state
-            };
-          } else {
-            return null;
-          }
-        });
-      }
-
-      if (!starredState.includes(action.object.id) && state.starred.length < 10) {
-        let newState = state.starred.push(action.object);
-        return { ...state,
-          newState
-        };
-      } else if (starredState.includes(action.object.id)) {
-          if (state.extraStarred.length === 0) {
-            let newState = state.starred.splice(starredState.indexOf(action.object.id), 1);
-            return { ...state,
-              newState
-            };
-          } else if (state.extraStarred.length > 0) {
-            let getBookmark = state.extraStarred.splice(0, 1);
-            state.starred.splice(starredState.indexOf(action.object.id), 1);
-            let updatedState = state.starred.push(getBookmark[0]);
-            return { ...state,
-              updatedState
-            };
-          } else {
-            return { ...state
-            };
-          }
-        } else if (!extraStarredState.includes(action.object.id) && state.starred.length >= 10) {
-            let extraStarred = state.extraStarred.concat(action.object);
-            return { ...state,
-              extraStarred
-            };
-          } else {
-            return { ...state
-            };
-          }
 
     default:
       return state;
@@ -356,6 +591,27 @@ const rootReducer = appReducer => combineReducers({
   navbar: navbarReducer,
   app: appReducer
 });
+
+class CheckBox extends React.Component {
+  render() {
+    return /*#__PURE__*/React.createElement("div", {
+      className: `vx-checkbox-con ${this.props.className ? this.props.className : ''} vx-checkbox-${this.props.color}`
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "checkbox",
+      defaultChecked: this.props.defaultChecked,
+      checked: this.props.checked,
+      value: this.props.value,
+      disabled: this.props.disabled,
+      onClick: this.props.onClick ? this.props.onClick : null,
+      onChange: this.props.onChange ? this.props.onChange : null
+    }), /*#__PURE__*/React.createElement("span", {
+      className: `vx-checkbox vx-checkbox-${this.props.size ? this.props.size : 'md'}`
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "vx-checkbox--check"
+    }, this.props.icon)), /*#__PURE__*/React.createElement("span", null, this.props.label));
+  }
+
+}
 
 const Login = ({
   loginAction
@@ -386,7 +642,7 @@ const Login = ({
     lg: "6",
     className: "d-lg-block d-none text-center align-self-center px-1 py-0"
   }, /*#__PURE__*/React.createElement("img", {
-    src: "https://pixinvent.com/demo/vuexy-react-admin-dashboard-template/demo-4/static/media/login.fd58a052.png",
+    src: '',
     alt: "loginImg"
   })), /*#__PURE__*/React.createElement(Col, {
     lg: "6",
@@ -398,35 +654,60 @@ const Login = ({
     className: "pb-1"
   }, /*#__PURE__*/React.createElement(CardTitle, null, /*#__PURE__*/React.createElement("h4", {
     className: "mb-0"
-  }, "Login"))), /*#__PURE__*/React.createElement(CardBody, {
+  }, "Login"))), /*#__PURE__*/React.createElement("p", {
+    className: "px-2 auth-title"
+  }, "Welcome back, please login to your account."), /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(CardBody, {
     className: "pt-1"
+  }, /*#__PURE__*/React.createElement(Form, {
+    action: "/",
+    onSubmit: e => e.preventDefault()
   }, /*#__PURE__*/React.createElement(FormGroup, {
     className: "form-label-group position-relative has-icon-left"
   }, /*#__PURE__*/React.createElement(Input, {
     type: "email",
     placeholder: "Email",
-    value: username,
-    onChange: e => setUsername(e.target.value),
     required: true
-  }), /*#__PURE__*/React.createElement(Mail, {
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "form-control-position"
+  }, /*#__PURE__*/React.createElement(Mail, {
     size: 15
-  }), /*#__PURE__*/React.createElement(Label, null, "Email")), /*#__PURE__*/React.createElement(FormGroup, {
+  })), /*#__PURE__*/React.createElement(Label, null, "Email")), /*#__PURE__*/React.createElement(FormGroup, {
     className: "form-label-group position-relative has-icon-left"
   }, /*#__PURE__*/React.createElement(Input, {
     type: "password",
     placeholder: "Password",
-    value: password,
-    onChange: e => setPassword(e.target.value),
     required: true
-  }), /*#__PURE__*/React.createElement(Lock, {
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "form-control-position"
+  }, /*#__PURE__*/React.createElement(Lock, {
     size: 15
-  }), /*#__PURE__*/React.createElement(Label, null, "Password")), /*#__PURE__*/React.createElement(Button, {
+  })), /*#__PURE__*/React.createElement(Label, null, "Password")), /*#__PURE__*/React.createElement(FormGroup, {
+    className: "d-flex justify-content-between align-items-center"
+  }, /*#__PURE__*/React.createElement(CheckBox, {
     color: "primary",
-    type: "button",
+    icon: /*#__PURE__*/React.createElement(Check, {
+      className: "vx-icon",
+      size: 16
+    }),
+    label: "Remember me",
+    defaultChecked: false
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "float-right"
+  }, /*#__PURE__*/React.createElement(Link, {
+    to: "/pages/forgot-password"
+  }, "Forgot Password?"))), /*#__PURE__*/React.createElement("div", {
+    className: "d-flex justify-content-between"
+  }, /*#__PURE__*/React.createElement(Button.Ripple, {
+    color: "primary",
+    outline: true,
+    onClick: () => {
+      history.push('/pages/register');
+    }
+  }, "Register"), /*#__PURE__*/React.createElement(Button.Ripple, {
+    color: "primary",
+    type: "submit",
     onClick: onClickLogin
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "Login"
-  })))))))));
+  }, "Login")))))))))));
 };
 
 class SidebarHeader extends Component {
@@ -444,12 +725,12 @@ class SidebarHeader extends Component {
     }, /*#__PURE__*/React.createElement("ul", {
       className: "nav navbar-nav flex-row"
     }, /*#__PURE__*/React.createElement("li", {
-      className: "nav-item mr-auto"
+      className: "nav-item my-auto mr-auto"
     }, /*#__PURE__*/React.createElement(NavLink, {
       to: "/"
     }, /*#__PURE__*/React.createElement("img", {
-      className: "img-fluid",
-      src: "https://sit.inon.vn/PortalWeb/nth/assets/images/InOn-logo.png",
+      className: "img-fluid logo-img",
+      src: IMAGE.LOGO,
       alt: "logo"
     }))), /*#__PURE__*/React.createElement("li", {
       className: "nav-item nav-toggle"
@@ -542,7 +823,7 @@ class SideMenuGroup extends React.Component {
     return /*#__PURE__*/React.createElement("ul", {
       className: "menu-content"
     }, item.children ? item.children.map(child => {
-      const CustomAnchorTag = child.type === "external-link" ? `a` : Link;
+      const CustomAnchorTag = child.isExternalApp ? `a` : Link;
 
       if (!this.parentArray.includes(item.id) && this.flag) {
         this.parentArray.push(item.id);
@@ -563,10 +844,10 @@ class SideMenuGroup extends React.Component {
           key: child.id,
           className: classnames({
             hover: this.props.hoverIndex === child.id,
-            "has-sub": child.type === "collapse",
-            open: child.type === "collapse" && activeGroup.includes(child.id),
-            "sidebar-group-active": this.props.currentActiveGroup.includes(child.id),
-            active: this.props.activeItemState === child.navLink && child.type === "item" || item.parentOf && item.parentOf.includes(this.props.activeItemState),
+            'has-sub': child.type === 'collapse',
+            open: child.type === 'collapse' && activeGroup.includes(child.id),
+            'sidebar-group-active': this.props.currentActiveGroup.includes(child.id),
+            active: this.props.activeItemState === child.navLink && child.type === 'item' || item.parentOf && item.parentOf.includes(this.props.activeItemState),
             disabled: child.disabled
           }),
           onClick: e => {
@@ -577,16 +858,16 @@ class SideMenuGroup extends React.Component {
               handleActiveItem(child.navLink);
             }
 
-            if (this.props.deviceWidth <= 1200 && child.type === "item") {
+            if (this.props.deviceWidth <= 1200 && child.type === 'item') {
               this.props.toggleMenu();
             }
           }
         }, /*#__PURE__*/React.createElement(CustomAnchorTag, {
           className: classnames({
-            "d-flex justify-content-between": child.type === "collapse"
+            'd-flex justify-content-between': child.type === 'collapse'
           }),
-          to: child.navLink && child.type === "item" ? child.navLink : "",
-          href: child.type === "external-link" ? child.navLink : "",
+          to: child.navLink && child.type === 'item' ? child.navLink : '',
+          href: this.props.getItemLink(child),
           onMouseEnter: () => {
             this.props.handleSidebarMouseEnter(child.id);
           },
@@ -595,9 +876,9 @@ class SideMenuGroup extends React.Component {
           },
           key: child.id,
           onClick: e => {
-            return child.type === "collapse" ? e.preventDefault() : "";
+            return child.type === 'collapse' ? e.preventDefault() : '';
           },
-          target: child.newTab ? "_blank" : undefined
+          target: child.newTab ? '_blank' : undefined
         }, /*#__PURE__*/React.createElement("div", {
           className: "menu-text"
         }, child.icon, /*#__PURE__*/React.createElement("span", {
@@ -608,10 +889,10 @@ class SideMenuGroup extends React.Component {
           color: child.badge,
           className: "float-right mr-2",
           pill: true
-        }, child.badgeText) : "", child.type === "collapse" ? /*#__PURE__*/React.createElement(ChevronRight, {
+        }, child.badgeText) : '', child.type === 'collapse' ? /*#__PURE__*/React.createElement(ChevronRight, {
           className: "menu-toggle-icon",
           size: 13
-        }) : ""), child.children ? this.renderChild(child, activeGroup, handleGroupClick, handleActiveItem, item.id) : "");
+        }) : ''), child.children ? this.renderChild(child, activeGroup, handleGroupClick, handleActiveItem, item.id) : '');
       } else if (child.navLink === this.props.activePath && !child.permissions.includes(this.props.currentUser)) {
         return this.props.redirectUnauthorized();
       } else {
@@ -716,21 +997,20 @@ class SideMenuContent extends React.Component {
       });
     };
 
-    this.getExternalLink = link => {
-      return `${link}?code=${this.props.currentUser.authToken}`;
+    this.getItemLink = item => {
+      return item.isExternalApp ? `${APP_URL + item.navLink}?code=${this.props.currentUser.authToken}` : '';
     };
 
     this.parentArr = [];
     this.collapsedPath = null;
-    this.navigationConfig = props.navigationConfig;
   }
 
   componentDidMount() {
-    this.initRender(this.parentArr[0] ? this.parentArr[0] : []);
+    this.initRender(this.parentArr[0] || []);
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevProps.activePath !== this.props.activePath) {
+    if (prevProps.activePath !== this.props.activePath || prevProps.navConfigs !== this.props.navConfigs) {
       if (this.collapsedMenuPaths !== null) {
         this.props.collapsedMenuPaths(this.collapsedMenuPaths);
       }
@@ -740,8 +1020,8 @@ class SideMenuContent extends React.Component {
   }
 
   render() {
-    const menuItems = this.navigationConfig.map(item => {
-      const CustomAnchorTag = item.type === 'external-link' ? `a` : Link$1;
+    const menuItems = this.props.navConfigs.map(item => {
+      const CustomAnchorTag = item.isExternalApp ? `a` : Link;
 
       if (item.type === 'groupHeader') {
         return /*#__PURE__*/React.createElement("li", {
@@ -776,7 +1056,7 @@ class SideMenuContent extends React.Component {
         }
       }, /*#__PURE__*/React.createElement(CustomAnchorTag, {
         to: item.filterBase ? item.filterBase : item.navLink && item.type === 'item' ? item.navLink : '',
-        href: item.type === 'external-link' ? this.getExternalLink(item.navLink) : '',
+        href: this.getItemLink(item),
         className: `d-flex ${item.badgeText ? 'justify-content-between' : 'justify-content-start'}`,
         onMouseEnter: () => {
           this.props.handleSidebarMouseEnter(item.id);
@@ -817,6 +1097,7 @@ class SideMenuContent extends React.Component {
         parentArr: this.parentArr,
         triggerActive: undefined,
         currentActiveGroup: this.state.currentActiveGroup,
+        getItemLink: this.getItemLink,
         permission: this.props.permission,
         currentUser: this.props.currentUser,
         redirectUnauthorized: this.redirectUnauthorized,
@@ -1037,7 +1318,7 @@ class Sidebar extends Component {
       collapsedMenuPaths: collapsedMenuPaths,
       toggleMenu: sidebarVisibility,
       deviceWidth: this.props.deviceWidth,
-      navigationConfig: this.props.navigationConfig
+      navConfigs: this.props.navConfigs
     }))))));
   }
 
@@ -1045,7 +1326,8 @@ class Sidebar extends Component {
 
 const mapStateToProps = state => {
   return {
-    currentUser: state.auth
+    currentUser: state.auth,
+    navConfigs: state.navbar.navConfigs
   };
 };
 
@@ -2198,14 +2480,13 @@ class Layout extends PureComponent {
       sidebarHover: this.sidebarMenuHover,
       sidebarVisibility: this.handleSidebarVisibility,
       visibilityState: this.state.sidebarHidden,
-      activePath: this.props.match.path,
+      activePath: this.props.location.pathname,
       collapsedMenuPaths: this.handleCollapsedMenuPaths,
       currentLang: this.state.currentLang,
       activeTheme: appProps.menuTheme,
       collapsed: this.state.collapsedContent,
       permission: '',
-      deviceWidth: this.state.width,
-      navigationConfig: this.props.navigationConfig
+      deviceWidth: this.state.width
     };
     const navbarProps = {
       toggleSidebarMenu: this.toggleSidebarMenu,
@@ -2263,6 +2544,18 @@ var Layout$1 = connect(mapStateToProps$2, {
   hideScrollToTop
 })(Layout);
 
+const LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
+const loadNavtigation = appId => {
+  return async dispatch => {
+    const res = await NavBarService.getNativagtion();
+    const navCofigs = getNativgationConfig(appId);
+    dispatch({
+      type: LOAD_NATIVGATION$1,
+      payload: navCofigs
+    });
+  };
+};
+
 const FullPageLayout = ({
   children,
   ...rest
@@ -2292,6 +2585,34 @@ var messages_en = {
 	"menu.home": "Home",
 	"menu.user": "User Management",
 	"menu.buyInsurance": "Buy Insurance",
+	"menu.contractManagement": "Contract Management",
+	"menu.personalContracts": "Personal Contracts",
+	"menu.partnerContracts": "Parnter Contracts",
+	"menu.allContracts": "All Contracts",
+	"menu.account": "Account",
+	"menu.createAccount": "Create Account",
+	"menu.accountManagement": "Account Management",
+	"menu.insuranceFeeManagement": "Insurance Fee",
+	"menu.systemFee": "System Fee",
+	"menu.personalFee": "Personal Fee",
+	"menu.partnerFee": "Partner Fee",
+	"menu.allFee": "All Fee",
+	"menu.bonusManagement": "Bonus Mangement",
+	"menu.systemBonus": "System Bonus",
+	"menu.personalBonus": "Personal Bonus",
+	"menu.partnerBonus": "Partner Bonus",
+	"menu.allBonus": "All Bonus",
+	"menu.insuranceCertificate": "Insurance Certification",
+	"menu.insuranceCertificate.newImport": "New Import",
+	"menu.insuranceCertificate.newExport": "New Export",
+	"menu.insuranceCertificate.wrongImport": "Wrong Import",
+	"menu.insuranceCertificate.wrongExport": "Wrong Export",
+	"menu.debt": "Debt",
+	"menu.createDebt": "Create Debt",
+	"menu.debtManagement": "Debt Management",
+	"menu.permissionGoup": "Permission Group",
+	"menu.creatPermissionGoup": "Create Permision Group",
+	"menu.permissionGoupManagement": "Permission Group Management",
 	"navbar.language.vi": "Vietnamese",
 	"navbar.language.en": "English",
 	"navbar.logout": "Logout",
@@ -2327,6 +2648,34 @@ var messages_vi = {
 	"menu.home": "Trang chủ",
 	"menu.user": "Tài khoản",
 	"menu.buyInsurance": "Mua bảo hiểm",
+	"menu.contractManagement": "Quản lý hợp đồng",
+	"menu.personalContracts": "Hợp đồng cá nhân",
+	"menu.partnerContracts": "Hợp đồng đối tác",
+	"menu.allContracts": "Tất cả hợp đồng",
+	"menu.account": "Tài khoản",
+	"menu.createAccount": "Tạo mới tài khoản",
+	"menu.accountManagement": "Quản lý tài khoản",
+	"menu.insuranceFeeManagement": "Quản lý Tỷ lệ phí",
+	"menu.systemFee": "Phí của hệ thống",
+	"menu.personalFee": "Phí của cá nhân",
+	"menu.partnerFee": "Phí của đối tác",
+	"menu.allFee": "Phí của tất cả",
+	"menu.bonusManagement": "Quản lý điểm thưởng",
+	"menu.systemBonus": "Điểm thưởng hệ thống",
+	"menu.personalBonus": "Điểm thưởng cá nhân",
+	"menu.partnerBonus": "Điểm thưởng đối tác",
+	"menu.allBonus": "Điểm thưởng tất cả",
+	"menu.insuranceCertificate": "Giấy chứng nhân BH",
+	"menu.insuranceCertificate.newImport": "Nhập mới",
+	"menu.insuranceCertificate.newExport": "Xuất mới",
+	"menu.insuranceCertificate.wrongImport": "Nhập sai hỏng",
+	"menu.insuranceCertificate.wrongExport": "Xuất sai hỏng",
+	"menu.debt": "Công nợ",
+	"menu.createDebt": "Tạo mới công nợ",
+	"menu.debtManagement": "Quản lý công nợ",
+	"menu.permissionGoup": "Nhóm quyền",
+	"menu.creatPermissionGoup": "Tạo mới nhóm quyền",
+	"menu.permissionGoupManagement": "Quản lý nhóm quyền",
 	"navbar.language.vi": "Tiếng Việt",
 	"navbar.language.en": "Tiếng Anh",
 	"navbar.logout": "Đăng xuất",
@@ -2357,46 +2706,6 @@ var messages_vi = {
 	"changePassword.passwordMustMatch": "Mật khẩu không trùng khớp"
 };
 
-const AppId = {
-  APP_NO1: 'APP_NO1',
-  INSURANCE_APP: 'INSURANCE_APP',
-  SUPPLEMENT_APP: 'SUPPLEMENT_APP'
-};
-
-const navigationConfig = [{
-  id: 'home',
-  appId: AppId.APP_NO1,
-  type: 'item',
-  title: 'menu.home',
-  icon: /*#__PURE__*/React.createElement(Home, {
-    size: 20
-  }),
-  navLink: '/'
-}, {
-  id: 'user',
-  appId: AppId.APP_NO1,
-  type: 'item',
-  title: 'menu.user',
-  icon: /*#__PURE__*/React.createElement(Mail, {
-    size: 20
-  }),
-  permissions: ['admin', 'editor'],
-  navLink: '/user'
-}];
-
-const getNativgationConfig = appId => {
-  return [...navigationConfig].map(item => {
-    if (item.appId === appId) {
-      item.type = 'item';
-    } else {
-      item.type = 'external-link';
-      item.navLink = APP_URL[item.id] + item.navLink;
-    }
-
-    return item;
-  });
-};
-
 class General extends React.Component {
   constructor(...args) {
     super(...args);
@@ -2419,7 +2728,7 @@ class General extends React.Component {
     }, /*#__PURE__*/React.createElement(Media, {
       className: "rounded-circle",
       object: true,
-      src: '',
+      src: 'https://storage.live.com/Users/-6155523327610065665/MyProfile/ExpressionProfile/ProfilePhoto:Win8Static,UserTileMedium,UserTileStatic',
       alt: "User",
       height: "64",
       width: "64"
@@ -3074,7 +3383,7 @@ class AccountSettings extends React.Component {
       onClick: () => {
         this.toggle('5');
       }
-    }, /*#__PURE__*/React.createElement(Link$2, {
+    }, /*#__PURE__*/React.createElement(Link$1, {
       size: 16
     }), /*#__PURE__*/React.createElement("span", {
       className: "d-md-inline-block d-none align-middle ml-1"
@@ -3108,17 +3417,19 @@ class AccountSettings extends React.Component {
 
 }
 
-const AppRouter = ({
-  checkLoginStatus,
-  appId,
-  isAuthentication,
-  loginAction,
-  authToken,
-  children,
-  navigationConfig,
-  message
-}) => {
+const AppRouter = props => {
+  const {
+    checkLoginStatus,
+    appId,
+    isAuthentication,
+    loginAction,
+    authToken,
+    children,
+    loadNavtigation,
+    message
+  } = props;
   useEffect(() => {
+    loadNavtigation(appId);
     const code = new URLSearchParams(document.location.search).get('code');
     checkLoginStatus(code || authToken);
   }, []);
@@ -3139,16 +3450,13 @@ const AppRouter = ({
       ...setMessages(message.vi)
     }
   };
-  const navConfigs = navigationConfig || getNativgationConfig(appId);
   return /*#__PURE__*/React.createElement(IntlProviderWrapper, {
     appMessage: appMessage
   }, /*#__PURE__*/React.createElement(Router, {
     history: history
   }, /*#__PURE__*/React.createElement(Switch, null, /*#__PURE__*/React.createElement(Route, {
     path: "/",
-    render: props => isAuthentication ? /*#__PURE__*/React.createElement(Layout$1, Object.assign({
-      navigationConfig: navConfigs
-    }, props), /*#__PURE__*/React.createElement(Switch, null, /*#__PURE__*/React.createElement(Route, {
+    render: props => isAuthentication ? /*#__PURE__*/React.createElement(Layout$1, props, /*#__PURE__*/React.createElement(Switch, null, /*#__PURE__*/React.createElement(Route, {
       path: "/account-settings",
       component: AccountSettings
     }), /*#__PURE__*/React.createElement(Route, {
@@ -3169,7 +3477,8 @@ const mapStateToProps$3 = state => {
 
 var AppRouter$1 = connect(mapStateToProps$3, {
   checkLoginStatus,
-  loginAction
+  loginAction,
+  loadNavtigation
 })(AppRouter);
 
 TopBarProgress.config({
@@ -3238,7 +3547,6 @@ const App = ({
   }, /*#__PURE__*/React.createElement(LoadingSpinner$1, null), /*#__PURE__*/React.createElement(AppRouter$1, {
     message: message,
     appId: appId,
-    navigationConfig: navigationConfig,
     children: children
   }), /*#__PURE__*/React.createElement(ToastContainer, {
     position: "top-right",
@@ -3255,7 +3563,11 @@ class FallbackSpinner extends React.Component {
   render() {
     return /*#__PURE__*/React.createElement("div", {
       className: "fallback-spinner vh-100"
-    }, /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("img", {
+      className: "fallback-logo",
+      src: IMAGE.LOGO,
+      alt: "logo"
+    }), /*#__PURE__*/React.createElement("div", {
       className: "loading"
     }, /*#__PURE__*/React.createElement("div", {
       className: "effect-1 effects"
