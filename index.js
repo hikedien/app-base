@@ -15,20 +15,19 @@ var axiosExtensions = require('axios-extensions');
 var history$1 = require('history');
 var sessionStorage = _interopDefault(require('redux-persist/es/storage/session'));
 var reactRouterDom = require('react-router-dom');
-var reactIntl = require('react-intl');
-var reactstrap = require('reactstrap');
 var classnames = _interopDefault(require('classnames'));
-var Hammer = _interopDefault(require('react-hammerjs'));
+var reactstrap = require('reactstrap');
 var PerfectScrollbar = _interopDefault(require('react-perfect-scrollbar'));
-var ReactCountryFlag = _interopDefault(require('react-country-flag'));
 var ReactDOM = _interopDefault(require('react-dom'));
 var PropTypes = _interopDefault(require('prop-types'));
+var reactIntl = require('react-intl');
 var ScrollToTop = _interopDefault(require('react-scroll-up'));
-var formik = require('formik');
-var Yup = require('yup');
-var Select = _interopDefault(require('react-select'));
+var Hammer = _interopDefault(require('react-hammerjs'));
+var Select$1 = _interopDefault(require('react-select'));
 var chroma = _interopDefault(require('chroma-js'));
 var Flatpickr = _interopDefault(require('react-flatpickr'));
+var formik = require('formik');
+var Yup = require('yup');
 var TopBarProgress = _interopDefault(require('react-topbar-progress-indicator'));
 var Ripples = _interopDefault(require('react-ripples'));
 require('react-perfect-scrollbar/dist/css/styles.css');
@@ -42,6 +41,14 @@ var HttpClient = Axios.create({
   }))
 });
 
+HttpClient.addAuthTokenToHeader = function (authToken) {
+  HttpClient.defaults.headers.Authorization = "Bearer " + authToken;
+};
+
+HttpClient.removeAuthTokenFromHeader = function () {
+  delete HttpClient.defaults.headers.Authorization;
+};
+
 var errorMessage = function errorMessage(message) {
   return /*#__PURE__*/React__default.createElement("div", {
     className: "d-flex align-items-center"
@@ -49,7 +56,6 @@ var errorMessage = function errorMessage(message) {
     className: "ml-1"
   }, message));
 };
-
 var setUpHttpClient = function setUpHttpClient(store) {
   HttpClient.interceptors.request.use(function (config) {
     if (!config.isBackgroundRequest) {
@@ -70,25 +76,30 @@ var setUpHttpClient = function setUpHttpClient(store) {
       type: 'HIDE_LOADING_BAR'
     });
 
+    if (!e.response) {
+      return e;
+    }
+
     switch (e.response.status) {
       case 404:
         reactToastify.toast.error(errorMessage('API Not Found !'));
-        break;
+        return e.response;
 
       case 400:
         reactToastify.toast.error(errorMessage('Bad Request !'));
-        break;
+        return e.response;
 
       case 408:
         reactToastify.toast.error(errorMessage('Request Timeout !'));
-        break;
+        return e.response;
 
       case 500:
         reactToastify.toast.error(errorMessage('Server error !'));
-        break;
-    }
+        return e.response;
 
-    return e.response;
+      default:
+        throw e;
+    }
   });
 };
 
@@ -210,6 +221,22 @@ var customizerReducer = function customizerReducer(state, action) {
   }
 };
 
+var API_LOGIN_URL = 'http://localhost:8086/api/authenticate';
+var API_LOGOUT_URL = 'https://api.mocki.io/v1/5e448c60';
+var API_GET_NAV_CONFIGS = 'http://localhost:8100/api/roles';
+var API_R_200 = 200;
+var LOGIN_STATUS = {
+  SUCCESS: 'SUCCESS',
+  FAIL: 'FAIL'
+};
+var APP_URL = 'http://localhost:3000';
+var IMAGE = {
+  LOGO: 'https://sit.inon.vn/PortalWeb/nth/assets/images/InOn-logo.png',
+  LOGO_WHITE: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Logo.png?alt=media&token=d61feda7-c2be-423a-9d64-da13dca88b85',
+  LANDING_PAGE_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-Signup-01%203%20(1).png?alt=media&token=19aca74e-c81f-40e2-a00d-a91b7ee9f27a',
+  DOWNLOAD_APP: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-Landingpage-Final-02.png?alt=media&token=7f24bfce-0e9f-42f8-84e1-c26d8acdd788'
+};
+
 // A type of promise-like that resolves synchronously and supports only one observer
 
 const _iteratorSymbol = /*#__PURE__*/ typeof Symbol !== "undefined" ? (Symbol.iterator || (Symbol.iterator = Symbol("Symbol.iterator"))) : "@@iterator";
@@ -229,14 +256,6 @@ function _catch(body, recover) {
 	return result;
 }
 
-var API_LOGIN_URL = 'https://api.mocki.io/v1/5e448c60';
-var API_LOGOUT_URL = 'https://api.mocki.io/v1/5e448c60';
-var API_R_200 = 200;
-var APP_URL = 'http://localhost:3000';
-var IMAGE = {
-  LOGO: 'https://sit.inon.vn/PortalWeb/nth/assets/images/InOn-logo.png'
-};
-
 var history = history$1.createBrowserHistory({
   basename: ''
 });
@@ -251,35 +270,35 @@ AuthService.logout = function (user) {
   return HttpClient.post(API_LOGOUT_URL, user);
 };
 
-AuthService.checkLoginByToken = function (authToken) {
-  return HttpClient.post(API_LOGIN_URL, authToken);
+AuthService.checkLoginByToken = function () {
+  return HttpClient.get(API_LOGIN_URL);
 };
 
 var LOGIN_ACTION = 'LOGIN_ACTION';
+var LOGIN_FAIL_ACTION = 'LOGIN_FAIL_ACTION';
 var LOOUT_ACTION = 'LOGOUT_ACTION';
-var checkLoginStatus = function checkLoginStatus(code) {
+var checkLoginStatus = function checkLoginStatus(authToken) {
   return function (dispatch) {
     try {
-      if (!code) {
-        return Promise.resolve();
-      }
-
       var _temp2 = _catch(function () {
-        return Promise.resolve(AuthService.checkLoginByToken(code)).then(function (respone) {
+        return Promise.resolve(AuthService.checkLoginByToken()).then(function (respone) {
           if (respone.status === API_R_200) {
             dispatch({
               type: LOGIN_ACTION,
-              payload: respone.data
+              payload: authToken
             });
           } else {
             dispatch({
-              type: LOOUT_ACTION
+              type: LOGIN_ACTION,
+              payload: 'authToken'
             });
-            history.push('/');
           }
         });
-      }, function (error) {
-        console.log(error);
+      }, function () {
+        dispatch({
+          type: LOGIN_ACTION,
+          payload: 'authToken'
+        });
       });
 
       return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
@@ -296,13 +315,21 @@ var loginAction = function loginAction(user) {
           if (respone.status === API_R_200) {
             dispatch({
               type: LOGIN_ACTION,
-              payload: respone.data
+              payload: respone.data.id_token
             });
             history.push('/');
+          } else {
+            dispatch({
+              type: LOGIN_ACTION,
+              payload: 'authToken'
+            });
           }
         });
-      }, function (error) {
-        console.log(error);
+      }, function () {
+        dispatch({
+          type: LOGIN_ACTION,
+          payload: 'authToken'
+        });
       });
 
       return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {}) : void 0);
@@ -323,9 +350,7 @@ var logoutAction = function logoutAction(user) {
             history.push('/');
           }
         });
-      }, function (error) {
-        console.log(error);
-      });
+      }, function () {});
 
       return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(function () {}) : void 0);
     } catch (e) {
@@ -336,9 +361,8 @@ var logoutAction = function logoutAction(user) {
 
 var authInitialState = {
   authToken: '',
-  username: '',
-  name: '',
-  role: ''
+  user: '',
+  loginStatus: ''
 };
 var authReducers = function authReducers(state, action) {
   if (state === void 0) {
@@ -348,12 +372,24 @@ var authReducers = function authReducers(state, action) {
   switch (action.type) {
     case LOGIN_ACTION:
       {
-        return _extends({}, state, action.payload);
+        HttpClient.addAuthTokenToHeader(action.payload);
+        return _extends({}, state, {
+          authToken: action.payload,
+          loginStatus: LOGIN_STATUS.SUCCESS
+        });
       }
 
     case LOOUT_ACTION:
       {
+        HttpClient.removeAuthTokenFromHeader('Authorization');
         return _extends({}, authInitialState);
+      }
+
+    case LOGIN_FAIL_ACTION:
+      {
+        return _extends({}, state, {
+          loginStatus: LOGIN_STATUS.FAIL
+        });
       }
 
     default:
@@ -623,14 +659,60 @@ var navigationConfig = [{
   }]
 }];
 
+var mapRoleListToNavConfigs = function mapRoleListToNavConfigs(roleList) {
+  if (roleList === void 0) {
+    roleList = [];
+  }
+
+  roleList = roleList.filter(function (item) {
+    return item.order < 1000;
+  });
+  var mapRoles = new Map();
+  roleList.forEach(function (role) {
+    var listRole = mapRoles.get(role.parentId);
+    var itemNav = mapRoleToNavItem(role);
+
+    if (listRole) {
+      listRole.push(itemNav);
+      mapRoles.set(role.parentId, listRole);
+    } else {
+      mapRoles.set(role.parentId, [itemNav]);
+    }
+  });
+  var parentList = mapRoles.get(null);
+  return parentList.map(function (item) {
+    item.children = mapRoles.get(item.id + '');
+    return item;
+  });
+};
+
+var mapRoleToNavItem = function mapRoleToNavItem(role) {
+  var item = {};
+  item.id = role.id;
+  item.type = 'item';
+  item.code = role.code;
+  item.appId = role.appId;
+  item.title = "menu." + role.keyLang;
+  item.icon = Icon[role.icon];
+  item.navLink = role.menuPath;
+
+  if (role.isHighlight) {
+    item.badge = 'primary';
+    item.badgeText = 'new';
+  }
+
+  return item;
+};
+
 var getNativgationConfig = function getNativgationConfig(appId, navConfigs) {
-  if (navConfigs === void 0) {
-    navConfigs = navigationConfig;
+  if (!navConfigs) {
+    navConfigs = [].concat(navigationConfig);
+  } else {
+    navConfigs = mapRoleListToNavConfigs(navConfigs);
   }
 
   return navConfigs.map(function (item) {
     item.isExternalApp = item.appId !== appId;
-    item.type = 'item';
 
     if (item.children) {
       item.children.map(function (child) {
@@ -638,7 +720,6 @@ var getNativgationConfig = function getNativgationConfig(appId, navConfigs) {
       });
 
       if (item.children.length === 1) {
-        item.type = 'item';
         item.navLink = item.children[0].navLink;
       } else {
         item.type = 'collapse';
@@ -652,13 +733,14 @@ var getNativgationConfig = function getNativgationConfig(appId, navConfigs) {
 var NavBarService = function NavBarService() {};
 
 NavBarService.getNativagtion = function () {
-  return HttpClient.post(API_LOGIN_URL);
+  return HttpClient.get(API_GET_NAV_CONFIGS);
 };
 
 var LOAD_NATIVGATION = 'LOAD_NATIVGATION';
 
 var initialState = {
-  navConfigs: []
+  navConfigs: [],
+  roles: []
 };
 
 var navbarReducer = function navbarReducer(state, action) {
@@ -668,9 +750,7 @@ var navbarReducer = function navbarReducer(state, action) {
 
   switch (action.type) {
     case LOAD_NATIVGATION:
-      return _extends({}, state, {
-        navConfigs: [].concat(action.payload)
-      });
+      return _extends({}, state, action.payload);
 
     default:
       return state;
@@ -682,143 +762,1050 @@ var rootReducer = function rootReducer(appReducer) {
     customizer: customizerReducer,
     auth: reduxPersist.persistReducer({
       storage: sessionStorage,
-      key: 'root'
+      key: 'root',
+      blacklist: ['loginStatus']
     }, authReducers),
     navbar: navbarReducer,
     app: appReducer
   });
 };
 
-var CheckBox = /*#__PURE__*/function (_React$Component) {
-  _inheritsLoose(CheckBox, _React$Component);
+var Autocomplete = /*#__PURE__*/function (_React$Component) {
+  _inheritsLoose(Autocomplete, _React$Component);
 
-  function CheckBox() {
-    return _React$Component.apply(this, arguments) || this;
+  function Autocomplete(props) {
+    var _this;
+
+    _this = _React$Component.call(this, props) || this;
+
+    _this.onSuggestionItemClick = function (url, e) {
+      if (_this.props.onSuggestionClick) {
+        _this.props.onSuggestionClick(e);
+      }
+
+      _this.setState({
+        activeSuggestion: 0,
+        showSuggestions: false,
+        userInput: e.currentTarget.innerText
+      });
+
+      if (url) history.push(url);
+    };
+
+    _this.onSuggestionItemHover = function (index) {
+      _this.setState({
+        activeSuggestion: index
+      });
+    };
+
+    _this.onChange = function (e) {
+      var userInput = e.currentTarget.value;
+
+      _this.setState({
+        activeSuggestion: 0,
+        showSuggestions: true,
+        userInput: userInput
+      });
+
+      if (e.target.value < 1) {
+        _this.setState({
+          showSuggestions: false
+        });
+      }
+    };
+
+    _this.onInputClick = function (e) {
+      e.stopPropagation();
+    };
+
+    _this.onKeyDown = function (e) {
+      var _this$state = _this.state,
+          activeSuggestion = _this$state.activeSuggestion,
+          showSuggestions = _this$state.showSuggestions,
+          userInput = _this$state.userInput;
+      var filterKey = _this.props.filterKey;
+      var suggestionList = ReactDOM.findDOMNode(_this.suggestionList);
+
+      if (e.keyCode === 38 && activeSuggestion !== 0) {
+        _this.setState({
+          activeSuggestion: activeSuggestion - 1
+        });
+
+        if (e.target.value.length > -1 && suggestionList !== null && activeSuggestion <= _this.filteredData.length / 2) {
+          suggestionList.scrollTop = 0;
+        }
+      } else if (e.keyCode === 40 && activeSuggestion < _this.filteredData.length - 1) {
+          _this.setState({
+            activeSuggestion: activeSuggestion + 1
+          });
+
+          if (e.target.value.length > -1 && suggestionList !== null && activeSuggestion >= _this.filteredData.length / 2) {
+            suggestionList.scrollTop = suggestionList.scrollHeight;
+          }
+        } else if (e.keyCode === 27) {
+            _this.setState({
+              showSuggestions: false,
+              userInput: ''
+            });
+          } else if (e.keyCode === 13 && showSuggestions) {
+              _this.onSuggestionItemClick(_this.filteredData[activeSuggestion].link, e);
+
+              _this.setState({
+                userInput: _this.filteredData[activeSuggestion][filterKey],
+                showSuggestions: false
+              });
+            } else {
+              return;
+            }
+
+      if (_this.props.onKeyDown !== undefined && _this.props.onKeyDown !== null && _this.props.onKeyDown) {
+        _this.props.onKeyDown(e, userInput);
+      }
+    };
+
+    _this.renderGroupedSuggestion = function (arr) {
+      var _this$props = _this.props,
+          filterKey = _this$props.filterKey,
+          customRender = _this$props.customRender;
+
+      var _assertThisInitialize = _assertThisInitialized(_this),
+          onSuggestionItemClick = _assertThisInitialize.onSuggestionItemClick,
+          onSuggestionItemHover = _assertThisInitialize.onSuggestionItemHover,
+          _assertThisInitialize2 = _assertThisInitialize.state,
+          activeSuggestion = _assertThisInitialize2.activeSuggestion,
+          userInput = _assertThisInitialize2.userInput;
+
+      var renderSuggestion = function renderSuggestion(item, i) {
+        if (!customRender) {
+          return /*#__PURE__*/React__default.createElement("li", {
+            className: classnames('suggestion-item', {
+              active: _this.filteredData.indexOf(item) === activeSuggestion
+            }),
+            key: item[filterKey],
+            onClick: function onClick(e) {
+              return onSuggestionItemClick(item.link, e);
+            },
+            onMouseEnter: function onMouseEnter() {
+              _this.onSuggestionItemHover(_this.filteredData.indexOf(item));
+            }
+          }, item[filterKey]);
+        } else if (customRender) {
+          return customRender(item, i, _this.filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover, userInput);
+        } else {
+          return null;
+        }
+      };
+
+      return arr.map(function (item, i) {
+        return renderSuggestion(item, i);
+      });
+    };
+
+    _this.renderUngroupedSuggestions = function () {
+      var _this$filteredData;
+
+      var _this$props2 = _this.props,
+          filterKey = _this$props2.filterKey,
+          suggestions = _this$props2.suggestions,
+          customRender = _this$props2.customRender,
+          suggestionLimit = _this$props2.suggestionLimit;
+
+      var _assertThisInitialize3 = _assertThisInitialized(_this),
+          onSuggestionItemClick = _assertThisInitialize3.onSuggestionItemClick,
+          onSuggestionItemHover = _assertThisInitialize3.onSuggestionItemHover,
+          _assertThisInitialize4 = _assertThisInitialize3.state,
+          activeSuggestion = _assertThisInitialize4.activeSuggestion,
+          userInput = _assertThisInitialize4.userInput;
+
+      _this.filteredData = [];
+      var sortSingleData = suggestions.filter(function (i) {
+        var startCondition = i[filterKey].toLowerCase().startsWith(userInput.toLowerCase()),
+            includeCondition = i[filterKey].toLowerCase().includes(userInput.toLowerCase());
+
+        if (startCondition) {
+          return startCondition;
+        } else if (!startCondition && includeCondition) {
+          return includeCondition;
+        } else {
+          return null;
+        }
+      }).slice(0, suggestionLimit);
+
+      (_this$filteredData = _this.filteredData).push.apply(_this$filteredData, sortSingleData);
+
+      return sortSingleData.map(function (suggestion, index) {
+        if (!customRender) {
+          return /*#__PURE__*/React__default.createElement("li", {
+            className: classnames('suggestion-item', {
+              active: _this.filteredData.indexOf(suggestion) === activeSuggestion
+            }),
+            key: suggestion[filterKey],
+            onClick: function onClick(e) {
+              return onSuggestionItemClick(suggestion.link ? suggestion.link : null, e);
+            },
+            onMouseEnter: function onMouseEnter() {
+              return _this.onSuggestionItemHover(_this.filteredData.indexOf(suggestion));
+            }
+          }, suggestion[filterKey]);
+        } else if (customRender) {
+          return customRender(suggestion, index, _this.filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover, userInput);
+        } else {
+          return null;
+        }
+      });
+    };
+
+    _this.renderSuggestions = function () {
+      var _this$props3 = _this.props,
+          filterKey = _this$props3.filterKey,
+          grouped = _this$props3.grouped,
+          filterHeaderKey = _this$props3.filterHeaderKey,
+          suggestions = _this$props3.suggestions;
+
+      var _assertThisInitialize5 = _assertThisInitialized(_this),
+          renderUngroupedSuggestions = _assertThisInitialize5.renderUngroupedSuggestions,
+          userInput = _assertThisInitialize5.state.userInput;
+
+      if (grouped === undefined || grouped === null || !grouped) {
+        return renderUngroupedSuggestions();
+      } else {
+        _this.filteredData = [];
+        return suggestions.map(function (suggestion) {
+          var _this$filteredData2;
+
+          var sortData = suggestion.data.filter(function (i) {
+            var startCondition = i[filterKey].toLowerCase().startsWith(userInput.toLowerCase()),
+                includeCondition = i[filterKey].toLowerCase().includes(userInput.toLowerCase());
+
+            if (startCondition) {
+              return startCondition;
+            } else if (!startCondition && includeCondition) {
+              return includeCondition;
+            } else {
+              return null;
+            }
+          }).slice(0, suggestion.searchLimit);
+
+          (_this$filteredData2 = _this.filteredData).push.apply(_this$filteredData2, sortData);
+
+          return /*#__PURE__*/React__default.createElement(React__default.Fragment, {
+            key: suggestion[filterHeaderKey]
+          }, /*#__PURE__*/React__default.createElement("li", {
+            className: "suggestion-item suggestion-title text-primary text-bold-600"
+          }, suggestion[filterHeaderKey]), sortData.length ? _this.renderGroupedSuggestion(sortData) : /*#__PURE__*/React__default.createElement("li", {
+            className: "suggestion-item no-result"
+          }, /*#__PURE__*/React__default.createElement(Icon.AlertTriangle, {
+            size: 15
+          }), ' ', /*#__PURE__*/React__default.createElement("span", {
+            className: "align-middle ml-50"
+          }, "No Result")));
+        });
+      }
+    };
+
+    _this.clearInput = function (val) {
+      if (_this.props.clearInput && !val) {
+        _this.setState({
+          userInput: ''
+        });
+      }
+    };
+
+    _this.handleExtenalClick = function (e) {
+      var container = _this.refs.container;
+      var target = e.target;
+
+      if (target !== container && !container.contains(target)) {
+        _this.setState({
+          showSuggestions: false
+        });
+
+        if (_this.props.externalClick) _this.props.externalClick(e);
+      }
+    };
+
+    _this.state = {
+      activeSuggestion: 0,
+      showSuggestions: false,
+      userInput: '',
+      focused: false,
+      openUp: false
+    };
+    _this.filteredData = [];
+    document.body.addEventListener('click', _this.handleExtenalClick);
+    return _this;
   }
 
-  var _proto = CheckBox.prototype;
+  var _proto = Autocomplete.prototype;
+
+  _proto.componentDidUpdate = function componentDidUpdate(prevProps, prevState) {
+    var textInput = ReactDOM.findDOMNode(this.input);
+    var _this$props4 = this.props,
+        autoFocus = _this$props4.autoFocus,
+        onSuggestionsShown = _this$props4.onSuggestionsShown,
+        clearInput = _this$props4.clearInput;
+
+    if (textInput !== null && autoFocus) {
+      textInput.focus();
+    }
+
+    if (this.props.defaultSuggestions && prevState.showSuggestions === false && this.state.focused) {
+      this.setState({
+        showSuggestions: true
+      });
+    }
+
+    if (clearInput === false && this.state.userInput.length) {
+      this.setState({
+        userInput: ''
+      });
+    }
+
+    if (onSuggestionsShown && this.state.showSuggestions) {
+      onSuggestionsShown(this.state.userInput);
+    }
+
+    if (this.props.defaultSuggestions && prevState.focused === false && this.state.focused === true) {
+      this.setState({
+        showSuggestions: true
+      });
+    }
+  };
+
+  _proto.componentDidMount = function componentDidMount() {
+    if (this.props.defaultSuggestions && this.state.focused) {
+      this.setState({
+        showSuggestions: true
+      });
+    }
+  };
+
+  _proto.componentWillUnmount = function componentWillUnmount() {
+    document.body.removeEventListener('click', this.handleExtenalClick);
+  };
 
   _proto.render = function render() {
+    var _this2 = this;
+
+    var _onChange = this.onChange,
+        _onKeyDown = this.onKeyDown,
+        _this$state2 = this.state,
+        showSuggestions = _this$state2.showSuggestions,
+        userInput = _this$state2.userInput,
+        openUp = _this$state2.openUp;
+    var suggestionsListComponent;
+
+    if (showSuggestions) {
+      suggestionsListComponent = /*#__PURE__*/React__default.createElement(PerfectScrollbar, {
+        className: classnames('suggestions-list', {
+          'open-up': openUp
+        }),
+        ref: function ref(el) {
+          return _this2.suggestionList = el;
+        },
+        component: "ul",
+        options: {
+          wheelPropagation: false
+        }
+      }, this.renderSuggestions());
+    }
+
     return /*#__PURE__*/React__default.createElement("div", {
-      className: "vx-checkbox-con " + (this.props.className ? this.props.className : '') + " vx-checkbox-" + this.props.color
+      className: "vx-autocomplete-container",
+      ref: "container"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+      className: "form-label-group position-relative"
     }, /*#__PURE__*/React__default.createElement("input", {
-      type: "checkbox",
-      defaultChecked: this.props.defaultChecked,
-      checked: this.props.checked,
-      value: this.props.value,
-      disabled: this.props.disabled,
-      onClick: this.props.onClick ? this.props.onClick : null,
-      onChange: this.props.onChange ? this.props.onChange : null
-    }), /*#__PURE__*/React__default.createElement("span", {
-      className: "vx-checkbox vx-checkbox-" + (this.props.size ? this.props.size : 'md')
-    }, /*#__PURE__*/React__default.createElement("span", {
-      className: "vx-checkbox--check"
-    }, this.props.icon)), /*#__PURE__*/React__default.createElement("span", null, this.props.label));
+      type: "text",
+      onChange: function onChange(e) {
+        _onChange(e);
+
+        if (_this2.props.onChange) {
+          _this2.props.onChange(e);
+        }
+      },
+      onKeyDown: function onKeyDown(e) {
+        return _onKeyDown(e);
+      },
+      value: userInput,
+      className: "vx-autocomplete-search " + (this.props.className ? this.props.className : ''),
+      placeholder: this.props.placeholder,
+      onClick: this.onInputClick,
+      ref: function ref(el) {
+        return _this2.input = el;
+      },
+      onFocus: function onFocus(e) {
+        _this2.setState({
+          focused: true
+        });
+      },
+      autoFocus: this.props.autoFocus,
+      onBlur: function onBlur(e) {
+        if (_this2.props.onBlur) _this2.props.onBlur(e);
+
+        _this2.setState({
+          focused: false
+        });
+      }
+    }), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, this.props.placeholder), suggestionsListComponent));
   };
 
-  return CheckBox;
+  return Autocomplete;
 }(React__default.Component);
+Autocomplete.propTypes = {
+  suggestions: PropTypes.array.isRequired,
+  filterKey: PropTypes.string.isRequired,
+  filterHeaderKey: PropTypes.string,
+  placeholder: PropTypes.string,
+  suggestionLimit: PropTypes.number,
+  grouped: PropTypes.bool,
+  autoFocus: PropTypes.bool,
+  onKeyDown: PropTypes.func,
+  onChange: PropTypes.func,
+  onSuggestionsShown: PropTypes.func,
+  onSuggestionItemClick: PropTypes.func
+};
 
-var Login = function Login(_ref) {
-  var loginAction = _ref.loginAction;
+var UserDropdown = function UserDropdown(props) {
+  var logoutAction = props.logoutAction;
 
-  var _useState = React.useState(''),
-      username = _useState[0];
+  var handleNavigation = function handleNavigation(e, path) {
+    e.preventDefault();
+    history.push(path);
+  };
 
-  var _useState2 = React.useState(''),
-      password = _useState2[0];
+  return /*#__PURE__*/React__default.createElement(reactstrap.DropdownMenu, {
+    right: true
+  }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+    tag: "a",
+    href: "#",
+    onClick: function onClick(e) {
+      return handleNavigation(e, '/account-info');
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.Settings, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React__default.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "setting.accountInformation"
+  }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+    tag: "a",
+    href: "#",
+    onClick: function onClick(e) {
+      return handleNavigation(e, '/change-password');
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React__default.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "setting.changePassword"
+  }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+    divider: true
+  }), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+    tag: "a",
+    href: "#",
+    onClick: function onClick(e) {
+      return handleNavigation(e, '/terms-and-condition');
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React__default.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "setting.termAndCondition"
+  }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+    tag: "a",
+    href: "#",
+    onClick: function onClick(e) {
+      return handleNavigation(e, '/privacy-policy');
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React__default.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "setting.privacyPolicy"
+  }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+    tag: "a",
+    href: "#",
+    onClick: function onClick(e) {
+      return handleNavigation(e, '/language');
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React__default.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "setting.language"
+  }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+    tag: "a",
+    href: "#",
+    onClick: function onClick(e) {
+      return handleNavigation(e, '/contact');
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React__default.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "setting.contact"
+  }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+    divider: true
+  }), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+    tag: "a",
+    onClick: logoutAction
+  }, /*#__PURE__*/React__default.createElement(Icon.Power, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React__default.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "navbar.logout"
+  }))));
+};
 
-  var onClickLogin = function onClickLogin() {
-    loginAction({
-      username: username,
-      password: password
+var NavbarUser = /*#__PURE__*/function (_React$PureComponent) {
+  _inheritsLoose(NavbarUser, _React$PureComponent);
+
+  function NavbarUser() {
+    var _this;
+
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    _this = _React$PureComponent.call.apply(_React$PureComponent, [this].concat(args)) || this;
+    _this.state = {
+      navbarSearch: false,
+      suggestions: []
+    };
+
+    _this.handleNavbarSearch = function () {
+      _this.setState({
+        navbarSearch: !_this.state.navbarSearch
+      });
+    };
+
+    _this.getCountryCode = function (locale) {
+      var countryCode = {
+        en: 'us',
+        vi: 'vn'
+      };
+      return countryCode[locale];
+    };
+
+    return _this;
+  }
+
+  var _proto = NavbarUser.prototype;
+
+  _proto.componentDidUpdate = function componentDidUpdate(prevProps) {
+  };
+
+  _proto.render = function render() {
+    var _this2 = this;
+
+    return /*#__PURE__*/React__default.createElement("ul", {
+      className: "nav navbar-nav navbar-nav-user float-right"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.NavItem, {
+      className: "nav-search",
+      onClick: this.handleNavbarSearch
+    }, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
+      className: "nav-link-search"
+    }, /*#__PURE__*/React__default.createElement(Icon.Search, {
+      size: 21,
+      "data-tour": "search"
+    })), /*#__PURE__*/React__default.createElement("div", {
+      className: classnames('search-input', {
+        open: this.state.navbarSearch,
+        'd-none': this.state.navbarSearch === false
+      })
+    }, /*#__PURE__*/React__default.createElement("div", {
+      className: "search-input-icon"
+    }, /*#__PURE__*/React__default.createElement(Icon.Search, {
+      size: 17,
+      className: "primary"
+    })), /*#__PURE__*/React__default.createElement(Autocomplete, {
+      className: "form-control",
+      suggestions: this.state.suggestions,
+      filterKey: "title",
+      filterHeaderKey: "groupTitle",
+      grouped: true,
+      placeholder: "Explore Vuexy...",
+      autoFocus: true,
+      clearInput: this.state.navbarSearch,
+      externalClick: function externalClick(e) {
+        _this2.setState({
+          navbarSearch: false
+        });
+      },
+      onKeyDown: function onKeyDown(e) {
+        if (e.keyCode === 27 || e.keyCode === 13) {
+          _this2.setState({
+            navbarSearch: false
+          });
+
+          _this2.props.handleAppOverlay('');
+        }
+      },
+      customRender: function customRender(item, i, filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover) {
+        var IconTag = Icon[item.icon ? item.icon : 'X'];
+        return /*#__PURE__*/React__default.createElement("li", {
+          className: classnames('suggestion-item', {
+            active: filteredData.indexOf(item) === activeSuggestion
+          }),
+          key: i,
+          onClick: function onClick(e) {
+            return onSuggestionItemClick(item.link, e);
+          },
+          onMouseEnter: function onMouseEnter() {
+            return onSuggestionItemHover(filteredData.indexOf(item));
+          }
+        }, /*#__PURE__*/React__default.createElement("div", {
+          className: classnames({
+            'd-flex justify-content-between align-items-center': item.file || item.img
+          })
+        }, /*#__PURE__*/React__default.createElement("div", {
+          className: "item-container d-flex"
+        }, item.icon ? /*#__PURE__*/React__default.createElement(IconTag, {
+          size: 17
+        }) : item.file ? /*#__PURE__*/React__default.createElement("img", {
+          src: item.file,
+          height: "36",
+          width: "28",
+          alt: item.title
+        }) : item.img ? /*#__PURE__*/React__default.createElement("img", {
+          className: "rounded-circle mt-25",
+          src: item.img,
+          height: "28",
+          width: "28",
+          alt: item.title
+        }) : null, /*#__PURE__*/React__default.createElement("div", {
+          className: "item-info ml-1"
+        }, /*#__PURE__*/React__default.createElement("p", {
+          className: "align-middle mb-0"
+        }, item.title), item.by || item.email ? /*#__PURE__*/React__default.createElement("small", {
+          className: "text-muted"
+        }, item.by ? item.by : item.email ? item.email : null) : null)), item.size || item.date ? /*#__PURE__*/React__default.createElement("div", {
+          className: "meta-container"
+        }, /*#__PURE__*/React__default.createElement("small", {
+          className: "text-muted"
+        }, item.size ? item.size : item.date ? item.date : null)) : null));
+      },
+      onSuggestionsShown: function onSuggestionsShown(userInput) {
+        if (_this2.state.navbarSearch) {
+          _this2.props.handleAppOverlay(userInput);
+        }
+      }
+    }), /*#__PURE__*/React__default.createElement("div", {
+      className: "search-input-close"
+    }, /*#__PURE__*/React__default.createElement(Icon.X, {
+      size: 24,
+      onClick: function onClick(e) {
+        e.stopPropagation();
+
+        _this2.setState({
+          navbarSearch: false
+        });
+
+        _this2.props.handleAppOverlay('');
+      }
+    })))), /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledDropdown, {
+      tag: "li",
+      className: "dropdown-notification nav-item"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
+      tag: "a",
+      className: "nav-link nav-link-label"
+    }, /*#__PURE__*/React__default.createElement(Icon.Bell, {
+      size: 21
+    }), /*#__PURE__*/React__default.createElement(reactstrap.Badge, {
+      pill: true,
+      color: "primary",
+      className: "badge-up"
+    }, ' ', "5", ' ')), /*#__PURE__*/React__default.createElement(reactstrap.DropdownMenu, {
+      tag: "ul",
+      right: true,
+      className: "dropdown-menu-media"
+    }, /*#__PURE__*/React__default.createElement("li", {
+      className: "dropdown-menu-header"
+    }, /*#__PURE__*/React__default.createElement("div", {
+      className: "dropdown-header mt-0"
+    }, /*#__PURE__*/React__default.createElement("h3", {
+      className: "text-white"
+    }, "5 New"), /*#__PURE__*/React__default.createElement("span", {
+      className: "notification-title"
+    }, "App Notifications"))), /*#__PURE__*/React__default.createElement(PerfectScrollbar, {
+      className: "media-list overflow-hidden position-relative",
+      options: {
+        wheelPropagation: false
+      }
+    }, /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex justify-content-between"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      className: "d-flex align-items-start"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      left: true,
+      href: "#"
+    }, /*#__PURE__*/React__default.createElement(Icon.PlusSquare, {
+      className: "font-medium-5 primary",
+      size: 21
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      body: true
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      heading: true,
+      className: "primary media-heading",
+      tag: "h6"
+    }, "You have new order!"), /*#__PURE__*/React__default.createElement("p", {
+      className: "notification-text"
+    }, "Are your going to meet me tonight?")), /*#__PURE__*/React__default.createElement("small", null, /*#__PURE__*/React__default.createElement("time", {
+      className: "media-meta",
+      dateTime: "2015-06-11T18:29:20+08:00"
+    }, "9 hours ago")))), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex justify-content-between"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      className: "d-flex align-items-start"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      left: true,
+      href: "#"
+    }, /*#__PURE__*/React__default.createElement(Icon.DownloadCloud, {
+      className: "font-medium-5 success",
+      size: 21
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      body: true
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      heading: true,
+      className: "success media-heading",
+      tag: "h6"
+    }, "99% Server load"), /*#__PURE__*/React__default.createElement("p", {
+      className: "notification-text"
+    }, "You got new order of goods?")), /*#__PURE__*/React__default.createElement("small", null, /*#__PURE__*/React__default.createElement("time", {
+      className: "media-meta",
+      dateTime: "2015-06-11T18:29:20+08:00"
+    }, "5 hours ago")))), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex justify-content-between"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      className: "d-flex align-items-start"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      left: true,
+      href: "#"
+    }, /*#__PURE__*/React__default.createElement(Icon.AlertTriangle, {
+      className: "font-medium-5 danger",
+      size: 21
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      body: true
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      heading: true,
+      className: "danger media-heading",
+      tag: "h6"
+    }, "Warning Notification"), /*#__PURE__*/React__default.createElement("p", {
+      className: "notification-text"
+    }, "Server has used 99% of CPU")), /*#__PURE__*/React__default.createElement("small", null, /*#__PURE__*/React__default.createElement("time", {
+      className: "media-meta",
+      dateTime: "2015-06-11T18:29:20+08:00"
+    }, "Today")))), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex justify-content-between"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      className: "d-flex align-items-start"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      left: true,
+      href: "#"
+    }, /*#__PURE__*/React__default.createElement(Icon.CheckCircle, {
+      className: "font-medium-5 info",
+      size: 21
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      body: true
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      heading: true,
+      className: "info media-heading",
+      tag: "h6"
+    }, "Complete the task"), /*#__PURE__*/React__default.createElement("p", {
+      className: "notification-text"
+    }, "One of your task is pending.")), /*#__PURE__*/React__default.createElement("small", null, /*#__PURE__*/React__default.createElement("time", {
+      className: "media-meta",
+      dateTime: "2015-06-11T18:29:20+08:00"
+    }, "Last week")))), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex justify-content-between"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      className: "d-flex align-items-start"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      left: true,
+      href: "#"
+    }, /*#__PURE__*/React__default.createElement(Icon.File, {
+      className: "font-medium-5 warning",
+      size: 21
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      body: true
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      heading: true,
+      className: "warning media-heading",
+      tag: "h6"
+    }, "Generate monthly report"), /*#__PURE__*/React__default.createElement("p", {
+      className: "notification-text"
+    }, "Reminder to generate monthly report")), /*#__PURE__*/React__default.createElement("small", null, /*#__PURE__*/React__default.createElement("time", {
+      className: "media-meta",
+      dateTime: "2015-06-11T18:29:20+08:00"
+    }, "Last month"))))), /*#__PURE__*/React__default.createElement("li", {
+      className: "dropdown-menu-footer"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+      tag: "a",
+      className: "p-1 text-center"
+    }, /*#__PURE__*/React__default.createElement("span", {
+      className: "align-middle"
+    }, "Read all notifications"))))), /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledDropdown, {
+      tag: "li",
+      className: "dropdown-user nav-item"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
+      tag: "a",
+      className: "nav-link dropdown-user-link"
+    }, /*#__PURE__*/React__default.createElement("div", {
+      className: "user-nav d-sm-flex d-none"
+    }, /*#__PURE__*/React__default.createElement("span", {
+      className: "user-name text-bold-600"
+    }, this.props.userName), /*#__PURE__*/React__default.createElement("span", {
+      className: "user-status"
+    }, "Available")), /*#__PURE__*/React__default.createElement("span", {
+      "data-tour": "user"
+    }, /*#__PURE__*/React__default.createElement("img", {
+      src: "https://storage.live.com/Users/-6155523327610065665/MyProfile/ExpressionProfile/ProfilePhoto:Win8Static,UserTileMedium,UserTileStatic",
+      className: "round",
+      height: "40",
+      width: "40",
+      alt: "avatar"
+    }))), /*#__PURE__*/React__default.createElement(UserDropdown, this.props)));
+  };
+
+  return NavbarUser;
+}(React__default.PureComponent);
+
+var ThemeNavbar = function ThemeNavbar(props) {
+  var colorsArr = ['primary', 'danger', 'success', 'info', 'warning', 'dark'];
+  var navbarTypes = ['floating', 'static', 'sticky', 'hidden'];
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("div", {
+    className: "content-overlay"
+  }), /*#__PURE__*/React__default.createElement("div", {
+    className: "header-navbar-shadow"
+  }), /*#__PURE__*/React__default.createElement(reactstrap.Navbar, {
+    className: classnames('header-navbar navbar-expand-lg navbar navbar-with-menu navbar-shadow', {
+      'navbar-light': props.navbarColor === 'default' || !colorsArr.includes(props.navbarColor),
+      'navbar-dark': colorsArr.includes(props.navbarColor),
+      'bg-primary': props.navbarColor === 'primary' && props.navbarType !== 'static',
+      'bg-danger': props.navbarColor === 'danger' && props.navbarType !== 'static',
+      'bg-success': props.navbarColor === 'success' && props.navbarType !== 'static',
+      'bg-info': props.navbarColor === 'info' && props.navbarType !== 'static',
+      'bg-warning': props.navbarColor === 'warning' && props.navbarType !== 'static',
+      'bg-dark': props.navbarColor === 'dark' && props.navbarType !== 'static',
+      'd-none': props.navbarType === 'hidden' && !props.horizontal,
+      'floating-nav': props.navbarType === 'floating' && !props.horizontal || !navbarTypes.includes(props.navbarType) && !props.horizontal,
+      'navbar-static-top': props.navbarType === 'static' && !props.horizontal,
+      'fixed-top': props.navbarType === 'sticky' || props.horizontal,
+      scrolling: props.horizontal && props.scrolling
+    })
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "navbar-wrapper"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "navbar-container content"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "navbar-collapse d-flex justify-content-between align-items-center",
+    id: "navbar-mobile"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "bookmark-wrapper"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "mr-auto float-left bookmark-wrapper d-flex align-items-center"
+  }, /*#__PURE__*/React__default.createElement("ul", {
+    className: "navbar-nav d-xl-none"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.NavItem, {
+    className: "mobile-menu mr-auto"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
+    className: "nav-menu-main menu-toggle hidden-xs is-active",
+    onClick: props.sidebarVisibility
+  }, /*#__PURE__*/React__default.createElement(Icon.Menu, {
+    className: "ficon"
+  })))), /*#__PURE__*/React__default.createElement("ul", {
+    className: "nav navbar-nav bookmark-icons"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, null, /*#__PURE__*/React__default.createElement(Icon.Star, {
+    className: "text-warning",
+    size: 21
+  })))))), /*#__PURE__*/React__default.createElement(NavbarUser, {
+    handleAppOverlay: props.handleAppOverlay,
+    changeCurrentLang: props.changeCurrentLang,
+    userName: props.name,
+    roles: props.roles,
+    isAuthenticated: props.isAuthenticated,
+    logoutAction: props.logoutAction
+  }))))));
+};
+
+var mapStateToProps = function mapStateToProps(state) {
+  return {
+    name: state.auth.name,
+    isAuthenticated: !!state.auth.name,
+    roles: state.navbar.roles
+  };
+};
+
+var Navbar = reactRedux.connect(mapStateToProps, {
+  logoutAction: logoutAction
+})(ThemeNavbar);
+
+function useDeviceDetect() {
+  var _React$useState = React__default.useState(false),
+      isMobile = _React$useState[0],
+      setMobile = _React$useState[1];
+
+  React__default.useEffect(function () {
+    var userAgent = typeof window.navigator === 'undefined' ? '' : navigator.userAgent;
+    var mobile = Boolean(userAgent.match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i));
+    setMobile(mobile);
+  }, []);
+  return {
+    isMobile: isMobile
+  };
+}
+
+var Footer = function Footer(props) {
+  var _useDeviceDetect = useDeviceDetect(),
+      isMobile = _useDeviceDetect.isMobile;
+
+  return /*#__PURE__*/React__default.createElement("footer", null, /*#__PURE__*/React__default.createElement("div", {
+    className: classnames('footer footer-light', {
+      'd-none': isMobile
+    })
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "d-flex justify-content-between"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "float-md-left d-block d-md-inline-block mt-25"
+  }, /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "footer.copyRight"
+  })), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "footer.companySlogan"
+  }))), /*#__PURE__*/React__default.createElement("div", {
+    className: "float-md-right d-none d-md-block"
+  }, /*#__PURE__*/React__default.createElement("img", {
+    src: IMAGE.DOWNLOAD_APP,
+    alt: "DOWNLOAD ON APP STORE"
+  })))), /*#__PURE__*/React__default.createElement("div", {
+    className: classnames('footer footer-light footer-mobile', {
+      'd-none': !isMobile
+    })
+  }, /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement("a", {
+    className: "tab-link",
+    href: "#"
+  }, /*#__PURE__*/React__default.createElement(Icon.Home, null))), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement("a", {
+    className: "tab-link",
+    href: "#"
+  }, /*#__PURE__*/React__default.createElement(Icon.List, null))), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement("a", {
+    className: "tab-link",
+    href: "#"
+  }, /*#__PURE__*/React__default.createElement(Icon.PlusCircle, null))), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement("a", {
+    className: "tab-link",
+    href: "#"
+  }, /*#__PURE__*/React__default.createElement(Icon.Gift, null))), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement("a", {
+    className: "tab-link"
+  }, /*#__PURE__*/React__default.createElement(Icon.MessageSquare, null)))), props.hideScrollToTop === false ? /*#__PURE__*/React__default.createElement(ScrollToTop, {
+    showUnder: 160
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
+    color: "primary",
+    className: "btn-icon scroll-top"
+  }, /*#__PURE__*/React__default.createElement(Icon.ArrowUp, {
+    size: 15
+  }))) : null);
+};
+
+var changeMode = function changeMode(mode) {
+  return function (dispatch) {
+    return dispatch({
+      type: "CHANGE_MODE",
+      mode: mode
     });
   };
+};
+var collapseSidebar = function collapseSidebar(value) {
+  return function (dispatch) {
+    return dispatch({
+      type: "COLLAPSE_SIDEBAR",
+      value: value
+    });
+  };
+};
+var changeNavbarColor = function changeNavbarColor(color) {
+  return function (dispatch) {
+    return dispatch({
+      type: "CHANGE_NAVBAR_COLOR",
+      color: color
+    });
+  };
+};
+var changeNavbarType = function changeNavbarType(style) {
+  return function (dispatch) {
+    return dispatch({
+      type: "CHANGE_NAVBAR_TYPE",
+      style: style
+    });
+  };
+};
+var changeFooterType = function changeFooterType(style) {
+  return function (dispatch) {
+    return dispatch({
+      type: "CHANGE_FOOTER_TYPE",
+      style: style
+    });
+  };
+};
+var changeMenuColor = function changeMenuColor(style) {
+  return function (dispatch) {
+    return dispatch({
+      type: "CHANGE_MENU_COLOR",
+      style: style
+    });
+  };
+};
+var hideScrollToTop = function hideScrollToTop(value) {
+  return function (dispatch) {
+    return dispatch({
+      type: "HIDE_SCROLL_TO_TOP",
+      value: value
+    });
+  };
+};
 
-  return /*#__PURE__*/React__default.createElement(reactstrap.Row, {
-    className: "m-0 justify-content-center"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-    sm: "8",
-    xl: "7",
-    lg: "10",
-    md: "8",
-    className: "d-flex justify-content-center"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Card, {
-    className: "bg-authentication login-card rounded-0 mb-0 w-100"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Row, {
-    className: "m-0"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-    lg: "6",
-    className: "d-lg-block d-none text-center align-self-center px-1 py-0"
-  }, /*#__PURE__*/React__default.createElement("img", {
-    src: '',
-    alt: "loginImg"
-  })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-    lg: "6",
-    md: "12",
-    className: "p-0"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Card, {
-    className: "rounded-0 mb-0 px-2 login-tabs-container"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.CardHeader, {
-    className: "pb-1"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.CardTitle, null, /*#__PURE__*/React__default.createElement("h4", {
-    className: "mb-0"
-  }, "Login"))), /*#__PURE__*/React__default.createElement("p", {
-    className: "px-2 auth-title"
-  }, "Welcome back, please login to your account."), /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.CardBody, {
-    className: "pt-1"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Form, {
-    action: "/",
-    onSubmit: function onSubmit(e) {
-      return e.preventDefault();
+var LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
+var loadNavtigation = function loadNavtigation(appId) {
+  return function (dispatch) {
+    try {
+      var _temp2 = _catch(function () {
+        return Promise.resolve(NavBarService.getNativagtion()).then(function (res) {
+          var roles = res.data;
+          var navConfigs = getNativgationConfig(appId, roles);
+          dispatch({
+            type: LOAD_NATIVGATION$1,
+            payload: {
+              navConfigs: navConfigs,
+              roles: roles
+            }
+          });
+        });
+      }, function () {
+        dispatch({
+          type: LOAD_NATIVGATION$1,
+          payload: {
+            navConfigs: getNativgationConfig(appId),
+            roles: []
+          }
+        });
+      });
+
+      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
+    } catch (e) {
+      return Promise.reject(e);
     }
-  }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
-    className: "form-label-group position-relative has-icon-left"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-    type: "email",
-    placeholder: "Email",
-    required: true
-  }), /*#__PURE__*/React__default.createElement("div", {
-    className: "form-control-position"
-  }, /*#__PURE__*/React__default.createElement(Icon.Mail, {
-    size: 15
-  })), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, "Email")), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
-    className: "form-label-group position-relative has-icon-left"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-    type: "password",
-    placeholder: "Password",
-    required: true
-  }), /*#__PURE__*/React__default.createElement("div", {
-    className: "form-control-position"
-  }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
-    size: 15
-  })), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, "Password")), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
-    className: "d-flex justify-content-between align-items-center"
-  }, /*#__PURE__*/React__default.createElement(CheckBox, {
-    color: "primary",
-    icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-      className: "vx-icon",
-      size: 16
-    }),
-    label: "Remember me",
-    defaultChecked: false
-  }), /*#__PURE__*/React__default.createElement("div", {
-    className: "float-right"
-  }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
-    to: "/pages/forgot-password"
-  }, "Forgot Password?"))), /*#__PURE__*/React__default.createElement("div", {
-    className: "d-flex justify-content-between"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-    color: "primary",
-    outline: true,
-    onClick: function onClick() {
-      history.push('/pages/register');
-    }
-  }, "Register"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-    color: "primary",
-    type: "submit",
-    onClick: onClickLogin
-  }, "Login")))))))))));
+  };
 };
 
 var SidebarHeader = /*#__PURE__*/function (_Component) {
@@ -1501,1053 +2488,14 @@ var Sidebar = /*#__PURE__*/function (_Component) {
   return Sidebar;
 }(React.Component);
 
-var mapStateToProps = function mapStateToProps(state) {
+var mapStateToProps$1 = function mapStateToProps(state) {
   return {
     currentUser: state.auth,
     navConfigs: state.navbar.navConfigs
   };
 };
 
-var Sidebar$1 = reactRedux.connect(mapStateToProps)(Sidebar);
-
-var Context = React__default.createContext();
-
-var IntlProviderWrapper = /*#__PURE__*/function (_React$Component) {
-  _inheritsLoose(IntlProviderWrapper, _React$Component);
-
-  function IntlProviderWrapper() {
-    var _this;
-
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
-    _this = _React$Component.call.apply(_React$Component, [this].concat(args)) || this;
-    _this.state = {
-      locale: 'vi',
-      messages: _this.props.appMessage['vi']
-    };
-    return _this;
-  }
-
-  var _proto = IntlProviderWrapper.prototype;
-
-  _proto.render = function render() {
-    var _this2 = this;
-
-    var children = this.props.children;
-    var _this$state = this.state,
-        locale = _this$state.locale,
-        messages = _this$state.messages;
-    return /*#__PURE__*/React__default.createElement(Context.Provider, {
-      value: {
-        state: this.state,
-        switchLanguage: function switchLanguage(language) {
-          _this2.setState({
-            locale: language,
-            messages: _this2.props.appMessage[language]
-          });
-        }
-      }
-    }, /*#__PURE__*/React__default.createElement(reactIntl.IntlProvider, {
-      key: locale,
-      locale: locale,
-      messages: messages,
-      defaultLocale: "vi"
-    }, children));
-  };
-
-  return IntlProviderWrapper;
-}(React__default.Component);
-
-var Autocomplete = /*#__PURE__*/function (_React$Component) {
-  _inheritsLoose(Autocomplete, _React$Component);
-
-  function Autocomplete(props) {
-    var _this;
-
-    _this = _React$Component.call(this, props) || this;
-
-    _this.onSuggestionItemClick = function (url, e) {
-      if (_this.props.onSuggestionClick) {
-        _this.props.onSuggestionClick(e);
-      }
-
-      _this.setState({
-        activeSuggestion: 0,
-        showSuggestions: false,
-        userInput: e.currentTarget.innerText
-      });
-
-      if (url) history.push(url);
-    };
-
-    _this.onSuggestionItemHover = function (index) {
-      _this.setState({
-        activeSuggestion: index
-      });
-    };
-
-    _this.onChange = function (e) {
-      var userInput = e.currentTarget.value;
-
-      _this.setState({
-        activeSuggestion: 0,
-        showSuggestions: true,
-        userInput: userInput
-      });
-
-      if (e.target.value < 1) {
-        _this.setState({
-          showSuggestions: false
-        });
-      }
-    };
-
-    _this.onInputClick = function (e) {
-      e.stopPropagation();
-    };
-
-    _this.onKeyDown = function (e) {
-      var _this$state = _this.state,
-          activeSuggestion = _this$state.activeSuggestion,
-          showSuggestions = _this$state.showSuggestions,
-          userInput = _this$state.userInput;
-      var filterKey = _this.props.filterKey;
-      var suggestionList = ReactDOM.findDOMNode(_this.suggestionList);
-
-      if (e.keyCode === 38 && activeSuggestion !== 0) {
-        _this.setState({
-          activeSuggestion: activeSuggestion - 1
-        });
-
-        if (e.target.value.length > -1 && suggestionList !== null && activeSuggestion <= _this.filteredData.length / 2) {
-          suggestionList.scrollTop = 0;
-        }
-      } else if (e.keyCode === 40 && activeSuggestion < _this.filteredData.length - 1) {
-          _this.setState({
-            activeSuggestion: activeSuggestion + 1
-          });
-
-          if (e.target.value.length > -1 && suggestionList !== null && activeSuggestion >= _this.filteredData.length / 2) {
-            suggestionList.scrollTop = suggestionList.scrollHeight;
-          }
-        } else if (e.keyCode === 27) {
-            _this.setState({
-              showSuggestions: false,
-              userInput: ''
-            });
-          } else if (e.keyCode === 13 && showSuggestions) {
-              _this.onSuggestionItemClick(_this.filteredData[activeSuggestion].link, e);
-
-              _this.setState({
-                userInput: _this.filteredData[activeSuggestion][filterKey],
-                showSuggestions: false
-              });
-            } else {
-              return;
-            }
-
-      if (_this.props.onKeyDown !== undefined && _this.props.onKeyDown !== null && _this.props.onKeyDown) {
-        _this.props.onKeyDown(e, userInput);
-      }
-    };
-
-    _this.renderGroupedSuggestion = function (arr) {
-      var _this$props = _this.props,
-          filterKey = _this$props.filterKey,
-          customRender = _this$props.customRender;
-
-      var _assertThisInitialize = _assertThisInitialized(_this),
-          onSuggestionItemClick = _assertThisInitialize.onSuggestionItemClick,
-          onSuggestionItemHover = _assertThisInitialize.onSuggestionItemHover,
-          _assertThisInitialize2 = _assertThisInitialize.state,
-          activeSuggestion = _assertThisInitialize2.activeSuggestion,
-          userInput = _assertThisInitialize2.userInput;
-
-      var renderSuggestion = function renderSuggestion(item, i) {
-        if (!customRender) {
-          return /*#__PURE__*/React__default.createElement("li", {
-            className: classnames('suggestion-item', {
-              active: _this.filteredData.indexOf(item) === activeSuggestion
-            }),
-            key: item[filterKey],
-            onClick: function onClick(e) {
-              return onSuggestionItemClick(item.link, e);
-            },
-            onMouseEnter: function onMouseEnter() {
-              _this.onSuggestionItemHover(_this.filteredData.indexOf(item));
-            }
-          }, item[filterKey]);
-        } else if (customRender) {
-          return customRender(item, i, _this.filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover, userInput);
-        } else {
-          return null;
-        }
-      };
-
-      return arr.map(function (item, i) {
-        return renderSuggestion(item, i);
-      });
-    };
-
-    _this.renderUngroupedSuggestions = function () {
-      var _this$filteredData;
-
-      var _this$props2 = _this.props,
-          filterKey = _this$props2.filterKey,
-          suggestions = _this$props2.suggestions,
-          customRender = _this$props2.customRender,
-          suggestionLimit = _this$props2.suggestionLimit;
-
-      var _assertThisInitialize3 = _assertThisInitialized(_this),
-          onSuggestionItemClick = _assertThisInitialize3.onSuggestionItemClick,
-          onSuggestionItemHover = _assertThisInitialize3.onSuggestionItemHover,
-          _assertThisInitialize4 = _assertThisInitialize3.state,
-          activeSuggestion = _assertThisInitialize4.activeSuggestion,
-          userInput = _assertThisInitialize4.userInput;
-
-      _this.filteredData = [];
-      var sortSingleData = suggestions.filter(function (i) {
-        var startCondition = i[filterKey].toLowerCase().startsWith(userInput.toLowerCase()),
-            includeCondition = i[filterKey].toLowerCase().includes(userInput.toLowerCase());
-
-        if (startCondition) {
-          return startCondition;
-        } else if (!startCondition && includeCondition) {
-          return includeCondition;
-        } else {
-          return null;
-        }
-      }).slice(0, suggestionLimit);
-
-      (_this$filteredData = _this.filteredData).push.apply(_this$filteredData, sortSingleData);
-
-      return sortSingleData.map(function (suggestion, index) {
-        if (!customRender) {
-          return /*#__PURE__*/React__default.createElement("li", {
-            className: classnames('suggestion-item', {
-              active: _this.filteredData.indexOf(suggestion) === activeSuggestion
-            }),
-            key: suggestion[filterKey],
-            onClick: function onClick(e) {
-              return onSuggestionItemClick(suggestion.link ? suggestion.link : null, e);
-            },
-            onMouseEnter: function onMouseEnter() {
-              return _this.onSuggestionItemHover(_this.filteredData.indexOf(suggestion));
-            }
-          }, suggestion[filterKey]);
-        } else if (customRender) {
-          return customRender(suggestion, index, _this.filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover, userInput);
-        } else {
-          return null;
-        }
-      });
-    };
-
-    _this.renderSuggestions = function () {
-      var _this$props3 = _this.props,
-          filterKey = _this$props3.filterKey,
-          grouped = _this$props3.grouped,
-          filterHeaderKey = _this$props3.filterHeaderKey,
-          suggestions = _this$props3.suggestions;
-
-      var _assertThisInitialize5 = _assertThisInitialized(_this),
-          renderUngroupedSuggestions = _assertThisInitialize5.renderUngroupedSuggestions,
-          userInput = _assertThisInitialize5.state.userInput;
-
-      if (grouped === undefined || grouped === null || !grouped) {
-        return renderUngroupedSuggestions();
-      } else {
-        _this.filteredData = [];
-        return suggestions.map(function (suggestion) {
-          var _this$filteredData2;
-
-          var sortData = suggestion.data.filter(function (i) {
-            var startCondition = i[filterKey].toLowerCase().startsWith(userInput.toLowerCase()),
-                includeCondition = i[filterKey].toLowerCase().includes(userInput.toLowerCase());
-
-            if (startCondition) {
-              return startCondition;
-            } else if (!startCondition && includeCondition) {
-              return includeCondition;
-            } else {
-              return null;
-            }
-          }).slice(0, suggestion.searchLimit);
-
-          (_this$filteredData2 = _this.filteredData).push.apply(_this$filteredData2, sortData);
-
-          return /*#__PURE__*/React__default.createElement(React__default.Fragment, {
-            key: suggestion[filterHeaderKey]
-          }, /*#__PURE__*/React__default.createElement("li", {
-            className: "suggestion-item suggestion-title text-primary text-bold-600"
-          }, suggestion[filterHeaderKey]), sortData.length ? _this.renderGroupedSuggestion(sortData) : /*#__PURE__*/React__default.createElement("li", {
-            className: "suggestion-item no-result"
-          }, /*#__PURE__*/React__default.createElement(Icon.AlertTriangle, {
-            size: 15
-          }), ' ', /*#__PURE__*/React__default.createElement("span", {
-            className: "align-middle ml-50"
-          }, "No Result")));
-        });
-      }
-    };
-
-    _this.clearInput = function (val) {
-      if (_this.props.clearInput && !val) {
-        _this.setState({
-          userInput: ''
-        });
-      }
-    };
-
-    _this.handleExtenalClick = function (e) {
-      var container = _this.refs.container;
-      var target = e.target;
-
-      if (target !== container && !container.contains(target)) {
-        _this.setState({
-          showSuggestions: false
-        });
-
-        if (_this.props.externalClick) _this.props.externalClick(e);
-      }
-    };
-
-    _this.state = {
-      activeSuggestion: 0,
-      showSuggestions: false,
-      userInput: '',
-      focused: false,
-      openUp: false
-    };
-    _this.filteredData = [];
-    document.body.addEventListener('click', _this.handleExtenalClick);
-    return _this;
-  }
-
-  var _proto = Autocomplete.prototype;
-
-  _proto.componentDidUpdate = function componentDidUpdate(prevProps, prevState) {
-    var textInput = ReactDOM.findDOMNode(this.input);
-    var _this$props4 = this.props,
-        autoFocus = _this$props4.autoFocus,
-        onSuggestionsShown = _this$props4.onSuggestionsShown,
-        clearInput = _this$props4.clearInput;
-
-    if (textInput !== null && autoFocus) {
-      textInput.focus();
-    }
-
-    if (this.props.defaultSuggestions && prevState.showSuggestions === false && this.state.focused) {
-      this.setState({
-        showSuggestions: true
-      });
-    }
-
-    if (clearInput === false && this.state.userInput.length) {
-      this.setState({
-        userInput: ''
-      });
-    }
-
-    if (onSuggestionsShown && this.state.showSuggestions) {
-      onSuggestionsShown(this.state.userInput);
-    }
-
-    if (this.props.defaultSuggestions && prevState.focused === false && this.state.focused === true) {
-      this.setState({
-        showSuggestions: true
-      });
-    }
-  };
-
-  _proto.componentDidMount = function componentDidMount() {
-    if (this.props.defaultSuggestions && this.state.focused) {
-      this.setState({
-        showSuggestions: true
-      });
-    }
-  };
-
-  _proto.componentWillUnmount = function componentWillUnmount() {
-    document.body.removeEventListener('click', this.handleExtenalClick);
-  };
-
-  _proto.render = function render() {
-    var _this2 = this;
-
-    var _onChange = this.onChange,
-        _onKeyDown = this.onKeyDown,
-        _this$state2 = this.state,
-        showSuggestions = _this$state2.showSuggestions,
-        userInput = _this$state2.userInput,
-        openUp = _this$state2.openUp;
-    var suggestionsListComponent;
-
-    if (showSuggestions) {
-      suggestionsListComponent = /*#__PURE__*/React__default.createElement(PerfectScrollbar, {
-        className: classnames('suggestions-list', {
-          'open-up': openUp
-        }),
-        ref: function ref(el) {
-          return _this2.suggestionList = el;
-        },
-        component: "ul",
-        options: {
-          wheelPropagation: false
-        }
-      }, this.renderSuggestions());
-    }
-
-    return /*#__PURE__*/React__default.createElement("div", {
-      className: "vx-autocomplete-container",
-      ref: "container"
-    }, /*#__PURE__*/React__default.createElement("input", {
-      type: "text",
-      onChange: function onChange(e) {
-        _onChange(e);
-
-        if (_this2.props.onChange) {
-          _this2.props.onChange(e);
-        }
-      },
-      onKeyDown: function onKeyDown(e) {
-        return _onKeyDown(e);
-      },
-      value: userInput,
-      className: "vx-autocomplete-search " + (this.props.className ? this.props.className : ''),
-      placeholder: this.props.placeholder,
-      onClick: this.onInputClick,
-      ref: function ref(el) {
-        return _this2.input = el;
-      },
-      onFocus: function onFocus(e) {
-        _this2.setState({
-          focused: true
-        });
-      },
-      autoFocus: this.props.autoFocus,
-      onBlur: function onBlur(e) {
-        if (_this2.props.onBlur) _this2.props.onBlur(e);
-
-        _this2.setState({
-          focused: false
-        });
-      }
-    }), suggestionsListComponent);
-  };
-
-  return Autocomplete;
-}(React__default.Component);
-Autocomplete.propTypes = {
-  suggestions: PropTypes.array.isRequired,
-  filterKey: PropTypes.string.isRequired,
-  filterHeaderKey: PropTypes.string,
-  placeholder: PropTypes.string,
-  suggestionLimit: PropTypes.number,
-  grouped: PropTypes.bool,
-  autoFocus: PropTypes.bool,
-  onKeyDown: PropTypes.func,
-  onChange: PropTypes.func,
-  onSuggestionsShown: PropTypes.func,
-  onSuggestionItemClick: PropTypes.func
-};
-
-var UserDropdown = function UserDropdown(props) {
-  var logoutAction = props.logoutAction;
-
-  var handleNavigation = function handleNavigation(e, path) {
-    e.preventDefault();
-    history.push(path);
-  };
-
-  return /*#__PURE__*/React__default.createElement(reactstrap.DropdownMenu, {
-    right: true
-  }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
-    tag: "a",
-    href: "#",
-    onClick: function onClick(e) {
-      return handleNavigation(e, '/account-settings');
-    }
-  }, /*#__PURE__*/React__default.createElement(Icon.Settings, {
-    size: 14,
-    className: "mr-50"
-  }), /*#__PURE__*/React__default.createElement("span", {
-    className: "align-middle"
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "setting"
-  }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
-    divider: true
-  }), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
-    tag: "a",
-    onClick: logoutAction
-  }, /*#__PURE__*/React__default.createElement(Icon.Power, {
-    size: 14,
-    className: "mr-50"
-  }), /*#__PURE__*/React__default.createElement("span", {
-    className: "align-middle"
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "navbar.logout"
-  }))));
-};
-
-var NavbarUser = /*#__PURE__*/function (_React$PureComponent) {
-  _inheritsLoose(NavbarUser, _React$PureComponent);
-
-  function NavbarUser() {
-    var _this;
-
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
-    _this = _React$PureComponent.call.apply(_React$PureComponent, [this].concat(args)) || this;
-    _this.state = {
-      navbarSearch: false,
-      langDropdown: false,
-      suggestions: []
-    };
-
-    _this.handleNavbarSearch = function () {
-      _this.setState({
-        navbarSearch: !_this.state.navbarSearch
-      });
-    };
-
-    _this.handleLangDropdown = function () {
-      return _this.setState({
-        langDropdown: !_this.state.langDropdown
-      });
-    };
-
-    _this.getCountryCode = function (locale) {
-      var countryCode = {
-        en: 'us',
-        vi: 'vn'
-      };
-      return countryCode[locale];
-    };
-
-    return _this;
-  }
-
-  var _proto = NavbarUser.prototype;
-
-  _proto.componentDidMount = function componentDidMount() {};
-
-  _proto.render = function render() {
-    var _this2 = this;
-
-    return /*#__PURE__*/React__default.createElement("ul", {
-      className: "nav navbar-nav navbar-nav-user float-right"
-    }, /*#__PURE__*/React__default.createElement(Context.Consumer, null, function (context) {
-      return /*#__PURE__*/React__default.createElement(reactstrap.Dropdown, {
-        tag: "li",
-        className: "dropdown-language nav-item",
-        isOpen: _this2.state.langDropdown,
-        toggle: _this2.handleLangDropdown,
-        "data-tour": "language"
-      }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
-        tag: "a",
-        className: "nav-link"
-      }, /*#__PURE__*/React__default.createElement(ReactCountryFlag, {
-        className: "country-flag",
-        countryCode: _this2.getCountryCode(context.state.locale),
-        svg: true
-      }), /*#__PURE__*/React__default.createElement("span", {
-        className: "d-sm-inline-block d-none text-capitalize align-middle ml-50"
-      }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-        id: "navbar.language." + context.state.locale
-      }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownMenu, {
-        right: true
-      }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
-        tag: "a",
-        onClick: function onClick(e) {
-          return context.switchLanguage('en');
-        }
-      }, /*#__PURE__*/React__default.createElement(ReactCountryFlag, {
-        className: "country-flag",
-        countryCode: "us",
-        svg: true
-      }), /*#__PURE__*/React__default.createElement("span", {
-        className: "ml-1"
-      }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-        id: "navbar.language.en"
-      }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
-        tag: "a",
-        onClick: function onClick(e) {
-          return context.switchLanguage('vi');
-        }
-      }, /*#__PURE__*/React__default.createElement(ReactCountryFlag, {
-        className: "country-flag",
-        countryCode: "vn",
-        svg: true
-      }), /*#__PURE__*/React__default.createElement("span", {
-        className: "ml-1"
-      }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-        id: "navbar.language.vi"
-      })))));
-    }), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, {
-      className: "nav-search",
-      onClick: this.handleNavbarSearch
-    }, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
-      className: "nav-link-search"
-    }, /*#__PURE__*/React__default.createElement(Icon.Search, {
-      size: 21,
-      "data-tour": "search"
-    })), /*#__PURE__*/React__default.createElement("div", {
-      className: classnames('search-input', {
-        open: this.state.navbarSearch,
-        'd-none': this.state.navbarSearch === false
-      })
-    }, /*#__PURE__*/React__default.createElement("div", {
-      className: "search-input-icon"
-    }, /*#__PURE__*/React__default.createElement(Icon.Search, {
-      size: 17,
-      className: "primary"
-    })), /*#__PURE__*/React__default.createElement(Autocomplete, {
-      className: "form-control",
-      suggestions: this.state.suggestions,
-      filterKey: "title",
-      filterHeaderKey: "groupTitle",
-      grouped: true,
-      placeholder: "Explore Vuexy...",
-      autoFocus: true,
-      clearInput: this.state.navbarSearch,
-      externalClick: function externalClick(e) {
-        _this2.setState({
-          navbarSearch: false
-        });
-      },
-      onKeyDown: function onKeyDown(e) {
-        if (e.keyCode === 27 || e.keyCode === 13) {
-          _this2.setState({
-            navbarSearch: false
-          });
-
-          _this2.props.handleAppOverlay('');
-        }
-      },
-      customRender: function customRender(item, i, filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover) {
-        var IconTag = Icon[item.icon ? item.icon : 'X'];
-        return /*#__PURE__*/React__default.createElement("li", {
-          className: classnames('suggestion-item', {
-            active: filteredData.indexOf(item) === activeSuggestion
-          }),
-          key: i,
-          onClick: function onClick(e) {
-            return onSuggestionItemClick(item.link, e);
-          },
-          onMouseEnter: function onMouseEnter() {
-            return onSuggestionItemHover(filteredData.indexOf(item));
-          }
-        }, /*#__PURE__*/React__default.createElement("div", {
-          className: classnames({
-            'd-flex justify-content-between align-items-center': item.file || item.img
-          })
-        }, /*#__PURE__*/React__default.createElement("div", {
-          className: "item-container d-flex"
-        }, item.icon ? /*#__PURE__*/React__default.createElement(IconTag, {
-          size: 17
-        }) : item.file ? /*#__PURE__*/React__default.createElement("img", {
-          src: item.file,
-          height: "36",
-          width: "28",
-          alt: item.title
-        }) : item.img ? /*#__PURE__*/React__default.createElement("img", {
-          className: "rounded-circle mt-25",
-          src: item.img,
-          height: "28",
-          width: "28",
-          alt: item.title
-        }) : null, /*#__PURE__*/React__default.createElement("div", {
-          className: "item-info ml-1"
-        }, /*#__PURE__*/React__default.createElement("p", {
-          className: "align-middle mb-0"
-        }, item.title), item.by || item.email ? /*#__PURE__*/React__default.createElement("small", {
-          className: "text-muted"
-        }, item.by ? item.by : item.email ? item.email : null) : null)), item.size || item.date ? /*#__PURE__*/React__default.createElement("div", {
-          className: "meta-container"
-        }, /*#__PURE__*/React__default.createElement("small", {
-          className: "text-muted"
-        }, item.size ? item.size : item.date ? item.date : null)) : null));
-      },
-      onSuggestionsShown: function onSuggestionsShown(userInput) {
-        if (_this2.state.navbarSearch) {
-          _this2.props.handleAppOverlay(userInput);
-        }
-      }
-    }), /*#__PURE__*/React__default.createElement("div", {
-      className: "search-input-close"
-    }, /*#__PURE__*/React__default.createElement(Icon.X, {
-      size: 24,
-      onClick: function onClick(e) {
-        e.stopPropagation();
-
-        _this2.setState({
-          navbarSearch: false
-        });
-
-        _this2.props.handleAppOverlay('');
-      }
-    })))), /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledDropdown, {
-      tag: "li",
-      className: "dropdown-notification nav-item"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
-      tag: "a",
-      className: "nav-link nav-link-label"
-    }, /*#__PURE__*/React__default.createElement(Icon.Bell, {
-      size: 21
-    }), /*#__PURE__*/React__default.createElement(reactstrap.Badge, {
-      pill: true,
-      color: "primary",
-      className: "badge-up"
-    }, ' ', "5", ' ')), /*#__PURE__*/React__default.createElement(reactstrap.DropdownMenu, {
-      tag: "ul",
-      right: true,
-      className: "dropdown-menu-media"
-    }, /*#__PURE__*/React__default.createElement("li", {
-      className: "dropdown-menu-header"
-    }, /*#__PURE__*/React__default.createElement("div", {
-      className: "dropdown-header mt-0"
-    }, /*#__PURE__*/React__default.createElement("h3", {
-      className: "text-white"
-    }, "5 New"), /*#__PURE__*/React__default.createElement("span", {
-      className: "notification-title"
-    }, "App Notifications"))), /*#__PURE__*/React__default.createElement(PerfectScrollbar, {
-      className: "media-list overflow-hidden position-relative",
-      options: {
-        wheelPropagation: false
-      }
-    }, /*#__PURE__*/React__default.createElement("div", {
-      className: "d-flex justify-content-between"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "d-flex align-items-start"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      left: true,
-      href: "#"
-    }, /*#__PURE__*/React__default.createElement(Icon.PlusSquare, {
-      className: "font-medium-5 primary",
-      size: 21
-    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      body: true
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      heading: true,
-      className: "primary media-heading",
-      tag: "h6"
-    }, "You have new order!"), /*#__PURE__*/React__default.createElement("p", {
-      className: "notification-text"
-    }, "Are your going to meet me tonight?")), /*#__PURE__*/React__default.createElement("small", null, /*#__PURE__*/React__default.createElement("time", {
-      className: "media-meta",
-      dateTime: "2015-06-11T18:29:20+08:00"
-    }, "9 hours ago")))), /*#__PURE__*/React__default.createElement("div", {
-      className: "d-flex justify-content-between"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "d-flex align-items-start"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      left: true,
-      href: "#"
-    }, /*#__PURE__*/React__default.createElement(Icon.DownloadCloud, {
-      className: "font-medium-5 success",
-      size: 21
-    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      body: true
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      heading: true,
-      className: "success media-heading",
-      tag: "h6"
-    }, "99% Server load"), /*#__PURE__*/React__default.createElement("p", {
-      className: "notification-text"
-    }, "You got new order of goods?")), /*#__PURE__*/React__default.createElement("small", null, /*#__PURE__*/React__default.createElement("time", {
-      className: "media-meta",
-      dateTime: "2015-06-11T18:29:20+08:00"
-    }, "5 hours ago")))), /*#__PURE__*/React__default.createElement("div", {
-      className: "d-flex justify-content-between"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "d-flex align-items-start"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      left: true,
-      href: "#"
-    }, /*#__PURE__*/React__default.createElement(Icon.AlertTriangle, {
-      className: "font-medium-5 danger",
-      size: 21
-    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      body: true
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      heading: true,
-      className: "danger media-heading",
-      tag: "h6"
-    }, "Warning Notification"), /*#__PURE__*/React__default.createElement("p", {
-      className: "notification-text"
-    }, "Server has used 99% of CPU")), /*#__PURE__*/React__default.createElement("small", null, /*#__PURE__*/React__default.createElement("time", {
-      className: "media-meta",
-      dateTime: "2015-06-11T18:29:20+08:00"
-    }, "Today")))), /*#__PURE__*/React__default.createElement("div", {
-      className: "d-flex justify-content-between"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "d-flex align-items-start"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      left: true,
-      href: "#"
-    }, /*#__PURE__*/React__default.createElement(Icon.CheckCircle, {
-      className: "font-medium-5 info",
-      size: 21
-    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      body: true
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      heading: true,
-      className: "info media-heading",
-      tag: "h6"
-    }, "Complete the task"), /*#__PURE__*/React__default.createElement("p", {
-      className: "notification-text"
-    }, "One of your task is pending.")), /*#__PURE__*/React__default.createElement("small", null, /*#__PURE__*/React__default.createElement("time", {
-      className: "media-meta",
-      dateTime: "2015-06-11T18:29:20+08:00"
-    }, "Last week")))), /*#__PURE__*/React__default.createElement("div", {
-      className: "d-flex justify-content-between"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "d-flex align-items-start"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      left: true,
-      href: "#"
-    }, /*#__PURE__*/React__default.createElement(Icon.File, {
-      className: "font-medium-5 warning",
-      size: 21
-    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      body: true
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      heading: true,
-      className: "warning media-heading",
-      tag: "h6"
-    }, "Generate monthly report"), /*#__PURE__*/React__default.createElement("p", {
-      className: "notification-text"
-    }, "Reminder to generate monthly report")), /*#__PURE__*/React__default.createElement("small", null, /*#__PURE__*/React__default.createElement("time", {
-      className: "media-meta",
-      dateTime: "2015-06-11T18:29:20+08:00"
-    }, "Last month"))))), /*#__PURE__*/React__default.createElement("li", {
-      className: "dropdown-menu-footer"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
-      tag: "a",
-      className: "p-1 text-center"
-    }, /*#__PURE__*/React__default.createElement("span", {
-      className: "align-middle"
-    }, "Read all notifications"))))), /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledDropdown, {
-      tag: "li",
-      className: "dropdown-user nav-item"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
-      tag: "a",
-      className: "nav-link dropdown-user-link"
-    }, /*#__PURE__*/React__default.createElement("div", {
-      className: "user-nav d-sm-flex d-none"
-    }, /*#__PURE__*/React__default.createElement("span", {
-      className: "user-name text-bold-600"
-    }, this.props.userName), /*#__PURE__*/React__default.createElement("span", {
-      className: "user-status"
-    }, "Available")), /*#__PURE__*/React__default.createElement("span", {
-      "data-tour": "user"
-    }, /*#__PURE__*/React__default.createElement("img", {
-      src: "https://storage.live.com/Users/-6155523327610065665/MyProfile/ExpressionProfile/ProfilePhoto:Win8Static,UserTileMedium,UserTileStatic",
-      className: "round",
-      height: "40",
-      width: "40",
-      alt: "avatar"
-    }))), /*#__PURE__*/React__default.createElement(UserDropdown, this.props)));
-  };
-
-  return NavbarUser;
-}(React__default.PureComponent);
-
-var ThemeNavbar = function ThemeNavbar(props) {
-  var colorsArr = ['primary', 'danger', 'success', 'info', 'warning', 'dark'];
-  var navbarTypes = ['floating', 'static', 'sticky', 'hidden'];
-  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("div", {
-    className: "content-overlay"
-  }), /*#__PURE__*/React__default.createElement("div", {
-    className: "header-navbar-shadow"
-  }), /*#__PURE__*/React__default.createElement(reactstrap.Navbar, {
-    className: classnames('header-navbar navbar-expand-lg navbar navbar-with-menu navbar-shadow', {
-      'navbar-light': props.navbarColor === 'default' || !colorsArr.includes(props.navbarColor),
-      'navbar-dark': colorsArr.includes(props.navbarColor),
-      'bg-primary': props.navbarColor === 'primary' && props.navbarType !== 'static',
-      'bg-danger': props.navbarColor === 'danger' && props.navbarType !== 'static',
-      'bg-success': props.navbarColor === 'success' && props.navbarType !== 'static',
-      'bg-info': props.navbarColor === 'info' && props.navbarType !== 'static',
-      'bg-warning': props.navbarColor === 'warning' && props.navbarType !== 'static',
-      'bg-dark': props.navbarColor === 'dark' && props.navbarType !== 'static',
-      'd-none': props.navbarType === 'hidden' && !props.horizontal,
-      'floating-nav': props.navbarType === 'floating' && !props.horizontal || !navbarTypes.includes(props.navbarType) && !props.horizontal,
-      'navbar-static-top': props.navbarType === 'static' && !props.horizontal,
-      'fixed-top': props.navbarType === 'sticky' || props.horizontal,
-      scrolling: props.horizontal && props.scrolling
-    })
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "navbar-wrapper"
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "navbar-container content"
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "navbar-collapse d-flex justify-content-between align-items-center",
-    id: "navbar-mobile"
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "bookmark-wrapper"
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "mr-auto float-left bookmark-wrapper d-flex align-items-center"
-  }, /*#__PURE__*/React__default.createElement("ul", {
-    className: "navbar-nav d-xl-none"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.NavItem, {
-    className: "mobile-menu mr-auto"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
-    className: "nav-menu-main menu-toggle hidden-xs is-active",
-    onClick: props.sidebarVisibility
-  }, /*#__PURE__*/React__default.createElement(Icon.Menu, {
-    className: "ficon"
-  })))), /*#__PURE__*/React__default.createElement("ul", {
-    className: "nav navbar-nav bookmark-icons"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, null, /*#__PURE__*/React__default.createElement(Icon.Star, {
-    className: "text-warning",
-    size: 21
-  })))))), /*#__PURE__*/React__default.createElement(NavbarUser, {
-    handleAppOverlay: props.handleAppOverlay,
-    changeCurrentLang: props.changeCurrentLang,
-    userName: props.name,
-    isAuthenticated: props.isAuthenticated,
-    logoutAction: props.logoutAction
-  }))))));
-};
-
-var mapStateToProps$1 = function mapStateToProps(state) {
-  return {
-    name: state.auth.name,
-    isAuthenticated: !!state.auth.name
-  };
-};
-
-var Navbar = reactRedux.connect(mapStateToProps$1, {
-  logoutAction: logoutAction
-})(ThemeNavbar);
-
-function useDeviceDetect() {
-  var _React$useState = React__default.useState(false),
-      isMobile = _React$useState[0],
-      setMobile = _React$useState[1];
-
-  React__default.useEffect(function () {
-    var userAgent = typeof window.navigator === 'undefined' ? '' : navigator.userAgent;
-    var mobile = Boolean(userAgent.match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i));
-    setMobile(mobile);
-  }, []);
-  return {
-    isMobile: isMobile
-  };
-}
-
-var Footer = function Footer(props) {
-  var _useDeviceDetect = useDeviceDetect(),
-      isMobile = _useDeviceDetect.isMobile;
-
-  return /*#__PURE__*/React__default.createElement("footer", null, /*#__PURE__*/React__default.createElement("div", {
-    className: classnames('footer footer-light', {
-      'd-none': isMobile
-    })
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "d-flex justify-content-between"
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "float-md-left d-block d-md-inline-block mt-25"
-  }, /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "footer.copyRight"
-  })), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "footer.companySlogan"
-  }))), /*#__PURE__*/React__default.createElement("div", {
-    className: "float-md-right d-none d-md-block"
-  }, /*#__PURE__*/React__default.createElement("span", {
-    className: "align-middle"
-  }, "Hand-crafted & Made with"), ' ', /*#__PURE__*/React__default.createElement(Icon.Heart, {
-    className: "text-danger",
-    size: 15
-  })))), /*#__PURE__*/React__default.createElement("div", {
-    className: classnames('footer footer-light footer-mobile', {
-      'd-none': !isMobile
-    })
-  }, /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement("a", {
-    className: "tab-link",
-    href: "#"
-  }, /*#__PURE__*/React__default.createElement(Icon.Home, null))), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement("a", {
-    className: "tab-link",
-    href: "#"
-  }, /*#__PURE__*/React__default.createElement(Icon.List, null))), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement("a", {
-    className: "tab-link",
-    href: "#"
-  }, /*#__PURE__*/React__default.createElement(Icon.PlusCircle, null))), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement("a", {
-    className: "tab-link",
-    href: "#"
-  }, /*#__PURE__*/React__default.createElement(Icon.Gift, null))), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement("a", {
-    className: "tab-link"
-  }, /*#__PURE__*/React__default.createElement(Icon.MessageSquare, null)))), props.hideScrollToTop === false ? /*#__PURE__*/React__default.createElement(ScrollToTop, {
-    showUnder: 160
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
-    color: "primary",
-    className: "btn-icon scroll-top"
-  }, /*#__PURE__*/React__default.createElement(Icon.ArrowUp, {
-    size: 15
-  }))) : null);
-};
-
-var changeMode = function changeMode(mode) {
-  return function (dispatch) {
-    return dispatch({
-      type: "CHANGE_MODE",
-      mode: mode
-    });
-  };
-};
-var collapseSidebar = function collapseSidebar(value) {
-  return function (dispatch) {
-    return dispatch({
-      type: "COLLAPSE_SIDEBAR",
-      value: value
-    });
-  };
-};
-var changeNavbarColor = function changeNavbarColor(color) {
-  return function (dispatch) {
-    return dispatch({
-      type: "CHANGE_NAVBAR_COLOR",
-      color: color
-    });
-  };
-};
-var changeNavbarType = function changeNavbarType(style) {
-  return function (dispatch) {
-    return dispatch({
-      type: "CHANGE_NAVBAR_TYPE",
-      style: style
-    });
-  };
-};
-var changeFooterType = function changeFooterType(style) {
-  return function (dispatch) {
-    return dispatch({
-      type: "CHANGE_FOOTER_TYPE",
-      style: style
-    });
-  };
-};
-var changeMenuColor = function changeMenuColor(style) {
-  return function (dispatch) {
-    return dispatch({
-      type: "CHANGE_MENU_COLOR",
-      style: style
-    });
-  };
-};
-var hideScrollToTop = function hideScrollToTop(value) {
-  return function (dispatch) {
-    return dispatch({
-      type: "HIDE_SCROLL_TO_TOP",
-      value: value
-    });
-  };
-};
+var Sidebar$1 = reactRedux.connect(mapStateToProps$1)(Sidebar);
 
 var Layout = /*#__PURE__*/function (_PureComponent) {
   _inheritsLoose(Layout, _PureComponent);
@@ -2668,6 +2616,8 @@ var Layout = /*#__PURE__*/function (_PureComponent) {
         direction = _this$props$customize.direction;
 
     if (this.mounted) {
+      this.props.loadNavtigation();
+
       if (window !== 'undefined') {
         window.addEventListener('resize', this.updateWidth, false);
       }
@@ -2775,9 +2725,9 @@ var Layout = /*#__PURE__*/function (_PureComponent) {
         'show-overlay': this.state.appOverlay === true
       }),
       onClick: this.handleAppOverlayClick
-    }, /*#__PURE__*/React__default.createElement(Navbar, navbarProps), /*#__PURE__*/React__default.createElement("div", {
+    }, /*#__PURE__*/React__default.createElement(PerfectScrollbar, null, /*#__PURE__*/React__default.createElement(Navbar, navbarProps), /*#__PURE__*/React__default.createElement("div", {
       className: "content-wrapper"
-    }, this.props.children)), /*#__PURE__*/React__default.createElement(Footer, footerProps), /*#__PURE__*/React__default.createElement("div", {
+    }, this.props.children))), /*#__PURE__*/React__default.createElement(Footer, footerProps), /*#__PURE__*/React__default.createElement("div", {
       className: "sidenav-overlay",
       onClick: this.handleSidebarVisibility
     }));
@@ -2799,52 +2749,90 @@ var Layout$1 = reactRedux.connect(mapStateToProps$2, {
   changeNavbarType: changeNavbarType,
   changeFooterType: changeFooterType,
   changeMenuColor: changeMenuColor,
-  hideScrollToTop: hideScrollToTop
+  hideScrollToTop: hideScrollToTop,
+  loadNavtigation: loadNavtigation
 })(Layout);
 
-var LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
-var loadNavtigation = function loadNavtigation(appId) {
-  return function (dispatch) {
-    try {
-      return Promise.resolve(NavBarService.getNativagtion()).then(function (res) {
-        var navCofigs = getNativgationConfig(appId);
-        dispatch({
-          type: LOAD_NATIVGATION$1,
-          payload: navCofigs
-        });
-      });
-    } catch (e) {
-      return Promise.reject(e);
+var Context = React__default.createContext();
+
+var IntlProviderWrapper = /*#__PURE__*/function (_React$Component) {
+  _inheritsLoose(IntlProviderWrapper, _React$Component);
+
+  function IntlProviderWrapper() {
+    var _this;
+
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
     }
+
+    _this = _React$Component.call.apply(_React$Component, [this].concat(args)) || this;
+    _this.state = {
+      locale: 'vi',
+      messages: _this.props.appMessage['vi']
+    };
+    return _this;
+  }
+
+  var _proto = IntlProviderWrapper.prototype;
+
+  _proto.render = function render() {
+    var _this2 = this;
+
+    var children = this.props.children;
+    var _this$state = this.state,
+        locale = _this$state.locale,
+        messages = _this$state.messages;
+    return /*#__PURE__*/React__default.createElement(Context.Provider, {
+      value: {
+        state: this.state,
+        switchLanguage: function switchLanguage(language) {
+          _this2.setState({
+            locale: language,
+            messages: _this2.props.appMessage[language]
+          });
+        }
+      }
+    }, /*#__PURE__*/React__default.createElement(reactIntl.IntlProvider, {
+      key: locale,
+      locale: locale,
+      messages: messages,
+      defaultLocale: "vi"
+    }, children));
   };
-};
 
-var FullPageLayout = function FullPageLayout(_ref) {
-  var children = _ref.children,
-      rest = _objectWithoutPropertiesLoose(_ref, ["children"]);
+  return IntlProviderWrapper;
+}(React__default.Component);
 
-  return /*#__PURE__*/React__default.createElement("div", {
-    style: {
-      background: 'url("https://pixinvent.com/demo/vuexy-react-admin-dashboard-template/demo-1/static/media/vuesax-login-bg.eb4e894d.jpg")'
-    },
-    className: classnames('full-layout wrapper bg-full-screen-image blank-page dark-layout', {
-      'layout-dark': themeConfig.layoutDark
-    })
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "app-content"
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "content-wrapper"
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "content-body"
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "flexbox-container"
-  }, /*#__PURE__*/React__default.createElement("main", {
-    className: "main w-100"
-  }, children))))));
-};
-
+var login = "Login";
+var register = "Register";
+var forgotPassword = "Forgot password";
 var setting = "Setting";
 var messages_en = {
+	login: login,
+	"login.firstWelcome": "Welcome you to InOn X!",
+	"login.logedWelcome": "Hi,",
+	"login.username": "Username *",
+	"login.username.required": "You must enter your username",
+	"login.password": "Password *",
+	"login.password.required": "You must enter your password",
+	"login.rememberMe": "Remember me",
+	"login.fail": "Username or password was incorrect",
+	register: register,
+	"register.fullname": "Full name *",
+	"register.fullname.required": "You must enter your full name",
+	"register.email.required": "You must enter your email address",
+	"register.email.invalid": "You must enter your valid email address",
+	"register.phoneNumber": "Phone mumber *",
+	"register.phoneNumber.invalid": "You must enter your valid phone number",
+	"register.phoneNumber.required": "You must enter your phone number",
+	"register.referalCode": "Referal code",
+	"register.mustAppcepted": "Your must accept our terms and conditions",
+	forgotPassword: forgotPassword,
+	"forgotPassword.verify": "Verify",
+	"forgotPassword.username": "Username *",
+	"forgotPassword.username.required": "You must enter username",
+	"forgotPassword.email": "Email registration *",
+	"forgotPassword.email.required": "You must enter email registration",
 	"menu.home": "Home",
 	"menu.user": "User Management",
 	"menu.buyInsurance": "Buy Insurance",
@@ -2886,16 +2874,16 @@ var messages_en = {
 	"setting.changePassword": "Change password",
 	"setting.partnerCode": "Partner code",
 	"setting.referralCode": "Referral code",
-	"setting.personal": "Personal",
-	"setting.application": "Application",
+	"setting.personalSetting": "Personal Settings",
+	"setting.generalInformation": "General Information",
 	"setting.notification": "Notification",
 	"setting.deviceManagement": "Device Management",
 	"setting.language": "Language",
-	"setting.term": "Terms of use",
+	"setting.termAndCondition": "Terms & condition",
 	"setting.general": "General",
 	"setting.privacyPolicy": "Privacy Policy",
 	"setting.frequentlyAsked": "Frequently Asked",
-	"setting.conntact": "Contact InOn",
+	"setting.contact": "Contact InOn",
 	"setting.feedback": "Feedback",
 	"setting.share": "Share",
 	"setting.status.COMPLETE": "Your account had completed information",
@@ -2906,8 +2894,36 @@ var messages_en = {
 	"changePassword.passwordMustMatch": "Password must match"
 };
 
+var login$1 = "Đăng nhập";
+var register$1 = "Đăng ký";
+var forgotPassword$1 = "Quên mật khẩu";
 var setting$1 = "Cài đặt";
 var messages_vi = {
+	login: login$1,
+	"login.firstWelcome": "Chào mừng bạn đến với InOn X!",
+	"login.logedWelcome": "Xin chào,",
+	"login.username": "Tên tài khoản *",
+	"login.username.required": "Bạn phải nhập tên tài khoản",
+	"login.password": "Mật khẩu *",
+	"login.password.required": "Bạn phải nhập mật khẩu",
+	"login.rememberMe": "Ghi nhớ tôi",
+	"login.fail": "Tài khoản hoặc mật khẩu của bạn không chính xác",
+	register: register$1,
+	"register.fullname": "Họ và tên *",
+	"register.fullname.required": "Bạn phải nhập họ và tên",
+	"register.email.required": "Bạn phải nhập địa chỉ email",
+	"register.email.invalid": "Địa chỉ email không hợp lệ",
+	"register.phoneNumber": "Số điện thoại *",
+	"register.phoneNumber.required": "Bạn phải nhập số điện thoại",
+	"register.phoneNumber.invalid": "Số điện thoại không hợp lệ",
+	"register.referalCode": "Mã giới thiệu",
+	"register.mustAppcepted": "Bạn phải đồng ý điều khoản và điều kiện của chúng tôi",
+	forgotPassword: forgotPassword$1,
+	"forgotPassword.verify": "Xác thực",
+	"forgotPassword.username": "Tên tài khoản *",
+	"forgotPassword.username.required": "Bạn phải nhập tên tài khoản",
+	"forgotPassword.email": "Email đăng ký *",
+	"forgotPassword.email.required": "Bạn phải nhập email đăng ký",
 	"menu.home": "Trang chủ",
 	"menu.user": "Tài khoản",
 	"menu.buyInsurance": "Mua bảo hiểm",
@@ -2949,16 +2965,16 @@ var messages_vi = {
 	"setting.changePassword": "Thay đổi mật khẩu",
 	"setting.partnerCode": "Mã đối tác",
 	"setting.referralCode": "Mã giới thiệu",
-	"setting.personal": "Cá nhân",
-	"setting.application": "Ứng dụng",
+	"setting.personalSetting": "Cài đặt Cá nhân",
+	"setting.generalInformation": "Thông tin chung",
 	"setting.notification": "Thông báo",
 	"setting.deviceManagement": "Quản lý thiết bị",
 	"setting.language": "Ngôn ngữ",
-	"setting.term": "Điều khoản sử dụng",
+	"setting.termAndCondition": "Điều khoản & Điều kiện",
 	"setting.general": "Chung",
 	"setting.privacyPolicy": "Chính sách bảo mật",
 	"setting.frequentlyAsked": "Câu hỏi thường gặp",
-	"setting.conntact": "Liên hệ InOn",
+	"setting.contact": "Liên hệ InOn",
 	"setting.feedback": "Góp ý, báo lỗi",
 	"setting.share": "Chia sẻ",
 	"setting.status.COMPLETE": "Tài khoản đã hoàn thiện thông tin",
@@ -2969,190 +2985,261 @@ var messages_vi = {
 	"changePassword.passwordMustMatch": "Mật khẩu không trùng khớp"
 };
 
-var General = /*#__PURE__*/function (_React$Component) {
-  _inheritsLoose(General, _React$Component);
+var CheckBox = /*#__PURE__*/function (_React$Component) {
+  _inheritsLoose(CheckBox, _React$Component);
 
-  function General() {
-    var _this;
-
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
-    _this = _React$Component.call.apply(_React$Component, [this].concat(args)) || this;
-    _this.state = {
-      visible: true
-    };
-
-    _this.dismissAlert = function () {
-      _this.setState({
-        visible: false
-      });
-    };
-
-    return _this;
+  function CheckBox() {
+    return _React$Component.apply(this, arguments) || this;
   }
 
-  var _proto = General.prototype;
+  var _proto = CheckBox.prototype;
 
   _proto.render = function render() {
-    return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Media, null, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "mr-1",
+    return /*#__PURE__*/React__default.createElement("div", {
+      className: "vx-checkbox-con " + (this.props.className ? this.props.className : '') + " vx-checkbox-" + this.props.color
+    }, /*#__PURE__*/React__default.createElement("input", {
+      type: "checkbox",
+      defaultChecked: this.props.defaultChecked,
+      checked: this.props.checked,
+      value: this.props.value,
+      disabled: this.props.disabled,
+      onClick: this.props.onClick ? this.props.onClick : null,
+      onChange: this.props.onChange ? this.props.onChange : null
+    }), /*#__PURE__*/React__default.createElement("span", {
+      className: "vx-checkbox vx-checkbox-" + (this.props.size ? this.props.size : 'md')
+    }, /*#__PURE__*/React__default.createElement("span", {
+      className: "vx-checkbox--check"
+    }, this.props.icon)), /*#__PURE__*/React__default.createElement("span", null, this.props.label));
+  };
+
+  return CheckBox;
+}(React__default.Component);
+
+var UserAccountTab = /*#__PURE__*/function (_React$Component) {
+  _inheritsLoose(UserAccountTab, _React$Component);
+
+  function UserAccountTab() {
+    return _React$Component.apply(this, arguments) || this;
+  }
+
+  var _proto = UserAccountTab.prototype;
+
+  _proto.render = function render() {
+    return /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      className: "mb-2"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      className: "mr-2 my-25",
       left: true,
       href: "#"
     }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "rounded-circle",
+      className: "users-avatar-shadow rounded",
       object: true,
       src: 'https://storage.live.com/Users/-6155523327610065665/MyProfile/ExpressionProfile/ProfilePhoto:Win8Static,UserTileMedium,UserTileStatic',
-      alt: "User",
-      height: "64",
-      width: "64"
+      alt: "user profile image",
+      height: "84",
+      width: "84"
     })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "mt-25",
+      className: "mt-2",
       body: true
-    }, /*#__PURE__*/React__default.createElement("div", {
-      className: "d-flex flex-sm-row flex-column justify-content-start px-0"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      className: "font-medium-1 text-bold-600",
+      tag: "p",
+      heading: true
+    }, "Crystal Hamilton"), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex flex-wrap"
     }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      tag: "label",
-      className: "mr-50 cursor-pointer",
+      className: "mr-1",
       color: "primary",
       outline: true
-    }, "Upload Photo", /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "file",
-      name: "file",
-      id: "uploadImg",
-      hidden: true
-    })), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+    }, "Change"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
       color: "flat-danger"
-    }, "Remove")), /*#__PURE__*/React__default.createElement("p", {
-      className: "text-muted mt-50"
-    }, /*#__PURE__*/React__default.createElement("small", null, "Allowed JPG, GIF or PNG. Max size of 800kB")))), /*#__PURE__*/React__default.createElement(reactstrap.Form, {
-      className: "mt-2",
+    }, "Remove Avatar"))))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Form, {
       onSubmit: function onSubmit(e) {
         return e.preventDefault();
       }
     }, /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      md: "6",
       sm: "12"
     }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "userName"
+      "for": "username"
     }, "Username"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      id: "userName",
-      defaultValue: "johny_01"
+      type: "text",
+      defaultValue: "crystal",
+      id: "username",
+      placeholder: "Username"
     }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      md: "6",
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "status"
+    }, "Status"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "select",
+      name: "status",
+      id: "status"
+    }, /*#__PURE__*/React__default.createElement("option", null, "Active"), /*#__PURE__*/React__default.createElement("option", null, "Banned"), /*#__PURE__*/React__default.createElement("option", null, "Closed")))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      md: "6",
       sm: "12"
     }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
       "for": "name"
     }, "Name"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "text",
+      defaultValue: "Crystal Hamilton",
       id: "name",
-      defaultValue: "John Doe"
+      placeholder: "Name"
     }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      md: "6",
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "role"
+    }, "Role"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "select",
+      name: "role",
+      id: "role"
+    }, /*#__PURE__*/React__default.createElement("option", null, "User"), /*#__PURE__*/React__default.createElement("option", null, "Staff")))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      md: "6",
       sm: "12"
     }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
       "for": "email"
     }, "Email"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "text",
+      defaultValue: "crystalhamilton@gmail.com",
       id: "email",
-      defaultValue: "john@admin.com"
+      placeholder: "Email"
     }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Alert, {
-      className: "mb-2",
-      color: "warning",
-      isOpen: this.state.visible,
-      toggle: this.dismissAlert
-    }, /*#__PURE__*/React__default.createElement("p", {
-      className: "mb-0"
-    }, "Your email is not confirmed. Please check your inbox.", /*#__PURE__*/React__default.createElement("span", {
-      className: "text-primary"
-    }, " Resend Confirmation")))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      md: "6",
       sm: "12"
     }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
       "for": "company"
     }, "Company"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "text",
       id: "company",
-      defaultValue: "SnowMash Technologies Pvt Ltd"
+      defaultValue: "North Star Aviation Pvt Ltd",
+      placeholder: "company"
     }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      className: "d-flex justify-content-start flex-wrap",
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement("div", {
+      className: "permissions border px-2"
+    }, /*#__PURE__*/React__default.createElement("div", {
+      className: "title pt-2 pb-0"
+    }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
+      size: 19
+    }), /*#__PURE__*/React__default.createElement("span", {
+      className: "text-bold-500 font-medium-2 ml-50"
+    }, "Permissions"), /*#__PURE__*/React__default.createElement("hr", null)), /*#__PURE__*/React__default.createElement(reactstrap.Table, {
+      borderless: true,
+      responsive: true
+    }, /*#__PURE__*/React__default.createElement("thead", null, /*#__PURE__*/React__default.createElement("tr", null, /*#__PURE__*/React__default.createElement("th", null, "Module Permission"), /*#__PURE__*/React__default.createElement("th", null, "Read"), /*#__PURE__*/React__default.createElement("th", null, "Write"), /*#__PURE__*/React__default.createElement("th", null, "Create"), /*#__PURE__*/React__default.createElement("th", null, "Delete"))), /*#__PURE__*/React__default.createElement("tbody", null, /*#__PURE__*/React__default.createElement("tr", null, /*#__PURE__*/React__default.createElement("td", null, "Users"), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: true
+    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: false
+    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: false
+    })), /*#__PURE__*/React__default.createElement("td", null, ' ', /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: true
+    }))), /*#__PURE__*/React__default.createElement("tr", null, /*#__PURE__*/React__default.createElement("td", null, "Articles"), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: false
+    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: true
+    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: false
+    })), /*#__PURE__*/React__default.createElement("td", null, ' ', /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: true
+    }))), /*#__PURE__*/React__default.createElement("tr", null, /*#__PURE__*/React__default.createElement("td", null, "Staff"), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: true
+    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: true
+    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: false
+    })), /*#__PURE__*/React__default.createElement("td", null, ' ', /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: false
+    }))))))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      className: "d-flex justify-content-end flex-wrap mt-2",
       sm: "12"
     }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      className: "mr-50",
-      type: "submit",
+      className: "mr-1",
       color: "primary"
     }, "Save Changes"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      type: "submit",
-      color: "danger"
-    }, "Cancel")))));
+      color: "flat-warning"
+    }, "Reset"))))));
   };
 
-  return General;
-}(React__default.Component);
-
-var formSchema = Yup.object().shape({
-  oldpass: Yup.string().required("Required"),
-  newpass: Yup.string().required("Required"),
-  confirmpass: Yup.string().oneOf([Yup.ref("newpass"), null], "Passwords must match").required("Required")
-});
-
-var ChangePassword = /*#__PURE__*/function (_React$Component) {
-  _inheritsLoose(ChangePassword, _React$Component);
-
-  function ChangePassword() {
-    return _React$Component.apply(this, arguments) || this;
-  }
-
-  var _proto = ChangePassword.prototype;
-
-  _proto.render = function render() {
-    return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Row, {
-      className: "pt-1"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(formik.Formik, {
-      initialValues: {
-        oldpass: "",
-        newpass: "",
-        confirmpass: ""
-      },
-      validationSchema: formSchema
-    }, function (_ref) {
-      var errors = _ref.errors,
-          touched = _ref.touched;
-      return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(formik.Field, {
-        name: "oldpass",
-        id: "oldpass",
-        className: "form-control " + (errors.oldpass && touched.oldpass && "is-invalid"),
-        placeholder: "Old Password"
-      }), errors.oldpass && touched.oldpass ? /*#__PURE__*/React__default.createElement("div", {
-        className: "text-danger"
-      }, errors.oldpass) : null), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(formik.Field, {
-        name: "newpass",
-        placeholder: "New Password",
-        id: "newpass",
-        className: "form-control " + (errors.newpass && touched.newpass && "is-invalid")
-      }), errors.newpass && touched.newpass ? /*#__PURE__*/React__default.createElement("div", {
-        className: "text-danger"
-      }, errors.newpass) : null), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(formik.Field, {
-        name: "confirmpass",
-        id: "confirmpass",
-        className: "form-control " + (errors.confirmpass && touched.confirmpass && "is-invalid"),
-        placeholder: "Confirm Password"
-      }), errors.confirmpass && touched.confirmpass ? /*#__PURE__*/React__default.createElement("div", {
-        className: "text-danger"
-      }, errors.confirmpass) : null), /*#__PURE__*/React__default.createElement("div", {
-        className: "d-flex justify-content-start flex-wrap"
-      }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-        className: "mr-1 mb-1",
-        color: "primary",
-        type: "submit"
-      }, "Save Changes"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-        className: "mb-1",
-        color: "danger",
-        type: "reset",
-        outline: true
-      }, "Cancel")));
-    }))));
-  };
-
-  return ChangePassword;
+  return UserAccountTab;
 }(React__default.Component);
 
 var Radio = /*#__PURE__*/function (_React$Component) {
@@ -3259,10 +3346,10 @@ var colourStyles = {
   }
 };
 
-var InfoTab = /*#__PURE__*/function (_React$Component) {
-  _inheritsLoose(InfoTab, _React$Component);
+var UserInfoTab = /*#__PURE__*/function (_React$Component) {
+  _inheritsLoose(UserInfoTab, _React$Component);
 
-  function InfoTab() {
+  function UserInfoTab() {
     var _this;
 
     for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
@@ -3271,10 +3358,10 @@ var InfoTab = /*#__PURE__*/function (_React$Component) {
 
     _this = _React$Component.call.apply(_React$Component, [this].concat(args)) || this;
     _this.state = {
-      dob: new Date()
+      dob: new Date('1995-05-22')
     };
 
-    _this.handleDob = function (date) {
+    _this.handledob = function (date) {
       _this.setState({
         dob: date
       });
@@ -3283,375 +3370,533 @@ var InfoTab = /*#__PURE__*/function (_React$Component) {
     return _this;
   }
 
-  var _proto = InfoTab.prototype;
+  var _proto = UserInfoTab.prototype;
 
   _proto.render = function render() {
     var _this2 = this;
 
-    return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Form, {
+    return /*#__PURE__*/React__default.createElement(reactstrap.Form, {
       onSubmit: function onSubmit(e) {
         return e.preventDefault();
       }
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Row, {
+      className: "mt-1"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      className: "mt-1",
+      md: "6",
       sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "bio"
-    }, "Bio"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "textarea",
-      name: "bio",
-      id: "bio",
-      rows: "3",
-      placeholder: "Your bio data here..."
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+    }, /*#__PURE__*/React__default.createElement("h5", {
+      className: "mb-1"
+    }, /*#__PURE__*/React__default.createElement(Icon.User, {
+      className: "mr-50",
+      size: 16
+    }), /*#__PURE__*/React__default.createElement("span", {
+      className: "align-middle"
+    }, "Personal Info")), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
       className: "d-block",
-      "for": "date"
-    }, "Date"), /*#__PURE__*/React__default.createElement(Flatpickr, {
+      "for": "dob"
+    }, "Date of birth"), /*#__PURE__*/React__default.createElement(Flatpickr, {
+      id: "dob",
       className: "form-control",
       options: {
-        dateFormat: 'M \\ d \\, Y'
+        dateFormat: 'Y-m-d'
       },
       value: this.state.dob,
       onChange: function onChange(date) {
-        return _this2.handleDob(date);
+        return _this2.handledob(date);
       }
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "country"
-    }, "Country"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "select",
-      name: "country",
-      id: "country"
-    }, /*#__PURE__*/React__default.createElement("option", null, "US"), /*#__PURE__*/React__default.createElement("option", null, "UK"), /*#__PURE__*/React__default.createElement("option", null, "France")))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "contactnumber"
+    }, "Contact Number"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "number",
+      id: "contactnumber",
+      placeholder: "Contact Number"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "website"
+    }, "Website"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "url",
+      id: "website",
+      placeholder: "Web Address"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
       "for": "languages"
-    }, "Favourite Languages"), /*#__PURE__*/React__default.createElement(Select, {
+    }, "Languages"), /*#__PURE__*/React__default.createElement(Select$1, {
       isMulti: true,
-      defaultValue: [languages[0], languages[1]],
+      defaultValue: [languages[0], languages[1], languages[2]],
       isClearable: true,
       styles: colourStyles,
       options: languages,
       className: "React",
       classNamePrefix: "select",
       id: "languages"
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "number"
-    }, "Phone Number"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "number",
-      name: "number",
-      id: "number",
-      placeholder: "Phone Number"
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "url"
-    }, "Website URL"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "url",
-      name: "url",
-      id: "url",
-      placeholder: "Website URL"
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement("div", {
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      className: "d-block mb-50"
+    }, "Gender"), /*#__PURE__*/React__default.createElement("div", {
       className: "d-inline-block mr-1"
     }, /*#__PURE__*/React__default.createElement(Radio, {
       label: "Male",
-      defaultChecked: true,
+      color: "primary",
+      defaultChecked: false,
       name: "gender"
     })), /*#__PURE__*/React__default.createElement("div", {
       className: "d-inline-block mr-1"
     }, /*#__PURE__*/React__default.createElement(Radio, {
       label: "Female",
-      defaultChecked: false,
+      color: "primary",
+      defaultChecked: true,
       name: "gender"
     })), /*#__PURE__*/React__default.createElement("div", {
       className: "d-inline-block"
     }, /*#__PURE__*/React__default.createElement(Radio, {
-      label: "Other",
+      label: "Others",
+      color: "primary",
       defaultChecked: false,
       name: "gender"
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      className: "d-block mb-50",
+      "for": "communication"
+    }, "Communication"), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-inline-block mr-1"
+    }, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "Email",
+      defaultChecked: false
+    })), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-inline-block mr-1"
+    }, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "SMS",
+      defaultChecked: false
+    })), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-inline-block"
+    }, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "Phone",
+      defaultChecked: false
     })))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      className: "d-flex justify-content-start flex-wrap",
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      className: "mr-50",
-      type: "submit",
-      color: "primary"
-    }, "Save Changes"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      type: "submit",
-      color: "danger"
-    }, "Cancel")))));
-  };
-
-  return InfoTab;
-}(React__default.Component);
-
-var SocialLinks = /*#__PURE__*/function (_React$Component) {
-  _inheritsLoose(SocialLinks, _React$Component);
-
-  function SocialLinks() {
-    return _React$Component.apply(this, arguments) || this;
-  }
-
-  var _proto = SocialLinks.prototype;
-
-  _proto.render = function render() {
-    return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Form, {
-      onSubmit: function onSubmit(e) {
-        return e.preventDefault();
-      }
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "twitter"
-    }, "Twitter"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      id: "twitter",
-      defaultValue: "https://www.twitter.com"
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "facebook"
-    }, "Facebook"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      id: "facebook",
-      placeholder: "Add Link"
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "google"
-    }, "Google+"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      id: "google",
-      placeholder: "Add Link"
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "linkedin"
-    }, "Linkedin"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      id: "linkedin",
-      defaultValue: "https://www.linkedin.com"
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "instagram"
-    }, "Instagram"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      id: "instagram",
-      placeholder: "Add Link"
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "quora"
-    }, "Quora"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      id: "quora",
-      placeholder: "Add Link"
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      className: "d-flex justify-content-start flex-wrap",
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      className: "mr-50",
-      type: "submit",
-      color: "primary"
-    }, "Save Changes"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      type: "submit",
-      color: "danger"
-    }, "Cancel")))));
-  };
-
-  return SocialLinks;
-}(React__default.Component);
-
-var Connection = /*#__PURE__*/function (_React$Component) {
-  _inheritsLoose(Connection, _React$Component);
-
-  function Connection() {
-    return _React$Component.apply(this, arguments) || this;
-  }
-
-  var _proto = Connection.prototype;
-
-  _proto.render = function render() {
-    return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement("div", {
-      className: "d-flex flex-wrap justify-content-between align-items-center mb-3"
-    }, /*#__PURE__*/React__default.createElement("div", {
-      className: "social-media"
-    }, /*#__PURE__*/React__default.createElement("p", {
-      className: "mb-0"
-    }, "Account is connected with Google."), /*#__PURE__*/React__default.createElement("p", {
-      className: "text-bold-500"
-    }, "john@gmail.com")), /*#__PURE__*/React__default.createElement("div", {
-      className: "disconnect"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      color: "danger",
-      outline: true
-    }, "Disconnect")))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement("div", {
-      className: "d-flex flex-wrap justify-content-between align-items-center mb-3"
-    }, /*#__PURE__*/React__default.createElement("div", {
-      className: "social-media"
-    }, /*#__PURE__*/React__default.createElement("p", {
-      className: "mb-0"
-    }, "Account is connected with Facebook."), /*#__PURE__*/React__default.createElement("p", {
-      className: "text-bold-500"
-    }, "@pixinvents")), /*#__PURE__*/React__default.createElement("div", {
-      className: "disconnect"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      color: "danger",
-      outline: true
-    }, "Disconnect")))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      color: "info"
-    }, "Connect to Twitter")), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      className: "mt-2",
-      color: "primary"
-    }, "Connect to Instagram"))));
-  };
-
-  return Connection;
-}(React__default.Component);
-
-var Notification = /*#__PURE__*/function (_React$Component) {
-  _inheritsLoose(Notification, _React$Component);
-
-  function Notification() {
-    return _React$Component.apply(this, arguments) || this;
-  }
-
-  var _proto = Notification.prototype;
-
-  _proto.render = function render() {
-    return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement("h6", {
-      className: "mb-1"
-    }, "Activity"), /*#__PURE__*/React__default.createElement(reactstrap.CustomInput, {
-      type: "switch",
-      className: "d-block mb-2",
-      id: "article",
-      name: "article",
-      inline: true
-    }, /*#__PURE__*/React__default.createElement("span", {
-      className: "mb-0 ml-sm-0 switch-label"
-    }, "Email me when someone comments on my article")), /*#__PURE__*/React__default.createElement(reactstrap.CustomInput, {
-      type: "switch",
-      className: "d-block mb-2",
-      id: "form",
-      name: "form",
-      inline: true
-    }, /*#__PURE__*/React__default.createElement("span", {
-      className: "mb-0 switch-label"
-    }, "Email me when someone answers on my form")), /*#__PURE__*/React__default.createElement(reactstrap.CustomInput, {
-      type: "switch",
-      className: "d-block mb-2",
-      id: "follow",
-      name: "follow",
-      inline: true
-    }, /*#__PURE__*/React__default.createElement("span", {
-      className: "mb-0 switch-label"
-    }, "Email me when someone follows me"))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       className: "mt-1",
+      md: "6",
       sm: "12"
-    }, /*#__PURE__*/React__default.createElement("h6", {
+    }, /*#__PURE__*/React__default.createElement("h5", {
       className: "mb-1"
-    }, "Application"), /*#__PURE__*/React__default.createElement(reactstrap.CustomInput, {
-      type: "switch",
-      className: "d-block mb-2",
-      id: "news",
-      name: "news",
-      inline: true
-    }, /*#__PURE__*/React__default.createElement("span", {
-      className: "mb-0 switch-label"
-    }, "News and announcements")), /*#__PURE__*/React__default.createElement(reactstrap.CustomInput, {
-      type: "switch",
-      className: "d-block mb-2",
-      id: "update",
-      name: "update",
-      inline: true
-    }, /*#__PURE__*/React__default.createElement("span", {
-      className: "mb-0 switch-label"
-    }, "Weekly product updates")), /*#__PURE__*/React__default.createElement(reactstrap.CustomInput, {
-      type: "switch",
-      className: "d-block mb-2",
-      id: "blog",
-      name: "blog",
-      inline: true
-    }, /*#__PURE__*/React__default.createElement("span", {
-      className: "mb-0 switch-label"
-    }, "Weekly blog digest"))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    }, /*#__PURE__*/React__default.createElement(Icon.MapPin, {
+      className: "mr-50",
+      size: 16
+    }), /*#__PURE__*/React__default.createElement("span", {
+      className: "align-middle"
+    }, "Address")), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "address1"
+    }, "Address Line 1"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "text",
+      id: "address1",
+      placeholder: "Last Name Here"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "address1"
+    }, "Address Line 2"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "text",
+      id: "address1",
+      placeholder: "Address Line 2"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "pincode"
+    }, "Pincode"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "text",
+      id: "pincode",
+      placeholder: "Pincode"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "city"
+    }, "City"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "text",
+      defaultValue: "Camden Town",
+      id: "city",
+      placeholder: "City"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "State"
+    }, "State"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "text",
+      defaultValue: "London",
+      id: "State",
+      placeholder: "State"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "Country"
+    }, "Country"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "text",
+      defaultValue: "UK",
+      id: "Country",
+      placeholder: "Country"
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      className: "d-flex justify-content-end flex-wrap",
       sm: "12"
     }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
       className: "mr-1",
       color: "primary"
     }, "Save Changes"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      color: "danger",
-      outline: true
-    }, "Cancel"))));
+      color: "flat-warning"
+    }, "Reset"))));
   };
 
-  return Notification;
+  return UserInfoTab;
 }(React__default.Component);
 
-var BreadCrumbs = /*#__PURE__*/function (_React$Component) {
-  _inheritsLoose(BreadCrumbs, _React$Component);
+var AccountSettings = function AccountSettings(props) {
+  var _useState = React.useState('account-info'),
+      activeTab = _useState[0],
+      setActiveTab = _useState[1];
 
-  function BreadCrumbs() {
+  React.useEffect(function () {
+    return setActiveTab(props.activeTab);
+  }, [props.activeTab]);
+  return /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    sm: "12"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Card, null, /*#__PURE__*/React__default.createElement(reactstrap.CardHeader, null, /*#__PURE__*/React__default.createElement(reactstrap.CardTitle, null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: 'setting.personalSetting'
+  }))), /*#__PURE__*/React__default.createElement(reactstrap.CardBody, {
+    className: "pt-2"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Nav, {
+    tabs: true
+  }, /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
+    className: classnames({
+      active: activeTab === 'account-info'
+    }),
+    onClick: function onClick() {
+      setActiveTab('account-info');
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.User, {
+    size: 16
+  }), /*#__PURE__*/React__default.createElement("span", {
+    className: "align-middle ml-50"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "setting.accountInformation"
+  })))), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
+    className: classnames({
+      active: activeTab === 'change-password'
+    }),
+    onClick: function onClick() {
+      setActiveTab('change-password');
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.Info, {
+    size: 16
+  }), /*#__PURE__*/React__default.createElement("span", {
+    className: "align-middle ml-50"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "setting.changePassword"
+  }))))), /*#__PURE__*/React__default.createElement(reactstrap.TabContent, {
+    activeTab: activeTab
+  }, /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
+    tabId: "account-info"
+  }, /*#__PURE__*/React__default.createElement(UserAccountTab, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
+    tabId: "change-password"
+  }, /*#__PURE__*/React__default.createElement(UserInfoTab, null)))))));
+};
+
+var UserAccountTab$1 = /*#__PURE__*/function (_React$Component) {
+  _inheritsLoose(UserAccountTab, _React$Component);
+
+  function UserAccountTab() {
     return _React$Component.apply(this, arguments) || this;
   }
 
-  var _proto = BreadCrumbs.prototype;
+  var _proto = UserAccountTab.prototype;
 
   _proto.render = function render() {
-    return /*#__PURE__*/React__default.createElement("div", {
-      className: "content-header row"
+    return /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      className: "mb-2"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      className: "mr-2 my-25",
+      left: true,
+      href: "#"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      className: "users-avatar-shadow rounded",
+      object: true,
+      src: 'https://storage.live.com/Users/-6155523327610065665/MyProfile/ExpressionProfile/ProfilePhoto:Win8Static,UserTileMedium,UserTileStatic',
+      alt: "user profile image",
+      height: "84",
+      width: "84"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      className: "mt-2",
+      body: true
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      className: "font-medium-1 text-bold-600",
+      tag: "p",
+      heading: true
+    }, "Crystal Hamilton"), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex flex-wrap"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      className: "mr-1",
+      color: "primary",
+      outline: true
+    }, "Change"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      color: "flat-danger"
+    }, "Remove Avatar"))))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Form, {
+      onSubmit: function onSubmit(e) {
+        return e.preventDefault();
+      }
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      md: "6",
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "username"
+    }, "Username"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "text",
+      defaultValue: "crystal",
+      id: "username",
+      placeholder: "Username"
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      md: "6",
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "status"
+    }, "Status"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "select",
+      name: "status",
+      id: "status"
+    }, /*#__PURE__*/React__default.createElement("option", null, "Active"), /*#__PURE__*/React__default.createElement("option", null, "Banned"), /*#__PURE__*/React__default.createElement("option", null, "Closed")))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      md: "6",
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "name"
+    }, "Name"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "text",
+      defaultValue: "Crystal Hamilton",
+      id: "name",
+      placeholder: "Name"
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      md: "6",
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "role"
+    }, "Role"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "select",
+      name: "role",
+      id: "role"
+    }, /*#__PURE__*/React__default.createElement("option", null, "User"), /*#__PURE__*/React__default.createElement("option", null, "Staff")))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      md: "6",
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "email"
+    }, "Email"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "text",
+      defaultValue: "crystalhamilton@gmail.com",
+      id: "email",
+      placeholder: "Email"
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      md: "6",
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "company"
+    }, "Company"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "text",
+      id: "company",
+      defaultValue: "North Star Aviation Pvt Ltd",
+      placeholder: "company"
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
     }, /*#__PURE__*/React__default.createElement("div", {
-      className: "content-header-left col-md-9 col-12 mb-2"
+      className: "permissions border px-2"
     }, /*#__PURE__*/React__default.createElement("div", {
-      className: "row breadcrumbs-top"
-    }, /*#__PURE__*/React__default.createElement("div", {
-      className: "col-12"
-    }, this.props.breadCrumbTitle ? /*#__PURE__*/React__default.createElement("h2", {
-      className: "content-header-title float-left mb-0"
-    }, this.props.breadCrumbTitle) : '', /*#__PURE__*/React__default.createElement("div", {
-      className: "breadcrumb-wrapper vx-breadcrumbs d-sm-block d-none col-12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Breadcrumb, {
-      tag: "ol"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.BreadcrumbItem, {
-      tag: "li"
-    }, /*#__PURE__*/React__default.createElement(reactRouterDom.NavLink, {
-      to: "/"
-    }, /*#__PURE__*/React__default.createElement(Icon.Home, {
-      className: "align-top",
-      size: 15
-    }))), this.props.breadCrumbParent ? /*#__PURE__*/React__default.createElement(reactstrap.BreadcrumbItem, {
-      tag: "li",
-      className: "text-primary"
-    }, this.props.breadCrumbParent2) : '', this.props.breadCrumbParent2 ? /*#__PURE__*/React__default.createElement(reactstrap.BreadcrumbItem, {
-      tag: "li",
-      className: "text-primary"
-    }, this.props.breadCrumbParent2) : '', this.props.breadCrumbParent3 ? /*#__PURE__*/React__default.createElement(reactstrap.BreadcrumbItem, {
-      tag: "li",
-      className: "text-primary"
-    }, this.props.breadCrumbParent3) : '', /*#__PURE__*/React__default.createElement(reactstrap.BreadcrumbItem, {
-      tag: "li",
-      active: true
-    }, this.props.breadCrumbActive)))))));
+      className: "title pt-2 pb-0"
+    }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
+      size: 19
+    }), /*#__PURE__*/React__default.createElement("span", {
+      className: "text-bold-500 font-medium-2 ml-50"
+    }, "Permissions"), /*#__PURE__*/React__default.createElement("hr", null)), /*#__PURE__*/React__default.createElement(reactstrap.Table, {
+      borderless: true,
+      responsive: true
+    }, /*#__PURE__*/React__default.createElement("thead", null, /*#__PURE__*/React__default.createElement("tr", null, /*#__PURE__*/React__default.createElement("th", null, "Module Permission"), /*#__PURE__*/React__default.createElement("th", null, "Read"), /*#__PURE__*/React__default.createElement("th", null, "Write"), /*#__PURE__*/React__default.createElement("th", null, "Create"), /*#__PURE__*/React__default.createElement("th", null, "Delete"))), /*#__PURE__*/React__default.createElement("tbody", null, /*#__PURE__*/React__default.createElement("tr", null, /*#__PURE__*/React__default.createElement("td", null, "Users"), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: true
+    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: false
+    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: false
+    })), /*#__PURE__*/React__default.createElement("td", null, ' ', /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: true
+    }))), /*#__PURE__*/React__default.createElement("tr", null, /*#__PURE__*/React__default.createElement("td", null, "Articles"), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: false
+    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: true
+    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: false
+    })), /*#__PURE__*/React__default.createElement("td", null, ' ', /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: true
+    }))), /*#__PURE__*/React__default.createElement("tr", null, /*#__PURE__*/React__default.createElement("td", null, "Staff"), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: true
+    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: true
+    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: false
+    })), /*#__PURE__*/React__default.createElement("td", null, ' ', /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "",
+      defaultChecked: false
+    }))))))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      className: "d-flex justify-content-end flex-wrap mt-2",
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      className: "mr-1",
+      color: "primary"
+    }, "Save Changes"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      color: "flat-warning"
+    }, "Reset"))))));
   };
 
-  return BreadCrumbs;
+  return UserAccountTab;
 }(React__default.Component);
 
-var AccountSettings = /*#__PURE__*/function (_React$Component) {
-  _inheritsLoose(AccountSettings, _React$Component);
+var languages$1 = [{
+  value: 'english',
+  label: 'English',
+  color: '#7367f0'
+}, {
+  value: 'french',
+  label: 'French',
+  color: '#7367f0'
+}, {
+  value: 'spanish',
+  label: 'Spanish',
+  color: '#7367f0'
+}, {
+  value: 'russian',
+  label: 'Russian',
+  color: '#7367f0'
+}, {
+  value: 'italian',
+  label: 'Italian',
+  color: '#7367f0'
+}];
+var colourStyles$1 = {
+  control: function control(styles) {
+    return _extends({}, styles, {
+      backgroundColor: 'white'
+    });
+  },
+  option: function option(styles, _ref) {
+    var data = _ref.data,
+        isDisabled = _ref.isDisabled,
+        isFocused = _ref.isFocused,
+        isSelected = _ref.isSelected;
+    var color = data.color ? chroma(data.color) : '#7367f0';
+    return _extends({}, styles, {
+      backgroundColor: isDisabled ? null : isSelected ? data.color : isFocused ? color.alpha(0.1).css() : null,
+      color: isDisabled ? '#ccc' : isSelected ? chroma.contrast(color, 'white') > 2 ? 'white' : 'black' : data.color,
+      cursor: isDisabled ? 'not-allowed' : 'default',
+      ':active': _extends({}, styles[':active'], {
+        backgroundColor: !isDisabled && (isSelected ? data.color : '#7367f0')
+      })
+    });
+  },
+  multiValue: function multiValue(styles, _ref2) {
+    var data = _ref2.data;
+    var color = data.color ? chroma(data.color) : '#7367f0';
+    return _extends({}, styles, {
+      backgroundColor: color.alpha(0.1).css()
+    });
+  },
+  multiValueLabel: function multiValueLabel(styles, _ref3) {
+    var data = _ref3.data;
+    return _extends({}, styles, {
+      color: data.color ? data.color : '#7367f0'
+    });
+  },
+  multiValueRemove: function multiValueRemove(styles, _ref4) {
+    var data = _ref4.data;
+    return _extends({}, styles, {
+      color: data.color,
+      ':hover': {
+        backgroundColor: data.color ? data.color : '#7367f0',
+        color: 'white'
+      }
+    });
+  }
+};
 
-  function AccountSettings() {
+var UserInfoTab$1 = /*#__PURE__*/function (_React$Component) {
+  _inheritsLoose(UserInfoTab, _React$Component);
+
+  function UserInfoTab() {
     var _this;
 
     for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
@@ -3660,145 +3905,723 @@ var AccountSettings = /*#__PURE__*/function (_React$Component) {
 
     _this = _React$Component.call.apply(_React$Component, [this].concat(args)) || this;
     _this.state = {
-      activeTab: '1',
-      windowWidth: null
+      dob: new Date('1995-05-22')
     };
 
-    _this.toggle = function (tab) {
+    _this.handledob = function (date) {
       _this.setState({
-        activeTab: tab
-      });
-    };
-
-    _this.updateWidth = function () {
-      _this.setState({
-        windowWidth: window.innerWidth
+        dob: date
       });
     };
 
     return _this;
   }
 
-  var _proto = AccountSettings.prototype;
-
-  _proto.componentDidMount = function componentDidMount() {
-    if (window !== undefined) {
-      this.updateWidth();
-      window.addEventListener('resize', this.updateWidth);
-    }
-  };
+  var _proto = UserInfoTab.prototype;
 
   _proto.render = function render() {
     var _this2 = this;
 
-    var windowWidth = this.state.windowWidth;
-    return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(BreadCrumbs, {
-      breadCrumbTitle: "Account Settings",
-      breadCrumbActive: "Account Settings"
-    }), /*#__PURE__*/React__default.createElement("div", {
-      className: "" + (windowWidth >= 769 ? 'nav-vertical' : 'account-setting-wrapper')
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Nav, {
-      className: "account-settings-tab nav-left mr-0 mr-sm-3",
-      tabs: true
-    }, /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
-      className: classnames({
-        active: this.state.activeTab === '1'
-      }),
-      onClick: function onClick() {
-        _this2.toggle('1');
+    return /*#__PURE__*/React__default.createElement(reactstrap.Form, {
+      onSubmit: function onSubmit(e) {
+        return e.preventDefault();
       }
-    }, /*#__PURE__*/React__default.createElement(Icon.Settings, {
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Row, {
+      className: "mt-1"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      className: "mt-1",
+      md: "6",
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement("h5", {
+      className: "mb-1"
+    }, /*#__PURE__*/React__default.createElement(Icon.User, {
+      className: "mr-50",
       size: 16
     }), /*#__PURE__*/React__default.createElement("span", {
-      className: "d-md-inline-block d-none align-middle ml-1"
-    }, "General"))), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
-      className: classnames({
-        active: this.state.activeTab === '2'
-      }),
-      onClick: function onClick() {
-        _this2.toggle('2');
+      className: "align-middle"
+    }, "Personal Info")), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      className: "d-block",
+      "for": "dob"
+    }, "Date of birth"), /*#__PURE__*/React__default.createElement(Flatpickr, {
+      id: "dob",
+      className: "form-control",
+      options: {
+        dateFormat: 'Y-m-d'
+      },
+      value: this.state.dob,
+      onChange: function onChange(date) {
+        return _this2.handledob(date);
       }
-    }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "contactnumber"
+    }, "Contact Number"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "number",
+      id: "contactnumber",
+      placeholder: "Contact Number"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "website"
+    }, "Website"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "url",
+      id: "website",
+      placeholder: "Web Address"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "languages"
+    }, "Languages"), /*#__PURE__*/React__default.createElement(Select$1, {
+      isMulti: true,
+      defaultValue: [languages$1[0], languages$1[1], languages$1[2]],
+      isClearable: true,
+      styles: colourStyles$1,
+      options: languages$1,
+      className: "React",
+      classNamePrefix: "select",
+      id: "languages"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      className: "d-block mb-50"
+    }, "Gender"), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-inline-block mr-1"
+    }, /*#__PURE__*/React__default.createElement(Radio, {
+      label: "Male",
+      color: "primary",
+      defaultChecked: false,
+      name: "gender"
+    })), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-inline-block mr-1"
+    }, /*#__PURE__*/React__default.createElement(Radio, {
+      label: "Female",
+      color: "primary",
+      defaultChecked: true,
+      name: "gender"
+    })), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-inline-block"
+    }, /*#__PURE__*/React__default.createElement(Radio, {
+      label: "Others",
+      color: "primary",
+      defaultChecked: false,
+      name: "gender"
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      className: "d-block mb-50",
+      "for": "communication"
+    }, "Communication"), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-inline-block mr-1"
+    }, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "Email",
+      defaultChecked: false
+    })), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-inline-block mr-1"
+    }, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "SMS",
+      defaultChecked: false
+    })), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-inline-block"
+    }, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: "Phone",
+      defaultChecked: false
+    })))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      className: "mt-1",
+      md: "6",
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement("h5", {
+      className: "mb-1"
+    }, /*#__PURE__*/React__default.createElement(Icon.MapPin, {
+      className: "mr-50",
       size: 16
     }), /*#__PURE__*/React__default.createElement("span", {
-      className: "d-md-inline-block d-none align-middle ml-1"
-    }, "Change Password"))), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
-      className: classnames({
-        active: this.state.activeTab === '3'
-      }),
-      onClick: function onClick() {
-        _this2.toggle('3');
-      }
-    }, /*#__PURE__*/React__default.createElement(Icon.Info, {
-      size: 16
-    }), /*#__PURE__*/React__default.createElement("span", {
-      className: "d-md-inline-block d-none align-middle ml-1"
-    }, "Info"))), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
-      className: classnames({
-        active: this.state.activeTab === '4'
-      }),
-      onClick: function onClick() {
-        _this2.toggle('4');
-      }
-    }, /*#__PURE__*/React__default.createElement(Icon.Instagram, {
-      size: 16
-    }), /*#__PURE__*/React__default.createElement("span", {
-      className: "d-md-inline-block d-none align-middle ml-1"
-    }, "Social Links"))), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
-      className: classnames({
-        active: this.state.activeTab === '5'
-      }),
-      onClick: function onClick() {
-        _this2.toggle('5');
-      }
-    }, /*#__PURE__*/React__default.createElement(Icon.Link, {
-      size: 16
-    }), /*#__PURE__*/React__default.createElement("span", {
-      className: "d-md-inline-block d-none align-middle ml-1"
-    }, "Connections"))), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
-      className: classnames({
-        active: this.state.activeTab === '6'
-      }),
-      onClick: function onClick() {
-        _this2.toggle('6');
-      }
-    }, /*#__PURE__*/React__default.createElement(Icon.Bell, {
-      size: 16
-    }), /*#__PURE__*/React__default.createElement("span", {
-      className: "d-md-inline-block d-none align-middle ml-1"
-    }, "Notifications")))), /*#__PURE__*/React__default.createElement(reactstrap.Card, null, /*#__PURE__*/React__default.createElement(reactstrap.CardBody, null, /*#__PURE__*/React__default.createElement(reactstrap.TabContent, {
-      activeTab: this.state.activeTab
-    }, /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
-      tabId: "1"
-    }, /*#__PURE__*/React__default.createElement(General, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
-      tabId: "2"
-    }, /*#__PURE__*/React__default.createElement(ChangePassword, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
-      tabId: "3"
-    }, /*#__PURE__*/React__default.createElement(InfoTab, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
-      tabId: "4"
-    }, /*#__PURE__*/React__default.createElement(SocialLinks, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
-      tabId: "5"
-    }, /*#__PURE__*/React__default.createElement(Connection, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
-      tabId: "6"
-    }, /*#__PURE__*/React__default.createElement(Notification, null)))))));
+      className: "align-middle"
+    }, "Address")), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "address1"
+    }, "Address Line 1"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "text",
+      id: "address1",
+      placeholder: "Last Name Here"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "address1"
+    }, "Address Line 2"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "text",
+      id: "address1",
+      placeholder: "Address Line 2"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "pincode"
+    }, "Pincode"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "text",
+      id: "pincode",
+      placeholder: "Pincode"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "city"
+    }, "City"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "text",
+      defaultValue: "Camden Town",
+      id: "city",
+      placeholder: "City"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "State"
+    }, "State"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "text",
+      defaultValue: "London",
+      id: "State",
+      placeholder: "State"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+      "for": "Country"
+    }, "Country"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+      type: "text",
+      defaultValue: "UK",
+      id: "Country",
+      placeholder: "Country"
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      className: "d-flex justify-content-end flex-wrap",
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      className: "mr-1",
+      color: "primary"
+    }, "Save Changes"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      color: "flat-warning"
+    }, "Reset"))));
   };
 
-  return AccountSettings;
+  return UserInfoTab;
 }(React__default.Component);
+
+var GeneralInfo = function GeneralInfo(props) {
+  var _useState = React.useState('terms-and-condition'),
+      activeTab = _useState[0],
+      setActiveTab = _useState[1];
+
+  React.useEffect(function () {
+    return setActiveTab(props.activeTab);
+  }, [props.activeTab]);
+  return /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    sm: "12"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Card, null, /*#__PURE__*/React__default.createElement(reactstrap.CardHeader, null, /*#__PURE__*/React__default.createElement(reactstrap.CardTitle, null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: 'setting.generalInformation'
+  }))), /*#__PURE__*/React__default.createElement(reactstrap.CardBody, {
+    className: "pt-2"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Nav, {
+    tabs: true
+  }, /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
+    className: classnames({
+      active: activeTab === 'terms-and-condition'
+    }),
+    onClick: function onClick() {
+      setActiveTab('terms-and-condition');
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.User, {
+    size: 16
+  }), /*#__PURE__*/React__default.createElement("span", {
+    className: "align-middle ml-50"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "setting.accountInformation"
+  })))), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
+    className: classnames({
+      active: activeTab === 'privacy-policy'
+    }),
+    onClick: function onClick() {
+      setActiveTab('privacy-policy');
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.Info, {
+    size: 16
+  }), /*#__PURE__*/React__default.createElement("span", {
+    className: "align-middle ml-50"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "setting.changePassword"
+  })))), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
+    className: classnames({
+      active: activeTab === 'language'
+    }),
+    onClick: function onClick() {
+      setActiveTab('language');
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.User, {
+    size: 16
+  }), /*#__PURE__*/React__default.createElement("span", {
+    className: "align-middle ml-50"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "setting.accountInformation"
+  })))), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
+    className: classnames({
+      active: activeTab === 'contact'
+    }),
+    onClick: function onClick() {
+      setActiveTab('contact');
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.Info, {
+    size: 16
+  }), /*#__PURE__*/React__default.createElement("span", {
+    className: "align-middle ml-50"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "setting.changePassword"
+  }))))), /*#__PURE__*/React__default.createElement(reactstrap.TabContent, {
+    activeTab: activeTab
+  }, /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
+    tabId: "terms-and-condition"
+  }, /*#__PURE__*/React__default.createElement(UserAccountTab$1, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
+    tabId: "privacy-policy"
+  }, /*#__PURE__*/React__default.createElement(UserInfoTab$1, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
+    tabId: "language"
+  }, /*#__PURE__*/React__default.createElement(UserAccountTab$1, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
+    tabId: "contact"
+  }, /*#__PURE__*/React__default.createElement(UserInfoTab$1, null)))))));
+};
+
+var formSchema = Yup.object().shape({
+  username: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "login.username.required"
+  })),
+  password: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "login.password.required"
+  }))
+});
+
+var Login = function Login() {
+  var _useState = React.useState(false),
+      rememberMe = _useState[0],
+      setRememberMe = _useState[1];
+
+  var dispatch = reactRedux.useDispatch();
+  var loginStatus = reactRedux.useSelector(function (state) {
+    return state.auth.loginStatus;
+  });
+
+  var onSubmit = function onSubmit(values, actions) {
+    dispatch(loginAction({
+      username: values.username,
+      password: values.password,
+      rememberMe: rememberMe
+    }));
+    actions.setSubmitting(false);
+  };
+
+  return /*#__PURE__*/React__default.createElement(formik.Formik, {
+    initialValues: {
+      fullName: '',
+      email: '',
+      phoneNumber: '',
+      referalCode: ''
+    },
+    onSubmit: onSubmit,
+    validationSchema: formSchema
+  }, function (_ref) {
+    var errors = _ref.errors,
+        touched = _ref.touched;
+    return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement("h4", {
+      className: "text-center text-white"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "login.firstWelcome"
+    }), loginStatus === LOGIN_STATUS.FAIL ? /*#__PURE__*/React__default.createElement("div", {
+      className: "text-danger mt-1"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "login.fail"
+    })) : ''), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+      className: "form-label-group position-relative mt-3"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "login.username"
+    }, function (msg) {
+      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.Field, {
+        name: "username",
+        className: "form-control " + (errors.username && touched.username && 'is-invalid'),
+        placeholder: msg
+      }), errors.username && touched.username ? /*#__PURE__*/React__default.createElement("div", {
+        className: "text-danger"
+      }, errors.username) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+      className: "form-label-group position-relative"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "login.password"
+    }, function (msg) {
+      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.FastField, {
+        name: "password"
+      }, function (_ref2) {
+        var field = _ref2.field,
+            form = _ref2.form;
+        return /*#__PURE__*/React__default.createElement(reactstrap.Input, _extends({
+          type: "password",
+          className: "form-control " + (errors.password && touched.password && 'is-invalid'),
+          placeholder: msg
+        }, field, {
+          onChange: function onChange(e) {
+            return form.setFieldValue('password', e.target.value);
+          }
+        }));
+      }), errors.password && touched.password ? /*#__PURE__*/React__default.createElement("div", {
+        className: "text-danger"
+      }, errors.password) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+      className: "d-flex justify-content-between align-items-center"
+    }, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "login.rememberMe"
+      }),
+      onChange: function onChange(e) {
+        return setRememberMe(e.target.checked);
+      },
+      defaultChecked: rememberMe
+    }), /*#__PURE__*/React__default.createElement("div", {
+      className: "divider",
+      style: {
+        height: '30px'
+      }
+    }), /*#__PURE__*/React__default.createElement("div", {
+      className: "float-right"
+    }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
+      to: "/forgot-password",
+      className: "text-white"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "forgotPassword"
+    })))), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex justify-content-center"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
+      color: "primary",
+      type: "submit"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "login"
+    }))));
+  });
+};
+
+var phoneRegExp = /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
+var formSchema$1 = Yup.object().shape({
+  fullName: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "register.fullname.required"
+  })),
+  email: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "register.email.required"
+  })).email( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "register.email.invalid"
+  })),
+  phoneNumber: Yup.string().matches(phoneRegExp, function () {
+    return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "register.phoneNumber.invalid"
+    });
+  }).required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "register.phoneNumber.required"
+  }))
+});
+
+var Register = function Register() {
+  var _useState = React.useState(false),
+      isAppcepted = _useState[0],
+      setIsAppcepted = _useState[1];
+
+  var _useState2 = React.useState(false),
+      isNotApccepted = _useState2[0],
+      setIsNotAccepted = _useState2[1];
+
+  var onSubmit = function onSubmit(values, actions) {
+    setTimeout(function () {
+      if (!isAppcepted) {
+        setIsNotAccepted(true);
+        return;
+      }
+
+      alert(JSON.stringify(values, null, 2));
+      actions.setSubmitting(false);
+    }, 1000);
+  };
+
+  var ontoggleAccepted = function ontoggleAccepted(checked) {
+    setIsAppcepted(checked);
+    setIsNotAccepted(!checked);
+  };
+
+  return /*#__PURE__*/React__default.createElement(formik.Formik, {
+    initialValues: {
+      fullName: '',
+      email: '',
+      phoneNumber: '',
+      referalCode: ''
+    },
+    onSubmit: onSubmit,
+    validationSchema: formSchema$1
+  }, function (_ref) {
+    var errors = _ref.errors,
+        touched = _ref.touched;
+    return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+      className: "form-label-group position-relative"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "register.fullname"
+    }, function (msg) {
+      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.Field, {
+        name: "fullName",
+        className: "form-control " + (errors.fullName && touched.fullName && 'is-invalid'),
+        placeholder: msg
+      }), errors.fullName && touched.fullName ? /*#__PURE__*/React__default.createElement("div", {
+        className: "text-danger"
+      }, errors.fullName) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+      className: "form-label-group position-relative"
+    }, /*#__PURE__*/React__default.createElement(formik.Field, {
+      name: "email",
+      className: "form-control " + (errors.email && touched.email && 'is-invalid'),
+      placeholder: "Email *"
+    }), errors.email && touched.email ? /*#__PURE__*/React__default.createElement("div", {
+      className: "text-danger"
+    }, errors.email) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, "Email *")), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+      className: "form-label-group position-relative"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "register.phoneNumber"
+    }, function (msg) {
+      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.Field, {
+        name: "phoneNumber",
+        className: "form-control " + (errors.phoneNumber && touched.phoneNumber && 'is-invalid'),
+        placeholder: msg
+      }), errors.phoneNumber && touched.phoneNumber ? /*#__PURE__*/React__default.createElement("div", {
+        className: "text-danger"
+      }, errors.phoneNumber) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+      className: "form-label-group position-relative"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "register.referalCode"
+    }, function (msg) {
+      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.Field, {
+        name: "referalCode",
+        className: "form-control",
+        placeholder: msg
+      }), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex align-items-center"
+    }, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      onChange: function onChange(e) {
+        return ontoggleAccepted(e.target.checked);
+      },
+      defaultChecked: isAppcepted
+    }), /*#__PURE__*/React__default.createElement("div", null, "T\xF4i \u0111\u1ED3ng \xFD v\u1EDBi", ' ', /*#__PURE__*/React__default.createElement("a", {
+      className: "text-primary"
+    }, "\u0110i\u1EC1u kho\u1EA3n v\xE0 \u0110i\u1EC1u ki\u1EC7n"), " s\u1EED d\u1EE5ng d\u1ECBch v\u1EE5.")), isNotApccepted ? /*#__PURE__*/React__default.createElement("div", {
+      className: "text-danger"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "register.mustAppcepted"
+    })) : null, /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex justify-content-center mt-2"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
+      color: "primary",
+      type: "submit"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "register"
+    })))));
+  });
+};
+
+var formSchema$2 = Yup.object().shape({
+  username: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "forgotPassword.username.required"
+  })),
+  email: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "forgotPassword.email.required"
+  })).email( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "register.email.invalid"
+  }))
+});
+
+var ForgotPassword = function ForgotPassword() {
+  var onSubmit = function onSubmit(values, actions) {
+    actions.setSubmitting(false);
+  };
+
+  return /*#__PURE__*/React__default.createElement(formik.Formik, {
+    initialValues: {
+      username: '',
+      email: ''
+    },
+    onSubmit: onSubmit,
+    validationSchema: formSchema$2
+  }, function (_ref) {
+    var errors = _ref.errors,
+        touched = _ref.touched;
+    return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement("h4", {
+      className: "text-center text-white"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "forgotPassword"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+      className: "form-label-group position-relative mt-3"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "forgotPassword.username"
+    }, function (msg) {
+      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.Field, {
+        name: "username",
+        className: "form-control " + (errors.username && touched.username && 'is-invalid'),
+        placeholder: msg
+      }), errors.username && touched.username ? /*#__PURE__*/React__default.createElement("div", {
+        className: "text-danger"
+      }, errors.username) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+      className: "form-label-group position-relative"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "forgotPassword.email"
+    }, function (msg) {
+      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.FastField, {
+        name: "email"
+      }, function (_ref2) {
+        var field = _ref2.field,
+            form = _ref2.form;
+        return /*#__PURE__*/React__default.createElement(reactstrap.Input, _extends({
+          className: "" + (errors.email && touched.email && 'is-invalid not-show-icon'),
+          placeholder: msg
+        }, field, {
+          onChange: function onChange(e) {
+            return form.setFieldValue('email', e.target.value);
+          }
+        }));
+      }), errors.email && touched.email ? /*#__PURE__*/React__default.createElement("div", {
+        className: "text-danger"
+      }, errors.email) : null, /*#__PURE__*/React__default.createElement("div", {
+        className: "form-control-position"
+      }, /*#__PURE__*/React__default.createElement(Icon.Sun, {
+        size: 15
+      })), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
+    })), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex justify-content-center"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
+      color: "primary",
+      type: "submit"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "forgotPassword.verify"
+    }))));
+  });
+};
+
+var LandingPage = function LandingPage(props) {
+  var _useState = React.useState(''),
+      activeTab = _useState[0],
+      setActiveTab = _useState[1];
+
+  var history = reactRouterDom.useHistory();
+  React.useEffect(function () {
+    setActiveTab(props.activeTab || 'login');
+  }, [props.activeTab]);
+
+  var TabView = function TabView() {
+    switch (activeTab) {
+      case 'login':
+        return /*#__PURE__*/React__default.createElement(Login, null);
+
+      case 'register':
+        return /*#__PURE__*/React__default.createElement(Register, null);
+
+      case 'forgot-password':
+        return /*#__PURE__*/React__default.createElement(ForgotPassword, null);
+
+      default:
+        return '';
+    }
+  };
+
+  var goToLink = function goToLink(link) {
+    return history.push(link);
+  };
+
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("div", {
+    className: "landing-page",
+    style: {
+      background: "url('" + IMAGE.LANDING_PAGE_BG + "')"
+    }
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "ld-main ml-auto col-12 col-md-6 col-lg-4"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "ld-header d-flex justify-content-between mb-5"
+  }, /*#__PURE__*/React__default.createElement(Context.Consumer, null, function (context) {
+    return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("img", {
+      src: IMAGE.LOGO_WHITE,
+      alt: "logo"
+    }), /*#__PURE__*/React__default.createElement("div", {
+      className: "languages d-flex align-items-center"
+    }, /*#__PURE__*/React__default.createElement("div", {
+      onClick: function onClick() {
+        return context.switchLanguage('vi');
+      },
+      className: classnames('mr-1 cursor-pointer', {
+        'text-primary': context.state.locale === 'vi'
+      })
+    }, "VIE"), /*#__PURE__*/React__default.createElement("div", {
+      className: "divider mr-1",
+      style: {
+        height: '15px'
+      }
+    }), /*#__PURE__*/React__default.createElement("div", {
+      onClick: function onClick() {
+        return context.switchLanguage('en');
+      },
+      className: classnames('mr-1 cursor-pointer', {
+        'text-primary': context.state.locale === 'en'
+      })
+    }, "ENG")));
+  })), /*#__PURE__*/React__default.createElement("div", {
+    className: "lg-content-header d-flex cursor-pointer"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    onClick: function onClick() {
+      return goToLink('/login');
+    },
+    className: classnames('col-6 text-center tab-control', {
+      active: activeTab === 'login'
+    })
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "login"
+  })), /*#__PURE__*/React__default.createElement("div", {
+    onClick: function onClick() {
+      return goToLink('/register');
+    },
+    className: classnames('col-6 text-center tab-control', {
+      active: activeTab === 'register'
+    })
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "register"
+  }))), /*#__PURE__*/React__default.createElement("div", {
+    className: "lg-content p-2 p-md-4 p-lg-5"
+  }, /*#__PURE__*/React__default.createElement(TabView, null))), /*#__PURE__*/React__default.createElement("div", {
+    className: "ld-footer px-5"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "d-flex justify-content-between"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "float-md-left d-block d-md-inline-block mt-25"
+  }, /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "footer.copyRight"
+  })), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "footer.companySlogan"
+  }))), /*#__PURE__*/React__default.createElement("div", {
+    className: "float-md-right d-none d-md-block"
+  }, /*#__PURE__*/React__default.createElement("img", {
+    src: IMAGE.DOWNLOAD_APP,
+    alt: "DOWNLOAD ON APP STORE"
+  }))))));
+};
 
 var AppRouter = function AppRouter(props) {
   var checkLoginStatus = props.checkLoginStatus,
       appId = props.appId,
+      loginStatus = props.loginStatus,
       isAuthentication = props.isAuthentication,
-      loginAction = props.loginAction,
       authToken = props.authToken,
       children = props.children,
-      loadNavtigation = props.loadNavtigation,
       message = props.message;
   React.useEffect(function () {
-    loadNavtigation(appId);
-    var code = new URLSearchParams(document.location.search).get('code');
-    checkLoginStatus(code || authToken);
+    var code = new URLSearchParams(document.location.search).get('code') || authToken;
+
+    if (code && loginStatus !== LOGIN_STATUS.SUCCESS) {
+      HttpClient.addAuthTokenToHeader(code);
+      checkLoginStatus(code);
+    }
   }, []);
 
   var setMessages = function setMessages(message) {
@@ -3817,6 +4640,32 @@ var AppRouter = function AppRouter(props) {
     en: _extends({}, messages_en, setMessages(message.en)),
     vi: _extends({}, messages_vi, setMessages(message.vi))
   };
+  var settingRoutes = [{
+    path: 'account-info',
+    component: AccountSettings
+  }, {
+    path: 'change-password',
+    component: AccountSettings
+  }, {
+    path: 'terms-and-condition',
+    component: GeneralInfo
+  }, {
+    path: 'privacy-policy',
+    component: GeneralInfo
+  }, {
+    path: 'language',
+    component: GeneralInfo
+  }, {
+    path: 'contact',
+    component: GeneralInfo
+  }];
+  var landingPageRoutes = [{
+    path: 'login'
+  }, {
+    path: 'register'
+  }, {
+    path: 'forgot-password'
+  }];
   return /*#__PURE__*/React__default.createElement(IntlProviderWrapper, {
     appMessage: appMessage
   }, /*#__PURE__*/React__default.createElement(reactRouterDom.Router, {
@@ -3824,16 +4673,34 @@ var AppRouter = function AppRouter(props) {
   }, /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
     path: "/",
     render: function render(props) {
-      return isAuthentication ? /*#__PURE__*/React__default.createElement(Layout$1, props, /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
-        path: "/account-settings",
-        component: AccountSettings
+      return isAuthentication ? /*#__PURE__*/React__default.createElement(Layout$1, props, /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, settingRoutes.map(function (item) {
+        return /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
+          key: item.path,
+          path: "/" + item.path,
+          render: function render() {
+            return /*#__PURE__*/React__default.createElement(item.component, {
+              activeTab: item.path
+            });
+          }
+        });
       }), /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
         path: "/",
         render: function render() {
           return children;
         }
-      }))) : /*#__PURE__*/React__default.createElement(FullPageLayout, null, /*#__PURE__*/React__default.createElement(Login, {
-        loginAction: loginAction
+      }))) : /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, landingPageRoutes.map(function (item) {
+        return /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
+          key: item.path,
+          path: "/" + item.path,
+          render: function render() {
+            return /*#__PURE__*/React__default.createElement(LandingPage, {
+              activeTab: item.path
+            });
+          }
+        });
+      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
+        from: "/",
+        to: "/login"
       }));
     }
   }))));
@@ -3841,15 +4708,15 @@ var AppRouter = function AppRouter(props) {
 
 var mapStateToProps$3 = function mapStateToProps(state) {
   return {
-    isAuthentication: !!state.auth.username,
-    authToken: state.auth.authToken
+    isAuthentication: !!state.auth.authToken,
+    authToken: state.auth.authToken,
+    loginStatus: state.auth.loginStatus
   };
 };
 
 var AppRouter$1 = reactRedux.connect(mapStateToProps$3, {
   checkLoginStatus: checkLoginStatus,
-  loginAction: loginAction,
-  loadNavtigation: loadNavtigation
+  loginAction: loginAction
 })(AppRouter);
 
 TopBarProgress.config({
@@ -3960,7 +4827,72 @@ var FallbackSpinner = /*#__PURE__*/function (_React$Component) {
 }(React__default.Component);
 
 var DatePicker = function DatePicker(props) {
-  return /*#__PURE__*/React__default.createElement(Flatpickr, props);
+  return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+    className: "form-label-group position-relative"
+  }, /*#__PURE__*/React__default.createElement(Flatpickr, props), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, props.placeholder));
+};
+
+var Select = function Select(props) {
+  var _useState = React.useState(props.defaultValue || ''),
+      inputValue = _useState[0],
+      setInputValue = _useState[1];
+
+  var _useState2 = React.useState(false),
+      isFocused = _useState2[0],
+      setIsFocused = _useState2[1];
+
+  var onChange = function onChange(e, actions) {
+    if (props.onChange) {
+      props.onChange(e, actions);
+    }
+
+    if (props.isMulti) {
+      setInputValue(e ? e.map(function (item) {
+        return item.value;
+      }).join() : '');
+    } else {
+      setInputValue(e ? e.value : '');
+    }
+  };
+
+  var onFocus = function onFocus(e) {
+    if (props.onFocus) {
+      props.onChange(e);
+    }
+
+    setIsFocused(true);
+  };
+
+  var onBlur = function onBlur(e) {
+    if (props.onBlur) {
+      props.onBlur(e);
+    }
+
+    setIsFocused(false);
+  };
+
+  return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+    className: "form-label-group position-relative"
+  }, /*#__PURE__*/React__default.createElement(Select$1, _extends({}, props, {
+    onChange: onChange,
+    onBlur: onBlur,
+    onFocus: onFocus,
+    theme: function theme(_theme) {
+      return _extends({}, _theme, {
+        colors: _extends({}, _theme.colors, {
+          primary: '#338955'
+        })
+      });
+    }
+  })), /*#__PURE__*/React__default.createElement("input", {
+    className: "d-none",
+    placeholder: props.placeholder,
+    value: inputValue
+  }), /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+    className: classnames({
+      'text-primary': isFocused
+    })
+  }, props.placeholder));
 };
 
 function getWindowDimensions() {
@@ -3997,16 +4929,16 @@ Object.defineProperty(exports, 'toast', {
     return reactToastify.toast;
   }
 });
-Object.defineProperty(exports, 'FormattedMessage', {
-  enumerable: true,
-  get: function () {
-    return reactIntl.FormattedMessage;
-  }
-});
 Object.defineProperty(exports, 'Button', {
   enumerable: true,
   get: function () {
     return reactstrap.Button;
+  }
+});
+Object.defineProperty(exports, 'FormattedMessage', {
+  enumerable: true,
+  get: function () {
+    return reactIntl.FormattedMessage;
   }
 });
 exports.AppId = AppId;
@@ -4016,6 +4948,7 @@ exports.DatePicker = DatePicker;
 exports.FallbackSpinner = FallbackSpinner;
 exports.HttpClient = HttpClient;
 exports.Radio = Radio;
+exports.Select = Select;
 exports.useDeviceDetect = useDeviceDetect;
 exports.useWindowDimensions = useWindowDimensions;
 //# sourceMappingURL=index.js.map
