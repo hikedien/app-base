@@ -13,7 +13,7 @@ export { toast } from 'react-toastify';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
 import { createBrowserHistory } from 'history';
 import sessionStorage from 'redux-persist/es/storage/session';
-import { Link, useHistory, Router, Switch, Route, Redirect } from 'react-router-dom';
+import { useHistory, Link, Router, Switch, Route, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
 import { FormGroup, Label, DropdownMenu, DropdownItem, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Badge, Media, Navbar as Navbar$1, Button, Row, Col, Form, Input, Table, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane } from 'reactstrap';
 export { Button } from 'reactstrap';
@@ -185,7 +185,8 @@ const IMAGE = {
   LOGO: 'https://sit.inon.vn/PortalWeb/nth/assets/images/InOn-logo.png',
   LOGO_WHITE: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Logo.png?alt=media&token=d61feda7-c2be-423a-9d64-da13dca88b85',
   LANDING_PAGE_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-Signup-01%203%20(1).png?alt=media&token=19aca74e-c81f-40e2-a00d-a91b7ee9f27a',
-  DOWNLOAD_APP: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-Landingpage-Final-02.png?alt=media&token=7f24bfce-0e9f-42f8-84e1-c26d8acdd788'
+  DOWNLOAD_APP_IOS: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-APP%26GP-03.png?alt=media&token=c9a13eca-3fe6-40d0-ac1d-df417b95385d',
+  DOWNLOAD_APP_ANDROID: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-APP%26GP-01.png?alt=media&token=b2aefa9d-d464-41d3-9fd0-b374ed0dca93'
 };
 
 const history = createBrowserHistory({
@@ -1053,6 +1054,7 @@ const UserDropdown = props => {
   const {
     logoutAction
   } = props;
+  const history = useHistory();
 
   const handleNavigation = (e, path) => {
     e.preventDefault();
@@ -1535,10 +1537,20 @@ const Footer = props => {
     id: "footer.companySlogan"
   }))), /*#__PURE__*/React.createElement("div", {
     className: "float-md-right d-none d-md-block"
+  }, /*#__PURE__*/React.createElement("a", {
+    className: "mr-1",
+    href: "https://www.apple.com/app-store/",
+    target: "_blank"
   }, /*#__PURE__*/React.createElement("img", {
-    src: IMAGE.DOWNLOAD_APP,
+    src: IMAGE.DOWNLOAD_APP_IOS,
     alt: "DOWNLOAD ON APP STORE"
-  })))), /*#__PURE__*/React.createElement("div", {
+  })), /*#__PURE__*/React.createElement("a", {
+    href: "https://play.google.com/store/apps",
+    target: "_blank"
+  }, /*#__PURE__*/React.createElement("img", {
+    src: IMAGE.DOWNLOAD_APP_ANDROID,
+    alt: "DOWNLOAD ON APP I"
+  }))))), /*#__PURE__*/React.createElement("div", {
     className: classnames('footer footer-light footer-mobile', {
       'd-none': !isMobile
     })
@@ -4060,6 +4072,8 @@ const ForgotPassword = () => {
     actions.setSubmitting(false);
   };
 
+  const onClickSuggestion = () => {};
+
   return /*#__PURE__*/React.createElement(Formik, {
     initialValues: {
       username: '',
@@ -4101,7 +4115,8 @@ const ForgotPassword = () => {
   }))), errors.email && touched.email ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
   }, errors.email) : null, /*#__PURE__*/React.createElement("div", {
-    className: "form-control-position"
+    className: "form-control-position text-primary cursor-pointer",
+    onClick: onClickSuggestion
   }, /*#__PURE__*/React.createElement(Sun, {
     size: 15
   })), /*#__PURE__*/React.createElement(Label, null, msg)))), /*#__PURE__*/React.createElement("div", {
@@ -4200,10 +4215,20 @@ const LandingPage = props => {
     id: "footer.companySlogan"
   }))), /*#__PURE__*/React.createElement("div", {
     className: "float-md-right d-none d-md-block"
+  }, /*#__PURE__*/React.createElement("a", {
+    className: "mr-1",
+    href: "https://www.apple.com/app-store/",
+    target: "_blank"
   }, /*#__PURE__*/React.createElement("img", {
-    src: IMAGE.DOWNLOAD_APP,
+    src: IMAGE.DOWNLOAD_APP_IOS,
     alt: "DOWNLOAD ON APP STORE"
-  }))))));
+  })), /*#__PURE__*/React.createElement("a", {
+    href: "https://play.google.com/store/apps",
+    target: "_blank"
+  }, /*#__PURE__*/React.createElement("img", {
+    src: IMAGE.DOWNLOAD_APP_ANDROID,
+    alt: "DOWNLOAD ON APP I"
+  })))))));
 };
 
 const AppRouter = props => {
@@ -4214,6 +4239,7 @@ const AppRouter = props => {
     isAuthentication,
     authToken,
     children,
+    history,
     message
   } = props;
   useEffect(() => {
@@ -4359,7 +4385,8 @@ const App = ({
   appId,
   appReducer,
   message,
-  navigationConfig
+  navigationConfig,
+  history
 }) => {
   const middlewares = [thunk, createDebounce()];
   const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
@@ -4374,6 +4401,7 @@ const App = ({
   }, /*#__PURE__*/React.createElement(LoadingSpinner$1, null), /*#__PURE__*/React.createElement(AppRouter$1, {
     message: message,
     appId: appId,
+    history: history,
     children: children
   }), /*#__PURE__*/React.createElement(ToastContainer, {
     position: "top-right",

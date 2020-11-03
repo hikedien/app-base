@@ -919,7 +919,7 @@ span.flatpickr-day.selected {
   .landing-page .text-primary {
     color: #51912d; }
   .landing-page .form-control.is-invalid.not-show-icon {
-    background: none; }
+    background-image: none; }
 
 .login-tabs-container {
   min-height: 505px; }
