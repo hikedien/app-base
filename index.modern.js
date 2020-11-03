@@ -4236,6 +4236,7 @@ const AppRouter = props => {
     isAuthentication,
     authToken,
     children,
+    loadNavtigation,
     history,
     message
   } = props;
@@ -4246,7 +4247,11 @@ const AppRouter = props => {
       HttpClient.addAuthTokenToHeader(code);
       checkLoginStatus(code);
     }
-  }, []);
+
+    if (authToken) {
+      loadNavtigation();
+    }
+  }, [authToken]);
 
   const setMessages = (message = {}) => {
     const newMessage = {};
@@ -4328,8 +4333,8 @@ const mapStateToProps$3 = state => {
 
 var AppRouter$1 = connect(mapStateToProps$3, {
   checkLoginStatus,
-  loginAction,
-  loadNavtigation
+  loadNavtigation,
+  loginAction
 })(AppRouter);
 
 TopBarProgress.config({

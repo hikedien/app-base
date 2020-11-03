@@ -4636,6 +4636,7 @@ var AppRouter = function AppRouter(props) {
       isAuthentication = props.isAuthentication,
       authToken = props.authToken,
       children = props.children,
+      loadNavtigation = props.loadNavtigation,
       history = props.history,
       message = props.message;
   React.useEffect(function () {
@@ -4645,7 +4646,11 @@ var AppRouter = function AppRouter(props) {
       HttpClient.addAuthTokenToHeader(code);
       checkLoginStatus(code);
     }
-  }, []);
+
+    if (authToken) {
+      loadNavtigation();
+    }
+  }, [authToken]);
 
   var setMessages = function setMessages(message) {
     if (message === void 0) {
@@ -4739,8 +4744,8 @@ var mapStateToProps$3 = function mapStateToProps(state) {
 
 var AppRouter$1 = reactRedux.connect(mapStateToProps$3, {
   checkLoginStatus: checkLoginStatus,
-  loginAction: loginAction,
-  loadNavtigation: loadNavtigation
+  loadNavtigation: loadNavtigation,
+  loginAction: loginAction
 })(AppRouter);
 
 TopBarProgress.config({
