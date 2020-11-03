@@ -1787,39 +1787,6 @@ var hideScrollToTop = function hideScrollToTop(value) {
   };
 };
 
-var LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
-var loadNavtigation = function loadNavtigation(appId) {
-  return function (dispatch) {
-    try {
-      var _temp2 = _catch(function () {
-        return Promise.resolve(NavBarService.getNativagtion()).then(function (res) {
-          var roles = res.data;
-          var navConfigs = getNativgationConfig(appId, roles);
-          dispatch({
-            type: LOAD_NATIVGATION$1,
-            payload: {
-              navConfigs: navConfigs,
-              roles: roles
-            }
-          });
-        });
-      }, function () {
-        dispatch({
-          type: LOAD_NATIVGATION$1,
-          payload: {
-            navConfigs: getNativgationConfig(appId),
-            roles: []
-          }
-        });
-      });
-
-      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
-};
-
 var SidebarHeader = /*#__PURE__*/function (_Component) {
   _inheritsLoose(SidebarHeader, _Component);
 
@@ -2628,8 +2595,6 @@ var Layout = /*#__PURE__*/function (_PureComponent) {
         direction = _this$props$customize.direction;
 
     if (this.mounted) {
-      this.props.loadNavtigation();
-
       if (window !== 'undefined') {
         window.addEventListener('resize', this.updateWidth, false);
       }
@@ -2761,9 +2726,41 @@ var Layout$1 = reactRedux.connect(mapStateToProps$2, {
   changeNavbarType: changeNavbarType,
   changeFooterType: changeFooterType,
   changeMenuColor: changeMenuColor,
-  hideScrollToTop: hideScrollToTop,
-  loadNavtigation: loadNavtigation
+  hideScrollToTop: hideScrollToTop
 })(Layout);
+
+var LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
+var loadNavtigation = function loadNavtigation(appId) {
+  return function (dispatch) {
+    try {
+      var _temp2 = _catch(function () {
+        return Promise.resolve(NavBarService.getNativagtion()).then(function (res) {
+          var roles = res.data;
+          var navConfigs = getNativgationConfig(appId, roles);
+          dispatch({
+            type: LOAD_NATIVGATION$1,
+            payload: {
+              navConfigs: navConfigs,
+              roles: roles
+            }
+          });
+        });
+      }, function () {
+        dispatch({
+          type: LOAD_NATIVGATION$1,
+          payload: {
+            navConfigs: getNativgationConfig(appId),
+            roles: []
+          }
+        });
+      });
+
+      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+};
 
 var Context = React__default.createContext();
 
@@ -4742,7 +4739,8 @@ var mapStateToProps$3 = function mapStateToProps(state) {
 
 var AppRouter$1 = reactRedux.connect(mapStateToProps$3, {
   checkLoginStatus: checkLoginStatus,
-  loginAction: loginAction
+  loginAction: loginAction,
+  loadNavtigation: loadNavtigation
 })(AppRouter);
 
 TopBarProgress.config({

@@ -1621,32 +1621,6 @@ const hideScrollToTop = value => {
   });
 };
 
-const LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
-const loadNavtigation = appId => {
-  return async dispatch => {
-    try {
-      const res = await NavBarService.getNativagtion();
-      const roles = res.data;
-      const navConfigs = getNativgationConfig(appId, roles);
-      dispatch({
-        type: LOAD_NATIVGATION$1,
-        payload: {
-          navConfigs,
-          roles
-        }
-      });
-    } catch (error) {
-      dispatch({
-        type: LOAD_NATIVGATION$1,
-        payload: {
-          navConfigs: getNativgationConfig(appId),
-          roles: []
-        }
-      });
-    }
-  };
-};
-
 class SidebarHeader extends Component {
   render() {
     let {
@@ -2379,8 +2353,6 @@ class Layout extends PureComponent {
     } = this.props;
 
     if (this.mounted) {
-      this.props.loadNavtigation();
-
       if (window !== 'undefined') {
         window.addEventListener('resize', this.updateWidth, false);
       }
@@ -2515,9 +2487,34 @@ var Layout$1 = connect(mapStateToProps$2, {
   changeNavbarType,
   changeFooterType,
   changeMenuColor,
-  hideScrollToTop,
-  loadNavtigation
+  hideScrollToTop
 })(Layout);
+
+const LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
+const loadNavtigation = appId => {
+  return async dispatch => {
+    try {
+      const res = await NavBarService.getNativagtion();
+      const roles = res.data;
+      const navConfigs = getNativgationConfig(appId, roles);
+      dispatch({
+        type: LOAD_NATIVGATION$1,
+        payload: {
+          navConfigs,
+          roles
+        }
+      });
+    } catch (error) {
+      dispatch({
+        type: LOAD_NATIVGATION$1,
+        payload: {
+          navConfigs: getNativgationConfig(appId),
+          roles: []
+        }
+      });
+    }
+  };
+};
 
 const Context = React.createContext();
 
@@ -4331,7 +4328,8 @@ const mapStateToProps$3 = state => {
 
 var AppRouter$1 = connect(mapStateToProps$3, {
   checkLoginStatus,
-  loginAction
+  loginAction,
+  loadNavtigation
 })(AppRouter);
 
 TopBarProgress.config({
