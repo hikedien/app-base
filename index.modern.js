@@ -36,20 +36,12 @@ import 'react-toastify/dist/ReactToastify.css';
 import 'prismjs/themes/prism-tomorrow.css';
 
 const HttpClient = Axios.create({
-  timeout: 5000,
+  timeout: 10000,
   adapter: throttleAdapterEnhancer(cacheAdapterEnhancer(Axios.defaults.adapter, {
     threshold: 15 * 60 * 1000
   }))
 });
-
-HttpClient.addAuthTokenToHeader = authToken => {
-  HttpClient.defaults.headers.Authorization = `Bearer ${authToken}`;
-};
-
-HttpClient.removeAuthTokenFromHeader = () => {
-  delete HttpClient.defaults.headers.Authorization;
-};
-
+HttpClient.defaults.headers['Content-Type'] = 'application/json';
 const errorMessage = message => {
   return /*#__PURE__*/React.createElement("div", {
     className: "d-flex align-items-center"
@@ -59,6 +51,12 @@ const errorMessage = message => {
 };
 const setUpHttpClient = store => {
   HttpClient.interceptors.request.use(config => {
+    const token = store.getState().auth.authToken;
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
     if (!config.isBackgroundRequest) {
       store.dispatch({
         type: 'SHOW_LOADING_BAR'
@@ -284,7 +282,6 @@ const authReducers = (state = { ...authInitialState
   switch (action.type) {
     case LOGIN_ACTION:
       {
-        HttpClient.addAuthTokenToHeader(action.payload);
         return { ...state,
           authToken: action.payload,
           loginStatus: LOGIN_STATUS.SUCCESS
@@ -293,7 +290,6 @@ const authReducers = (state = { ...authInitialState
 
     case LOOUT_ACTION:
       {
-        HttpClient.removeAuthTokenFromHeader('Authorization');
         return { ...authInitialState
         };
       }
@@ -595,13 +591,16 @@ const mapRoleListToNavConfigs = (roleList = []) => {
 };
 
 const mapRoleToNavItem = role => {
+  const IconTag = Icon[role.icon];
   const item = {};
   item.id = role.id;
   item.type = 'item';
   item.code = role.code;
   item.appId = role.appId;
   item.title = `menu.${role.keyLang}`;
-  item.icon = Icon[role.icon];
+  item.icon = /*#__PURE__*/React.createElement(IconTag, {
+    size: 20
+  });
   item.navLink = role.menuPath;
 
   if (role.isHighlight) {
@@ -4244,7 +4243,6 @@ const AppRouter = props => {
     const code = new URLSearchParams(document.location.search).get('code') || authToken;
 
     if (code && loginStatus !== LOGIN_STATUS.SUCCESS) {
-      HttpClient.addAuthTokenToHeader(code);
       checkLoginStatus(code);
     }
 
