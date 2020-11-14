@@ -1,5 +1,5 @@
-import React, { Component, PureComponent, useState, useEffect } from 'react';
-import { connect, useDispatch, useSelector, Provider } from 'react-redux';
+import React, { useState, useEffect, Component, PureComponent } from 'react';
+import { connect, useSelector, useDispatch, Provider } from 'react-redux';
 import { combineReducers, createStore, applyMiddleware, compose } from 'redux';
 import createDebounce from 'redux-debounced';
 import thunk from 'redux-thunk';
@@ -7,33 +7,41 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { persistReducer, persistStore } from 'redux-persist';
 import Axios from 'axios';
 import * as Icon from 'react-feather';
-import { AlertTriangle, ShoppingCart, FileText, Circle, User, DollarSign, TrendingUp, Award, CreditCard, Share2, Settings, Lock, Power, Search, X, Bell, PlusSquare, DownloadCloud, CheckCircle, File, Menu, Star, Home, List, PlusCircle, Gift, MessageSquare, ArrowUp, Disc, ChevronRight, Check, MapPin, Info, Sun } from 'react-feather';
+import { AlertTriangle, ShoppingCart, FileText, Circle, User, DollarSign, TrendingUp, Award, CreditCard, Share2, Settings, Lock, Power, Search, X, Bell, PlusSquare, DownloadCloud, CheckCircle, File, Menu, Home, List, PlusCircle, Gift, MessageSquare, ArrowUp, Disc, ChevronRight, Check, MapPin, Info, Sun } from 'react-feather';
 import { toast, ToastContainer } from 'react-toastify';
 export { toast } from 'react-toastify';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
+import { FormattedMessage, injectIntl, IntlProvider } from 'react-intl';
+export { FormattedMessage } from 'react-intl';
 import { createBrowserHistory } from 'history';
 import sessionStorage from 'redux-persist/es/storage/session';
-import { useHistory, Link, Router, Switch, Route, Redirect } from 'react-router-dom';
+import { useHistory, NavLink as NavLink$1, Link, Router, Switch, Route, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
 import { FormGroup, Label, DropdownMenu, DropdownItem, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Badge, Media, Navbar as Navbar$1, Button, Row, Col, Form, Input, Table, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane } from 'reactstrap';
 export { Button } from 'reactstrap';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
-import { FormattedMessage, IntlProvider } from 'react-intl';
-export { FormattedMessage } from 'react-intl';
 import ScrollToTop from 'react-scroll-up';
 import Hammer from 'react-hammerjs';
 import Select$1 from 'react-select';
 import chroma from 'chroma-js';
 import Flatpickr from 'react-flatpickr';
-import { Formik, Form as Form$1, Field, FastField } from 'formik';
+import { Field, Formik, Form as Form$1, FastField } from 'formik';
 import { object, string } from 'yup';
 import TopBarProgress from 'react-topbar-progress-indicator';
 import Ripples from 'react-ripples';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import 'react-toastify/dist/ReactToastify.css';
 import 'prismjs/themes/prism-tomorrow.css';
+
+const generateUUID = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    var r = Math.random() * 16 | 0,
+        v = c == 'x' ? r : r & 0x3 | 0x8;
+    return v.toString(16);
+  });
+};
 
 const HttpClient = Axios.create({
   timeout: 10000,
@@ -50,12 +58,28 @@ const errorMessage = message => {
   }, message));
 };
 const setUpHttpClient = store => {
+  let deviceId = localStorage.getItem('deviceId');
+  let language = localStorage.getItem('language');
+
+  if (!deviceId) {
+    deviceId = generateUUID();
+    localStorage.setItem('deviceId', deviceId);
+  }
+
+  if (!language) {
+    localStorage.setItem('language', 'vi');
+  }
+
   HttpClient.interceptors.request.use(config => {
     const token = store.getState().auth.authToken;
+    language = localStorage.getItem('language');
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    config.headers.deviceId = deviceId;
+    config.headers.language = language;
 
     if (!config.isBackgroundRequest) {
       store.dispatch({
@@ -80,25 +104,18 @@ const setUpHttpClient = store => {
     }
 
     switch (e.response.status) {
-      case 404:
-        toast.error(errorMessage('API Not Found !'));
-        return e.response;
+      case 403:
+        toast.error(errorMessage(e.response.data.message));
+        store.dispatch({
+          type: 'LOGOUT_ACTION'
+        });
 
       case 400:
-        toast.error(errorMessage('Bad Request !'));
-        return e.response;
-
-      case 408:
-        toast.error(errorMessage('Request Timeout !'));
-        return e.response;
-
       case 500:
-        toast.error(errorMessage('Server error !'));
-        return e.response;
-
-      default:
-        throw e;
+        toast.error(errorMessage(e.response.data.message));
     }
+
+    return e.response;
   });
 };
 
@@ -170,26 +187,43 @@ const customizerReducer = (state = { ...themeConfig
   }
 };
 
+const API_BASE_URL = 'http://localhost:8086/nth';
 const API_LOGIN_URL = 'http://localhost:8086/api/authenticate';
-const API_LOGOUT_URL = 'https://api.mocki.io/v1/5e448c60';
-const API_GET_NAV_CONFIGS = 'http://localhost:8100/api/roles';
+const API_LOGOUT_URL = 'http://localhost:8086/api/authenticate';
+const API_REGISTER = API_BASE_URL + '/onboarding/api/authenticate/register';
+const API_GET_USER = API_BASE_URL + '/user/api/users';
+const API_GET_NAV_CONFIGS = 'http://localhost:8086/nth/accesscontrol/api/roles';
 const API_R_200 = 200;
+const MAX_MOBILE_WIDTH = 768;
+const REMEMBER_ME_TOKEN = 'rememberMe';
 const LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
   FAIL: 'FAIL'
 };
 const APP_URL = 'http://localhost:3000';
 const IMAGE = {
-  LOGO: 'https://sit.inon.vn/PortalWeb/nth/assets/images/InOn-logo.png',
-  LOGO_WHITE: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Logo.png?alt=media&token=d61feda7-c2be-423a-9d64-da13dca88b85',
+  LOGO: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Logo.png?alt=media&token=68d3ab7a-e9bb-4c43-a543-c65f72033bf9',
+  LOGO_NO_TEXT: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/logo-no-text.png?alt=media&token=4c266c6a-bd1c-49f9-b51c-1e2484925b06',
+  NAV_ICON_1: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-1.png?alt=media&token=0ccdb6bc-09da-43a3-b18f-56d2598e542b',
+  NAV_ICON_2: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-2.png?alt=media&token=def3402b-65f0-458b-b4f8-e9c6d8d3bb09',
+  NAV_ICON_3: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-3.png?alt=media&token=1ce1a25c-b095-4f80-8987-3ae9b977e3a8',
+  NAV_ICON_4: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-4.png?alt=media&token=549432c1-9dd6-4d0a-948a-3f2de513d238',
+  NAV_ICON_5: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-5.png?alt=media&token=659d7162-783c-42ed-af7a-d05d0a3be595',
+  BUY_INSURANCE: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Vector.png?alt=media&token=56bac236-f494-4643-81f1-11611229e62e',
+  LOGO_WHITE: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/LogoWhite.png?alt=media&token=8289e81f-7b3f-41cd-b5dc-5220bbe8d203',
   LANDING_PAGE_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-Signup-01%203%20(1).png?alt=media&token=19aca74e-c81f-40e2-a00d-a91b7ee9f27a',
+  LANDING_PAGE_MOBILE_LOGO_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-GRPHIC-08%201.png?alt=media&token=5b15e616-f235-4857-af2d-d243fe25e330',
+  LANDING_PAGE_MOBILE_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Mobile_bg.png?alt=media&token=120f54fa-8c82-45d3-ae3b-87517a1ee2aa',
   DOWNLOAD_APP_IOS: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-APP%26GP-03.png?alt=media&token=c9a13eca-3fe6-40d0-ac1d-df417b95385d',
   DOWNLOAD_APP_ANDROID: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-APP%26GP-01.png?alt=media&token=b2aefa9d-d464-41d3-9fd0-b374ed0dca93'
 };
 
-const history = createBrowserHistory({
+let history = createBrowserHistory({
   basename: ''
 });
+const setBaseHistory = appHistory => {
+  history = appHistory;
+};
 
 class AuthService {}
 
@@ -197,8 +231,22 @@ AuthService.login = user => {
   return HttpClient.post(API_LOGIN_URL, user);
 };
 
+AuthService.getUserInfo = (username, authToken) => {
+  const headers = {
+    Authorization: `Bearer ${authToken}`
+  };
+  return HttpClient.get(`${API_GET_USER}/${username}`, {
+    headers,
+    isBackgroundRequest: true
+  });
+};
+
 AuthService.logout = user => {
   return HttpClient.post(API_LOGOUT_URL, user);
+};
+
+AuthService.register = user => {
+  return HttpClient.post(API_REGISTER, user);
 };
 
 AuthService.checkLoginByToken = () => {
@@ -207,17 +255,22 @@ AuthService.checkLoginByToken = () => {
 
 const LOGIN_ACTION = 'LOGIN_ACTION';
 const LOGIN_FAIL_ACTION = 'LOGIN_FAIL_ACTION';
-const LOOUT_ACTION = 'LOGOUT_ACTION';
+const LOGOUT_ACTION = 'LOGOUT_ACTION';
 const checkLoginStatus = authToken => {
-  return async dispatch => {
+  return async (dispatch, getState) => {
     try {
-      const respone = await AuthService.checkLoginByToken();
+      let respone = await AuthService.checkLoginByToken();
 
       if (respone.status === API_R_200) {
+        respone = await AuthService.getUserInfo(getState().auth.user.username, authToken);
         dispatch({
           type: LOGIN_ACTION,
-          payload: authToken
+          payload: {
+            authToken,
+            user: respone.data
+          }
         });
+        history.push('/');
       } else {
         dispatch({
           type: LOGIN_ACTION,
@@ -225,9 +278,9 @@ const checkLoginStatus = authToken => {
         });
       }
     } catch (error) {
+      console.log(error);
       dispatch({
-        type: LOGIN_ACTION,
-        payload: 'authToken'
+        type: LOGOUT_ACTION
       });
     }
   };
@@ -235,21 +288,34 @@ const checkLoginStatus = authToken => {
 const loginAction = user => {
   return async dispatch => {
     try {
-      const respone = await AuthService.login(user);
+      let respone = await AuthService.login(user);
 
       if (respone.status === API_R_200) {
+        const authToken = respone.data.id_token;
+        respone = await AuthService.getUserInfo(user.username, authToken);
+
+        if (user.isRemeberMe) {
+          localStorage.setItem(REMEMBER_ME_TOKEN, JSON.stringify({
+            username: user.username,
+            name: respone.data.fullName
+          }));
+        }
+
         dispatch({
           type: LOGIN_ACTION,
-          payload: respone.data.id_token
+          payload: {
+            authToken,
+            user: respone.data
+          }
         });
         history.push('/');
       } else {
-        dispatch({
-          type: LOGIN_ACTION,
-          payload: 'authToken'
-        });
+        toast.error(errorMessage( /*#__PURE__*/React.createElement(FormattedMessage, {
+          id: "login.fail"
+        })));
       }
     } catch (error) {
+      console.log(error);
       dispatch({
         type: LOGIN_ACTION,
         payload: 'authToken'
@@ -257,18 +323,18 @@ const loginAction = user => {
     }
   };
 };
-const logoutAction = user => {
+const logoutAction = () => {
   return async dispatch => {
     try {
-      const respone = await AuthService.logout(user);
-
-      if (respone.status === API_R_200) {
-        dispatch({
-          type: LOOUT_ACTION
-        });
-        history.push('/');
-      }
-    } catch (error) {}
+      dispatch({
+        type: LOGOUT_ACTION
+      });
+    } catch (error) {
+      history.push('/');
+      dispatch({
+        type: LOGOUT_ACTION
+      });
+    }
   };
 };
 
@@ -283,12 +349,12 @@ const authReducers = (state = { ...authInitialState
     case LOGIN_ACTION:
       {
         return { ...state,
-          authToken: action.payload,
+          ...action.payload,
           loginStatus: LOGIN_STATUS.SUCCESS
         };
       }
 
-    case LOOUT_ACTION:
+    case LOGOUT_ACTION:
       {
         return { ...authInitialState
         };
@@ -675,9 +741,9 @@ class Autocomplete extends React.Component {
   constructor(props) {
     super(props);
 
-    this.onSuggestionItemClick = (url, e) => {
+    this.onSuggestionItemClick = (item, e) => {
       if (this.props.onSuggestionClick) {
-        this.props.onSuggestionClick(e);
+        this.props.onSuggestionClick(item, e);
       }
 
       this.setState({
@@ -685,7 +751,6 @@ class Autocomplete extends React.Component {
         showSuggestions: false,
         userInput: e.currentTarget.innerText
       });
-      if (url) history.push(url);
     };
 
     this.onSuggestionItemHover = index => {
@@ -744,7 +809,7 @@ class Autocomplete extends React.Component {
               userInput: ''
             });
           } else if (e.keyCode === 13 && showSuggestions) {
-              this.onSuggestionItemClick(this.filteredData[activeSuggestion].link, e);
+              this.onSuggestionItemClick(this.filteredData[activeSuggestion], e);
               this.setState({
                 userInput: this.filteredData[activeSuggestion][filterKey],
                 showSuggestions: false
@@ -779,7 +844,7 @@ class Autocomplete extends React.Component {
               active: this.filteredData.indexOf(item) === activeSuggestion
             }),
             key: item[filterKey],
-            onClick: e => onSuggestionItemClick(item.link, e),
+            onClick: e => onSuggestionItemClick(item, e),
             onMouseEnter: () => {
               this.onSuggestionItemHover(this.filteredData.indexOf(item));
             }
@@ -832,7 +897,7 @@ class Autocomplete extends React.Component {
               active: this.filteredData.indexOf(suggestion) === activeSuggestion
             }),
             key: suggestion[filterKey],
-            onClick: e => onSuggestionItemClick(suggestion.link ? suggestion.link : null, e),
+            onClick: e => onSuggestionItemClick(suggestion, e),
             onMouseEnter: () => this.onSuggestionItemHover(this.filteredData.indexOf(suggestion))
           }, suggestion[filterKey]);
         } else if (customRender) {
@@ -1166,9 +1231,30 @@ class NavbarUser extends React.PureComponent {
       };
       return countryCode[locale];
     };
+
+    this.onSuggestionItemClick = item => {
+      if (!item.isExternalApp) {
+        history.push(`${item.menuPath}`);
+      } else {
+        window.location.href = item.navLinkExternal;
+      }
+    };
   }
 
   componentDidUpdate(prevProps) {
+    if (prevProps.roles !== this.props.roles) {
+      const suggestions = this.props.roles.map(item => {
+        item.name = this.props.intl.formatMessage({
+          id: `menu.${item.keyLang}`
+        });
+        item.isExternalApp = item.appId !== this.props.appId;
+        item.navLinkExternal = `${APP_URL + item.menuPath}?code=${this.props.authToken}`;
+        return item;
+      });
+      this.setState({
+        suggestions
+      });
+    }
   }
 
   render() {
@@ -1195,13 +1281,11 @@ class NavbarUser extends React.PureComponent {
     })), /*#__PURE__*/React.createElement(Autocomplete, {
       className: "form-control",
       suggestions: this.state.suggestions,
-      filterKey: "title",
-      filterHeaderKey: "groupTitle",
-      grouped: true,
-      placeholder: "Explore Vuexy...",
+      filterKey: "name",
+      onSuggestionClick: this.onSuggestionItemClick,
       autoFocus: true,
       clearInput: this.state.navbarSearch,
-      externalClick: e => {
+      externalClick: () => {
         this.setState({
           navbarSearch: false
         });
@@ -1221,38 +1305,15 @@ class NavbarUser extends React.PureComponent {
             active: filteredData.indexOf(item) === activeSuggestion
           }),
           key: i,
-          onClick: e => onSuggestionItemClick(item.link, e),
+          onClick: e => onSuggestionItemClick(item, e),
           onMouseEnter: () => onSuggestionItemHover(filteredData.indexOf(item))
         }, /*#__PURE__*/React.createElement("div", {
-          className: classnames({
-            'd-flex justify-content-between align-items-center': item.file || item.img
-          })
-        }, /*#__PURE__*/React.createElement("div", {
-          className: "item-container d-flex"
-        }, item.icon ? /*#__PURE__*/React.createElement(IconTag, {
+          className: "d-flex align-items-center"
+        }, /*#__PURE__*/React.createElement(IconTag, {
           size: 17
-        }) : item.file ? /*#__PURE__*/React.createElement("img", {
-          src: item.file,
-          height: "36",
-          width: "28",
-          alt: item.title
-        }) : item.img ? /*#__PURE__*/React.createElement("img", {
-          className: "rounded-circle mt-25",
-          src: item.img,
-          height: "28",
-          width: "28",
-          alt: item.title
-        }) : null, /*#__PURE__*/React.createElement("div", {
-          className: "item-info ml-1"
-        }, /*#__PURE__*/React.createElement("p", {
-          className: "align-middle mb-0"
-        }, item.title), item.by || item.email ? /*#__PURE__*/React.createElement("small", {
-          className: "text-muted"
-        }, item.by ? item.by : item.email ? item.email : null) : null)), item.size || item.date ? /*#__PURE__*/React.createElement("div", {
-          className: "meta-container"
-        }, /*#__PURE__*/React.createElement("small", {
-          className: "text-muted"
-        }, item.size ? item.size : item.date ? item.date : null)) : null));
+        }), /*#__PURE__*/React.createElement("div", {
+          className: "ml-2"
+        }, item.name)));
       },
       onSuggestionsShown: userInput => {
         if (this.state.navbarSearch) {
@@ -1421,9 +1482,7 @@ class NavbarUser extends React.PureComponent {
       className: "user-nav d-sm-flex d-none"
     }, /*#__PURE__*/React.createElement("span", {
       className: "user-name text-bold-600"
-    }, this.props.userName), /*#__PURE__*/React.createElement("span", {
-      className: "user-status"
-    }, "Available")), /*#__PURE__*/React.createElement("span", {
+    }, this.props.userName)), /*#__PURE__*/React.createElement("span", {
       "data-tour": "user"
     }, /*#__PURE__*/React.createElement("img", {
       src: "https://storage.live.com/Users/-6155523327610065665/MyProfile/ExpressionProfile/ProfilePhoto:Win8Static,UserTileMedium,UserTileStatic",
@@ -1435,6 +1494,8 @@ class NavbarUser extends React.PureComponent {
   }
 
 }
+
+var NavbarUser$1 = injectIntl(NavbarUser);
 
 const ThemeNavbar = props => {
   const colorsArr = ['primary', 'danger', 'success', 'info', 'warning', 'dark'];
@@ -1480,13 +1541,16 @@ const ThemeNavbar = props => {
   }, /*#__PURE__*/React.createElement(Menu, {
     className: "ficon"
   })))), /*#__PURE__*/React.createElement("ul", {
-    className: "nav navbar-nav bookmark-icons"
-  }, /*#__PURE__*/React.createElement(NavItem, null, /*#__PURE__*/React.createElement(NavLink, null, /*#__PURE__*/React.createElement(Star, {
-    className: "text-warning",
-    size: 21
-  })))))), /*#__PURE__*/React.createElement(NavbarUser, {
+    className: "nav navbar-nav d-none d-xl-flex bookmark-icons"
+  }, Array(5).fill(0).map((_, index) => /*#__PURE__*/React.createElement(NavItem, null, /*#__PURE__*/React.createElement("img", {
+    className: "img-fluid",
+    key: index,
+    src: IMAGE[`NAV_ICON_${index + 1}`]
+  })))))), /*#__PURE__*/React.createElement(NavbarUser$1, {
     handleAppOverlay: props.handleAppOverlay,
     changeCurrentLang: props.changeCurrentLang,
+    appId: props.appId,
+    authToken: props.authToken,
     userName: props.name,
     roles: props.roles,
     isAuthenticated: props.isAuthenticated,
@@ -1496,9 +1560,10 @@ const ThemeNavbar = props => {
 
 const mapStateToProps = state => {
   return {
-    name: state.auth.name,
+    name: state.auth.user.fullName,
     isAuthenticated: !!state.auth.name,
-    roles: state.navbar.roles
+    roles: state.navbar.roles,
+    authToken: state.auth.authToken
   };
 };
 
@@ -1506,25 +1571,59 @@ var Navbar = connect(mapStateToProps, {
   logoutAction
 })(ThemeNavbar);
 
-function useDeviceDetect() {
-  const [isMobile, setMobile] = React.useState(false);
-  React.useEffect(() => {
-    const userAgent = typeof window.navigator === 'undefined' ? '' : navigator.userAgent;
-    const mobile = Boolean(userAgent.match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i));
-    setMobile(mobile);
-  }, []);
+function getWindowDimensions() {
+  const {
+    innerWidth: width,
+    innerHeight: height
+  } = window;
   return {
-    isMobile
+    width,
+    height
   };
+}
+
+function useWindowDimensions() {
+  const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
+  useEffect(() => {
+    function handleResize() {
+      setWindowDimensions(getWindowDimensions());
+    }
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  return windowDimensions;
 }
 
 const Footer = props => {
   const {
-    isMobile
-  } = useDeviceDetect();
+    width
+  } = useWindowDimensions();
+  const history = useHistory();
+  const navConfigs = useSelector(state => [...state.navbar.navConfigs]);
+  const authToken = useSelector(state => state.auth.authToken);
+
+  const goToPage = (e, name) => {
+    e.preventDefault();
+    let currentRoute = navConfigs.find(item => item.code === name);
+
+    if (!currentRoute) {
+      currentRoute = {
+        isExternalApp: AppId.APP_NO1 === props.AppId,
+        navLink: ''
+      };
+    }
+
+    if (!currentRoute.isExternalApp) {
+      history.push(`${currentRoute.navLink}`);
+    } else {
+      window.location.href = `${APP_URL + currentRoute.navLink}?code=${authToken}`;
+    }
+  };
+
   return /*#__PURE__*/React.createElement("footer", null, /*#__PURE__*/React.createElement("div", {
     className: classnames('footer footer-light', {
-      'd-none': isMobile
+      'd-none': width < MAX_MOBILE_WIDTH
     })
   }, /*#__PURE__*/React.createElement("div", {
     className: "d-flex justify-content-between"
@@ -1550,24 +1649,53 @@ const Footer = props => {
     src: IMAGE.DOWNLOAD_APP_ANDROID,
     alt: "DOWNLOAD ON APP I"
   }))))), /*#__PURE__*/React.createElement("div", {
-    className: classnames('footer footer-light footer-mobile', {
-      'd-none': !isMobile
+    className: classnames('footer footer-light footer-mobile text-center', {
+      'd-none': width >= MAX_MOBILE_WIDTH
     })
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("a", {
-    className: "tab-link",
-    href: "#"
-  }, /*#__PURE__*/React.createElement(Home, null))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("a", {
-    className: "tab-link",
-    href: "#"
-  }, /*#__PURE__*/React.createElement(List, null))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("a", {
-    className: "tab-link",
-    href: "#"
-  }, /*#__PURE__*/React.createElement(PlusCircle, null))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("a", {
-    className: "tab-link",
-    href: "#"
-  }, /*#__PURE__*/React.createElement(Gift, null))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("a", {
-    className: "tab-link"
-  }, /*#__PURE__*/React.createElement(MessageSquare, null)))), props.hideScrollToTop === false ? /*#__PURE__*/React.createElement(ScrollToTop, {
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-25"
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "#",
+    onClick: e => goToPage(e, 'home')
+  }, /*#__PURE__*/React.createElement(Home, null), /*#__PURE__*/React.createElement("div", {
+    className: "mt-1"
+  }, "Trang ch\u1EE7"))), /*#__PURE__*/React.createElement("div", {
+    className: "w-25"
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "#",
+    onClick: e => goToPage(e, 'buyInsurance')
+  }, /*#__PURE__*/React.createElement(List, null), /*#__PURE__*/React.createElement("div", {
+    className: "mt-1"
+  }, "H\u1EE3p \u0111\u1ED3ng"))), /*#__PURE__*/React.createElement("div", {
+    className: "position-relative w-25"
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "#",
+    onClick: e => goToPage(e, 'contractManagemen')
+  }, /*#__PURE__*/React.createElement("img", {
+    src: IMAGE.BUY_INSURANCE,
+    className: "buy-insurance",
+    alt: ""
+  }), /*#__PURE__*/React.createElement(PlusCircle, {
+    style: {
+      visibility: 'hidden'
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "mt-1"
+  }, "Mua b\u1EA3o hi\u1EC3m"))), /*#__PURE__*/React.createElement("div", {
+    className: "w-25"
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "#",
+    onClick: e => goToPage(e, 'home')
+  }, /*#__PURE__*/React.createElement(Gift, null), /*#__PURE__*/React.createElement("div", {
+    className: "mt-1"
+  }, "Khuy\u1EBFn m\u1EA1i"))), /*#__PURE__*/React.createElement("div", {
+    className: "w-25"
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "#",
+    onClick: e => goToPage(e, 'home')
+  }, /*#__PURE__*/React.createElement(MessageSquare, null), /*#__PURE__*/React.createElement("div", {
+    className: "mt-1"
+  }, "Li\xEAn h\u1EC7")))), props.hideScrollToTop === false ? /*#__PURE__*/React.createElement(ScrollToTop, {
     showUnder: 160
   }, /*#__PURE__*/React.createElement(Button, {
     color: "primary",
@@ -1626,6 +1754,7 @@ class SidebarHeader extends Component {
       toggleSidebarMenu,
       activeTheme,
       collapsed,
+      sidebarState,
       toggle,
       sidebarVisibility,
       menuShadow
@@ -1636,11 +1765,11 @@ class SidebarHeader extends Component {
       className: "nav navbar-nav flex-row"
     }, /*#__PURE__*/React.createElement("li", {
       className: "nav-item my-auto mr-auto"
-    }, /*#__PURE__*/React.createElement(NavLink, {
+    }, /*#__PURE__*/React.createElement(NavLink$1, {
       to: "/"
     }, /*#__PURE__*/React.createElement("img", {
       className: "img-fluid logo-img",
-      src: IMAGE.LOGO,
+      src: !sidebarState || !collapsed ? IMAGE.LOGO : IMAGE.LOGO_NO_TEXT,
       alt: "logo"
     }))), /*#__PURE__*/React.createElement("li", {
       className: "nav-item nav-toggle"
@@ -2436,6 +2565,7 @@ class Layout extends PureComponent {
     const navbarProps = {
       toggleSidebarMenu: this.toggleSidebarMenu,
       sidebarState: this.state.sidebarState,
+      appId: this.props.appId,
       sidebarVisibility: this.handleSidebarVisibility,
       currentLang: this.state.currentLang,
       changeCurrentLang: this.handleCurrentLanguage,
@@ -2445,6 +2575,7 @@ class Layout extends PureComponent {
       navbarType: appProps.navbarType
     };
     const footerProps = {
+      appId: this.props.appId,
       footerType: appProps.footerType,
       hideScrollToTop: appProps.hideScrollToTop
     };
@@ -2521,8 +2652,8 @@ class IntlProviderWrapper extends React.Component {
   constructor(...args) {
     super(...args);
     this.state = {
-      locale: 'vi',
-      messages: this.props.appMessage['vi']
+      locale: localStorage.getItem('language'),
+      messages: this.props.appMessage[localStorage.getItem('language')]
     };
   }
 
@@ -2538,6 +2669,7 @@ class IntlProviderWrapper extends React.Component {
       value: {
         state: this.state,
         switchLanguage: language => {
+          localStorage.setItem('language', language);
           this.setState({
             locale: language,
             messages: this.props.appMessage[language]
@@ -2568,6 +2700,7 @@ var messages_en = {
 	"login.password.required": "You must enter your password",
 	"login.rememberMe": "Remember me",
 	"login.fail": "Username or password was incorrect",
+	"login.sayHi": "Hi, {name}",
 	register: register,
 	"register.fullname": "Full name *",
 	"register.fullname.required": "You must enter your full name",
@@ -2576,8 +2709,13 @@ var messages_en = {
 	"register.phoneNumber": "Phone mumber *",
 	"register.phoneNumber.invalid": "You must enter your valid phone number",
 	"register.phoneNumber.required": "You must enter your phone number",
-	"register.referalCode": "Referal code",
+	"register.refCode": "Referal code",
+	"register.refCode.invalid": "Referal code is invalid",
 	"register.mustAppcepted": "Your must accept our terms and conditions",
+	"register.registerSuccess": "Register Successful",
+	"register.agreeWith": "I agree with",
+	"register.policyAndCondition": "Terms and Condition",
+	"register.useService": "use service",
 	forgotPassword: forgotPassword,
 	"forgotPassword.verify": "Verify",
 	"forgotPassword.username": "Username *",
@@ -2659,6 +2797,7 @@ var messages_vi = {
 	"login.password.required": "Bạn phải nhập mật khẩu",
 	"login.rememberMe": "Ghi nhớ tôi",
 	"login.fail": "Tài khoản hoặc mật khẩu của bạn không chính xác",
+	"login.sayHi": "Xin chào, {name}",
 	register: register$1,
 	"register.fullname": "Họ và tên *",
 	"register.fullname.required": "Bạn phải nhập họ và tên",
@@ -2667,8 +2806,13 @@ var messages_vi = {
 	"register.phoneNumber": "Số điện thoại *",
 	"register.phoneNumber.required": "Bạn phải nhập số điện thoại",
 	"register.phoneNumber.invalid": "Số điện thoại không hợp lệ",
-	"register.referalCode": "Mã giới thiệu",
+	"register.refCode": "Mã giới thiệu",
+	"register.refCode.invalid": "Mã giới thiệu không hợp lệ",
 	"register.mustAppcepted": "Bạn phải đồng ý điều khoản và điều kiện của chúng tôi",
+	"register.registerSuccess": "Đăng ký thành công",
+	"register.agreeWith": "Tôi đồng ý với",
+	"register.policyAndCondition": "Điều khoản và Điều kiện",
+	"register.useService": "sử dụng dịch vụ.",
 	forgotPassword: forgotPassword$1,
 	"forgotPassword.verify": "Xác thực",
 	"forgotPassword.username": "Tên tài khoản *",
@@ -3835,6 +3979,27 @@ const GeneralInfo = props => {
   }, /*#__PURE__*/React.createElement(UserInfoTab$1, null)))))));
 };
 
+const BaseFormGroup = ({
+  fieldName,
+  errors,
+  touched,
+  messageId,
+  type
+}) => {
+  return /*#__PURE__*/React.createElement(FormGroup, {
+    className: "form-label-group position-relative"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: messageId
+  }, msg => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Field, {
+    type: type,
+    name: fieldName,
+    className: `form-control ${errors[fieldName] && touched[fieldName] && 'is-invalid'}`,
+    placeholder: msg
+  }), errors[fieldName] && touched[fieldName] ? /*#__PURE__*/React.createElement("div", {
+    className: "text-danger"
+  }, errors[fieldName]) : null, /*#__PURE__*/React.createElement(Label, null, msg))));
+};
+
 const formSchema = object().shape({
   username: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "login.username.required"
@@ -3845,25 +4010,37 @@ const formSchema = object().shape({
 });
 
 const Login = () => {
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState(null);
+  const [isRemeberMe, setIsRemeberMe] = useState(false);
   const dispatch = useDispatch();
   const loginStatus = useSelector(state => state.auth.loginStatus);
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem(REMEMBER_ME_TOKEN));
+
+    if (user) {
+      setRememberMe(user);
+    }
+  }, []);
 
   const onSubmit = (values, actions) => {
     dispatch(loginAction({
       username: values.username,
       password: values.password,
-      rememberMe
+      isRemeberMe
     }));
     actions.setSubmitting(false);
   };
 
+  const onClickNotMe = () => {
+    localStorage.removeItem(REMEMBER_ME_TOKEN);
+    setRememberMe(null);
+  };
+
   return /*#__PURE__*/React.createElement(Formik, {
+    enableReinitialize: true,
     initialValues: {
-      fullName: '',
-      email: '',
-      phoneNumber: '',
-      referalCode: ''
+      username: rememberMe ? rememberMe.username : '',
+      password: ''
     },
     onSubmit: onSubmit,
     validationSchema: formSchema
@@ -3871,24 +4048,24 @@ const Login = () => {
     errors,
     touched
   }) => /*#__PURE__*/React.createElement(Form$1, null, /*#__PURE__*/React.createElement("h4", {
-    className: "text-center text-white"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    className: "text-center text-white mb-3"
+  }, rememberMe ? /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "login.sayHi",
+    values: {
+      name: rememberMe.name
+    }
+  }) : /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "login.firstWelcome"
   }), loginStatus === LOGIN_STATUS.FAIL ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger mt-1"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "login.fail"
-  })) : ''), /*#__PURE__*/React.createElement(FormGroup, {
-    className: "form-label-group position-relative mt-3"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "login.username"
-  }, msg => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Field, {
-    name: "username",
-    className: `form-control ${errors.username && touched.username && 'is-invalid'}`,
-    placeholder: msg
-  }), errors.username && touched.username ? /*#__PURE__*/React.createElement("div", {
-    className: "text-danger"
-  }, errors.username) : null, /*#__PURE__*/React.createElement(Label, null, msg)))), /*#__PURE__*/React.createElement(FormGroup, {
+  })) : ''), rememberMe ? '' : /*#__PURE__*/React.createElement(BaseFormGroup, {
+    messageId: "login.username",
+    fieldName: "username",
+    errors: errors,
+    touched: touched
+  }), /*#__PURE__*/React.createElement(FormGroup, {
     className: "form-label-group position-relative"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "login.password"
@@ -3907,7 +4084,9 @@ const Login = () => {
     className: "text-danger"
   }, errors.password) : null, /*#__PURE__*/React.createElement(Label, null, msg)))), /*#__PURE__*/React.createElement(FormGroup, {
     className: "d-flex justify-content-between align-items-center"
-  }, /*#__PURE__*/React.createElement(CheckBox, {
+  }, rememberMe ? /*#__PURE__*/React.createElement("a", {
+    onClick: onClickNotMe
+  }, "Kh\xF4ng ph\u1EA3i t\xF4i") : /*#__PURE__*/React.createElement(CheckBox, {
     color: "primary",
     icon: /*#__PURE__*/React.createElement(Check, {
       className: "vx-icon",
@@ -3916,8 +4095,8 @@ const Login = () => {
     label: /*#__PURE__*/React.createElement(FormattedMessage, {
       id: "login.rememberMe"
     }),
-    onChange: e => setRememberMe(e.target.checked),
-    defaultChecked: rememberMe
+    onChange: e => setIsRemeberMe(e.target.checked),
+    defaultChecked: isRemeberMe
   }), /*#__PURE__*/React.createElement("div", {
     className: "divider",
     style: {
@@ -3940,7 +4119,7 @@ const Login = () => {
   })))));
 };
 
-const phoneRegExp = /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
+const phoneRegExp = /(03|07|08|09|01[2|6|8|9])+([0-9]{8})\b/;
 const formSchema$1 = object().shape({
   fullName: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "register.fullname.required"
@@ -3954,23 +4133,33 @@ const formSchema$1 = object().shape({
     id: "register.phoneNumber.invalid"
   })).required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "register.phoneNumber.required"
+  })),
+  refCode: string().length(10, () => /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "register.referalCode.invalid"
+  })).matches(phoneRegExp, () => /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "register.referalCode.invalid"
   }))
 });
 
 const Register = () => {
   const [isAppcepted, setIsAppcepted] = useState(false);
   const [isNotApccepted, setIsNotAccepted] = useState(false);
+  const history = useHistory();
 
-  const onSubmit = (values, actions) => {
-    setTimeout(() => {
-      if (!isAppcepted) {
-        setIsNotAccepted(true);
-        return;
-      }
+  const onSubmit = async values => {
+    if (!isAppcepted) {
+      setIsNotAccepted(true);
+      return;
+    }
 
-      alert(JSON.stringify(values, null, 2));
-      actions.setSubmitting(false);
-    }, 1000);
+    const res = await AuthService.register(values);
+
+    if (res.status === 200 && res.data) {
+      toast.success( /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "register.registerSuccess"
+      }));
+      history.push('/login');
+    }
   };
 
   const ontoggleAccepted = checked => {
@@ -3983,24 +4172,19 @@ const Register = () => {
       fullName: '',
       email: '',
       phoneNumber: '',
-      referalCode: ''
+      refCode: ''
     },
     onSubmit: onSubmit,
     validationSchema: formSchema$1
   }, ({
     errors,
     touched
-  }) => /*#__PURE__*/React.createElement(Form$1, null, /*#__PURE__*/React.createElement(FormGroup, {
-    className: "form-label-group position-relative"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "register.fullname"
-  }, msg => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Field, {
-    name: "fullName",
-    className: `form-control ${errors.fullName && touched.fullName && 'is-invalid'}`,
-    placeholder: msg
-  }), errors.fullName && touched.fullName ? /*#__PURE__*/React.createElement("div", {
-    className: "text-danger"
-  }, errors.fullName) : null, /*#__PURE__*/React.createElement(Label, null, msg)))), /*#__PURE__*/React.createElement(FormGroup, {
+  }) => /*#__PURE__*/React.createElement(Form$1, null, /*#__PURE__*/React.createElement(BaseFormGroup, {
+    fieldName: "fullName",
+    errors: errors,
+    touched: touched,
+    messageId: "register.fullname"
+  }), /*#__PURE__*/React.createElement(FormGroup, {
     className: "form-label-group position-relative"
   }, /*#__PURE__*/React.createElement(Field, {
     name: "email",
@@ -4008,25 +4192,17 @@ const Register = () => {
     placeholder: "Email *"
   }), errors.email && touched.email ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
-  }, errors.email) : null, /*#__PURE__*/React.createElement(Label, null, "Email *")), /*#__PURE__*/React.createElement(FormGroup, {
-    className: "form-label-group position-relative"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "register.phoneNumber"
-  }, msg => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Field, {
-    name: "phoneNumber",
-    className: `form-control ${errors.phoneNumber && touched.phoneNumber && 'is-invalid'}`,
-    placeholder: msg
-  }), errors.phoneNumber && touched.phoneNumber ? /*#__PURE__*/React.createElement("div", {
-    className: "text-danger"
-  }, errors.phoneNumber) : null, /*#__PURE__*/React.createElement(Label, null, msg)))), /*#__PURE__*/React.createElement(FormGroup, {
-    className: "form-label-group position-relative"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "register.referalCode"
-  }, msg => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Field, {
-    name: "referalCode",
-    className: "form-control",
-    placeholder: msg
-  }), /*#__PURE__*/React.createElement(Label, null, msg)))), /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement("div", {
+  }, errors.email) : null, /*#__PURE__*/React.createElement(Label, null, "Email *")), /*#__PURE__*/React.createElement(BaseFormGroup, {
+    fieldName: "phoneNumber",
+    errors: errors,
+    touched: touched,
+    messageId: "register.phoneNumber"
+  }), /*#__PURE__*/React.createElement(BaseFormGroup, {
+    fieldName: "refCode",
+    errors: errors,
+    touched: touched,
+    messageId: "register.refCode"
+  }), /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement("div", {
     className: "d-flex align-items-center"
   }, /*#__PURE__*/React.createElement(CheckBox, {
     color: "primary",
@@ -4036,9 +4212,15 @@ const Register = () => {
     }),
     onChange: e => ontoggleAccepted(e.target.checked),
     defaultChecked: isAppcepted
-  }), /*#__PURE__*/React.createElement("div", null, "T\xF4i \u0111\u1ED3ng \xFD v\u1EDBi", ' ', /*#__PURE__*/React.createElement("a", {
+  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "register.agreeWith"
+  }), ' ', /*#__PURE__*/React.createElement("a", {
     className: "text-primary"
-  }, "\u0110i\u1EC1u kho\u1EA3n v\xE0 \u0110i\u1EC1u ki\u1EC7n"), " s\u1EED d\u1EE5ng d\u1ECBch v\u1EE5.")), isNotApccepted ? /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "register.policyAndCondition"
+  })), ' ', /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "register.useService"
+  }))), isNotApccepted ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "register.mustAppcepted"
@@ -4128,6 +4310,9 @@ const ForgotPassword = () => {
 const LandingPage = props => {
   const [activeTab, setActiveTab] = useState('');
   const history = useHistory();
+  const {
+    width
+  } = useWindowDimensions();
   useEffect(() => {
     setActiveTab(props.activeTab || 'login');
   }, [props.activeTab]);
@@ -4153,12 +4338,24 @@ const LandingPage = props => {
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "landing-page",
     style: {
-      background: `url('${IMAGE.LANDING_PAGE_BG}')`
+      background: width >= MAX_MOBILE_WIDTH ? `url('${IMAGE.LANDING_PAGE_BG}')` : 'white'
     }
   }, /*#__PURE__*/React.createElement("div", {
-    className: "ld-main ml-auto col-12 col-md-6 col-lg-4"
+    className: "position-absolute w-100"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "ld-header d-flex justify-content-between mb-5"
+    className: "position-relative"
+  }, /*#__PURE__*/React.createElement("img", {
+    src: IMAGE.LANDING_PAGE_MOBILE_BG,
+    alt: "mobile-bg",
+    className: "d-block mobile-bg d-lg-none"
+  }), /*#__PURE__*/React.createElement("img", {
+    src: IMAGE.LANDING_PAGE_MOBILE_LOGO_BG,
+    alt: "mobile-bg",
+    className: "d-block mobile-icon-blur d-lg-none"
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "ld-main ml-auto col-12 col-md-6 col-xl-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ld-header d-flex justify-content-between mb-1 mb-md-3 mb-xl-5"
   }, /*#__PURE__*/React.createElement(Context.Consumer, null, context => {
     return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("img", {
       src: IMAGE.LOGO_WHITE,
@@ -4200,9 +4397,9 @@ const LandingPage = props => {
   }))), /*#__PURE__*/React.createElement("div", {
     className: "lg-content p-2 p-md-4 p-lg-5"
   }, /*#__PURE__*/React.createElement(TabView, null))), /*#__PURE__*/React.createElement("div", {
-    className: "ld-footer px-5"
+    className: "ld-footer px-1 px-md-3 px-lg-5"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "d-flex justify-content-between"
+    className: "d-none d-md-flex justify-content-between"
   }, /*#__PURE__*/React.createElement("div", {
     className: "float-md-left d-block d-md-inline-block mt-25"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -4224,6 +4421,31 @@ const LandingPage = props => {
   }, /*#__PURE__*/React.createElement("img", {
     src: IMAGE.DOWNLOAD_APP_ANDROID,
     alt: "DOWNLOAD ON APP I"
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "d-block d-md-none text-center"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "d-flex my-auto"
+  }, /*#__PURE__*/React.createElement("a", {
+    className: "mr-1",
+    href: "https://www.apple.com/app-store/",
+    target: "_blank"
+  }, /*#__PURE__*/React.createElement("img", {
+    className: "w-90",
+    src: IMAGE.DOWNLOAD_APP_IOS,
+    alt: "DOWNLOAD ON APP STORE"
+  })), /*#__PURE__*/React.createElement("a", {
+    href: "https://play.google.com/store/apps",
+    target: "_blank"
+  }, /*#__PURE__*/React.createElement("img", {
+    className: "w-90",
+    src: IMAGE.DOWNLOAD_APP_ANDROID,
+    alt: "DOWNLOAD ON APP I"
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-1"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "footer.copyRight"
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "footer.companySlogan"
   })))))));
 };
 
@@ -4247,7 +4469,7 @@ const AppRouter = props => {
     }
 
     if (authToken) {
-      loadNavtigation();
+      loadNavtigation(appId);
     }
   }, [authToken]);
 
@@ -4299,7 +4521,9 @@ const AppRouter = props => {
     history: history
   }, /*#__PURE__*/React.createElement(Switch, null, /*#__PURE__*/React.createElement(Route, {
     path: "/",
-    render: props => isAuthentication ? /*#__PURE__*/React.createElement(Layout$1, props, /*#__PURE__*/React.createElement(Switch, null, settingRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
+    render: props => isAuthentication ? /*#__PURE__*/React.createElement(Layout$1, { ...props,
+      appId
+    }, /*#__PURE__*/React.createElement(Switch, null, settingRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
       key: item.path,
       path: `/${item.path}`,
       render: () => /*#__PURE__*/React.createElement(item.component, {
@@ -4318,7 +4542,13 @@ const AppRouter = props => {
       from: "/",
       to: "/login"
     }))
-  }))));
+  }))), /*#__PURE__*/React.createElement(ToastContainer, {
+    position: "top-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true
+  }));
 };
 
 const mapStateToProps$3 = state => {
@@ -4393,6 +4623,7 @@ const App = ({
   const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
   const store = createStore(rootReducer(appReducer), {}, composeEnhancers(applyMiddleware(...middlewares)));
   const persistor = persistStore(store);
+  setBaseHistory(history);
   setUpHttpClient(store);
   return /*#__PURE__*/React.createElement(Provider, {
     store: store
@@ -4404,12 +4635,6 @@ const App = ({
     appId: appId,
     history: history,
     children: children
-  }), /*#__PURE__*/React.createElement(ToastContainer, {
-    position: "top-right",
-    autoClose: 5000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true
   })));
 };
 
@@ -4494,29 +4719,17 @@ const Select = props => {
   }, props.placeholder));
 };
 
-function getWindowDimensions() {
-  const {
-    innerWidth: width,
-    innerHeight: height
-  } = window;
+function useDeviceDetect() {
+  const [isMobile, setMobile] = React.useState(false);
+  React.useEffect(() => {
+    const userAgent = typeof window.navigator === 'undefined' ? '' : navigator.userAgent;
+    const mobile = Boolean(userAgent.match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i));
+    setMobile(mobile);
+  }, []);
   return {
-    width,
-    height
+    isMobile
   };
 }
 
-function useWindowDimensions() {
-  const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
-  useEffect(() => {
-    function handleResize() {
-      setWindowDimensions(getWindowDimensions());
-    }
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-  return windowDimensions;
-}
-
-export { AppId, Autocomplete as AutoComplete, App as BaseApp, DatePicker, FallbackSpinner, HttpClient, Radio, Select, useDeviceDetect, useWindowDimensions };
+export { AppId, Autocomplete as AutoComplete, App as BaseApp, BaseFormGroup, CheckBox as Checkbox, DatePicker, FallbackSpinner, HttpClient, Radio, Select, useDeviceDetect, useWindowDimensions };
 //# sourceMappingURL=index.modern.js.map

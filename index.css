@@ -868,10 +868,16 @@ span.flatpickr-day.selected {
       padding: 0.87rem 1.2rem !important;
       margin: 1rem 1rem 1rem 0rem; }
 
+.w-90 {
+  width: 90%; }
+
 .landing-page {
   height: 100vh; }
   .landing-page .lg-header .languages .active {
     color: #77c64d; }
+  .landing-page .mobile-bg {
+    width: 100%;
+    max-height: 100%; }
   .landing-page .ld-main {
     margin-right: 10rem;
     padding-top: 5rem;
@@ -927,6 +933,26 @@ span.flatpickr-day.selected {
 @media (max-width: 400px) {
   .unlock-btn {
     margin-top: 1rem; } }
+
+@media (max-width: 768px) {
+  .landing-page {
+    height: auto; }
+    .landing-page .ld-main {
+      margin-right: 5rem;
+      padding-top: 1rem;
+      color: white;
+      min-height: 85vh; }
+      .landing-page .ld-main .lg-content-header {
+        margin-top: 3rem; }
+      .landing-page .ld-main .ld-header img {
+        width: 50%;
+        padding: 2rem; }
+    .landing-page .ld-footer {
+      position: relative;
+      width: 100%; }
+    .landing-page .mobile-icon-blur {
+      position: absolute;
+      bottom: 0; } }
 
 /**
  * prism.js tomorrow night eighties for JavaScript, CoffeeScript, CSS and HTML
@@ -9237,14 +9263,16 @@ footer .scroll-top {
   padding: 0.81rem 0.83rem; }
 
 footer .footer-mobile {
-  background-color: #f0f0f0;
+  background-color: #f2f2f2;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.4);
   font-size: 0.7rem;
   display: flex;
-  height: 55px;
-  justify-content: space-around;
+  min-height: 70px;
   align-items: center;
+  justify-content: space-around;
   position: fixed;
   width: 100%;
+  padding: 0.5rem 0 0 0;
   bottom: 0; }
   footer .footer-mobile .main-button {
     text-align: center;
@@ -9252,6 +9280,13 @@ footer .footer-mobile {
     height: 60px;
     position: fixed;
     bottom: 4%; }
+  footer .footer-mobile .buy-insurance {
+    position: absolute;
+    top: -1.5rem;
+    left: .5rem;
+    width: 4.5rem; }
+  footer .footer-mobile .w-25 {
+    width: 25%; }
 
 footer.navbar-shadow {
   box-shadow: 0px -1px 4px 0px rgba(0, 0, 0, 0.15); }
@@ -13787,7 +13822,7 @@ select.form-control:not([multiple="multiple"]) {
     color: rgba(34, 41, 47, 0.4);
     font-size: 0.85rem;
     opacity: 0;
-    z-index: -1; }
+    z-index: 0; }
   .form-label-group > input,
   .form-label-group textarea {
     padding: 0.6rem; }

@@ -12,6 +12,7 @@ var Axios = _interopDefault(require('axios'));
 var Icon = require('react-feather');
 var reactToastify = require('react-toastify');
 var axiosExtensions = require('axios-extensions');
+var reactIntl = require('react-intl');
 var history$1 = require('history');
 var sessionStorage = _interopDefault(require('redux-persist/es/storage/session'));
 var reactRouterDom = require('react-router-dom');
@@ -20,7 +21,6 @@ var reactstrap = require('reactstrap');
 var PerfectScrollbar = _interopDefault(require('react-perfect-scrollbar'));
 var ReactDOM = _interopDefault(require('react-dom'));
 var PropTypes = _interopDefault(require('prop-types'));
-var reactIntl = require('react-intl');
 var ScrollToTop = _interopDefault(require('react-scroll-up'));
 var Hammer = _interopDefault(require('react-hammerjs'));
 var Select$1 = _interopDefault(require('react-select'));
@@ -33,6 +33,14 @@ var Ripples = _interopDefault(require('react-ripples'));
 require('react-perfect-scrollbar/dist/css/styles.css');
 require('react-toastify/dist/ReactToastify.css');
 require('prismjs/themes/prism-tomorrow.css');
+
+var generateUUID = function generateUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    var r = Math.random() * 16 | 0,
+        v = c == 'x' ? r : r & 0x3 | 0x8;
+    return v.toString(16);
+  });
+};
 
 var HttpClient = Axios.create({
   timeout: 10000,
@@ -49,12 +57,28 @@ var errorMessage = function errorMessage(message) {
   }, message));
 };
 var setUpHttpClient = function setUpHttpClient(store) {
+  var deviceId = localStorage.getItem('deviceId');
+  var language = localStorage.getItem('language');
+
+  if (!deviceId) {
+    deviceId = generateUUID();
+    localStorage.setItem('deviceId', deviceId);
+  }
+
+  if (!language) {
+    localStorage.setItem('language', 'vi');
+  }
+
   HttpClient.interceptors.request.use(function (config) {
     var token = store.getState().auth.authToken;
+    language = localStorage.getItem('language');
 
     if (token) {
       config.headers.Authorization = "Bearer " + token;
     }
+
+    config.headers.deviceId = deviceId;
+    config.headers.language = language;
 
     if (!config.isBackgroundRequest) {
       store.dispatch({
@@ -79,25 +103,18 @@ var setUpHttpClient = function setUpHttpClient(store) {
     }
 
     switch (e.response.status) {
-      case 404:
-        reactToastify.toast.error(errorMessage('API Not Found !'));
-        return e.response;
+      case 403:
+        reactToastify.toast.error(errorMessage(e.response.data.message));
+        store.dispatch({
+          type: 'LOGOUT_ACTION'
+        });
 
       case 400:
-        reactToastify.toast.error(errorMessage('Bad Request !'));
-        return e.response;
-
-      case 408:
-        reactToastify.toast.error(errorMessage('Request Timeout !'));
-        return e.response;
-
       case 500:
-        reactToastify.toast.error(errorMessage('Server error !'));
-        return e.response;
-
-      default:
-        throw e;
+        reactToastify.toast.error(errorMessage(e.response.data.message));
     }
+
+    return e.response;
   });
 };
 
@@ -219,19 +236,33 @@ var customizerReducer = function customizerReducer(state, action) {
   }
 };
 
+var API_BASE_URL = 'http://localhost:8086/nth';
 var API_LOGIN_URL = 'http://localhost:8086/api/authenticate';
-var API_LOGOUT_URL = 'https://api.mocki.io/v1/5e448c60';
-var API_GET_NAV_CONFIGS = 'http://localhost:8100/api/roles';
+var API_LOGOUT_URL = 'http://localhost:8086/api/authenticate';
+var API_REGISTER = API_BASE_URL + '/onboarding/api/authenticate/register';
+var API_GET_USER = API_BASE_URL + '/user/api/users';
+var API_GET_NAV_CONFIGS = 'http://localhost:8086/nth/accesscontrol/api/roles';
 var API_R_200 = 200;
+var MAX_MOBILE_WIDTH = 768;
+var REMEMBER_ME_TOKEN = 'rememberMe';
 var LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
   FAIL: 'FAIL'
 };
 var APP_URL = 'http://localhost:3000';
 var IMAGE = {
-  LOGO: 'https://sit.inon.vn/PortalWeb/nth/assets/images/InOn-logo.png',
-  LOGO_WHITE: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Logo.png?alt=media&token=d61feda7-c2be-423a-9d64-da13dca88b85',
+  LOGO: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Logo.png?alt=media&token=68d3ab7a-e9bb-4c43-a543-c65f72033bf9',
+  LOGO_NO_TEXT: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/logo-no-text.png?alt=media&token=4c266c6a-bd1c-49f9-b51c-1e2484925b06',
+  NAV_ICON_1: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-1.png?alt=media&token=0ccdb6bc-09da-43a3-b18f-56d2598e542b',
+  NAV_ICON_2: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-2.png?alt=media&token=def3402b-65f0-458b-b4f8-e9c6d8d3bb09',
+  NAV_ICON_3: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-3.png?alt=media&token=1ce1a25c-b095-4f80-8987-3ae9b977e3a8',
+  NAV_ICON_4: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-4.png?alt=media&token=549432c1-9dd6-4d0a-948a-3f2de513d238',
+  NAV_ICON_5: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-5.png?alt=media&token=659d7162-783c-42ed-af7a-d05d0a3be595',
+  BUY_INSURANCE: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Vector.png?alt=media&token=56bac236-f494-4643-81f1-11611229e62e',
+  LOGO_WHITE: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/LogoWhite.png?alt=media&token=8289e81f-7b3f-41cd-b5dc-5220bbe8d203',
   LANDING_PAGE_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-Signup-01%203%20(1).png?alt=media&token=19aca74e-c81f-40e2-a00d-a91b7ee9f27a',
+  LANDING_PAGE_MOBILE_LOGO_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-GRPHIC-08%201.png?alt=media&token=5b15e616-f235-4857-af2d-d243fe25e330',
+  LANDING_PAGE_MOBILE_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Mobile_bg.png?alt=media&token=120f54fa-8c82-45d3-ae3b-87517a1ee2aa',
   DOWNLOAD_APP_IOS: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-APP%26GP-03.png?alt=media&token=c9a13eca-3fe6-40d0-ac1d-df417b95385d',
   DOWNLOAD_APP_ANDROID: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-APP%26GP-01.png?alt=media&token=b2aefa9d-d464-41d3-9fd0-b374ed0dca93'
 };
@@ -258,6 +289,9 @@ function _catch(body, recover) {
 var history = history$1.createBrowserHistory({
   basename: ''
 });
+var setBaseHistory = function setBaseHistory(appHistory) {
+  history = appHistory;
+};
 
 var AuthService = function AuthService() {};
 
@@ -265,8 +299,22 @@ AuthService.login = function (user) {
   return HttpClient.post(API_LOGIN_URL, user);
 };
 
+AuthService.getUserInfo = function (username, authToken) {
+  var headers = {
+    Authorization: "Bearer " + authToken
+  };
+  return HttpClient.get(API_GET_USER + "/" + username, {
+    headers: headers,
+    isBackgroundRequest: true
+  });
+};
+
 AuthService.logout = function (user) {
   return HttpClient.post(API_LOGOUT_URL, user);
+};
+
+AuthService.register = function (user) {
+  return HttpClient.post(API_REGISTER, user);
 };
 
 AuthService.checkLoginByToken = function () {
@@ -275,32 +323,43 @@ AuthService.checkLoginByToken = function () {
 
 var LOGIN_ACTION = 'LOGIN_ACTION';
 var LOGIN_FAIL_ACTION = 'LOGIN_FAIL_ACTION';
-var LOOUT_ACTION = 'LOGOUT_ACTION';
+var LOGOUT_ACTION = 'LOGOUT_ACTION';
 var checkLoginStatus = function checkLoginStatus(authToken) {
-  return function (dispatch) {
+  return function (dispatch, getState) {
     try {
-      var _temp2 = _catch(function () {
+      var _temp3 = _catch(function () {
         return Promise.resolve(AuthService.checkLoginByToken()).then(function (respone) {
-          if (respone.status === API_R_200) {
-            dispatch({
-              type: LOGIN_ACTION,
-              payload: authToken
-            });
-          } else {
-            dispatch({
-              type: LOGIN_ACTION,
-              payload: 'authToken'
-            });
-          }
+          var _temp = function () {
+            if (respone.status === API_R_200) {
+              return Promise.resolve(AuthService.getUserInfo(getState().auth.user.username, authToken)).then(function (_AuthService$getUserI) {
+                respone = _AuthService$getUserI;
+                dispatch({
+                  type: LOGIN_ACTION,
+                  payload: {
+                    authToken: authToken,
+                    user: respone.data
+                  }
+                });
+                history.push('/');
+              });
+            } else {
+              dispatch({
+                type: LOGIN_ACTION,
+                payload: 'authToken'
+              });
+            }
+          }();
+
+          if (_temp && _temp.then) return _temp.then(function () {});
         });
-      }, function () {
+      }, function (error) {
+        console.log(error);
         dispatch({
-          type: LOGIN_ACTION,
-          payload: 'authToken'
+          type: LOGOUT_ACTION
         });
       });
 
-      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
+      return Promise.resolve(_temp3 && _temp3.then ? _temp3.then(function () {}) : void 0);
     } catch (e) {
       return Promise.reject(e);
     }
@@ -309,49 +368,68 @@ var checkLoginStatus = function checkLoginStatus(authToken) {
 var loginAction = function loginAction(user) {
   return function (dispatch) {
     try {
-      var _temp4 = _catch(function () {
+      var _temp6 = _catch(function () {
         return Promise.resolve(AuthService.login(user)).then(function (respone) {
-          if (respone.status === API_R_200) {
-            dispatch({
-              type: LOGIN_ACTION,
-              payload: respone.data.id_token
-            });
-            history.push('/');
-          } else {
-            dispatch({
-              type: LOGIN_ACTION,
-              payload: 'authToken'
-            });
-          }
+          var _temp4 = function () {
+            if (respone.status === API_R_200) {
+              var authToken = respone.data.id_token;
+              return Promise.resolve(AuthService.getUserInfo(user.username, authToken)).then(function (_AuthService$getUserI2) {
+                respone = _AuthService$getUserI2;
+
+                if (user.isRemeberMe) {
+                  localStorage.setItem(REMEMBER_ME_TOKEN, JSON.stringify({
+                    username: user.username,
+                    name: respone.data.fullName
+                  }));
+                }
+
+                dispatch({
+                  type: LOGIN_ACTION,
+                  payload: {
+                    authToken: authToken,
+                    user: respone.data
+                  }
+                });
+                history.push('/');
+              });
+            } else {
+              reactToastify.toast.error(errorMessage( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+                id: "login.fail"
+              })));
+            }
+          }();
+
+          if (_temp4 && _temp4.then) return _temp4.then(function () {});
         });
-      }, function () {
+      }, function (error) {
+        console.log(error);
         dispatch({
           type: LOGIN_ACTION,
           payload: 'authToken'
         });
       });
 
-      return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {}) : void 0);
+      return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(function () {}) : void 0);
     } catch (e) {
       return Promise.reject(e);
     }
   };
 };
-var logoutAction = function logoutAction(user) {
+var logoutAction = function logoutAction() {
   return function (dispatch) {
     try {
-      var _temp6 = _catch(function () {
-        return Promise.resolve(AuthService.logout(user)).then(function (respone) {
-          if (respone.status === API_R_200) {
-            dispatch({
-              type: LOOUT_ACTION
-            });
-            history.push('/');
-          }
+      try {
+        dispatch({
+          type: LOGOUT_ACTION
         });
-      }, function () {});
+      } catch (error) {
+        history.push('/');
+        dispatch({
+          type: LOGOUT_ACTION
+        });
+      }
 
-      return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(function () {}) : void 0);
+      return Promise.resolve();
     } catch (e) {
       return Promise.reject(e);
     }
@@ -371,13 +449,12 @@ var authReducers = function authReducers(state, action) {
   switch (action.type) {
     case LOGIN_ACTION:
       {
-        return _extends({}, state, {
-          authToken: action.payload,
+        return _extends({}, state, action.payload, {
           loginStatus: LOGIN_STATUS.SUCCESS
         });
       }
 
-    case LOOUT_ACTION:
+    case LOGOUT_ACTION:
       {
         return _extends({}, authInitialState);
       }
@@ -778,9 +855,9 @@ var Autocomplete = /*#__PURE__*/function (_React$Component) {
 
     _this = _React$Component.call(this, props) || this;
 
-    _this.onSuggestionItemClick = function (url, e) {
+    _this.onSuggestionItemClick = function (item, e) {
       if (_this.props.onSuggestionClick) {
-        _this.props.onSuggestionClick(e);
+        _this.props.onSuggestionClick(item, e);
       }
 
       _this.setState({
@@ -788,8 +865,6 @@ var Autocomplete = /*#__PURE__*/function (_React$Component) {
         showSuggestions: false,
         userInput: e.currentTarget.innerText
       });
-
-      if (url) history.push(url);
     };
 
     _this.onSuggestionItemHover = function (index) {
@@ -848,7 +923,7 @@ var Autocomplete = /*#__PURE__*/function (_React$Component) {
               userInput: ''
             });
           } else if (e.keyCode === 13 && showSuggestions) {
-              _this.onSuggestionItemClick(_this.filteredData[activeSuggestion].link, e);
+              _this.onSuggestionItemClick(_this.filteredData[activeSuggestion], e);
 
               _this.setState({
                 userInput: _this.filteredData[activeSuggestion][filterKey],
@@ -883,7 +958,7 @@ var Autocomplete = /*#__PURE__*/function (_React$Component) {
             }),
             key: item[filterKey],
             onClick: function onClick(e) {
-              return onSuggestionItemClick(item.link, e);
+              return onSuggestionItemClick(item, e);
             },
             onMouseEnter: function onMouseEnter() {
               _this.onSuggestionItemHover(_this.filteredData.indexOf(item));
@@ -941,7 +1016,7 @@ var Autocomplete = /*#__PURE__*/function (_React$Component) {
             }),
             key: suggestion[filterKey],
             onClick: function onClick(e) {
-              return onSuggestionItemClick(suggestion.link ? suggestion.link : null, e);
+              return onSuggestionItemClick(suggestion, e);
             },
             onMouseEnter: function onMouseEnter() {
               return _this.onSuggestionItemHover(_this.filteredData.indexOf(suggestion));
@@ -1302,16 +1377,39 @@ var NavbarUser = /*#__PURE__*/function (_React$PureComponent) {
       return countryCode[locale];
     };
 
+    _this.onSuggestionItemClick = function (item) {
+      if (!item.isExternalApp) {
+        history.push("" + item.menuPath);
+      } else {
+        window.location.href = item.navLinkExternal;
+      }
+    };
+
     return _this;
   }
 
   var _proto = NavbarUser.prototype;
 
   _proto.componentDidUpdate = function componentDidUpdate(prevProps) {
+    var _this2 = this;
+
+    if (prevProps.roles !== this.props.roles) {
+      var suggestions = this.props.roles.map(function (item) {
+        item.name = _this2.props.intl.formatMessage({
+          id: "menu." + item.keyLang
+        });
+        item.isExternalApp = item.appId !== _this2.props.appId;
+        item.navLinkExternal = APP_URL + item.menuPath + "?code=" + _this2.props.authToken;
+        return item;
+      });
+      this.setState({
+        suggestions: suggestions
+      });
+    }
   };
 
   _proto.render = function render() {
-    var _this2 = this;
+    var _this3 = this;
 
     return /*#__PURE__*/React__default.createElement("ul", {
       className: "nav navbar-nav navbar-nav-user float-right"
@@ -1336,24 +1434,22 @@ var NavbarUser = /*#__PURE__*/function (_React$PureComponent) {
     })), /*#__PURE__*/React__default.createElement(Autocomplete, {
       className: "form-control",
       suggestions: this.state.suggestions,
-      filterKey: "title",
-      filterHeaderKey: "groupTitle",
-      grouped: true,
-      placeholder: "Explore Vuexy...",
+      filterKey: "name",
+      onSuggestionClick: this.onSuggestionItemClick,
       autoFocus: true,
       clearInput: this.state.navbarSearch,
-      externalClick: function externalClick(e) {
-        _this2.setState({
+      externalClick: function externalClick() {
+        _this3.setState({
           navbarSearch: false
         });
       },
       onKeyDown: function onKeyDown(e) {
         if (e.keyCode === 27 || e.keyCode === 13) {
-          _this2.setState({
+          _this3.setState({
             navbarSearch: false
           });
 
-          _this2.props.handleAppOverlay('');
+          _this3.props.handleAppOverlay('');
         }
       },
       customRender: function customRender(item, i, filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover) {
@@ -1364,45 +1460,22 @@ var NavbarUser = /*#__PURE__*/function (_React$PureComponent) {
           }),
           key: i,
           onClick: function onClick(e) {
-            return onSuggestionItemClick(item.link, e);
+            return onSuggestionItemClick(item, e);
           },
           onMouseEnter: function onMouseEnter() {
             return onSuggestionItemHover(filteredData.indexOf(item));
           }
         }, /*#__PURE__*/React__default.createElement("div", {
-          className: classnames({
-            'd-flex justify-content-between align-items-center': item.file || item.img
-          })
-        }, /*#__PURE__*/React__default.createElement("div", {
-          className: "item-container d-flex"
-        }, item.icon ? /*#__PURE__*/React__default.createElement(IconTag, {
+          className: "d-flex align-items-center"
+        }, /*#__PURE__*/React__default.createElement(IconTag, {
           size: 17
-        }) : item.file ? /*#__PURE__*/React__default.createElement("img", {
-          src: item.file,
-          height: "36",
-          width: "28",
-          alt: item.title
-        }) : item.img ? /*#__PURE__*/React__default.createElement("img", {
-          className: "rounded-circle mt-25",
-          src: item.img,
-          height: "28",
-          width: "28",
-          alt: item.title
-        }) : null, /*#__PURE__*/React__default.createElement("div", {
-          className: "item-info ml-1"
-        }, /*#__PURE__*/React__default.createElement("p", {
-          className: "align-middle mb-0"
-        }, item.title), item.by || item.email ? /*#__PURE__*/React__default.createElement("small", {
-          className: "text-muted"
-        }, item.by ? item.by : item.email ? item.email : null) : null)), item.size || item.date ? /*#__PURE__*/React__default.createElement("div", {
-          className: "meta-container"
-        }, /*#__PURE__*/React__default.createElement("small", {
-          className: "text-muted"
-        }, item.size ? item.size : item.date ? item.date : null)) : null));
+        }), /*#__PURE__*/React__default.createElement("div", {
+          className: "ml-2"
+        }, item.name)));
       },
       onSuggestionsShown: function onSuggestionsShown(userInput) {
-        if (_this2.state.navbarSearch) {
-          _this2.props.handleAppOverlay(userInput);
+        if (_this3.state.navbarSearch) {
+          _this3.props.handleAppOverlay(userInput);
         }
       }
     }), /*#__PURE__*/React__default.createElement("div", {
@@ -1412,11 +1485,11 @@ var NavbarUser = /*#__PURE__*/function (_React$PureComponent) {
       onClick: function onClick(e) {
         e.stopPropagation();
 
-        _this2.setState({
+        _this3.setState({
           navbarSearch: false
         });
 
-        _this2.props.handleAppOverlay('');
+        _this3.props.handleAppOverlay('');
       }
     })))), /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledDropdown, {
       tag: "li",
@@ -1569,9 +1642,7 @@ var NavbarUser = /*#__PURE__*/function (_React$PureComponent) {
       className: "user-nav d-sm-flex d-none"
     }, /*#__PURE__*/React__default.createElement("span", {
       className: "user-name text-bold-600"
-    }, this.props.userName), /*#__PURE__*/React__default.createElement("span", {
-      className: "user-status"
-    }, "Available")), /*#__PURE__*/React__default.createElement("span", {
+    }, this.props.userName)), /*#__PURE__*/React__default.createElement("span", {
       "data-tour": "user"
     }, /*#__PURE__*/React__default.createElement("img", {
       src: "https://storage.live.com/Users/-6155523327610065665/MyProfile/ExpressionProfile/ProfilePhoto:Win8Static,UserTileMedium,UserTileStatic",
@@ -1584,6 +1655,8 @@ var NavbarUser = /*#__PURE__*/function (_React$PureComponent) {
 
   return NavbarUser;
 }(React__default.PureComponent);
+
+var NavbarUser$1 = reactIntl.injectIntl(NavbarUser);
 
 var ThemeNavbar = function ThemeNavbar(props) {
   var colorsArr = ['primary', 'danger', 'success', 'info', 'warning', 'dark'];
@@ -1629,13 +1702,18 @@ var ThemeNavbar = function ThemeNavbar(props) {
   }, /*#__PURE__*/React__default.createElement(Icon.Menu, {
     className: "ficon"
   })))), /*#__PURE__*/React__default.createElement("ul", {
-    className: "nav navbar-nav bookmark-icons"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, null, /*#__PURE__*/React__default.createElement(Icon.Star, {
-    className: "text-warning",
-    size: 21
-  })))))), /*#__PURE__*/React__default.createElement(NavbarUser, {
+    className: "nav navbar-nav d-none d-xl-flex bookmark-icons"
+  }, Array(5).fill(0).map(function (_, index) {
+    return /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement("img", {
+      className: "img-fluid",
+      key: index,
+      src: IMAGE["NAV_ICON_" + (index + 1)]
+    }));
+  })))), /*#__PURE__*/React__default.createElement(NavbarUser$1, {
     handleAppOverlay: props.handleAppOverlay,
     changeCurrentLang: props.changeCurrentLang,
+    appId: props.appId,
+    authToken: props.authToken,
     userName: props.name,
     roles: props.roles,
     isAuthenticated: props.isAuthenticated,
@@ -1645,9 +1723,10 @@ var ThemeNavbar = function ThemeNavbar(props) {
 
 var mapStateToProps = function mapStateToProps(state) {
   return {
-    name: state.auth.name,
+    name: state.auth.user.fullName,
     isAuthenticated: !!state.auth.name,
-    roles: state.navbar.roles
+    roles: state.navbar.roles,
+    authToken: state.auth.authToken
   };
 };
 
@@ -1655,28 +1734,69 @@ var Navbar = reactRedux.connect(mapStateToProps, {
   logoutAction: logoutAction
 })(ThemeNavbar);
 
-function useDeviceDetect() {
-  var _React$useState = React__default.useState(false),
-      isMobile = _React$useState[0],
-      setMobile = _React$useState[1];
-
-  React__default.useEffect(function () {
-    var userAgent = typeof window.navigator === 'undefined' ? '' : navigator.userAgent;
-    var mobile = Boolean(userAgent.match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i));
-    setMobile(mobile);
-  }, []);
+function getWindowDimensions() {
+  var _window = window,
+      width = _window.innerWidth,
+      height = _window.innerHeight;
   return {
-    isMobile: isMobile
+    width: width,
+    height: height
   };
 }
 
+function useWindowDimensions() {
+  var _useState = React.useState(getWindowDimensions()),
+      windowDimensions = _useState[0],
+      setWindowDimensions = _useState[1];
+
+  React.useEffect(function () {
+    function handleResize() {
+      setWindowDimensions(getWindowDimensions());
+    }
+
+    window.addEventListener('resize', handleResize);
+    return function () {
+      return window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+  return windowDimensions;
+}
+
 var Footer = function Footer(props) {
-  var _useDeviceDetect = useDeviceDetect(),
-      isMobile = _useDeviceDetect.isMobile;
+  var _useWindowDimensions = useWindowDimensions(),
+      width = _useWindowDimensions.width;
+
+  var history = reactRouterDom.useHistory();
+  var navConfigs = reactRedux.useSelector(function (state) {
+    return [].concat(state.navbar.navConfigs);
+  });
+  var authToken = reactRedux.useSelector(function (state) {
+    return state.auth.authToken;
+  });
+
+  var goToPage = function goToPage(e, name) {
+    e.preventDefault();
+    var currentRoute = navConfigs.find(function (item) {
+      return item.code === name;
+    });
+
+    if (!currentRoute) {
+      currentRoute = {
+        isExternalApp: AppId.APP_NO1 === props.AppId,
+        navLink: ''
+      };
+    }
+
+    if (!currentRoute.isExternalApp) {
+      history.push("" + currentRoute.navLink);
+    } else {
+      window.location.href = APP_URL + currentRoute.navLink + "?code=" + authToken;
+    }
+  };
 
   return /*#__PURE__*/React__default.createElement("footer", null, /*#__PURE__*/React__default.createElement("div", {
     className: classnames('footer footer-light', {
-      'd-none': isMobile
+      'd-none': width < MAX_MOBILE_WIDTH
     })
   }, /*#__PURE__*/React__default.createElement("div", {
     className: "d-flex justify-content-between"
@@ -1702,24 +1822,63 @@ var Footer = function Footer(props) {
     src: IMAGE.DOWNLOAD_APP_ANDROID,
     alt: "DOWNLOAD ON APP I"
   }))))), /*#__PURE__*/React__default.createElement("div", {
-    className: classnames('footer footer-light footer-mobile', {
-      'd-none': !isMobile
+    className: classnames('footer footer-light footer-mobile text-center', {
+      'd-none': width >= MAX_MOBILE_WIDTH
     })
-  }, /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement("a", {
-    className: "tab-link",
-    href: "#"
-  }, /*#__PURE__*/React__default.createElement(Icon.Home, null))), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement("a", {
-    className: "tab-link",
-    href: "#"
-  }, /*#__PURE__*/React__default.createElement(Icon.List, null))), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement("a", {
-    className: "tab-link",
-    href: "#"
-  }, /*#__PURE__*/React__default.createElement(Icon.PlusCircle, null))), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement("a", {
-    className: "tab-link",
-    href: "#"
-  }, /*#__PURE__*/React__default.createElement(Icon.Gift, null))), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement("a", {
-    className: "tab-link"
-  }, /*#__PURE__*/React__default.createElement(Icon.MessageSquare, null)))), props.hideScrollToTop === false ? /*#__PURE__*/React__default.createElement(ScrollToTop, {
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "w-25"
+  }, /*#__PURE__*/React__default.createElement("a", {
+    href: "#",
+    onClick: function onClick(e) {
+      return goToPage(e, 'home');
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.Home, null), /*#__PURE__*/React__default.createElement("div", {
+    className: "mt-1"
+  }, "Trang ch\u1EE7"))), /*#__PURE__*/React__default.createElement("div", {
+    className: "w-25"
+  }, /*#__PURE__*/React__default.createElement("a", {
+    href: "#",
+    onClick: function onClick(e) {
+      return goToPage(e, 'buyInsurance');
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.List, null), /*#__PURE__*/React__default.createElement("div", {
+    className: "mt-1"
+  }, "H\u1EE3p \u0111\u1ED3ng"))), /*#__PURE__*/React__default.createElement("div", {
+    className: "position-relative w-25"
+  }, /*#__PURE__*/React__default.createElement("a", {
+    href: "#",
+    onClick: function onClick(e) {
+      return goToPage(e, 'contractManagemen');
+    }
+  }, /*#__PURE__*/React__default.createElement("img", {
+    src: IMAGE.BUY_INSURANCE,
+    className: "buy-insurance",
+    alt: ""
+  }), /*#__PURE__*/React__default.createElement(Icon.PlusCircle, {
+    style: {
+      visibility: 'hidden'
+    }
+  }), /*#__PURE__*/React__default.createElement("div", {
+    className: "mt-1"
+  }, "Mua b\u1EA3o hi\u1EC3m"))), /*#__PURE__*/React__default.createElement("div", {
+    className: "w-25"
+  }, /*#__PURE__*/React__default.createElement("a", {
+    href: "#",
+    onClick: function onClick(e) {
+      return goToPage(e, 'home');
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.Gift, null), /*#__PURE__*/React__default.createElement("div", {
+    className: "mt-1"
+  }, "Khuy\u1EBFn m\u1EA1i"))), /*#__PURE__*/React__default.createElement("div", {
+    className: "w-25"
+  }, /*#__PURE__*/React__default.createElement("a", {
+    href: "#",
+    onClick: function onClick(e) {
+      return goToPage(e, 'home');
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.MessageSquare, null), /*#__PURE__*/React__default.createElement("div", {
+    className: "mt-1"
+  }, "Li\xEAn h\u1EC7")))), props.hideScrollToTop === false ? /*#__PURE__*/React__default.createElement(ScrollToTop, {
     showUnder: 160
   }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
     color: "primary",
@@ -1800,6 +1959,7 @@ var SidebarHeader = /*#__PURE__*/function (_Component) {
         toggleSidebarMenu = _this$props.toggleSidebarMenu,
         activeTheme = _this$props.activeTheme,
         collapsed = _this$props.collapsed,
+        sidebarState = _this$props.sidebarState,
         toggle = _this$props.toggle,
         sidebarVisibility = _this$props.sidebarVisibility,
         menuShadow = _this$props.menuShadow;
@@ -1809,11 +1969,11 @@ var SidebarHeader = /*#__PURE__*/function (_Component) {
       className: "nav navbar-nav flex-row"
     }, /*#__PURE__*/React__default.createElement("li", {
       className: "nav-item my-auto mr-auto"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
+    }, /*#__PURE__*/React__default.createElement(reactRouterDom.NavLink, {
       to: "/"
     }, /*#__PURE__*/React__default.createElement("img", {
       className: "img-fluid logo-img",
-      src: IMAGE.LOGO,
+      src: !sidebarState || !collapsed ? IMAGE.LOGO : IMAGE.LOGO_NO_TEXT,
       alt: "logo"
     }))), /*#__PURE__*/React__default.createElement("li", {
       className: "nav-item nav-toggle"
@@ -2674,6 +2834,7 @@ var Layout = /*#__PURE__*/function (_PureComponent) {
     var navbarProps = {
       toggleSidebarMenu: this.toggleSidebarMenu,
       sidebarState: this.state.sidebarState,
+      appId: this.props.appId,
       sidebarVisibility: this.handleSidebarVisibility,
       currentLang: this.state.currentLang,
       changeCurrentLang: this.handleCurrentLanguage,
@@ -2683,6 +2844,7 @@ var Layout = /*#__PURE__*/function (_PureComponent) {
       navbarType: appProps.navbarType
     };
     var footerProps = {
+      appId: this.props.appId,
       footerType: appProps.footerType,
       hideScrollToTop: appProps.hideScrollToTop
     };
@@ -2775,8 +2937,8 @@ var IntlProviderWrapper = /*#__PURE__*/function (_React$Component) {
 
     _this = _React$Component.call.apply(_React$Component, [this].concat(args)) || this;
     _this.state = {
-      locale: 'vi',
-      messages: _this.props.appMessage['vi']
+      locale: localStorage.getItem('language'),
+      messages: _this.props.appMessage[localStorage.getItem('language')]
     };
     return _this;
   }
@@ -2794,6 +2956,8 @@ var IntlProviderWrapper = /*#__PURE__*/function (_React$Component) {
       value: {
         state: this.state,
         switchLanguage: function switchLanguage(language) {
+          localStorage.setItem('language', language);
+
           _this2.setState({
             locale: language,
             messages: _this2.props.appMessage[language]
@@ -2825,6 +2989,7 @@ var messages_en = {
 	"login.password.required": "You must enter your password",
 	"login.rememberMe": "Remember me",
 	"login.fail": "Username or password was incorrect",
+	"login.sayHi": "Hi, {name}",
 	register: register,
 	"register.fullname": "Full name *",
 	"register.fullname.required": "You must enter your full name",
@@ -2833,8 +2998,13 @@ var messages_en = {
 	"register.phoneNumber": "Phone mumber *",
 	"register.phoneNumber.invalid": "You must enter your valid phone number",
 	"register.phoneNumber.required": "You must enter your phone number",
-	"register.referalCode": "Referal code",
+	"register.refCode": "Referal code",
+	"register.refCode.invalid": "Referal code is invalid",
 	"register.mustAppcepted": "Your must accept our terms and conditions",
+	"register.registerSuccess": "Register Successful",
+	"register.agreeWith": "I agree with",
+	"register.policyAndCondition": "Terms and Condition",
+	"register.useService": "use service",
 	forgotPassword: forgotPassword,
 	"forgotPassword.verify": "Verify",
 	"forgotPassword.username": "Username *",
@@ -2916,6 +3086,7 @@ var messages_vi = {
 	"login.password.required": "Bạn phải nhập mật khẩu",
 	"login.rememberMe": "Ghi nhớ tôi",
 	"login.fail": "Tài khoản hoặc mật khẩu của bạn không chính xác",
+	"login.sayHi": "Xin chào, {name}",
 	register: register$1,
 	"register.fullname": "Họ và tên *",
 	"register.fullname.required": "Bạn phải nhập họ và tên",
@@ -2924,8 +3095,13 @@ var messages_vi = {
 	"register.phoneNumber": "Số điện thoại *",
 	"register.phoneNumber.required": "Bạn phải nhập số điện thoại",
 	"register.phoneNumber.invalid": "Số điện thoại không hợp lệ",
-	"register.referalCode": "Mã giới thiệu",
+	"register.refCode": "Mã giới thiệu",
+	"register.refCode.invalid": "Mã giới thiệu không hợp lệ",
 	"register.mustAppcepted": "Bạn phải đồng ý điều khoản và điều kiện của chúng tôi",
+	"register.registerSuccess": "Đăng ký thành công",
+	"register.agreeWith": "Tôi đồng ý với",
+	"register.policyAndCondition": "Điều khoản và Điều kiện",
+	"register.useService": "sử dụng dịch vụ.",
 	forgotPassword: forgotPassword$1,
 	"forgotPassword.verify": "Xác thực",
 	"forgotPassword.username": "Tên tài khoản *",
@@ -4184,6 +4360,28 @@ var GeneralInfo = function GeneralInfo(props) {
   }, /*#__PURE__*/React__default.createElement(UserInfoTab$1, null)))))));
 };
 
+var BaseFormGroup = function BaseFormGroup(_ref) {
+  var fieldName = _ref.fieldName,
+      errors = _ref.errors,
+      touched = _ref.touched,
+      messageId = _ref.messageId,
+      type = _ref.type;
+  return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+    className: "form-label-group position-relative"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: messageId
+  }, function (msg) {
+    return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.Field, {
+      type: type,
+      name: fieldName,
+      className: "form-control " + (errors[fieldName] && touched[fieldName] && 'is-invalid'),
+      placeholder: msg
+    }), errors[fieldName] && touched[fieldName] ? /*#__PURE__*/React__default.createElement("div", {
+      className: "text-danger"
+    }, errors[fieldName]) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
+  }));
+};
+
 var formSchema = Yup.object().shape({
   username: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "login.username.required"
@@ -4194,30 +4392,45 @@ var formSchema = Yup.object().shape({
 });
 
 var Login = function Login() {
-  var _useState = React.useState(false),
+  var _useState = React.useState(null),
       rememberMe = _useState[0],
       setRememberMe = _useState[1];
+
+  var _useState2 = React.useState(false),
+      isRemeberMe = _useState2[0],
+      setIsRemeberMe = _useState2[1];
 
   var dispatch = reactRedux.useDispatch();
   var loginStatus = reactRedux.useSelector(function (state) {
     return state.auth.loginStatus;
   });
+  React.useEffect(function () {
+    var user = JSON.parse(localStorage.getItem(REMEMBER_ME_TOKEN));
+
+    if (user) {
+      setRememberMe(user);
+    }
+  }, []);
 
   var onSubmit = function onSubmit(values, actions) {
     dispatch(loginAction({
       username: values.username,
       password: values.password,
-      rememberMe: rememberMe
+      isRemeberMe: isRemeberMe
     }));
     actions.setSubmitting(false);
   };
 
+  var onClickNotMe = function onClickNotMe() {
+    localStorage.removeItem(REMEMBER_ME_TOKEN);
+    setRememberMe(null);
+  };
+
   return /*#__PURE__*/React__default.createElement(formik.Formik, {
+    enableReinitialize: true,
     initialValues: {
-      fullName: '',
-      email: '',
-      phoneNumber: '',
-      referalCode: ''
+      username: rememberMe ? rememberMe.username : '',
+      password: ''
     },
     onSubmit: onSubmit,
     validationSchema: formSchema
@@ -4225,26 +4438,24 @@ var Login = function Login() {
     var errors = _ref.errors,
         touched = _ref.touched;
     return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement("h4", {
-      className: "text-center text-white"
-    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      className: "text-center text-white mb-3"
+    }, rememberMe ? /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "login.sayHi",
+      values: {
+        name: rememberMe.name
+      }
+    }) : /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "login.firstWelcome"
     }), loginStatus === LOGIN_STATUS.FAIL ? /*#__PURE__*/React__default.createElement("div", {
       className: "text-danger mt-1"
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "login.fail"
-    })) : ''), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
-      className: "form-label-group position-relative mt-3"
-    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "login.username"
-    }, function (msg) {
-      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.Field, {
-        name: "username",
-        className: "form-control " + (errors.username && touched.username && 'is-invalid'),
-        placeholder: msg
-      }), errors.username && touched.username ? /*#__PURE__*/React__default.createElement("div", {
-        className: "text-danger"
-      }, errors.username) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
-    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+    })) : ''), rememberMe ? '' : /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      messageId: "login.username",
+      fieldName: "username",
+      errors: errors,
+      touched: touched
+    }), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
       className: "form-label-group position-relative"
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "login.password"
@@ -4268,7 +4479,9 @@ var Login = function Login() {
       }, errors.password) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
     })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
       className: "d-flex justify-content-between align-items-center"
-    }, /*#__PURE__*/React__default.createElement(CheckBox, {
+    }, rememberMe ? /*#__PURE__*/React__default.createElement("a", {
+      onClick: onClickNotMe
+    }, "Kh\xF4ng ph\u1EA3i t\xF4i") : /*#__PURE__*/React__default.createElement(CheckBox, {
       color: "primary",
       icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
         className: "vx-icon",
@@ -4278,9 +4491,9 @@ var Login = function Login() {
         id: "login.rememberMe"
       }),
       onChange: function onChange(e) {
-        return setRememberMe(e.target.checked);
+        return setIsRemeberMe(e.target.checked);
       },
-      defaultChecked: rememberMe
+      defaultChecked: isRemeberMe
     }), /*#__PURE__*/React__default.createElement("div", {
       className: "divider",
       style: {
@@ -4304,7 +4517,7 @@ var Login = function Login() {
   });
 };
 
-var phoneRegExp = /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
+var phoneRegExp = /(03|07|08|09|01[2|6|8|9])+([0-9]{8})\b/;
 var formSchema$1 = Yup.object().shape({
   fullName: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "register.fullname.required"
@@ -4320,7 +4533,16 @@ var formSchema$1 = Yup.object().shape({
     });
   }).required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "register.phoneNumber.required"
-  }))
+  })),
+  refCode: Yup.string().length(10, function () {
+    return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "register.referalCode.invalid"
+    });
+  }).matches(phoneRegExp, function () {
+    return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "register.referalCode.invalid"
+    });
+  })
 });
 
 var Register = function Register() {
@@ -4332,16 +4554,26 @@ var Register = function Register() {
       isNotApccepted = _useState2[0],
       setIsNotAccepted = _useState2[1];
 
-  var onSubmit = function onSubmit(values, actions) {
-    setTimeout(function () {
+  var history = reactRouterDom.useHistory();
+
+  var onSubmit = function onSubmit(values) {
+    try {
       if (!isAppcepted) {
         setIsNotAccepted(true);
-        return;
+        return Promise.resolve();
       }
 
-      alert(JSON.stringify(values, null, 2));
-      actions.setSubmitting(false);
-    }, 1000);
+      return Promise.resolve(AuthService.register(values)).then(function (res) {
+        if (res.status === 200 && res.data) {
+          reactToastify.toast.success( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+            id: "register.registerSuccess"
+          }));
+          history.push('/login');
+        }
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
   };
 
   var ontoggleAccepted = function ontoggleAccepted(checked) {
@@ -4354,26 +4586,19 @@ var Register = function Register() {
       fullName: '',
       email: '',
       phoneNumber: '',
-      referalCode: ''
+      refCode: ''
     },
     onSubmit: onSubmit,
     validationSchema: formSchema$1
   }, function (_ref) {
     var errors = _ref.errors,
         touched = _ref.touched;
-    return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
-      className: "form-label-group position-relative"
-    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "register.fullname"
-    }, function (msg) {
-      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.Field, {
-        name: "fullName",
-        className: "form-control " + (errors.fullName && touched.fullName && 'is-invalid'),
-        placeholder: msg
-      }), errors.fullName && touched.fullName ? /*#__PURE__*/React__default.createElement("div", {
-        className: "text-danger"
-      }, errors.fullName) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
-    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+    return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      fieldName: "fullName",
+      errors: errors,
+      touched: touched,
+      messageId: "register.fullname"
+    }), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
       className: "form-label-group position-relative"
     }, /*#__PURE__*/React__default.createElement(formik.Field, {
       name: "email",
@@ -4381,29 +4606,17 @@ var Register = function Register() {
       placeholder: "Email *"
     }), errors.email && touched.email ? /*#__PURE__*/React__default.createElement("div", {
       className: "text-danger"
-    }, errors.email) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, "Email *")), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
-      className: "form-label-group position-relative"
-    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "register.phoneNumber"
-    }, function (msg) {
-      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.Field, {
-        name: "phoneNumber",
-        className: "form-control " + (errors.phoneNumber && touched.phoneNumber && 'is-invalid'),
-        placeholder: msg
-      }), errors.phoneNumber && touched.phoneNumber ? /*#__PURE__*/React__default.createElement("div", {
-        className: "text-danger"
-      }, errors.phoneNumber) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
-    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
-      className: "form-label-group position-relative"
-    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "register.referalCode"
-    }, function (msg) {
-      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.Field, {
-        name: "referalCode",
-        className: "form-control",
-        placeholder: msg
-      }), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
-    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement("div", {
+    }, errors.email) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, "Email *")), /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      fieldName: "phoneNumber",
+      errors: errors,
+      touched: touched,
+      messageId: "register.phoneNumber"
+    }), /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      fieldName: "refCode",
+      errors: errors,
+      touched: touched,
+      messageId: "register.refCode"
+    }), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement("div", {
       className: "d-flex align-items-center"
     }, /*#__PURE__*/React__default.createElement(CheckBox, {
       color: "primary",
@@ -4415,9 +4628,15 @@ var Register = function Register() {
         return ontoggleAccepted(e.target.checked);
       },
       defaultChecked: isAppcepted
-    }), /*#__PURE__*/React__default.createElement("div", null, "T\xF4i \u0111\u1ED3ng \xFD v\u1EDBi", ' ', /*#__PURE__*/React__default.createElement("a", {
+    }), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "register.agreeWith"
+    }), ' ', /*#__PURE__*/React__default.createElement("a", {
       className: "text-primary"
-    }, "\u0110i\u1EC1u kho\u1EA3n v\xE0 \u0110i\u1EC1u ki\u1EC7n"), " s\u1EED d\u1EE5ng d\u1ECBch v\u1EE5.")), isNotApccepted ? /*#__PURE__*/React__default.createElement("div", {
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "register.policyAndCondition"
+    })), ' ', /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "register.useService"
+    }))), isNotApccepted ? /*#__PURE__*/React__default.createElement("div", {
       className: "text-danger"
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "register.mustAppcepted"
@@ -4519,6 +4738,10 @@ var LandingPage = function LandingPage(props) {
       setActiveTab = _useState[1];
 
   var history = reactRouterDom.useHistory();
+
+  var _useWindowDimensions = useWindowDimensions(),
+      width = _useWindowDimensions.width;
+
   React.useEffect(function () {
     setActiveTab(props.activeTab || 'login');
   }, [props.activeTab]);
@@ -4546,12 +4769,24 @@ var LandingPage = function LandingPage(props) {
   return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("div", {
     className: "landing-page",
     style: {
-      background: "url('" + IMAGE.LANDING_PAGE_BG + "')"
+      background: width >= MAX_MOBILE_WIDTH ? "url('" + IMAGE.LANDING_PAGE_BG + "')" : 'white'
     }
   }, /*#__PURE__*/React__default.createElement("div", {
-    className: "ld-main ml-auto col-12 col-md-6 col-lg-4"
+    className: "position-absolute w-100"
   }, /*#__PURE__*/React__default.createElement("div", {
-    className: "ld-header d-flex justify-content-between mb-5"
+    className: "position-relative"
+  }, /*#__PURE__*/React__default.createElement("img", {
+    src: IMAGE.LANDING_PAGE_MOBILE_BG,
+    alt: "mobile-bg",
+    className: "d-block mobile-bg d-lg-none"
+  }), /*#__PURE__*/React__default.createElement("img", {
+    src: IMAGE.LANDING_PAGE_MOBILE_LOGO_BG,
+    alt: "mobile-bg",
+    className: "d-block mobile-icon-blur d-lg-none"
+  }))), /*#__PURE__*/React__default.createElement("div", {
+    className: "ld-main ml-auto col-12 col-md-6 col-xl-4"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "ld-header d-flex justify-content-between mb-1 mb-md-3 mb-xl-5"
   }, /*#__PURE__*/React__default.createElement(Context.Consumer, null, function (context) {
     return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("img", {
       src: IMAGE.LOGO_WHITE,
@@ -4601,9 +4836,9 @@ var LandingPage = function LandingPage(props) {
   }))), /*#__PURE__*/React__default.createElement("div", {
     className: "lg-content p-2 p-md-4 p-lg-5"
   }, /*#__PURE__*/React__default.createElement(TabView, null))), /*#__PURE__*/React__default.createElement("div", {
-    className: "ld-footer px-5"
+    className: "ld-footer px-1 px-md-3 px-lg-5"
   }, /*#__PURE__*/React__default.createElement("div", {
-    className: "d-flex justify-content-between"
+    className: "d-none d-md-flex justify-content-between"
   }, /*#__PURE__*/React__default.createElement("div", {
     className: "float-md-left d-block d-md-inline-block mt-25"
   }, /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -4625,6 +4860,31 @@ var LandingPage = function LandingPage(props) {
   }, /*#__PURE__*/React__default.createElement("img", {
     src: IMAGE.DOWNLOAD_APP_ANDROID,
     alt: "DOWNLOAD ON APP I"
+  })))), /*#__PURE__*/React__default.createElement("div", {
+    className: "d-block d-md-none text-center"
+  }, /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement("div", {
+    className: "d-flex my-auto"
+  }, /*#__PURE__*/React__default.createElement("a", {
+    className: "mr-1",
+    href: "https://www.apple.com/app-store/",
+    target: "_blank"
+  }, /*#__PURE__*/React__default.createElement("img", {
+    className: "w-90",
+    src: IMAGE.DOWNLOAD_APP_IOS,
+    alt: "DOWNLOAD ON APP STORE"
+  })), /*#__PURE__*/React__default.createElement("a", {
+    href: "https://play.google.com/store/apps",
+    target: "_blank"
+  }, /*#__PURE__*/React__default.createElement("img", {
+    className: "w-90",
+    src: IMAGE.DOWNLOAD_APP_ANDROID,
+    alt: "DOWNLOAD ON APP I"
+  }))), /*#__PURE__*/React__default.createElement("div", {
+    className: "mt-1"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "footer.copyRight"
+  })), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "footer.companySlogan"
   })))))));
 };
 
@@ -4646,7 +4906,7 @@ var AppRouter = function AppRouter(props) {
     }
 
     if (authToken) {
-      loadNavtigation();
+      loadNavtigation(appId);
     }
   }, [authToken]);
 
@@ -4699,7 +4959,9 @@ var AppRouter = function AppRouter(props) {
   }, /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
     path: "/",
     render: function render(props) {
-      return isAuthentication ? /*#__PURE__*/React__default.createElement(Layout$1, props, /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, settingRoutes.map(function (item) {
+      return isAuthentication ? /*#__PURE__*/React__default.createElement(Layout$1, _extends({}, props, {
+        appId: appId
+      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, settingRoutes.map(function (item) {
         return /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
           key: item.path,
           path: "/" + item.path,
@@ -4729,7 +4991,13 @@ var AppRouter = function AppRouter(props) {
         to: "/login"
       }));
     }
-  }))));
+  }))), /*#__PURE__*/React__default.createElement(reactToastify.ToastContainer, {
+    position: "top-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true
+  }));
 };
 
 var mapStateToProps$3 = function mapStateToProps(state) {
@@ -4803,6 +5071,7 @@ var App = function App(_ref) {
   var composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || redux.compose;
   var store = redux.createStore(rootReducer(appReducer), {}, composeEnhancers(redux.applyMiddleware.apply(void 0, middlewares)));
   var persistor = reduxPersist.persistStore(store);
+  setBaseHistory(history);
   setUpHttpClient(store);
   return /*#__PURE__*/React__default.createElement(reactRedux.Provider, {
     store: store
@@ -4814,12 +5083,6 @@ var App = function App(_ref) {
     appId: appId,
     history: history,
     children: children
-  }), /*#__PURE__*/React__default.createElement(reactToastify.ToastContainer, {
-    position: "top-right",
-    autoClose: 5000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true
   })));
 };
 
@@ -4924,32 +5187,19 @@ var Select = function Select(props) {
   }, props.placeholder));
 };
 
-function getWindowDimensions() {
-  var _window = window,
-      width = _window.innerWidth,
-      height = _window.innerHeight;
-  return {
-    width: width,
-    height: height
-  };
-}
+function useDeviceDetect() {
+  var _React$useState = React__default.useState(false),
+      isMobile = _React$useState[0],
+      setMobile = _React$useState[1];
 
-function useWindowDimensions() {
-  var _useState = React.useState(getWindowDimensions()),
-      windowDimensions = _useState[0],
-      setWindowDimensions = _useState[1];
-
-  React.useEffect(function () {
-    function handleResize() {
-      setWindowDimensions(getWindowDimensions());
-    }
-
-    window.addEventListener('resize', handleResize);
-    return function () {
-      return window.removeEventListener('resize', handleResize);
-    };
+  React__default.useEffect(function () {
+    var userAgent = typeof window.navigator === 'undefined' ? '' : navigator.userAgent;
+    var mobile = Boolean(userAgent.match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i));
+    setMobile(mobile);
   }, []);
-  return windowDimensions;
+  return {
+    isMobile: isMobile
+  };
 }
 
 Object.defineProperty(exports, 'toast', {
@@ -4958,21 +5208,23 @@ Object.defineProperty(exports, 'toast', {
     return reactToastify.toast;
   }
 });
-Object.defineProperty(exports, 'Button', {
-  enumerable: true,
-  get: function () {
-    return reactstrap.Button;
-  }
-});
 Object.defineProperty(exports, 'FormattedMessage', {
   enumerable: true,
   get: function () {
     return reactIntl.FormattedMessage;
   }
 });
+Object.defineProperty(exports, 'Button', {
+  enumerable: true,
+  get: function () {
+    return reactstrap.Button;
+  }
+});
 exports.AppId = AppId;
 exports.AutoComplete = Autocomplete;
 exports.BaseApp = App;
+exports.BaseFormGroup = BaseFormGroup;
+exports.Checkbox = CheckBox;
 exports.DatePicker = DatePicker;
 exports.FallbackSpinner = FallbackSpinner;
 exports.HttpClient = HttpClient;
