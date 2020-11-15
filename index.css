@@ -954,6 +954,71 @@ span.flatpickr-day.selected {
       position: absolute;
       bottom: 0; } }
 
+.completeInfor {
+  background: linear-gradient(190.34deg, rgba(255, 255, 255, 0.58) 27%, rgba(255, 255, 255, 0) 135.04%); }
+  .completeInfor .text-danger {
+    font-size: 0.8rem;
+    margin-top: 0.5rem; }
+  .completeInfor .form-label-group {
+    margin-bottom: 2rem; }
+    .completeInfor .form-label-group input:not(:-moz-placeholder-shown) ~ label, .completeInfor .form-label-group .form-label-group textarea:not(:-moz-placeholder-shown) ~ label {
+      top: -25px; }
+    .completeInfor .form-label-group input:not(:-ms-input-placeholder) ~ label, .completeInfor .form-label-group .form-label-group textarea:not(:-ms-input-placeholder) ~ label {
+      top: -25px; }
+    .completeInfor .form-label-group input:not(:placeholder-shown) ~ label,
+    .completeInfor .form-label-group .form-label-group textarea:not(:placeholder-shown) ~ label {
+      top: -25px; }
+    .completeInfor .form-label-group label {
+      color: #77c64d !important; }
+    .completeInfor .form-label-group .Select__control {
+      border-radius: 20px;
+      border-radius: 20px;
+      border: 1px solid #51912D;
+      min-height: 30px; }
+      .completeInfor .form-label-group .Select__control:focus {
+        box-shadow: 0px 0px 10px 3px rgba(81, 145, 45, 0.85); }
+      .completeInfor .form-label-group .Select__control .Select__value-container {
+        font-size: 13px; }
+        .completeInfor .form-label-group .Select__control .Select__value-container .Select__placeholder {
+          font-family: Montserrat;
+          font-style: normal;
+          font-weight: normal;
+          font-size: 12px;
+          line-height: 11px;
+          color: #999999; }
+  .completeInfor .form-input label {
+    color: #77c64d !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: inline-block !important;
+    transition: all 0.25s ease-in-out;
+    padding: 0.6rem;
+    color: rgba(34, 41, 47, 0.4);
+    font-size: 0.85rem;
+    opacity: 0;
+    z-index: -1; }
+  .completeInfor .form-input input {
+    border-radius: 20px;
+    border: 1px solid #51912D; }
+    .completeInfor .form-input input:focus {
+      box-shadow: 0px 0px 10px 3px rgba(81, 145, 45, 0.85); }
+  .completeInfor .form-input input:not(:-moz-placeholder-shown) ~ label {
+    top: -25px;
+    z-index: 0;
+    opacity: 1; }
+  .completeInfor .form-input input:not(:-ms-input-placeholder) ~ label {
+    top: -25px;
+    z-index: 0;
+    opacity: 1; }
+  .completeInfor .form-input input:not(:placeholder-shown) ~ label {
+    top: -25px;
+    z-index: 0;
+    opacity: 1; }
+  .completeInfor button {
+    background: linear-gradient(86.55deg, #51912d 18.03%, #0e6856 104.15%);
+    border-radius: 31px; }
+
 /**
  * prism.js tomorrow night eighties for JavaScript, CoffeeScript, CSS and HTML
  * Based on https://github.com/chriskempson/tomorrow-theme

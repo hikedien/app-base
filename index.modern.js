@@ -213,6 +213,8 @@ const IMAGE = {
   LOGO_WHITE: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/LogoWhite.png?alt=media&token=8289e81f-7b3f-41cd-b5dc-5220bbe8d203',
   LANDING_PAGE_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-Signup-01%203%20(1).png?alt=media&token=19aca74e-c81f-40e2-a00d-a91b7ee9f27a',
   LANDING_PAGE_MOBILE_LOGO_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-GRPHIC-08%201.png?alt=media&token=5b15e616-f235-4857-af2d-d243fe25e330',
+  LANDING_PAGE_2_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/BG-step5-02%201.png?alt=media&token=2902f404-802a-4c4a-89f5-39a4cd72ab44',
+  LANDING_PAGE_MOBILE_LOGO_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-GRPHIC-08%201.png?alt=media&token=5b15e616-f235-4857-af2d-d243fe25e330',
   LANDING_PAGE_MOBILE_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Mobile_bg.png?alt=media&token=120f54fa-8c82-45d3-ae3b-87517a1ee2aa',
   DOWNLOAD_APP_IOS: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-APP%26GP-03.png?alt=media&token=c9a13eca-3fe6-40d0-ac1d-df417b95385d',
   DOWNLOAD_APP_ANDROID: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-APP%26GP-01.png?alt=media&token=b2aefa9d-d464-41d3-9fd0-b374ed0dca93'
@@ -310,6 +312,10 @@ const loginAction = user => {
         });
         history.push('/');
       } else {
+        dispatch({
+          type: LOGIN_ACTION,
+          payload: 'authToken'
+        });
         toast.error(errorMessage( /*#__PURE__*/React.createElement(FormattedMessage, {
           id: "login.fail"
         })));
@@ -2780,7 +2786,36 @@ var messages_en = {
 	"setting.gender.M": "Male",
 	"setting.gender.F": "FeMale",
 	"setting.gender.O": "Others",
-	"changePassword.passwordMustMatch": "Password must match"
+	"changePassword.passwordMustMatch": "Password must match",
+	"createPassword.title": "CREATE PASSWORD *",
+	"createPassword.password.required": "You must enter your password",
+	"createPassword.enterThePassword": "Enter the password *",
+	"createPassword.condition.1": "- At least 8 characters long",
+	"createPassword.condition.2": "- Include upper and lower case characters",
+	"createPassword.condition.3": "- Include numeric or special characters",
+	"createPassword.continutes": "Continute",
+	"provideNewPassword.title": "PROVIDE A NEW PASSWORD",
+	"provideNewPassword.continutes": "DONE",
+	"provideNewPassword.password": "Enter your new password *",
+	"provideNewPassword.enterThePassword": "Enter a new password *",
+	"completeInformation.nbrPer": "Identification document number*",
+	"completeInformation.nbrPer.required": "You must enter infor number",
+	"completeInformation.dateOfBirth": "Date of birth",
+	"completeInformation.dateOfBirth.required": "You must enter date of birth",
+	"completeInformation.address": "Address*",
+	"completeInformation.address.required": "You must enter address",
+	"completeInformation.gif": "Referral code",
+	"completeInformation.branch": "Chi nhánh*",
+	"completeInformation.branch.required": "You must enter branch",
+	"completeInformation.accountNbr": "Account number*",
+	"completeInformation.accountNbr.required": "You must enter account number",
+	"completeInformation.personalInfo": "Passport*",
+	"completeInformation.gender": "Gender",
+	"completeInformation.province": "Province*",
+	"completeInformation.district": "District*",
+	"completeInformation.wards": "Wards*",
+	"completeInformation.bank": "Bank*",
+	"completeInformation.fullName": "Full Name"
 };
 
 var login$1 = "Đăng nhập";
@@ -2877,7 +2912,35 @@ var messages_vi = {
 	"setting.gender.M": "Name",
 	"setting.gender.F": "Nữ",
 	"setting.gender.O": "Khác",
-	"changePassword.passwordMustMatch": "Mật khẩu không trùng khớp"
+	"changePassword.passwordMustMatch": "Mật khẩu không trùng khớp",
+	"createPassword.title": "TẠO MẬT KHẨU *",
+	"createPassword.password.required": "Bạn phải nhập mật khẩu",
+	"createPassword.enterThePassword": "Nhập lại mật khẩu *",
+	"createPassword.condition.1": "- Dài ít nhất 8 ký tự",
+	"createPassword.condition.2": "- Bao gồm ký tự viết hoa và viết thường",
+	"createPassword.condition.3": "- Bao gồm ký tự số hoặc ký tự đặc biệt",
+	"createPassword.continutes": "TIẾP TỤC",
+	"provideNewPassword.title": "CẤP MẬT KHẨU MỚI",
+	"provideNewPassword.continutes": "THỰC HIỆN",
+	"provideNewPassword.password": "Nhập mật khẩu mới *",
+	"provideNewPassword.enterThePassword": "Nhập lại mật khẩu mới *",
+	"createPassword.enterThePassword.required": "Bạn phải nhập mật khẩu mới",
+	"completeInformation.nbrPer": "Số giấy tờ tuỳ thân *",
+	"completeInformation.nbrPer.required": "Bạn phải nhập số giấy tờ tuỳ thân",
+	"completeInformation.dateOfBirth": "Ngày sinh",
+	"completeInformation.dateOfBirth.required": "Bạn phải nhập ngày sinh",
+	"completeInformation.address": "Địa chỉ*",
+	"completeInformation.address.required": "Bạn phải nhập địa chỉ*",
+	"completeInformation.gif": "Mã giới thiệu",
+	"completeInformation.branch": "Chi nhánh*",
+	"completeInformation.branch.required": "Bạn phải nhập chi nhánh",
+	"completeInformation.accountNbr": "Số tài khoản*",
+	"completeInformation.personalInfo": "Hộ chiếu*",
+	"completeInformation.gender": "Giới tính",
+	"completeInformation.province": "Tỉnh/ Thành Phố*",
+	"completeInformation.district": "Quận/ Huyện*",
+	"completeInformation.wards": "Phường/ Xã*",
+	"completeInformation.bank": "Ngân hàng*"
 };
 
 class CheckBox extends React.Component {
@@ -4307,58 +4370,69 @@ const ForgotPassword = () => {
   })))));
 };
 
-const LandingPage = props => {
-  const [activeTab, setActiveTab] = useState('');
-  const history = useHistory();
-  const {
-    width
-  } = useWindowDimensions();
-  useEffect(() => {
-    setActiveTab(props.activeTab || 'login');
-  }, [props.activeTab]);
+const formSchema$3 = object().shape({
+  password: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.password.required"
+  })),
+  enterThePassword: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.enterThePassword.required"
+  }))
+});
 
-  const TabView = () => {
-    switch (activeTab) {
-      case 'login':
-        return /*#__PURE__*/React.createElement(Login, null);
-
-      case 'register':
-        return /*#__PURE__*/React.createElement(Register, null);
-
-      case 'forgot-password':
-        return /*#__PURE__*/React.createElement(ForgotPassword, null);
-
-      default:
-        return '';
-    }
+const CreatePassword = () => {
+  const onSubmit = (values, actions) => {
+    setTimeout(() => {
+      alert(JSON.stringify(values, null, 2));
+      actions.setSubmitting(false);
+    }, 1000);
   };
 
-  const goToLink = link => history.push(link);
+  return /*#__PURE__*/React.createElement(Formik, {
+    initialValues: {
+      password: '',
+      repeatePassword: ''
+    },
+    onSubmit: onSubmit,
+    validationSchema: formSchema$3
+  }, ({
+    errors,
+    touched
+  }) => /*#__PURE__*/React.createElement(Form$1, null, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
+    className: "d-flex justify-content-center"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.title"
+  }))), /*#__PURE__*/React.createElement(BaseFormGroup, {
+    messageId: "login.password",
+    fieldName: "password",
+    errors: errors,
+    touched: touched
+  }), /*#__PURE__*/React.createElement(BaseFormGroup, {
+    messageId: "login.enterThePassword",
+    fieldName: "repeatePassword",
+    errors: errors,
+    touched: touched
+  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.condition.1"
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.condition.2"
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.condition.3"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "d-flex justify-content-center mt-2"
+  }, /*#__PURE__*/React.createElement(Button, {
+    color: "primary",
+    type: "submit"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.continutes"
+  })))));
+};
 
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "landing-page",
-    style: {
-      background: width >= MAX_MOBILE_WIDTH ? `url('${IMAGE.LANDING_PAGE_BG}')` : 'white'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "position-absolute w-100"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "position-relative"
-  }, /*#__PURE__*/React.createElement("img", {
-    src: IMAGE.LANDING_PAGE_MOBILE_BG,
-    alt: "mobile-bg",
-    className: "d-block mobile-bg d-lg-none"
-  }), /*#__PURE__*/React.createElement("img", {
-    src: IMAGE.LANDING_PAGE_MOBILE_LOGO_BG,
-    alt: "mobile-bg",
-    className: "d-block mobile-icon-blur d-lg-none"
-  }))), /*#__PURE__*/React.createElement("div", {
-    className: "ld-main ml-auto col-12 col-md-6 col-xl-4"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ld-header d-flex justify-content-between mb-1 mb-md-3 mb-xl-5"
-  }, /*#__PURE__*/React.createElement(Context.Consumer, null, context => {
+const LandingHeader = ({
+  isLanding2
+}) => {
+  return /*#__PURE__*/React.createElement(Context.Consumer, null, context => {
     return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("img", {
-      src: IMAGE.LOGO_WHITE,
+      src: isLanding2 ? IMAGE.LOGO : IMAGE.LOGO_WHITE,
       alt: "logo"
     }), /*#__PURE__*/React.createElement("div", {
       className: "languages d-flex align-items-center"
@@ -4378,25 +4452,11 @@ const LandingPage = props => {
         'text-primary': context.state.locale === 'en'
       })
     }, "ENG")));
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "lg-content-header d-flex cursor-pointer"
-  }, /*#__PURE__*/React.createElement("div", {
-    onClick: () => goToLink('/login'),
-    className: classnames('col-6 text-center tab-control', {
-      active: activeTab === 'login'
-    })
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "login"
-  })), /*#__PURE__*/React.createElement("div", {
-    onClick: () => goToLink('/register'),
-    className: classnames('col-6 text-center tab-control', {
-      active: activeTab === 'register'
-    })
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "register"
-  }))), /*#__PURE__*/React.createElement("div", {
-    className: "lg-content p-2 p-md-4 p-lg-5"
-  }, /*#__PURE__*/React.createElement(TabView, null))), /*#__PURE__*/React.createElement("div", {
+  });
+};
+
+const LandingFooter = () => {
+  return /*#__PURE__*/React.createElement("div", {
     className: "ld-footer px-1 px-md-3 px-lg-5"
   }, /*#__PURE__*/React.createElement("div", {
     className: "d-none d-md-flex justify-content-between"
@@ -4446,7 +4506,458 @@ const LandingPage = props => {
     id: "footer.copyRight"
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "footer.companySlogan"
-  })))))));
+  })))));
+};
+
+const LandingPage = props => {
+  const [activeTab, setActiveTab] = useState('');
+  const history = useHistory();
+  const {
+    width
+  } = useWindowDimensions();
+  useEffect(() => {
+    setActiveTab(props.activeTab || 'login');
+  }, [props.activeTab]);
+
+  const TabView = () => {
+    switch (activeTab) {
+      case 'login':
+        return /*#__PURE__*/React.createElement(Login, null);
+
+      case 'register':
+        return /*#__PURE__*/React.createElement(Register, null);
+
+      case 'forgot-password':
+        return /*#__PURE__*/React.createElement(ForgotPassword, null);
+
+      case 'reset-password':
+        return /*#__PURE__*/React.createElement(CreatePassword, null);
+
+      default:
+        return '';
+    }
+  };
+
+  const goToLink = link => history.push(link);
+
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "landing-page",
+    style: {
+      background: width >= MAX_MOBILE_WIDTH ? `url('${IMAGE.LANDING_PAGE_BG}')` : 'white'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "position-absolute w-100"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "position-relative"
+  }, /*#__PURE__*/React.createElement("img", {
+    src: IMAGE.LANDING_PAGE_MOBILE_BG,
+    alt: "mobile-bg",
+    className: "d-block mobile-bg d-lg-none"
+  }), /*#__PURE__*/React.createElement("img", {
+    src: IMAGE.LANDING_PAGE_MOBILE_LOGO_BG,
+    alt: "mobile-bg",
+    className: "d-block mobile-icon-blur d-lg-none"
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "ld-main ml-auto col-12 col-md-6 col-xl-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ld-header d-flex justify-content-between mb-1 mb-md-3 mb-xl-5"
+  }, /*#__PURE__*/React.createElement(LandingHeader, null)), /*#__PURE__*/React.createElement("div", {
+    className: "lg-content-header d-flex cursor-pointer"
+  }, /*#__PURE__*/React.createElement("div", {
+    onClick: () => goToLink('/login'),
+    className: classnames('col-6 text-center tab-control', {
+      active: activeTab === 'login'
+    })
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "login"
+  })), /*#__PURE__*/React.createElement("div", {
+    onClick: () => goToLink('/register'),
+    className: classnames('col-6 text-center tab-control', {
+      active: activeTab === 'register'
+    })
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "register"
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "lg-content p-2 p-md-4 p-lg-5"
+  }, /*#__PURE__*/React.createElement(TabView, null))), /*#__PURE__*/React.createElement(LandingFooter, null)));
+};
+
+const formSchema$4 = object().shape({
+  password: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.password.required"
+  })),
+  enterThePassword: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.password.required"
+  }))
+});
+
+const ProvideNewPassword = () => {
+  const [isAppcepted, setIsAppcepted] = useState(false);
+  const [isNotApccepted, setIsNotAccepted] = useState(false);
+
+  const onSubmit = (values, actions) => {
+    setTimeout(() => {
+      if (!isAppcepted) {
+        setIsNotAccepted(true);
+        return;
+      }
+
+      alert(JSON.stringify(values, null, 2));
+      actions.setSubmitting(false);
+    }, 1000);
+  };
+
+  return /*#__PURE__*/React.createElement(Formik, {
+    initialValues: {
+      password: '',
+      enterThePassword: ''
+    },
+    onSubmit: onSubmit,
+    validationSchema: formSchema$4
+  }, ({
+    errors,
+    touched
+  }) => /*#__PURE__*/React.createElement(Form$1, null, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
+    className: "d-flex justify-content-center"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "provideNewPassword.title"
+  }))), /*#__PURE__*/React.createElement(FormGroup, {
+    className: "form-label-group position-relative mt-2"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "provideNewPassword.password"
+  }, msg => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(FastField, {
+    name: "password"
+  }, ({
+    field,
+    form
+  }) => /*#__PURE__*/React.createElement(Input, Object.assign({
+    type: "password",
+    className: `form-control ${errors.password && touched.password && 'is-invalid'}`,
+    placeholder: msg
+  }, field, {
+    onChange: e => form.setFieldValue('password', e.target.value)
+  }))), errors.password && touched.password ? /*#__PURE__*/React.createElement("div", {
+    className: "text-danger"
+  }, errors.password) : null, /*#__PURE__*/React.createElement(Label, null, msg)))), /*#__PURE__*/React.createElement(FormGroup, {
+    className: "form-label-group position-relative mt-3"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "provideNewPassword.enterThePassword"
+  }, msg => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Field, {
+    name: "enterThePassword",
+    className: `form-control ${errors.enterThePassword && touched.enterThePassword && 'is-invalid'}`,
+    placeholder: msg
+  }), errors.enterThePassword && touched.enterThePassword ? /*#__PURE__*/React.createElement("div", {
+    className: "text-danger"
+  }, errors.enterThePassword) : null, /*#__PURE__*/React.createElement(Label, null, msg)))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.condition.1"
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.condition.2"
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.condition.3"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "d-flex justify-content-center mt-2"
+  }, /*#__PURE__*/React.createElement(Button, {
+    color: "primary",
+    type: "submit"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "provideNewPassword.continutes"
+  })))));
+};
+
+const Select = props => {
+  const [inputValue, setInputValue] = useState(props.defaultValue || '');
+  const [isFocused, setIsFocused] = useState(false);
+
+  const onChange = (e, actions) => {
+    if (props.onChange) {
+      props.onChange(e, actions);
+    }
+
+    if (props.isMulti) {
+      setInputValue(e ? e.map(item => item.value).join() : '');
+    } else {
+      setInputValue(e ? e.value : '');
+    }
+  };
+
+  const onFocus = e => {
+    if (props.onFocus) {
+      props.onChange(e);
+    }
+
+    setIsFocused(true);
+  };
+
+  const onBlur = e => {
+    if (props.onBlur) {
+      props.onBlur(e);
+    }
+
+    setIsFocused(false);
+  };
+
+  return /*#__PURE__*/React.createElement(FormGroup, {
+    className: "form-label-group position-relative"
+  }, /*#__PURE__*/React.createElement(Select$1, Object.assign({}, props, {
+    onChange: onChange,
+    onBlur: onBlur,
+    onFocus: onFocus,
+    theme: theme => ({ ...theme,
+      colors: { ...theme.colors,
+        primary: '#338955'
+      }
+    })
+  })), /*#__PURE__*/React.createElement("input", {
+    className: "d-none",
+    placeholder: props.placeholder,
+    value: inputValue
+  }), /*#__PURE__*/React.createElement(Label, {
+    className: classnames({
+      'text-primary': isFocused
+    })
+  }, props.placeholder));
+};
+
+const CompleteInforValidate = object().shape({
+  nbrPer: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "completeInformation.nbrPer.required"
+  })),
+  dateOfBirth: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "completeInformation.dateOfBirth.required"
+  })),
+  address: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "completeInformation.address.required"
+  })),
+  branch: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "completeInformation.branch.required"
+  })),
+  accountNbr: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "completeInformation.accountNbr.required"
+  }))
+});
+const personalInfoOptions = [{
+  value: 'passport',
+  label: 'Hộ chiếu',
+  color: '#338955',
+  isFixed: true
+}, {
+  value: 'id',
+  label: 'Chứng minh nhân dân',
+  color: '#338955',
+  isFixed: true
+}, {
+  value: 'idNew',
+  label: 'Căn cước công dân',
+  color: '#338955',
+  isFixed: true
+}];
+const bank = [{
+  value: '1',
+  label: 'Tien Phong Bank'
+}, {
+  value: '2',
+  label: 'Vietcombank'
+}, {
+  value: '3',
+  label: 'BIDV'
+}];
+
+const CompleteInformation = () => {
+
+  const renderSelect = (option, fieldName, msgField) => {
+    const colourStyles = {
+      option: (provided, state) => ({ ...provided,
+        backgroundColor: state.isFocused ? '#338955' : 'white',
+        color: state.isFocused ? 'white' : '#626262',
+        fontSize: '12px'
+      }),
+      control: (provided, state) => ({ ...provided,
+        boxShadow: state.isFocused ? '0px 0px 10px 3px rgba(81, 145, 45, 0.85)' : 'none',
+        minHeight: '38px'
+      }),
+      singleValue: (provided, state) => {
+        const opacity = state.isDisabled ? 0.5 : 1;
+        const transition = 'opacity 300ms';
+        return { ...provided,
+          opacity,
+          transition
+        };
+      }
+    };
+    return /*#__PURE__*/React.createElement(FormattedMessage, {
+      id: msgField
+    }, msg => /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Select, {
+      placeholder: msg,
+      className: "form-label-group position-relative",
+      classNamePrefix: "Select",
+      styles: colourStyles,
+      name: fieldName,
+      options: option
+    })));
+  };
+
+  const handleRegister = data => {
+    undefined.props.createAccountInforAction({
+      nbrPer: data.nbrPer,
+      dateOfBirth: data.dateOfBirth,
+      address: data.address,
+      gif: data.gif,
+      branch: data.branch,
+      accountNbr: data.accountNbr
+    });
+  };
+
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardHeader, null, /*#__PURE__*/React.createElement(CardTitle, null, " HO\xC0N THI\u1EC6N TH\xD4NG TIN")), /*#__PURE__*/React.createElement(CardBody, {
+    className: "completeInfor"
+  }, /*#__PURE__*/React.createElement(Formik, {
+    initialValues: {
+      personalInfo: '',
+      nbrPer: '',
+      dateOfBirth: '',
+      gender: '',
+      province: '',
+      district: '',
+      wards: '',
+      address: '',
+      gif: '',
+      bank: '',
+      branch: '',
+      accountNbr: ''
+    },
+    validationSchema: CompleteInforValidate,
+    onSubmit: handleRegister
+  }, ({
+    errors,
+    touched
+  }) => /*#__PURE__*/React.createElement(Form$1, null, /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
+    sm: "3"
+  }, /*#__PURE__*/React.createElement(Row, {
+    className: "ml-2"
+  }, /*#__PURE__*/React.createElement("label", null, "H\u1ECD v\xE0 t\xEAn*")), /*#__PURE__*/React.createElement(Row, {
+    className: "ml-3"
+  }, /*#__PURE__*/React.createElement("span", null, "L\xF2 H\u1ED3ng Ng\u1ECDc")), /*#__PURE__*/React.createElement(Row, {
+    className: "ml-2"
+  }, /*#__PURE__*/React.createElement("label", null, "S\u1ED1 \u0111i\u1EC7n tho\u1EA1i*")), /*#__PURE__*/React.createElement(Row, {
+    className: "ml-3"
+  }, /*#__PURE__*/React.createElement("span", null, "0123456789")), /*#__PURE__*/React.createElement(Row, {
+    className: "ml-2"
+  }, /*#__PURE__*/React.createElement("label", null, "Email*")), /*#__PURE__*/React.createElement(Row, {
+    className: "ml-3"
+  }, /*#__PURE__*/React.createElement("span", null, "abc@gmail.com"))), /*#__PURE__*/React.createElement(Col, {
+    sm: "9"
+  }, /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
+    sm: "6"
+  }, renderSelect(personalInfoOptions, 'personalInfo', 'completeInformation.personalInfo')), /*#__PURE__*/React.createElement(Col, {
+    sm: "6"
+  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+    messageId: "completeInformation.nbrPer",
+    fieldName: "nbrPer",
+    errors: errors,
+    touched: touched
+  }))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
+    sm: "6"
+  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+    messageId: "completeInformation.dateOfBirth",
+    fieldName: "dateOfBirth",
+    errors: errors,
+    touched: touched
+  })), /*#__PURE__*/React.createElement(Col, {
+    sm: "6"
+  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+    messageId: "completeInformation.gender",
+    fieldName: "gender",
+    errors: errors,
+    touched: touched
+  }))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
+    sm: "4"
+  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+    messageId: "completeInformation.gender",
+    fieldName: "gender",
+    errors: errors,
+    touched: touched
+  })), /*#__PURE__*/React.createElement(Col, {
+    sm: "4"
+  }, renderSelect(bank, 'district', 'completeInformation.district')), /*#__PURE__*/React.createElement(Col, {
+    sm: "4"
+  }, renderSelect(bank, 'wards', 'completeInformation.wards'))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
+    sm: "8"
+  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+    messageId: "completeInformation.address",
+    fieldName: "address",
+    errors: errors,
+    touched: touched
+  })), /*#__PURE__*/React.createElement(Col, {
+    sm: "4"
+  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+    messageId: "completeInformation.gif",
+    fieldName: "gif",
+    errors: errors,
+    touched: touched
+  }))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
+    sm: "4"
+  }, renderSelect(bank, 'bank', 'completeInformation.bank')), /*#__PURE__*/React.createElement(Col, {
+    sm: "4"
+  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+    messageId: "completeInformation.branch",
+    fieldName: "branch",
+    errors: errors,
+    touched: touched
+  })), /*#__PURE__*/React.createElement(Col, {
+    sm: "4"
+  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+    messageId: "completeInformation.accountNbr",
+    fieldName: "accountNbr",
+    errors: errors,
+    touched: touched
+  }))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
+    sm: "6"
+  }), /*#__PURE__*/React.createElement(Col, {
+    sm: "3"
+  }, /*#__PURE__*/React.createElement(Button, null, " QUAY L\u1EA0I")), /*#__PURE__*/React.createElement(Col, {
+    sm: "3"
+  }, /*#__PURE__*/React.createElement(Button, {
+    type: "submit",
+    onClick: e => {}
+  }, ' ', "HO\xC0N TH\xC0NH"))))))))));
+};
+
+const LandingPage2 = props => {
+  const [activeTab, setActiveTab] = useState('');
+  const history = useHistory();
+  useEffect(() => {
+    setActiveTab(props.activeTab || 'create-password');
+  }, [props.activeTab]);
+
+  const TabView = () => {
+    switch (activeTab) {
+      case 'create-password':
+        return /*#__PURE__*/React.createElement(CreatePassword, null);
+
+      case 'provide-new-password':
+        return /*#__PURE__*/React.createElement(ProvideNewPassword, null);
+
+      case 'complete-information':
+        return /*#__PURE__*/React.createElement(CompleteInformation, null);
+
+      default:
+        return '';
+    }
+  };
+
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "landing-page",
+    style: {
+      background: `${IMAGE.LANDING_PAGE_2_BG}`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ld-main col-10"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ld-header d-flex justify-content-between  mb-5"
+  }, /*#__PURE__*/React.createElement(LandingHeader, {
+    isLanding2: true
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "lg-content p-2 p-md-4 p-lg-5"
+  }, /*#__PURE__*/React.createElement(TabView, null))), /*#__PURE__*/React.createElement(LandingFooter, null)));
 };
 
 const AppRouter = props => {
@@ -4514,6 +5025,15 @@ const AppRouter = props => {
     path: 'register'
   }, {
     path: 'forgot-password'
+  }, {
+    path: 'reset-password'
+  }];
+  const landingPage2Routes = [{
+    path: 'create-password'
+  }, {
+    path: 'provide-new-password'
+  }, {
+    path: 'complete-information'
   }];
   return /*#__PURE__*/React.createElement(IntlProviderWrapper, {
     appMessage: appMessage
@@ -4523,26 +5043,32 @@ const AppRouter = props => {
     path: "/",
     render: props => isAuthentication ? /*#__PURE__*/React.createElement(Layout$1, { ...props,
       appId
-    }, /*#__PURE__*/React.createElement(Switch, null, settingRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
+    }, /*#__PURE__*/React.createElement(Switch, null, ' ', settingRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
       key: item.path,
       path: `/${item.path}`,
       render: () => /*#__PURE__*/React.createElement(item.component, {
         activeTab: item.path
       })
-    })), /*#__PURE__*/React.createElement(Route, {
+    })), ' ', /*#__PURE__*/React.createElement(Route, {
       path: "/",
       render: () => children
-    }))) : /*#__PURE__*/React.createElement(Switch, null, landingPageRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
+    }, ' '), ' '), ' ') : /*#__PURE__*/React.createElement(Switch, null, ' ', landingPageRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
       key: item.path,
       path: `/${item.path}`,
       render: () => /*#__PURE__*/React.createElement(LandingPage, {
         activeTab: item.path
       })
-    })), /*#__PURE__*/React.createElement(Redirect, {
+    })), ' ', landingPage2Routes.map(item => /*#__PURE__*/React.createElement(Route, {
+      key: item.path,
+      path: `/${item.path}`,
+      render: () => /*#__PURE__*/React.createElement(LandingPage2, {
+        activeTab: item.path
+      })
+    })), ' ', /*#__PURE__*/React.createElement(Redirect, {
       from: "/",
       to: "/login"
     }))
-  }))), /*#__PURE__*/React.createElement(ToastContainer, {
+  }), ' '), ' '), ' ', /*#__PURE__*/React.createElement(ToastContainer, {
     position: "top-right",
     autoClose: 5000,
     hideProgressBar: false,
@@ -4664,60 +5190,6 @@ class FallbackSpinner extends React.Component {
 const DatePicker = props => /*#__PURE__*/React.createElement(FormGroup, {
   className: "form-label-group position-relative"
 }, /*#__PURE__*/React.createElement(Flatpickr, props), /*#__PURE__*/React.createElement(Label, null, props.placeholder));
-
-const Select = props => {
-  const [inputValue, setInputValue] = useState(props.defaultValue || '');
-  const [isFocused, setIsFocused] = useState(false);
-
-  const onChange = (e, actions) => {
-    if (props.onChange) {
-      props.onChange(e, actions);
-    }
-
-    if (props.isMulti) {
-      setInputValue(e ? e.map(item => item.value).join() : '');
-    } else {
-      setInputValue(e ? e.value : '');
-    }
-  };
-
-  const onFocus = e => {
-    if (props.onFocus) {
-      props.onChange(e);
-    }
-
-    setIsFocused(true);
-  };
-
-  const onBlur = e => {
-    if (props.onBlur) {
-      props.onBlur(e);
-    }
-
-    setIsFocused(false);
-  };
-
-  return /*#__PURE__*/React.createElement(FormGroup, {
-    className: "form-label-group position-relative"
-  }, /*#__PURE__*/React.createElement(Select$1, Object.assign({}, props, {
-    onChange: onChange,
-    onBlur: onBlur,
-    onFocus: onFocus,
-    theme: theme => ({ ...theme,
-      colors: { ...theme.colors,
-        primary: '#338955'
-      }
-    })
-  })), /*#__PURE__*/React.createElement("input", {
-    className: "d-none",
-    placeholder: props.placeholder,
-    value: inputValue
-  }), /*#__PURE__*/React.createElement(Label, {
-    className: classnames({
-      'text-primary': isFocused
-    })
-  }, props.placeholder));
-};
 
 function useDeviceDetect() {
   const [isMobile, setMobile] = React.useState(false);
