@@ -267,10 +267,10 @@ const checkLoginStatus = authToken => {
           type: LOGIN_ACTION,
           payload: {
             authToken,
-            user: respone.data
+            user: respone.data || {}
           }
         });
-        history.push('/');
+        history.push(history.location.pathname);
       } else {
         dispatch({
           type: LOGIN_ACTION,
@@ -305,7 +305,7 @@ const loginAction = user => {
           type: LOGIN_ACTION,
           payload: {
             authToken,
-            user: respone.data
+            user: respone.data || []
           }
         });
         history.push('/');
@@ -2625,7 +2625,7 @@ const loadNavtigation = appId => {
   return async dispatch => {
     try {
       const res = await NavBarService.getNativagtion();
-      const roles = res.data;
+      const roles = res.data || [];
       const navConfigs = getNativgationConfig(appId, roles);
       dispatch({
         type: LOAD_NATIVGATION$1,

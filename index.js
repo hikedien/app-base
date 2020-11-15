@@ -337,10 +337,10 @@ var checkLoginStatus = function checkLoginStatus(authToken) {
                   type: LOGIN_ACTION,
                   payload: {
                     authToken: authToken,
-                    user: respone.data
+                    user: respone.data || {}
                   }
                 });
-                history.push('/');
+                history.push(history.location.pathname);
               });
             } else {
               dispatch({
@@ -387,7 +387,7 @@ var loginAction = function loginAction(user) {
                   type: LOGIN_ACTION,
                   payload: {
                     authToken: authToken,
-                    user: respone.data
+                    user: respone.data || []
                   }
                 });
                 history.push('/');
@@ -2896,7 +2896,7 @@ var loadNavtigation = function loadNavtigation(appId) {
     try {
       var _temp2 = _catch(function () {
         return Promise.resolve(NavBarService.getNativagtion()).then(function (res) {
-          var roles = res.data;
+          var roles = res.data || [];
           var navConfigs = getNativgationConfig(appId, roles);
           dispatch({
             type: LOAD_NATIVGATION$1,
