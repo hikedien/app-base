@@ -872,9 +872,8 @@ span.flatpickr-day.selected {
   width: 90%; }
 
 .landing-page {
-  height: 100vh; }
-  .landing-page .lg-header .languages .active {
-    color: #77c64d; }
+  height: 100vh;
+  background-size: cover; }
   .landing-page .mobile-bg {
     width: 100%;
     max-height: 100%; }
@@ -889,30 +888,52 @@ span.flatpickr-day.selected {
         .landing-page .ld-main .lg-content-header .tab-control.active {
           color: #51912d;
           border-bottom: 3px solid #51912d; }
-    .landing-page .ld-main .lg-content {
-      background: linear-gradient(187.45deg, rgba(0, 0, 0, 0.135216) 5.78%, rgba(17, 57, 52, 0.15) 72.97%);
-      padding: 6rem; }
-      .landing-page .ld-main .lg-content .text-danger {
-        font-size: 0.8rem;
-        margin-top: 0.5rem; }
-      .landing-page .ld-main .lg-content .form-label-group {
-        margin-bottom: 2rem; }
-        .landing-page .ld-main .lg-content .form-label-group input:not(:-moz-placeholder-shown) ~ label, .landing-page .ld-main .lg-content .form-label-group .form-label-group textarea:not(:-moz-placeholder-shown) ~ label {
-          top: -25px; }
-        .landing-page .ld-main .lg-content .form-label-group input:not(:-ms-input-placeholder) ~ label, .landing-page .ld-main .lg-content .form-label-group .form-label-group textarea:not(:-ms-input-placeholder) ~ label {
-          top: -25px; }
-        .landing-page .ld-main .lg-content .form-label-group input:not(:placeholder-shown) ~ label,
-        .landing-page .ld-main .lg-content .form-label-group .form-label-group textarea:not(:placeholder-shown) ~ label {
-          top: -25px; }
-        .landing-page .ld-main .lg-content .form-label-group label {
-          color: #77c64d !important; }
-      .landing-page .ld-main .lg-content input {
-        border-radius: 20px; }
-        .landing-page .ld-main .lg-content input:focus {
-          box-shadow: 0px 0px 10px 3px rgba(81, 145, 45, 0.85); }
-      .landing-page .ld-main .lg-content button {
-        background: linear-gradient(86.55deg, #51912d 18.03%, #0e6856 104.15%);
-        border-radius: 31px; }
+  .landing-page .lg-header .languages .active {
+    color: #77c64d; }
+  .landing-page .lg-content {
+    background: linear-gradient(187.45deg, rgba(0, 0, 0, 0.135216) 5.78%, rgba(17, 57, 52, 0.15) 72.97%);
+    padding: 6rem; }
+    .landing-page .lg-content .text-danger {
+      font-size: 0.8rem;
+      margin-top: 0.5rem; }
+    .landing-page .lg-content .form-label-group {
+      margin-bottom: 2rem; }
+      .landing-page .lg-content .form-label-group input:not(:-moz-placeholder-shown) ~ label, .landing-page .lg-content .form-label-group .form-label-group textarea:not(:-moz-placeholder-shown) ~ label {
+        top: -25px; }
+      .landing-page .lg-content .form-label-group input:not(:-ms-input-placeholder) ~ label, .landing-page .lg-content .form-label-group .form-label-group textarea:not(:-ms-input-placeholder) ~ label {
+        top: -25px; }
+      .landing-page .lg-content .form-label-group input:not(:placeholder-shown) ~ label,
+      .landing-page .lg-content .form-label-group .form-label-group textarea:not(:placeholder-shown) ~ label {
+        top: -25px; }
+      .landing-page .lg-content .form-label-group label {
+        color: #77c64d !important; }
+    .landing-page .lg-content input {
+      border-radius: 20px;
+      border: 1px solid #51912d; }
+      .landing-page .lg-content input:focus {
+        box-shadow: 0px 0px 10px 3px rgba(81, 145, 45, 0.85); }
+      .landing-page .lg-content input.is-invalid {
+        border-color: #ea5455;
+        padding-right: calc(1.25em + 1.4rem); }
+    .landing-page .lg-content button {
+      background: linear-gradient(86.55deg, #51912d 18.03%, #0e6856 104.15%);
+      border-radius: 31px; }
+  .landing-page .ld-main2 {
+    padding-top: 5rem; }
+    .landing-page .ld-main2 .lg-content-header {
+      margin-top: 5rem; }
+      .landing-page .ld-main2 .lg-content-header .tab-control {
+        padding: 1rem; }
+        .landing-page .ld-main2 .lg-content-header .tab-control.active {
+          color: #51912d;
+          border-bottom: 3px solid #51912d; }
+    .landing-page .ld-main2 .divider {
+      background: #999999; }
+    .landing-page .ld-main2 .lg-content {
+      background: linear-gradient(190.34deg, rgba(255, 255, 255, 0.58) 27%, rgba(255, 255, 255, 0) 135.04%);
+      border-radius: 42px;
+      border: 0.5px solid #88cd63;
+      min-height: 60vh; }
   .landing-page .ld-footer {
     position: absolute;
     width: 100%;
@@ -943,7 +964,7 @@ span.flatpickr-day.selected {
       color: white;
       min-height: 85vh; }
       .landing-page .ld-main .lg-content-header {
-        margin-top: 3rem; }
+        margin-top: 2rem; }
       .landing-page .ld-main .ld-header img {
         width: 50%;
         padding: 2rem; }
@@ -954,70 +975,14 @@ span.flatpickr-day.selected {
       position: absolute;
       bottom: 0; } }
 
-.completeInfor {
-  background: linear-gradient(190.34deg, rgba(255, 255, 255, 0.58) 27%, rgba(255, 255, 255, 0) 135.04%); }
-  .completeInfor .text-danger {
-    font-size: 0.8rem;
-    margin-top: 0.5rem; }
-  .completeInfor .form-label-group {
-    margin-bottom: 2rem; }
-    .completeInfor .form-label-group input:not(:-moz-placeholder-shown) ~ label, .completeInfor .form-label-group .form-label-group textarea:not(:-moz-placeholder-shown) ~ label {
-      top: -25px; }
-    .completeInfor .form-label-group input:not(:-ms-input-placeholder) ~ label, .completeInfor .form-label-group .form-label-group textarea:not(:-ms-input-placeholder) ~ label {
-      top: -25px; }
-    .completeInfor .form-label-group input:not(:placeholder-shown) ~ label,
-    .completeInfor .form-label-group .form-label-group textarea:not(:placeholder-shown) ~ label {
-      top: -25px; }
-    .completeInfor .form-label-group label {
-      color: #77c64d !important; }
-    .completeInfor .form-label-group .Select__control {
-      border-radius: 20px;
-      border-radius: 20px;
-      border: 1px solid #51912D;
-      min-height: 30px; }
-      .completeInfor .form-label-group .Select__control:focus {
-        box-shadow: 0px 0px 10px 3px rgba(81, 145, 45, 0.85); }
-      .completeInfor .form-label-group .Select__control .Select__value-container {
-        font-size: 13px; }
-        .completeInfor .form-label-group .Select__control .Select__value-container .Select__placeholder {
-          font-family: Montserrat;
-          font-style: normal;
-          font-weight: normal;
-          font-size: 12px;
-          line-height: 11px;
-          color: #999999; }
-  .completeInfor .form-input label {
-    color: #77c64d !important;
-    position: absolute;
-    top: 0;
-    left: 0;
-    display: inline-block !important;
-    transition: all 0.25s ease-in-out;
-    padding: 0.6rem;
-    color: rgba(34, 41, 47, 0.4);
-    font-size: 0.85rem;
-    opacity: 0;
-    z-index: -1; }
-  .completeInfor .form-input input {
-    border-radius: 20px;
-    border: 1px solid #51912D; }
-    .completeInfor .form-input input:focus {
-      box-shadow: 0px 0px 10px 3px rgba(81, 145, 45, 0.85); }
-  .completeInfor .form-input input:not(:-moz-placeholder-shown) ~ label {
-    top: -25px;
-    z-index: 0;
-    opacity: 1; }
-  .completeInfor .form-input input:not(:-ms-input-placeholder) ~ label {
-    top: -25px;
-    z-index: 0;
-    opacity: 1; }
-  .completeInfor .form-input input:not(:placeholder-shown) ~ label {
-    top: -25px;
-    z-index: 0;
-    opacity: 1; }
-  .completeInfor button {
-    background: linear-gradient(86.55deg, #51912d 18.03%, #0e6856 104.15%);
-    border-radius: 31px; }
+.completeInfor .text-gray {
+  color: #999999; }
+
+.completeInfor .Select__control {
+  border-radius: 20px;
+  border-radius: 20px;
+  border: 1px solid #51912d;
+  min-height: 30px; }
 
 /**
  * prism.js tomorrow night eighties for JavaScript, CoffeeScript, CSS and HTML

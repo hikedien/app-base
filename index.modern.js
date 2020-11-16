@@ -43,6 +43,38 @@ const generateUUID = () => {
   });
 };
 
+const API_BASE_URL = 'http://localhost:8086/nth';
+const API_LOGIN_URL = 'http://localhost:8086/api/authenticate';
+const API_LOGOUT_URL = 'http://localhost:8086/api/authenticate';
+const API_REGISTER = '/onboarding/api/authenticate/register';
+const API_GET_USER = '/user/api/users';
+const API_GET_NAV_CONFIGS = '/accesscontrol/api/roles';
+const API_R_200 = 200;
+const MAX_MOBILE_WIDTH = 768;
+const MAX_TABLET_WIDTH = 1024;
+const REMEMBER_ME_TOKEN = 'rememberMe';
+const LOGIN_STATUS = {
+  SUCCESS: 'SUCCESS',
+  FAIL: 'FAIL'
+};
+const APP_URL = 'http://localhost:3000';
+const IMAGE = {
+  LOGO: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Logo.png?alt=media&token=68d3ab7a-e9bb-4c43-a543-c65f72033bf9',
+  LOGO_NO_TEXT: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/logo-no-text.png?alt=media&token=4c266c6a-bd1c-49f9-b51c-1e2484925b06',
+  NAV_ICON_1: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-1.png?alt=media&token=0ccdb6bc-09da-43a3-b18f-56d2598e542b',
+  NAV_ICON_2: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-2.png?alt=media&token=def3402b-65f0-458b-b4f8-e9c6d8d3bb09',
+  NAV_ICON_3: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-3.png?alt=media&token=1ce1a25c-b095-4f80-8987-3ae9b977e3a8',
+  NAV_ICON_4: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-4.png?alt=media&token=549432c1-9dd6-4d0a-948a-3f2de513d238',
+  NAV_ICON_5: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-5.png?alt=media&token=659d7162-783c-42ed-af7a-d05d0a3be595',
+  BUY_INSURANCE: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Vector.png?alt=media&token=56bac236-f494-4643-81f1-11611229e62e',
+  LOGO_WHITE: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/LogoWhite.png?alt=media&token=8289e81f-7b3f-41cd-b5dc-5220bbe8d203',
+  LANDING_PAGE_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-Signup-01%203%20(1).png?alt=media&token=19aca74e-c81f-40e2-a00d-a91b7ee9f27a',
+  LANDING_PAGE_2_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/BG-step5-02%201.png?alt=media&token=2902f404-802a-4c4a-89f5-39a4cd72ab44',
+  LANDING_PAGE_TABLET_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-Bg-ipad(doc)-05.png?alt=media&token=2a140f47-3de6-4a08-9eed-5e2e26e57252',
+  DOWNLOAD_APP_IOS: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-APP%26GP-03.png?alt=media&token=c9a13eca-3fe6-40d0-ac1d-df417b95385d',
+  DOWNLOAD_APP_ANDROID: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-APP%26GP-01.png?alt=media&token=b2aefa9d-d464-41d3-9fd0-b374ed0dca93'
+};
+
 const HttpClient = Axios.create({
   timeout: 10000,
   adapter: throttleAdapterEnhancer(cacheAdapterEnhancer(Axios.defaults.adapter, {
@@ -57,7 +89,7 @@ const errorMessage = message => {
     className: "ml-1"
   }, message));
 };
-const setUpHttpClient = store => {
+const setUpHttpClient = (store, apiBaseUrl) => {
   let deviceId = localStorage.getItem('deviceId');
   let language = localStorage.getItem('language');
 
@@ -70,6 +102,7 @@ const setUpHttpClient = store => {
     localStorage.setItem('language', 'vi');
   }
 
+  HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
   HttpClient.interceptors.request.use(config => {
     const token = store.getState().auth.authToken;
     language = localStorage.getItem('language');
@@ -187,39 +220,6 @@ const customizerReducer = (state = { ...themeConfig
   }
 };
 
-const API_BASE_URL = 'http://localhost:8086/nth';
-const API_LOGIN_URL = 'http://localhost:8086/api/authenticate';
-const API_LOGOUT_URL = 'http://localhost:8086/api/authenticate';
-const API_REGISTER = API_BASE_URL + '/onboarding/api/authenticate/register';
-const API_GET_USER = API_BASE_URL + '/user/api/users';
-const API_GET_NAV_CONFIGS = 'http://localhost:8086/nth/accesscontrol/api/roles';
-const API_R_200 = 200;
-const MAX_MOBILE_WIDTH = 768;
-const REMEMBER_ME_TOKEN = 'rememberMe';
-const LOGIN_STATUS = {
-  SUCCESS: 'SUCCESS',
-  FAIL: 'FAIL'
-};
-const APP_URL = 'http://localhost:3000';
-const IMAGE = {
-  LOGO: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Logo.png?alt=media&token=68d3ab7a-e9bb-4c43-a543-c65f72033bf9',
-  LOGO_NO_TEXT: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/logo-no-text.png?alt=media&token=4c266c6a-bd1c-49f9-b51c-1e2484925b06',
-  NAV_ICON_1: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-1.png?alt=media&token=0ccdb6bc-09da-43a3-b18f-56d2598e542b',
-  NAV_ICON_2: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-2.png?alt=media&token=def3402b-65f0-458b-b4f8-e9c6d8d3bb09',
-  NAV_ICON_3: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-3.png?alt=media&token=1ce1a25c-b095-4f80-8987-3ae9b977e3a8',
-  NAV_ICON_4: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-4.png?alt=media&token=549432c1-9dd6-4d0a-948a-3f2de513d238',
-  NAV_ICON_5: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-5.png?alt=media&token=659d7162-783c-42ed-af7a-d05d0a3be595',
-  BUY_INSURANCE: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Vector.png?alt=media&token=56bac236-f494-4643-81f1-11611229e62e',
-  LOGO_WHITE: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/LogoWhite.png?alt=media&token=8289e81f-7b3f-41cd-b5dc-5220bbe8d203',
-  LANDING_PAGE_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-Signup-01%203%20(1).png?alt=media&token=19aca74e-c81f-40e2-a00d-a91b7ee9f27a',
-  LANDING_PAGE_MOBILE_LOGO_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-GRPHIC-08%201.png?alt=media&token=5b15e616-f235-4857-af2d-d243fe25e330',
-  LANDING_PAGE_2_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/BG-step5-02%201.png?alt=media&token=2902f404-802a-4c4a-89f5-39a4cd72ab44',
-  LANDING_PAGE_MOBILE_LOGO_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-GRPHIC-08%201.png?alt=media&token=5b15e616-f235-4857-af2d-d243fe25e330',
-  LANDING_PAGE_MOBILE_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Mobile_bg.png?alt=media&token=120f54fa-8c82-45d3-ae3b-87517a1ee2aa',
-  DOWNLOAD_APP_IOS: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-APP%26GP-03.png?alt=media&token=c9a13eca-3fe6-40d0-ac1d-df417b95385d',
-  DOWNLOAD_APP_ANDROID: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-APP%26GP-01.png?alt=media&token=b2aefa9d-d464-41d3-9fd0-b374ed0dca93'
-};
-
 let history = createBrowserHistory({
   basename: ''
 });
@@ -281,9 +281,6 @@ const checkLoginStatus = authToken => {
       }
     } catch (error) {
       console.log(error);
-      dispatch({
-        type: LOGOUT_ACTION
-      });
     }
   };
 };
@@ -312,9 +309,12 @@ const loginAction = user => {
         });
         history.push('/');
       } else {
+        const token = {
+          authToken: 'authToken'
+        };
         dispatch({
           type: LOGIN_ACTION,
-          payload: 'authToken'
+          payload: token
         });
         toast.error(errorMessage( /*#__PURE__*/React.createElement(FormattedMessage, {
           id: "login.fail"
@@ -322,10 +322,6 @@ const loginAction = user => {
       }
     } catch (error) {
       console.log(error);
-      dispatch({
-        type: LOGIN_ACTION,
-        payload: 'authToken'
-      });
     }
   };
 };
@@ -2793,11 +2789,13 @@ var messages_en = {
 	"createPassword.condition.1": "- At least 8 characters long",
 	"createPassword.condition.2": "- Include upper and lower case characters",
 	"createPassword.condition.3": "- Include numeric or special characters",
-	"createPassword.continutes": "Continute",
+	"createPassword.continutes": "CONTINUTE",
+	"createPassword.done": "DONE",
 	"provideNewPassword.title": "PROVIDE A NEW PASSWORD",
 	"provideNewPassword.continutes": "DONE",
 	"provideNewPassword.password": "Enter your new password *",
 	"provideNewPassword.enterThePassword": "Enter a new password *",
+	"completeInformation.idType": "Type of identification*",
 	"completeInformation.nbrPer": "Identification document number*",
 	"completeInformation.nbrPer.required": "You must enter infor number",
 	"completeInformation.dateOfBirth": "Date of birth",
@@ -2805,7 +2803,7 @@ var messages_en = {
 	"completeInformation.address": "Address*",
 	"completeInformation.address.required": "You must enter address",
 	"completeInformation.gif": "Referral code",
-	"completeInformation.branch": "Chi nhánh*",
+	"completeInformation.branch": "Branch*",
 	"completeInformation.branch.required": "You must enter branch",
 	"completeInformation.accountNbr": "Account number*",
 	"completeInformation.accountNbr.required": "You must enter account number",
@@ -2815,7 +2813,8 @@ var messages_en = {
 	"completeInformation.district": "District*",
 	"completeInformation.wards": "Wards*",
 	"completeInformation.bank": "Bank*",
-	"completeInformation.fullName": "Full Name"
+	"completeInformation.back": "BACK",
+	"completeInformation.done": "DONE"
 };
 
 var login$1 = "Đăng nhập";
@@ -2920,11 +2919,13 @@ var messages_vi = {
 	"createPassword.condition.2": "- Bao gồm ký tự viết hoa và viết thường",
 	"createPassword.condition.3": "- Bao gồm ký tự số hoặc ký tự đặc biệt",
 	"createPassword.continutes": "TIẾP TỤC",
+	"createPassword.done": "HOÀN THÀNH",
 	"provideNewPassword.title": "CẤP MẬT KHẨU MỚI",
 	"provideNewPassword.continutes": "THỰC HIỆN",
 	"provideNewPassword.password": "Nhập mật khẩu mới *",
 	"provideNewPassword.enterThePassword": "Nhập lại mật khẩu mới *",
 	"createPassword.enterThePassword.required": "Bạn phải nhập mật khẩu mới",
+	"completeInformation.idType": "Loại giấy tờ tùy thân *",
 	"completeInformation.nbrPer": "Số giấy tờ tuỳ thân *",
 	"completeInformation.nbrPer.required": "Bạn phải nhập số giấy tờ tuỳ thân",
 	"completeInformation.dateOfBirth": "Ngày sinh",
@@ -2937,10 +2938,12 @@ var messages_vi = {
 	"completeInformation.accountNbr": "Số tài khoản*",
 	"completeInformation.personalInfo": "Hộ chiếu*",
 	"completeInformation.gender": "Giới tính",
-	"completeInformation.province": "Tỉnh/ Thành Phố*",
-	"completeInformation.district": "Quận/ Huyện*",
-	"completeInformation.wards": "Phường/ Xã*",
-	"completeInformation.bank": "Ngân hàng*"
+	"completeInformation.province": "Tỉnh/Thành Phố*",
+	"completeInformation.district": "Quận/Huyện*",
+	"completeInformation.wards": "Phường/Xã*",
+	"completeInformation.bank": "Ngân hàng*",
+	"completeInformation.back": "Quay lại",
+	"completeInformation.done": "Hoàn thành"
 };
 
 class CheckBox extends React.Component {
@@ -4379,7 +4382,9 @@ const formSchema$3 = object().shape({
   }))
 });
 
-const CreatePassword = () => {
+const CreatePassword = ({
+  isLanding2
+}) => {
   const onSubmit = (values, actions) => {
     setTimeout(() => {
       alert(JSON.stringify(values, null, 2));
@@ -4397,8 +4402,12 @@ const CreatePassword = () => {
   }, ({
     errors,
     touched
-  }) => /*#__PURE__*/React.createElement(Form$1, null, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
-    className: "d-flex justify-content-center"
+  }) => /*#__PURE__*/React.createElement(Form$1, {
+    className: ""
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-center mb-3"
+  }, /*#__PURE__*/React.createElement("h4", {
+    className: "font-weight-bold"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "createPassword.title"
   }))), /*#__PURE__*/React.createElement(BaseFormGroup, {
@@ -4407,7 +4416,7 @@ const CreatePassword = () => {
     errors: errors,
     touched: touched
   }), /*#__PURE__*/React.createElement(BaseFormGroup, {
-    messageId: "login.enterThePassword",
+    messageId: "createPassword.enterThePassword",
     fieldName: "repeatePassword",
     errors: errors,
     touched: touched
@@ -4423,7 +4432,7 @@ const CreatePassword = () => {
     color: "primary",
     type: "submit"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "createPassword.continutes"
+    id: isLanding2 ? 'createPassword.continutes' : 'createPassword.done'
   })))));
 };
 
@@ -4435,10 +4444,10 @@ const LandingHeader = ({
       src: isLanding2 ? IMAGE.LOGO : IMAGE.LOGO_WHITE,
       alt: "logo"
     }), /*#__PURE__*/React.createElement("div", {
-      className: "languages d-flex align-items-center"
+      className: "languages d-flex align-items-center "
     }, /*#__PURE__*/React.createElement("div", {
       onClick: () => context.switchLanguage('vi'),
-      className: classnames('mr-1 cursor-pointer', {
+      className: classnames('mr-1 cursor-pointer font-weight-bold', {
         'text-primary': context.state.locale === 'vi'
       })
     }, "VIE"), /*#__PURE__*/React.createElement("div", {
@@ -4448,7 +4457,7 @@ const LandingHeader = ({
       }
     }), /*#__PURE__*/React.createElement("div", {
       onClick: () => context.switchLanguage('en'),
-      className: classnames('mr-1 cursor-pointer', {
+      className: classnames('mr-1 cursor-pointer font-weight-bold', {
         'text-primary': context.state.locale === 'en'
       })
     }, "ENG")));
@@ -4459,7 +4468,7 @@ const LandingFooter = () => {
   return /*#__PURE__*/React.createElement("div", {
     className: "ld-footer px-1 px-md-3 px-lg-5"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "d-none d-md-flex justify-content-between"
+    className: "d-none d-lg-flex justify-content-between"
   }, /*#__PURE__*/React.createElement("div", {
     className: "float-md-left d-block d-md-inline-block mt-25"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -4482,9 +4491,9 @@ const LandingFooter = () => {
     src: IMAGE.DOWNLOAD_APP_ANDROID,
     alt: "DOWNLOAD ON APP I"
   })))), /*#__PURE__*/React.createElement("div", {
-    className: "d-block d-md-none text-center"
+    className: "d-block d-lg-none text-center"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "d-flex my-auto"
+    className: "d-flex justify-content-center"
   }, /*#__PURE__*/React.createElement("a", {
     className: "mr-1",
     href: "https://www.apple.com/app-store/",
@@ -4543,21 +4552,11 @@ const LandingPage = props => {
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "landing-page",
     style: {
-      background: width >= MAX_MOBILE_WIDTH ? `url('${IMAGE.LANDING_PAGE_BG}')` : 'white'
+      backgroundImage: width > MAX_TABLET_WIDTH ? `url('${IMAGE.LANDING_PAGE_BG}')` : `url('${IMAGE.LANDING_PAGE_TABLET_BG}')`
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "position-absolute w-100"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "position-relative"
-  }, /*#__PURE__*/React.createElement("img", {
-    src: IMAGE.LANDING_PAGE_MOBILE_BG,
-    alt: "mobile-bg",
-    className: "d-block mobile-bg d-lg-none"
-  }), /*#__PURE__*/React.createElement("img", {
-    src: IMAGE.LANDING_PAGE_MOBILE_LOGO_BG,
-    alt: "mobile-bg",
-    className: "d-block mobile-icon-blur d-lg-none"
-  }))), /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement("div", {
     className: "ld-main ml-auto col-12 col-md-6 col-xl-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ld-header d-flex justify-content-between mb-1 mb-md-3 mb-xl-5"
@@ -4718,6 +4717,10 @@ const Select = props => {
   }, props.placeholder));
 };
 
+const DatePicker = props => /*#__PURE__*/React.createElement(FormGroup, {
+  className: "form-label-group position-relative"
+}, /*#__PURE__*/React.createElement(Flatpickr, props), /*#__PURE__*/React.createElement(Label, null, props.placeholder));
+
 const CompleteInforValidate = object().shape({
   nbrPer: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "completeInformation.nbrPer.required"
@@ -4762,52 +4765,30 @@ const bank = [{
   label: 'BIDV'
 }];
 
-const CompleteInformation = () => {
-
+const CompleteInformation = ({
+  intl
+}) => {
   const renderSelect = (option, fieldName, msgField) => {
-    const colourStyles = {
-      option: (provided, state) => ({ ...provided,
-        backgroundColor: state.isFocused ? '#338955' : 'white',
-        color: state.isFocused ? 'white' : '#626262',
-        fontSize: '12px'
-      }),
-      control: (provided, state) => ({ ...provided,
-        boxShadow: state.isFocused ? '0px 0px 10px 3px rgba(81, 145, 45, 0.85)' : 'none',
-        minHeight: '38px'
-      }),
-      singleValue: (provided, state) => {
-        const opacity = state.isDisabled ? 0.5 : 1;
-        const transition = 'opacity 300ms';
-        return { ...provided,
-          opacity,
-          transition
-        };
-      }
-    };
     return /*#__PURE__*/React.createElement(FormattedMessage, {
       id: msgField
     }, msg => /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Select, {
       placeholder: msg,
       className: "form-label-group position-relative",
       classNamePrefix: "Select",
-      styles: colourStyles,
       name: fieldName,
-      options: option
+      options: option,
+      onChange: () => {}
     })));
   };
 
-  const handleRegister = data => {
-    undefined.props.createAccountInforAction({
-      nbrPer: data.nbrPer,
-      dateOfBirth: data.dateOfBirth,
-      address: data.address,
-      gif: data.gif,
-      branch: data.branch,
-      accountNbr: data.accountNbr
-    });
+  const onSubmit = values => {
+    setTimeout(() => {
+      alert(JSON.stringify(values, null, 2));
+      actions.setSubmitting(false);
+    }, 1000);
   };
 
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardHeader, null, /*#__PURE__*/React.createElement(CardTitle, null, " HO\xC0N THI\u1EC6N TH\xD4NG TIN")), /*#__PURE__*/React.createElement(CardBody, {
+  return /*#__PURE__*/React.createElement("div", {
     className: "completeInfor"
   }, /*#__PURE__*/React.createElement(Formik, {
     initialValues: {
@@ -4825,29 +4806,48 @@ const CompleteInformation = () => {
       accountNbr: ''
     },
     validationSchema: CompleteInforValidate,
-    onSubmit: handleRegister
+    onSubmit: onSubmit
   }, ({
     errors,
     touched
   }) => /*#__PURE__*/React.createElement(Form$1, null, /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
-    sm: "3"
+    sm: "12",
+    lg: "3",
+    className: "mb-3"
   }, /*#__PURE__*/React.createElement(Row, {
     className: "ml-2"
-  }, /*#__PURE__*/React.createElement("label", null, "H\u1ECD v\xE0 t\xEAn*")), /*#__PURE__*/React.createElement(Row, {
+  }, /*#__PURE__*/React.createElement(Label, {
+    className: "font-weight-bold"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "register.fullname"
+  }))), /*#__PURE__*/React.createElement(Row, {
     className: "ml-3"
-  }, /*#__PURE__*/React.createElement("span", null, "L\xF2 H\u1ED3ng Ng\u1ECDc")), /*#__PURE__*/React.createElement(Row, {
-    className: "ml-2"
-  }, /*#__PURE__*/React.createElement("label", null, "S\u1ED1 \u0111i\u1EC7n tho\u1EA1i*")), /*#__PURE__*/React.createElement(Row, {
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-gray"
+  }, "L\xF2 H\u1ED3ng Ng\u1ECDc")), /*#__PURE__*/React.createElement(Row, {
+    className: "ml-2  mt-2"
+  }, /*#__PURE__*/React.createElement(Label, {
+    className: "font-weight-bold"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "register.phoneNumber"
+  }))), /*#__PURE__*/React.createElement(Row, {
     className: "ml-3"
-  }, /*#__PURE__*/React.createElement("span", null, "0123456789")), /*#__PURE__*/React.createElement(Row, {
-    className: "ml-2"
-  }, /*#__PURE__*/React.createElement("label", null, "Email*")), /*#__PURE__*/React.createElement(Row, {
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-gray"
+  }, "0123456789")), /*#__PURE__*/React.createElement(Row, {
+    className: "ml-2  mt-2"
+  }, /*#__PURE__*/React.createElement(Label, {
+    className: "font-weight-bold"
+  }, "Email*")), /*#__PURE__*/React.createElement(Row, {
     className: "ml-3"
-  }, /*#__PURE__*/React.createElement("span", null, "abc@gmail.com"))), /*#__PURE__*/React.createElement(Col, {
-    sm: "9"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-gray"
+  }, "abc@gmail.com"))), /*#__PURE__*/React.createElement(Col, {
+    sm: "12",
+    lg: "9"
   }, /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
     sm: "6"
-  }, renderSelect(personalInfoOptions, 'personalInfo', 'completeInformation.personalInfo')), /*#__PURE__*/React.createElement(Col, {
+  }, renderSelect(personalInfoOptions, 'personalInfo', 'completeInformation.idType')), /*#__PURE__*/React.createElement(Col, {
     sm: "6"
   }, /*#__PURE__*/React.createElement(BaseFormGroup, {
     messageId: "completeInformation.nbrPer",
@@ -4856,26 +4856,22 @@ const CompleteInformation = () => {
     touched: touched
   }))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
     sm: "6"
-  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
-    messageId: "completeInformation.dateOfBirth",
-    fieldName: "dateOfBirth",
-    errors: errors,
-    touched: touched
+  }, /*#__PURE__*/React.createElement(DatePicker, {
+    className: "form-control bg-white",
+    placeholder: intl.formatMessage({
+      id: 'completeInformation.dateOfBirth'
+    }),
+    name: "dateOfBirth",
+    value: new Date(),
+    options: {
+      dateFormat: 'M \\ d \\, Y'
+    },
+    onChange: date => {}
   })), /*#__PURE__*/React.createElement(Col, {
     sm: "6"
-  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
-    messageId: "completeInformation.gender",
-    fieldName: "gender",
-    errors: errors,
-    touched: touched
-  }))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
+  }, renderSelect(bank, 'gender', 'completeInformation.gender'))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
     sm: "4"
-  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
-    messageId: "completeInformation.gender",
-    fieldName: "gender",
-    errors: errors,
-    touched: touched
-  })), /*#__PURE__*/React.createElement(Col, {
+  }, renderSelect(bank, 'province', 'completeInformation.province')), /*#__PURE__*/React.createElement(Col, {
     sm: "4"
   }, renderSelect(bank, 'district', 'completeInformation.district')), /*#__PURE__*/React.createElement(Col, {
     sm: "4"
@@ -4909,17 +4905,19 @@ const CompleteInformation = () => {
     fieldName: "accountNbr",
     errors: errors,
     touched: touched
-  }))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
-    sm: "6"
-  }), /*#__PURE__*/React.createElement(Col, {
-    sm: "3"
-  }, /*#__PURE__*/React.createElement(Button, null, " QUAY L\u1EA0I")), /*#__PURE__*/React.createElement(Col, {
-    sm: "3"
-  }, /*#__PURE__*/React.createElement(Button, {
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "d-flex justify-content-center justify-content-md-end"
+  }, /*#__PURE__*/React.createElement(Button.Ripple, null, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "completeInformation.back"
+  })), /*#__PURE__*/React.createElement(Button.Ripple, {
     type: "submit",
-    onClick: e => {}
-  }, ' ', "HO\xC0N TH\xC0NH"))))))))));
+    className: "ml-2"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "completeInformation.done"
+  }))))))));
 };
+
+var CompleteInformation$1 = injectIntl(CompleteInformation);
 
 const LandingPage2 = props => {
   const [activeTab, setActiveTab] = useState('');
@@ -4937,7 +4935,9 @@ const LandingPage2 = props => {
         return /*#__PURE__*/React.createElement(ProvideNewPassword, null);
 
       case 'complete-information':
-        return /*#__PURE__*/React.createElement(CompleteInformation, null);
+        return /*#__PURE__*/React.createElement(CompleteInformation$1, {
+          isLanding2: true
+        });
 
       default:
         return '';
@@ -4947,17 +4947,21 @@ const LandingPage2 = props => {
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "landing-page",
     style: {
-      background: `${IMAGE.LANDING_PAGE_2_BG}`
+      backgroundImage: `url('${IMAGE.LANDING_PAGE_2_BG}')`
     }
   }, /*#__PURE__*/React.createElement("div", {
-    className: "ld-main col-10"
+    className: "col-11 mx-auto mb-5"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ld-main2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ld-header d-flex justify-content-between  mb-5"
   }, /*#__PURE__*/React.createElement(LandingHeader, {
     isLanding2: true
   })), /*#__PURE__*/React.createElement("div", {
-    className: "lg-content p-2 p-md-4 p-lg-5"
-  }, /*#__PURE__*/React.createElement(TabView, null))), /*#__PURE__*/React.createElement(LandingFooter, null)));
+    className: classnames('lg-content p-2 p-md-4 p-lg-5 col-12 mx-auto', {
+      'col-lg-6 col-md-8': activeTab !== 'complete-information'
+    })
+  }, /*#__PURE__*/React.createElement(TabView, null)))), /*#__PURE__*/React.createElement(LandingFooter, null)));
 };
 
 const AppRouter = props => {
@@ -5142,7 +5146,7 @@ const App = ({
   appId,
   appReducer,
   message,
-  navigationConfig,
+  apiBaseUrl,
   history
 }) => {
   const middlewares = [thunk, createDebounce()];
@@ -5186,10 +5190,6 @@ class FallbackSpinner extends React.Component {
   }
 
 }
-
-const DatePicker = props => /*#__PURE__*/React.createElement(FormGroup, {
-  className: "form-label-group position-relative"
-}, /*#__PURE__*/React.createElement(Flatpickr, props), /*#__PURE__*/React.createElement(Label, null, props.placeholder));
 
 function useDeviceDetect() {
   const [isMobile, setMobile] = React.useState(false);
