@@ -50,6 +50,7 @@ const API_REGISTER = '/onboarding/api/authenticate/register';
 const API_GET_USER = '/user/api/users';
 const API_GET_NAV_CONFIGS = '/accesscontrol/api/roles';
 const API_CREATE_PASSWORD = '/onboarding/api/authenticate/create-new-password';
+const API_GET_USER_BY_REGISTER_TOKEN = '/onboarding/api/authenticate/get-partner';
 const API_R_200 = 200;
 const MAX_MOBILE_WIDTH = 768;
 const MAX_TABLET_WIDTH = 1024;
@@ -243,6 +244,14 @@ AuthService.getUserInfo = (username, authToken) => {
   });
 };
 
+AuthService.getUserByRegisterToken = registerToken => {
+  return HttpClient.get(`${API_GET_USER_BY_REGISTER_TOKEN}/${registerToken}`);
+};
+
+AuthService.compeleteInfo = user => {
+  return HttpClient.post(`${API_COMPLETE_INFO}`, user);
+};
+
 AuthService.logout = user => {
   return HttpClient.post(API_LOGOUT_URL, user);
 };
@@ -269,21 +278,25 @@ const SAVE_REGISTER_TOKEN = 'SAVE_REGISTER_TOKEN';
 const checkLoginStatus = authToken => {
   return async (dispatch, getState) => {
     try {
-      let respone = await AuthService.checkLoginByToken();
+      let response = await AuthService.checkLoginByToken();
 
-      if (respone.status === API_R_200) {
-        respone = await AuthService.getUserInfo(getState().auth.user.username, authToken);
+      if (response.status === API_R_200) {
+        response = await AuthService.getUserInfo(getState().auth.user.username, authToken);
         dispatch({
           type: LOGIN_ACTION,
           payload: {
             authToken,
-            user: respone.data || {}
+            user: response.data || {}
           }
         });
         history.push(history.location.pathname);
       } else {
         dispatch({
-          type: LOGOUT_ACTION
+          type: LOGIN_ACTION,
+          payload: {
+            authToken,
+            user: {}
+          }
         });
       }
     } catch (error) {
@@ -294,16 +307,16 @@ const checkLoginStatus = authToken => {
 const loginAction = user => {
   return async dispatch => {
     try {
-      let respone = await AuthService.login(user);
+      let response = await AuthService.login(user);
 
-      if (respone.status === API_R_200) {
-        const authToken = respone.data.id_token;
-        respone = await AuthService.getUserInfo(user.username, authToken);
+      if (response.status === API_R_200) {
+        const authToken = response.data.id_token;
+        response = await AuthService.getUserInfo(user.username, authToken);
 
         if (user.isRemeberMe) {
           localStorage.setItem(REMEMBER_ME_TOKEN, JSON.stringify({
             username: user.username,
-            name: respone.data.fullName
+            name: response.data.fullName
           }));
         }
 
@@ -311,7 +324,7 @@ const loginAction = user => {
           type: LOGIN_ACTION,
           payload: {
             authToken,
-            user: respone.data || []
+            user: response.data || []
           }
         });
         history.push('/');
@@ -336,19 +349,30 @@ const loginAction = user => {
 const createPassword = password => {
   return async (dispatch, getState) => {
     try {
-      const respone = await AuthService.createPassword(password, getState().auth.registerToken);
+      const response = await AuthService.createPassword(password, getState().auth.register.token);
 
-      if (respone.status === 200 && respone.data) {
+      if (response.status === 200 && response.data) {
         history.push('/complete-information');
       }
     } catch (error) {}
   };
 };
 const saveRegisterToken = registerToken => {
-  return dispatch => dispatch({
-    type: SAVE_REGISTER_TOKEN,
-    payload: registerToken
-  });
+  return async dispatch => {
+    const response = await AuthService.getUserByRegisterToken(registerToken);
+
+    if (response.status === 200 && response.data) {
+      dispatch({
+        type: SAVE_REGISTER_TOKEN,
+        payload: {
+          token: registerToken,
+          user: response.data
+        }
+      });
+    } else {
+      history.push('/');
+    }
+  };
 };
 const logoutAction = () => {
   return async dispatch => {
@@ -369,7 +393,10 @@ const authInitialState = {
   authToken: '',
   user: '',
   loginStatus: '',
-  registerToken: ''
+  register: {
+    user: {},
+    token: ''
+  }
 };
 const authReducers = (state = { ...authInitialState
 }, action) => {
@@ -398,7 +425,7 @@ const authReducers = (state = { ...authInitialState
     case SAVE_REGISTER_TOKEN:
       {
         return { ...state,
-          registerToken: action.payload
+          register: action.payload
         };
       }
 
@@ -4087,7 +4114,8 @@ const BaseFormGroup = ({
   errors,
   touched,
   messageId,
-  type
+  type,
+  isRequired: _isRequired = true
 }) => {
   return /*#__PURE__*/React.createElement(FormGroup, {
     className: "form-label-group position-relative"
@@ -4096,9 +4124,9 @@ const BaseFormGroup = ({
   }, msg => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Field, {
     type: type,
     name: fieldName,
-    className: `form-control ${errors[fieldName] && touched[fieldName] && 'is-invalid'}`,
+    className: `form-control ${_isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'}`,
     placeholder: msg
-  }), errors[fieldName] && touched[fieldName] ? /*#__PURE__*/React.createElement("div", {
+  }), _isRequired && errors[fieldName] && touched[fieldName] ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
   }, errors[fieldName]) : null, /*#__PURE__*/React.createElement(Label, null, msg))));
 };
@@ -4425,11 +4453,9 @@ const CreatePassword = ({
   const history = useHistory();
   const dispatch = useDispatch();
   useEffect(() => {
-    const code = new URLSearchParams(document.location.search).get('code');
+    const code = new URLSearchParams(document.location.search).get('registerToken');
 
-    if (!code) {
-      history.push('/');
-    } else {
+    if (code) {
       dispatch(saveRegisterToken(code));
       history.push(history.location.pathname);
     }
@@ -4458,11 +4484,13 @@ const CreatePassword = ({
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "createPassword.title"
   }))), /*#__PURE__*/React.createElement(BaseFormGroup, {
+    type: "password",
     messageId: "login.password",
     fieldName: "password",
     errors: errors,
     touched: touched
   }), /*#__PURE__*/React.createElement(BaseFormGroup, {
+    type: "password",
     messageId: "createPassword.enterThePassword",
     fieldName: "repeatePassword",
     errors: errors,
@@ -4768,8 +4796,40 @@ const DatePicker = props => /*#__PURE__*/React.createElement(FormGroup, {
   className: "form-label-group position-relative"
 }, /*#__PURE__*/React.createElement(Flatpickr, props), /*#__PURE__*/React.createElement(Label, null, props.placeholder));
 
+const BaseFormGroupSelect = ({
+  fieldName,
+  errors,
+  touched,
+  messageId,
+  options,
+  intl,
+  isRequired: _isRequired = true
+}) => {
+  return /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(FastField, {
+    name: "fieldName"
+  }, ({
+    field,
+    form
+  }) => /*#__PURE__*/React.createElement(Select, {
+    placeholder: intl.formatMessage({
+      id: messageId
+    }),
+    className: "form-label-group position-relative",
+    classNamePrefix: "Select",
+    name: fieldName,
+    options: options,
+    onChange: e => {
+      form.setFieldValue(fieldName, e.value);
+    }
+  })), _isRequired && errors[fieldName] && touched[fieldName] ? /*#__PURE__*/React.createElement("div", {
+    className: "text-danger"
+  }, errors.email) : null);
+};
+
+var BaseFormGroupSelect$1 = injectIntl(BaseFormGroupSelect);
+
 const CompleteInforValidate = object().shape({
-  nbrPer: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+  icNumber: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "completeInformation.nbrPer.required"
   })),
   dateOfBirth: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -4778,28 +4838,43 @@ const CompleteInforValidate = object().shape({
   address: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "completeInformation.address.required"
   })),
-  branch: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+  bankBranch: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "completeInformation.branch.required"
   })),
-  accountNbr: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+  bankNumber: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "completeInformation.accountNbr.required"
   }))
 });
 const personalInfoOptions = [{
-  value: 'passport',
+  value: 'HC',
   label: 'Hộ chiếu',
   color: '#338955',
   isFixed: true
 }, {
-  value: 'id',
+  value: 'CMND',
   label: 'Chứng minh nhân dân',
   color: '#338955',
   isFixed: true
 }, {
-  value: 'idNew',
+  value: 'CCCD',
   label: 'Căn cước công dân',
   color: '#338955',
   isFixed: true
+}, {
+  value: 'MST',
+  label: 'Mã số thuế',
+  color: '#338955',
+  isFixed: true
+}];
+const genderOptions = [{
+  value: 'MALE',
+  label: 'Nam'
+}, {
+  value: 'FEMALE',
+  label: 'Nữ'
+}, {
+  value: 'OTHER',
+  label: 'Khác'
 }];
 const bank = [{
   value: '1',
@@ -4815,20 +4890,9 @@ const bank = [{
 const CompleteInformation = ({
   intl
 }) => {
-  const renderSelect = (option, fieldName, msgField) => {
-    return /*#__PURE__*/React.createElement(FormattedMessage, {
-      id: msgField
-    }, msg => /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Select, {
-      placeholder: msg,
-      className: "form-label-group position-relative",
-      classNamePrefix: "Select",
-      name: fieldName,
-      options: option,
-      onChange: () => {}
-    })));
-  };
+  const user = useSelector(state => state.auth.register.user);
 
-  const onSubmit = values => {
+  const onSubmit = (values, actions) => {
     setTimeout(() => {
       alert(JSON.stringify(values, null, 2));
       actions.setSubmitting(false);
@@ -4839,20 +4903,19 @@ const CompleteInformation = ({
     className: "completeInfor"
   }, /*#__PURE__*/React.createElement(Formik, {
     initialValues: {
-      personalInfo: '',
-      nbrPer: '',
+      icType: '',
+      icNumber: '',
       dateOfBirth: '',
       gender: '',
-      province: '',
+      city: '',
       district: '',
-      wards: '',
+      ward: '',
       address: '',
-      gif: '',
-      bank: '',
-      branch: '',
-      accountNbr: ''
+      refCode: '',
+      bankName: '',
+      bankBranch: '',
+      bankNumber: ''
     },
-    validationSchema: CompleteInforValidate,
     onSubmit: onSubmit
   }, ({
     errors,
@@ -4871,7 +4934,7 @@ const CompleteInformation = ({
     className: "ml-3"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-gray"
-  }, "L\xF2 H\u1ED3ng Ng\u1ECDc")), /*#__PURE__*/React.createElement(Row, {
+  }, user.fullName)), /*#__PURE__*/React.createElement(Row, {
     className: "ml-2  mt-2"
   }, /*#__PURE__*/React.createElement(Label, {
     className: "font-weight-bold"
@@ -4881,7 +4944,7 @@ const CompleteInformation = ({
     className: "ml-3"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-gray"
-  }, "0123456789")), /*#__PURE__*/React.createElement(Row, {
+  }, user.phoneNumber)), /*#__PURE__*/React.createElement(Row, {
     className: "ml-2  mt-2"
   }, /*#__PURE__*/React.createElement(Label, {
     className: "font-weight-bold"
@@ -4889,16 +4952,22 @@ const CompleteInformation = ({
     className: "ml-3"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-gray"
-  }, "abc@gmail.com"))), /*#__PURE__*/React.createElement(Col, {
+  }, user.email))), /*#__PURE__*/React.createElement(Col, {
     sm: "12",
     lg: "9"
   }, /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
     sm: "6"
-  }, renderSelect(personalInfoOptions, 'personalInfo', 'completeInformation.idType')), /*#__PURE__*/React.createElement(Col, {
+  }, /*#__PURE__*/React.createElement(BaseFormGroupSelect$1, {
+    messageId: "completeInformation.idType",
+    fieldName: "icType",
+    options: personalInfoOptions,
+    errors: errors,
+    touched: touched
+  })), /*#__PURE__*/React.createElement(Col, {
     sm: "6"
   }, /*#__PURE__*/React.createElement(BaseFormGroup, {
     messageId: "completeInformation.nbrPer",
-    fieldName: "nbrPer",
+    fieldName: "icNumber",
     errors: errors,
     touched: touched
   }))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
@@ -4916,13 +4985,37 @@ const CompleteInformation = ({
     onChange: date => {}
   })), /*#__PURE__*/React.createElement(Col, {
     sm: "6"
-  }, renderSelect(bank, 'gender', 'completeInformation.gender'))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
+  }, /*#__PURE__*/React.createElement(BaseFormGroupSelect$1, {
+    messageId: "completeInformation.gender",
+    fieldName: "gender",
+    options: genderOptions,
+    errors: errors,
+    touched: touched
+  }))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
     sm: "4"
-  }, renderSelect(bank, 'province', 'completeInformation.province')), /*#__PURE__*/React.createElement(Col, {
+  }, /*#__PURE__*/React.createElement(BaseFormGroupSelect$1, {
+    messageId: "completeInformation.province",
+    fieldName: "city",
+    options: bank,
+    errors: errors,
+    touched: touched
+  })), /*#__PURE__*/React.createElement(Col, {
     sm: "4"
-  }, renderSelect(bank, 'district', 'completeInformation.district')), /*#__PURE__*/React.createElement(Col, {
+  }, /*#__PURE__*/React.createElement(BaseFormGroupSelect$1, {
+    messageId: "completeInformation.district",
+    fieldName: "district",
+    options: bank,
+    errors: errors,
+    touched: touched
+  })), /*#__PURE__*/React.createElement(Col, {
     sm: "4"
-  }, renderSelect(bank, 'wards', 'completeInformation.wards'))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
+  }, /*#__PURE__*/React.createElement(BaseFormGroupSelect$1, {
+    messageId: "completeInformation.wards",
+    fieldName: "ward",
+    options: bank,
+    errors: errors,
+    touched: touched
+  }))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
     sm: "8"
   }, /*#__PURE__*/React.createElement(BaseFormGroup, {
     messageId: "completeInformation.address",
@@ -4933,23 +5026,28 @@ const CompleteInformation = ({
     sm: "4"
   }, /*#__PURE__*/React.createElement(BaseFormGroup, {
     messageId: "completeInformation.gif",
-    fieldName: "gif",
-    errors: errors,
-    touched: touched
+    fieldName: "refCode",
+    isRequired: false
   }))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
     sm: "4"
-  }, renderSelect(bank, 'bank', 'completeInformation.bank')), /*#__PURE__*/React.createElement(Col, {
+  }, /*#__PURE__*/React.createElement(BaseFormGroupSelect$1, {
+    messageId: "completeInformation.bank",
+    fieldName: "bankName",
+    options: bank,
+    errors: errors,
+    touched: touched
+  })), /*#__PURE__*/React.createElement(Col, {
     sm: "4"
   }, /*#__PURE__*/React.createElement(BaseFormGroup, {
     messageId: "completeInformation.branch",
-    fieldName: "branch",
+    fieldName: "bankBranch",
     errors: errors,
     touched: touched
   })), /*#__PURE__*/React.createElement(Col, {
     sm: "4"
   }, /*#__PURE__*/React.createElement(BaseFormGroup, {
     messageId: "completeInformation.accountNbr",
-    fieldName: "accountNbr",
+    fieldName: "bankNumber",
     errors: errors,
     touched: touched
   }))), /*#__PURE__*/React.createElement("div", {

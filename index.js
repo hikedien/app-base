@@ -49,6 +49,7 @@ var API_REGISTER = '/onboarding/api/authenticate/register';
 var API_GET_USER = '/user/api/users';
 var API_GET_NAV_CONFIGS = '/accesscontrol/api/roles';
 var API_CREATE_PASSWORD = '/onboarding/api/authenticate/create-new-password';
+var API_GET_USER_BY_REGISTER_TOKEN = '/onboarding/api/authenticate/get-partner';
 var API_R_200 = 200;
 var MAX_MOBILE_WIDTH = 768;
 var MAX_TABLET_WIDTH = 1024;
@@ -311,6 +312,14 @@ AuthService.getUserInfo = function (username, authToken) {
   });
 };
 
+AuthService.getUserByRegisterToken = function (registerToken) {
+  return HttpClient.get(API_GET_USER_BY_REGISTER_TOKEN + "/" + registerToken);
+};
+
+AuthService.compeleteInfo = function (user) {
+  return HttpClient.post("" + API_COMPLETE_INFO, user);
+};
+
 AuthService.logout = function (user) {
   return HttpClient.post(API_LOGOUT_URL, user);
 };
@@ -338,23 +347,27 @@ var checkLoginStatus = function checkLoginStatus(authToken) {
   return function (dispatch, getState) {
     try {
       var _temp3 = _catch(function () {
-        return Promise.resolve(AuthService.checkLoginByToken()).then(function (respone) {
+        return Promise.resolve(AuthService.checkLoginByToken()).then(function (response) {
           var _temp = function () {
-            if (respone.status === API_R_200) {
+            if (response.status === API_R_200) {
               return Promise.resolve(AuthService.getUserInfo(getState().auth.user.username, authToken)).then(function (_AuthService$getUserI) {
-                respone = _AuthService$getUserI;
+                response = _AuthService$getUserI;
                 dispatch({
                   type: LOGIN_ACTION,
                   payload: {
                     authToken: authToken,
-                    user: respone.data || {}
+                    user: response.data || {}
                   }
                 });
                 history.push(history.location.pathname);
               });
             } else {
               dispatch({
-                type: LOGOUT_ACTION
+                type: LOGIN_ACTION,
+                payload: {
+                  authToken: authToken,
+                  user: {}
+                }
               });
             }
           }();
@@ -375,17 +388,17 @@ var loginAction = function loginAction(user) {
   return function (dispatch) {
     try {
       var _temp6 = _catch(function () {
-        return Promise.resolve(AuthService.login(user)).then(function (respone) {
+        return Promise.resolve(AuthService.login(user)).then(function (response) {
           var _temp4 = function () {
-            if (respone.status === API_R_200) {
-              var authToken = respone.data.id_token;
+            if (response.status === API_R_200) {
+              var authToken = response.data.id_token;
               return Promise.resolve(AuthService.getUserInfo(user.username, authToken)).then(function (_AuthService$getUserI2) {
-                respone = _AuthService$getUserI2;
+                response = _AuthService$getUserI2;
 
                 if (user.isRemeberMe) {
                   localStorage.setItem(REMEMBER_ME_TOKEN, JSON.stringify({
                     username: user.username,
-                    name: respone.data.fullName
+                    name: response.data.fullName
                   }));
                 }
 
@@ -393,7 +406,7 @@ var loginAction = function loginAction(user) {
                   type: LOGIN_ACTION,
                   payload: {
                     authToken: authToken,
-                    user: respone.data || []
+                    user: response.data || []
                   }
                 });
                 history.push('/');
@@ -429,8 +442,8 @@ var createPassword = function createPassword(password) {
   return function (dispatch, getState) {
     try {
       var _temp8 = _catch(function () {
-        return Promise.resolve(AuthService.createPassword(password, getState().auth.registerToken)).then(function (respone) {
-          if (respone.status === 200 && respone.data) {
+        return Promise.resolve(AuthService.createPassword(password, getState().auth.register.token)).then(function (response) {
+          if (response.status === 200 && response.data) {
             history.push('/complete-information');
           }
         });
@@ -444,10 +457,23 @@ var createPassword = function createPassword(password) {
 };
 var saveRegisterToken = function saveRegisterToken(registerToken) {
   return function (dispatch) {
-    return dispatch({
-      type: SAVE_REGISTER_TOKEN,
-      payload: registerToken
-    });
+    try {
+      return Promise.resolve(AuthService.getUserByRegisterToken(registerToken)).then(function (response) {
+        if (response.status === 200 && response.data) {
+          dispatch({
+            type: SAVE_REGISTER_TOKEN,
+            payload: {
+              token: registerToken,
+              user: response.data
+            }
+          });
+        } else {
+          history.push('/');
+        }
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
   };
 };
 var logoutAction = function logoutAction() {
@@ -475,7 +501,10 @@ var authInitialState = {
   authToken: '',
   user: '',
   loginStatus: '',
-  registerToken: ''
+  register: {
+    user: {},
+    token: ''
+  }
 };
 var authReducers = function authReducers(state, action) {
   if (state === void 0) {
@@ -505,7 +534,7 @@ var authReducers = function authReducers(state, action) {
     case SAVE_REGISTER_TOKEN:
       {
         return _extends({}, state, {
-          registerToken: action.payload
+          register: action.payload
         });
       }
 
@@ -4476,7 +4505,9 @@ var BaseFormGroup = function BaseFormGroup(_ref) {
       errors = _ref.errors,
       touched = _ref.touched,
       messageId = _ref.messageId,
-      type = _ref.type;
+      type = _ref.type,
+      _ref$isRequired = _ref.isRequired,
+      isRequired = _ref$isRequired === void 0 ? true : _ref$isRequired;
   return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
     className: "form-label-group position-relative"
   }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -4485,9 +4516,9 @@ var BaseFormGroup = function BaseFormGroup(_ref) {
     return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.Field, {
       type: type,
       name: fieldName,
-      className: "form-control " + (errors[fieldName] && touched[fieldName] && 'is-invalid'),
+      className: "form-control " + (isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'),
       placeholder: msg
-    }), errors[fieldName] && touched[fieldName] ? /*#__PURE__*/React__default.createElement("div", {
+    }), isRequired && errors[fieldName] && touched[fieldName] ? /*#__PURE__*/React__default.createElement("div", {
       className: "text-danger"
     }, errors[fieldName]) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
   }));
@@ -4857,11 +4888,9 @@ var CreatePassword = function CreatePassword(_ref) {
   var history = reactRouterDom.useHistory();
   var dispatch = reactRedux.useDispatch();
   React.useEffect(function () {
-    var code = new URLSearchParams(document.location.search).get('code');
+    var code = new URLSearchParams(document.location.search).get('registerToken');
 
-    if (!code) {
-      history.push('/');
-    } else {
+    if (code) {
       dispatch(saveRegisterToken(code));
       history.push(history.location.pathname);
     }
@@ -4890,11 +4919,13 @@ var CreatePassword = function CreatePassword(_ref) {
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "createPassword.title"
     }))), /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      type: "password",
       messageId: "login.password",
       fieldName: "password",
       errors: errors,
       touched: touched
     }), /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      type: "password",
       messageId: "createPassword.enterThePassword",
       fieldName: "repeatePassword",
       errors: errors,
@@ -5236,8 +5267,40 @@ var DatePicker = function DatePicker(props) {
   }, /*#__PURE__*/React__default.createElement(Flatpickr, props), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, props.placeholder));
 };
 
+var BaseFormGroupSelect = function BaseFormGroupSelect(_ref) {
+  var fieldName = _ref.fieldName,
+      errors = _ref.errors,
+      touched = _ref.touched,
+      messageId = _ref.messageId,
+      options = _ref.options,
+      intl = _ref.intl,
+      _ref$isRequired = _ref.isRequired,
+      isRequired = _ref$isRequired === void 0 ? true : _ref$isRequired;
+  return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(formik.FastField, {
+    name: "fieldName"
+  }, function (_ref2) {
+    var form = _ref2.form;
+    return /*#__PURE__*/React__default.createElement(Select, {
+      placeholder: intl.formatMessage({
+        id: messageId
+      }),
+      className: "form-label-group position-relative",
+      classNamePrefix: "Select",
+      name: fieldName,
+      options: options,
+      onChange: function onChange(e) {
+        form.setFieldValue(fieldName, e.value);
+      }
+    });
+  }), isRequired && errors[fieldName] && touched[fieldName] ? /*#__PURE__*/React__default.createElement("div", {
+    className: "text-danger"
+  }, errors.email) : null);
+};
+
+var BaseFormGroupSelect$1 = reactIntl.injectIntl(BaseFormGroupSelect);
+
 var CompleteInforValidate = Yup.object().shape({
-  nbrPer: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+  icNumber: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "completeInformation.nbrPer.required"
   })),
   dateOfBirth: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -5246,28 +5309,43 @@ var CompleteInforValidate = Yup.object().shape({
   address: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "completeInformation.address.required"
   })),
-  branch: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+  bankBranch: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "completeInformation.branch.required"
   })),
-  accountNbr: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+  bankNumber: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "completeInformation.accountNbr.required"
   }))
 });
 var personalInfoOptions = [{
-  value: 'passport',
+  value: 'HC',
   label: 'Hộ chiếu',
   color: '#338955',
   isFixed: true
 }, {
-  value: 'id',
+  value: 'CMND',
   label: 'Chứng minh nhân dân',
   color: '#338955',
   isFixed: true
 }, {
-  value: 'idNew',
+  value: 'CCCD',
   label: 'Căn cước công dân',
   color: '#338955',
   isFixed: true
+}, {
+  value: 'MST',
+  label: 'Mã số thuế',
+  color: '#338955',
+  isFixed: true
+}];
+var genderOptions = [{
+  value: 'MALE',
+  label: 'Nam'
+}, {
+  value: 'FEMALE',
+  label: 'Nữ'
+}, {
+  value: 'OTHER',
+  label: 'Khác'
 }];
 var bank = [{
   value: '1',
@@ -5282,23 +5360,11 @@ var bank = [{
 
 var CompleteInformation = function CompleteInformation(_ref) {
   var intl = _ref.intl;
+  var user = reactRedux.useSelector(function (state) {
+    return state.auth.register.user;
+  });
 
-  var renderSelect = function renderSelect(option, fieldName, msgField) {
-    return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: msgField
-    }, function (msg) {
-      return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(Select, {
-        placeholder: msg,
-        className: "form-label-group position-relative",
-        classNamePrefix: "Select",
-        name: fieldName,
-        options: option,
-        onChange: function onChange() {}
-      }));
-    });
-  };
-
-  var onSubmit = function onSubmit(values) {
+  var onSubmit = function onSubmit(values, actions) {
     setTimeout(function () {
       alert(JSON.stringify(values, null, 2));
       actions.setSubmitting(false);
@@ -5309,20 +5375,19 @@ var CompleteInformation = function CompleteInformation(_ref) {
     className: "completeInfor"
   }, /*#__PURE__*/React__default.createElement(formik.Formik, {
     initialValues: {
-      personalInfo: '',
-      nbrPer: '',
+      icType: '',
+      icNumber: '',
       dateOfBirth: '',
       gender: '',
-      province: '',
+      city: '',
       district: '',
-      wards: '',
+      ward: '',
       address: '',
-      gif: '',
-      bank: '',
-      branch: '',
-      accountNbr: ''
+      refCode: '',
+      bankName: '',
+      bankBranch: '',
+      bankNumber: ''
     },
-    validationSchema: CompleteInforValidate,
     onSubmit: onSubmit
   }, function (_ref2) {
     var errors = _ref2.errors,
@@ -5341,7 +5406,7 @@ var CompleteInformation = function CompleteInformation(_ref) {
       className: "ml-3"
     }, /*#__PURE__*/React__default.createElement("span", {
       className: "text-gray"
-    }, "L\xF2 H\u1ED3ng Ng\u1ECDc")), /*#__PURE__*/React__default.createElement(reactstrap.Row, {
+    }, user.fullName)), /*#__PURE__*/React__default.createElement(reactstrap.Row, {
       className: "ml-2  mt-2"
     }, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
       className: "font-weight-bold"
@@ -5351,7 +5416,7 @@ var CompleteInformation = function CompleteInformation(_ref) {
       className: "ml-3"
     }, /*#__PURE__*/React__default.createElement("span", {
       className: "text-gray"
-    }, "0123456789")), /*#__PURE__*/React__default.createElement(reactstrap.Row, {
+    }, user.phoneNumber)), /*#__PURE__*/React__default.createElement(reactstrap.Row, {
       className: "ml-2  mt-2"
     }, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
       className: "font-weight-bold"
@@ -5359,16 +5424,22 @@ var CompleteInformation = function CompleteInformation(_ref) {
       className: "ml-3"
     }, /*#__PURE__*/React__default.createElement("span", {
       className: "text-gray"
-    }, "abc@gmail.com"))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    }, user.email))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "12",
       lg: "9"
     }, /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "6"
-    }, renderSelect(personalInfoOptions, 'personalInfo', 'completeInformation.idType')), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
+      messageId: "completeInformation.idType",
+      fieldName: "icType",
+      options: personalInfoOptions,
+      errors: errors,
+      touched: touched
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "6"
     }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
       messageId: "completeInformation.nbrPer",
-      fieldName: "nbrPer",
+      fieldName: "icNumber",
       errors: errors,
       touched: touched
     }))), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
@@ -5386,13 +5457,37 @@ var CompleteInformation = function CompleteInformation(_ref) {
       onChange: function onChange(date) {}
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "6"
-    }, renderSelect(bank, 'gender', 'completeInformation.gender'))), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
+      messageId: "completeInformation.gender",
+      fieldName: "gender",
+      options: genderOptions,
+      errors: errors,
+      touched: touched
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "4"
-    }, renderSelect(bank, 'province', 'completeInformation.province')), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
+      messageId: "completeInformation.province",
+      fieldName: "city",
+      options: bank,
+      errors: errors,
+      touched: touched
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "4"
-    }, renderSelect(bank, 'district', 'completeInformation.district')), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
+      messageId: "completeInformation.district",
+      fieldName: "district",
+      options: bank,
+      errors: errors,
+      touched: touched
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "4"
-    }, renderSelect(bank, 'wards', 'completeInformation.wards'))), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
+      messageId: "completeInformation.wards",
+      fieldName: "ward",
+      options: bank,
+      errors: errors,
+      touched: touched
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "8"
     }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
       messageId: "completeInformation.address",
@@ -5403,23 +5498,28 @@ var CompleteInformation = function CompleteInformation(_ref) {
       sm: "4"
     }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
       messageId: "completeInformation.gif",
-      fieldName: "gif",
-      errors: errors,
-      touched: touched
+      fieldName: "refCode",
+      isRequired: false
     }))), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "4"
-    }, renderSelect(bank, 'bank', 'completeInformation.bank')), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
+      messageId: "completeInformation.bank",
+      fieldName: "bankName",
+      options: bank,
+      errors: errors,
+      touched: touched
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "4"
     }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
       messageId: "completeInformation.branch",
-      fieldName: "branch",
+      fieldName: "bankBranch",
       errors: errors,
       touched: touched
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "4"
     }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
       messageId: "completeInformation.accountNbr",
-      fieldName: "accountNbr",
+      fieldName: "bankNumber",
       errors: errors,
       touched: touched
     }))), /*#__PURE__*/React__default.createElement("div", {
