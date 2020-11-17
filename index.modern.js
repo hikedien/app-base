@@ -283,11 +283,7 @@ const checkLoginStatus = authToken => {
         history.push(history.location.pathname);
       } else {
         dispatch({
-          type: LOGIN_ACTION,
-          payload: {
-            authToken: 'authToken',
-            user: {}
-          }
+          type: LOGOUT_ACTION
         });
       }
     } catch (error) {
@@ -406,7 +402,7 @@ const authReducers = (state = { ...authInitialState
     case SAVE_REGISTER_TOKEN:
       {
         return { ...state,
-          registerToken: payload
+          registerToken: action.payload
         };
       }
 
@@ -4432,7 +4428,6 @@ const CreatePassword = ({
 }) => {
   const history = useHistory();
   const dispatch = useDispatch();
-  const token = useSelector$1(state => state.auth.registerToken);
   useEffect(() => {
     const code = new URLSearchParams(document.location.search).get('code') || token;
 

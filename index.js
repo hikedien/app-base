@@ -354,11 +354,7 @@ var checkLoginStatus = function checkLoginStatus(authToken) {
               });
             } else {
               dispatch({
-                type: LOGIN_ACTION,
-                payload: {
-                  authToken: 'authToken',
-                  user: {}
-                }
+                type: LOGOUT_ACTION
               });
             }
           }();
@@ -513,7 +509,7 @@ var authReducers = function authReducers(state, action) {
     case SAVE_REGISTER_TOKEN:
       {
         return _extends({}, state, {
-          registerToken: payload
+          registerToken: action.payload
         });
       }
 
@@ -4864,9 +4860,6 @@ var CreatePassword = function CreatePassword(_ref) {
   var isLanding2 = _ref.isLanding2;
   var history = reactRouterDom.useHistory();
   var dispatch = reactRedux.useDispatch();
-  var token = reactRedux.useSelector(function (state) {
-    return state.auth.registerToken;
-  });
   React.useEffect(function () {
     var code = new URLSearchParams(document.location.search).get('code') || token;
 
