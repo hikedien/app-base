@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Component, PureComponent } from 'react';
-import { connect, useSelector, useDispatch, Provider } from 'react-redux';
+import { connect, useSelector as useSelector$1, useDispatch, Provider } from 'react-redux';
 import { combineReducers, createStore, applyMiddleware, compose } from 'redux';
 import createDebounce from 'redux-debounced';
 import thunk from 'redux-thunk';
@@ -28,7 +28,7 @@ import Select$1 from 'react-select';
 import chroma from 'chroma-js';
 import Flatpickr from 'react-flatpickr';
 import { Field, Formik, Form as Form$1, FastField } from 'formik';
-import { object, string } from 'yup';
+import { object, string, ref } from 'yup';
 import TopBarProgress from 'react-topbar-progress-indicator';
 import Ripples from 'react-ripples';
 import 'react-perfect-scrollbar/dist/css/styles.css';
@@ -49,6 +49,7 @@ const API_LOGOUT_URL = 'http://localhost:8086/api/authenticate';
 const API_REGISTER = '/onboarding/api/authenticate/register';
 const API_GET_USER = '/user/api/users';
 const API_GET_NAV_CONFIGS = '/accesscontrol/api/roles';
+const API_CREATE_PASSWORD = '/onboarding/api/authenticate/create-new-password';
 const API_R_200 = 200;
 const MAX_MOBILE_WIDTH = 768;
 const MAX_TABLET_WIDTH = 1024;
@@ -238,13 +239,19 @@ AuthService.getUserInfo = (username, authToken) => {
     Authorization: `Bearer ${authToken}`
   };
   return HttpClient.get(`${API_GET_USER}/${username}`, {
-    headers,
-    isBackgroundRequest: true
+    headers
   });
 };
 
 AuthService.logout = user => {
   return HttpClient.post(API_LOGOUT_URL, user);
+};
+
+AuthService.createPassword = (password, registerToken) => {
+  return HttpClient.post(API_CREATE_PASSWORD, {
+    password,
+    registerToken
+  });
 };
 
 AuthService.register = user => {
@@ -258,6 +265,7 @@ AuthService.checkLoginByToken = () => {
 const LOGIN_ACTION = 'LOGIN_ACTION';
 const LOGIN_FAIL_ACTION = 'LOGIN_FAIL_ACTION';
 const LOGOUT_ACTION = 'LOGOUT_ACTION';
+const SAVE_REGISTER_TOKEN = 'SAVE_REGISTER_TOKEN';
 const checkLoginStatus = authToken => {
   return async (dispatch, getState) => {
     try {
@@ -276,7 +284,10 @@ const checkLoginStatus = authToken => {
       } else {
         dispatch({
           type: LOGIN_ACTION,
-          payload: 'authToken'
+          payload: {
+            authToken: 'authToken',
+            user: {}
+          }
         });
       }
     } catch (error) {
@@ -310,7 +321,8 @@ const loginAction = user => {
         history.push('/');
       } else {
         const token = {
-          authToken: 'authToken'
+          authToken: 'authToken',
+          user: {}
         };
         dispatch({
           type: LOGIN_ACTION,
@@ -324,6 +336,27 @@ const loginAction = user => {
       console.log(error);
     }
   };
+};
+const createPassword = (password, registerToken) => {
+  return async () => {
+    try {
+      const respone = await AuthService.createPassword(password, registerToken);
+
+      if (respone.status === 200 && respone.data) {
+        history.push('/complete-information', {
+          state: {
+            registerToken
+          }
+        });
+      }
+    } catch (error) {}
+  };
+};
+const saveRegisterToken = registerToken => {
+  return dispatch => dispatch({
+    type: SAVE_REGISTER_TOKEN,
+    payload: registerToken
+  });
 };
 const logoutAction = () => {
   return async dispatch => {
@@ -343,7 +376,8 @@ const logoutAction = () => {
 const authInitialState = {
   authToken: '',
   user: '',
-  loginStatus: ''
+  loginStatus: '',
+  registerToken: ''
 };
 const authReducers = (state = { ...authInitialState
 }, action) => {
@@ -366,6 +400,13 @@ const authReducers = (state = { ...authInitialState
       {
         return { ...state,
           loginStatus: LOGIN_STATUS.FAIL
+        };
+      }
+
+    case SAVE_REGISTER_TOKEN:
+      {
+        return { ...state,
+          registerToken: payload
         };
       }
 
@@ -706,7 +747,9 @@ const getNativgationConfig = (appId, navConfigs) => {
 class NavBarService {}
 
 NavBarService.getNativagtion = () => {
-  return HttpClient.get(API_GET_NAV_CONFIGS);
+  return HttpClient.get(API_GET_NAV_CONFIGS, {
+    isBackgroundRequest: true
+  });
 };
 
 const LOAD_NATIVGATION = 'LOAD_NATIVGATION';
@@ -1602,8 +1645,8 @@ const Footer = props => {
     width
   } = useWindowDimensions();
   const history = useHistory();
-  const navConfigs = useSelector(state => [...state.navbar.navConfigs]);
-  const authToken = useSelector(state => state.auth.authToken);
+  const navConfigs = useSelector$1(state => [...state.navbar.navConfigs]);
+  const authToken = useSelector$1(state => state.auth.authToken);
 
   const goToPage = (e, name) => {
     e.preventDefault();
@@ -2786,6 +2829,7 @@ var messages_en = {
 	"createPassword.title": "CREATE PASSWORD *",
 	"createPassword.password.required": "You must enter your password",
 	"createPassword.enterThePassword": "Enter the password *",
+	"createPassword.passwordMustMatch": "Password must match",
 	"createPassword.condition.1": "- At least 8 characters long",
 	"createPassword.condition.2": "- Include upper and lower case characters",
 	"createPassword.condition.3": "- Include numeric or special characters",
@@ -2915,6 +2959,7 @@ var messages_vi = {
 	"createPassword.title": "TẠO MẬT KHẨU *",
 	"createPassword.password.required": "Bạn phải nhập mật khẩu",
 	"createPassword.enterThePassword": "Nhập lại mật khẩu *",
+	"createPassword.passwordMustMatch": "Mật khẩu phải trùng khớp",
 	"createPassword.condition.1": "- Dài ít nhất 8 ký tự",
 	"createPassword.condition.2": "- Bao gồm ký tự viết hoa và viết thường",
 	"createPassword.condition.3": "- Bao gồm ký tự số hoặc ký tự đặc biệt",
@@ -4079,7 +4124,7 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(null);
   const [isRemeberMe, setIsRemeberMe] = useState(false);
   const dispatch = useDispatch();
-  const loginStatus = useSelector(state => state.auth.loginStatus);
+  const loginStatus = useSelector$1(state => state.auth.loginStatus);
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem(REMEMBER_ME_TOKEN));
 
@@ -4377,19 +4422,30 @@ const formSchema$3 = object().shape({
   password: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "createPassword.password.required"
   })),
-  enterThePassword: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "createPassword.enterThePassword.required"
+  enterThePassword: string().oneOf([ref('password'), null], /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.passwordMustMatch"
   }))
 });
 
 const CreatePassword = ({
   isLanding2
 }) => {
-  const onSubmit = (values, actions) => {
-    setTimeout(() => {
-      alert(JSON.stringify(values, null, 2));
-      actions.setSubmitting(false);
-    }, 1000);
+  const history = useHistory();
+  const dispatch = useDispatch();
+  const token = useSelector$1(state => state.auth.registerToken);
+  useEffect(() => {
+    const code = new URLSearchParams(document.location.search).get('code') || token;
+
+    if (!code) {
+      history.push('/');
+    } else {
+      dispatch(saveRegisterToken(code));
+      history.push(history.location.pathname);
+    }
+  }, []);
+
+  const onClickContinue = values => {
+    dispatch(createPassword(values.password, token));
   };
 
   return /*#__PURE__*/React.createElement(Formik, {
@@ -4397,7 +4453,7 @@ const CreatePassword = ({
       password: '',
       repeatePassword: ''
     },
-    onSubmit: onSubmit,
+    onSubmit: onClickContinue,
     validationSchema: formSchema$3
   }, ({
     errors,
@@ -4768,6 +4824,8 @@ const bank = [{
 const CompleteInformation = ({
   intl
 }) => {
+  const token = useSelector(state => state.auth.registerToken);
+
   const renderSelect = (option, fieldName, msgField) => {
     return /*#__PURE__*/React.createElement(FormattedMessage, {
       id: msgField
@@ -4907,9 +4965,13 @@ const CompleteInformation = ({
     touched: touched
   }))), /*#__PURE__*/React.createElement("div", {
     className: "d-flex justify-content-center justify-content-md-end"
-  }, /*#__PURE__*/React.createElement(Button.Ripple, null, /*#__PURE__*/React.createElement(FormattedMessage, {
+  }, /*#__PURE__*/React.createElement(Link, {
+    to: "/create-password"
+  }, /*#__PURE__*/React.createElement(Button.Ripple, {
+    type: "button"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "completeInformation.back"
-  })), /*#__PURE__*/React.createElement(Button.Ripple, {
+  }))), /*#__PURE__*/React.createElement(Button.Ripple, {
     type: "submit",
     className: "ml-2"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -5047,32 +5109,32 @@ const AppRouter = props => {
     path: "/",
     render: props => isAuthentication ? /*#__PURE__*/React.createElement(Layout$1, { ...props,
       appId
-    }, /*#__PURE__*/React.createElement(Switch, null, ' ', settingRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
+    }, /*#__PURE__*/React.createElement(Switch, null, settingRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
       key: item.path,
       path: `/${item.path}`,
       render: () => /*#__PURE__*/React.createElement(item.component, {
         activeTab: item.path
       })
-    })), ' ', /*#__PURE__*/React.createElement(Route, {
+    })), /*#__PURE__*/React.createElement(Route, {
       path: "/",
       render: () => children
-    }, ' '), ' '), ' ') : /*#__PURE__*/React.createElement(Switch, null, ' ', landingPageRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
+    }))) : /*#__PURE__*/React.createElement(Switch, null, landingPageRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
       key: item.path,
       path: `/${item.path}`,
       render: () => /*#__PURE__*/React.createElement(LandingPage, {
         activeTab: item.path
       })
-    })), ' ', landingPage2Routes.map(item => /*#__PURE__*/React.createElement(Route, {
+    })), landingPage2Routes.map(item => /*#__PURE__*/React.createElement(Route, {
       key: item.path,
       path: `/${item.path}`,
       render: () => /*#__PURE__*/React.createElement(LandingPage2, {
         activeTab: item.path
       })
-    })), ' ', /*#__PURE__*/React.createElement(Redirect, {
+    })), /*#__PURE__*/React.createElement(Redirect, {
       from: "/",
       to: "/login"
     }))
-  }), ' '), ' '), ' ', /*#__PURE__*/React.createElement(ToastContainer, {
+  }))), /*#__PURE__*/React.createElement(ToastContainer, {
     position: "top-right",
     autoClose: 5000,
     hideProgressBar: false,

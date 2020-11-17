@@ -48,6 +48,7 @@ var API_LOGOUT_URL = 'http://localhost:8086/api/authenticate';
 var API_REGISTER = '/onboarding/api/authenticate/register';
 var API_GET_USER = '/user/api/users';
 var API_GET_NAV_CONFIGS = '/accesscontrol/api/roles';
+var API_CREATE_PASSWORD = '/onboarding/api/authenticate/create-new-password';
 var API_R_200 = 200;
 var MAX_MOBILE_WIDTH = 768;
 var MAX_TABLET_WIDTH = 1024;
@@ -306,13 +307,19 @@ AuthService.getUserInfo = function (username, authToken) {
     Authorization: "Bearer " + authToken
   };
   return HttpClient.get(API_GET_USER + "/" + username, {
-    headers: headers,
-    isBackgroundRequest: true
+    headers: headers
   });
 };
 
 AuthService.logout = function (user) {
   return HttpClient.post(API_LOGOUT_URL, user);
+};
+
+AuthService.createPassword = function (password, registerToken) {
+  return HttpClient.post(API_CREATE_PASSWORD, {
+    password: password,
+    registerToken: registerToken
+  });
 };
 
 AuthService.register = function (user) {
@@ -326,6 +333,7 @@ AuthService.checkLoginByToken = function () {
 var LOGIN_ACTION = 'LOGIN_ACTION';
 var LOGIN_FAIL_ACTION = 'LOGIN_FAIL_ACTION';
 var LOGOUT_ACTION = 'LOGOUT_ACTION';
+var SAVE_REGISTER_TOKEN = 'SAVE_REGISTER_TOKEN';
 var checkLoginStatus = function checkLoginStatus(authToken) {
   return function (dispatch, getState) {
     try {
@@ -347,7 +355,10 @@ var checkLoginStatus = function checkLoginStatus(authToken) {
             } else {
               dispatch({
                 type: LOGIN_ACTION,
-                payload: 'authToken'
+                payload: {
+                  authToken: 'authToken',
+                  user: {}
+                }
               });
             }
           }();
@@ -393,7 +404,8 @@ var loginAction = function loginAction(user) {
               });
             } else {
               var token = {
-                authToken: 'authToken'
+                authToken: 'authToken',
+                user: {}
               };
               dispatch({
                 type: LOGIN_ACTION,
@@ -415,6 +427,35 @@ var loginAction = function loginAction(user) {
     } catch (e) {
       return Promise.reject(e);
     }
+  };
+};
+var createPassword = function createPassword(password, registerToken) {
+  return function () {
+    try {
+      var _temp8 = _catch(function () {
+        return Promise.resolve(AuthService.createPassword(password, registerToken)).then(function (respone) {
+          if (respone.status === 200 && respone.data) {
+            history.push('/complete-information', {
+              state: {
+                registerToken: registerToken
+              }
+            });
+          }
+        });
+      }, function () {});
+
+      return Promise.resolve(_temp8 && _temp8.then ? _temp8.then(function () {}) : void 0);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+};
+var saveRegisterToken = function saveRegisterToken(registerToken) {
+  return function (dispatch) {
+    return dispatch({
+      type: SAVE_REGISTER_TOKEN,
+      payload: registerToken
+    });
   };
 };
 var logoutAction = function logoutAction() {
@@ -441,7 +482,8 @@ var logoutAction = function logoutAction() {
 var authInitialState = {
   authToken: '',
   user: '',
-  loginStatus: ''
+  loginStatus: '',
+  registerToken: ''
 };
 var authReducers = function authReducers(state, action) {
   if (state === void 0) {
@@ -465,6 +507,13 @@ var authReducers = function authReducers(state, action) {
       {
         return _extends({}, state, {
           loginStatus: LOGIN_STATUS.FAIL
+        });
+      }
+
+    case SAVE_REGISTER_TOKEN:
+      {
+        return _extends({}, state, {
+          registerToken: payload
         });
       }
 
@@ -812,7 +861,9 @@ var getNativgationConfig = function getNativgationConfig(appId, navConfigs) {
 var NavBarService = function NavBarService() {};
 
 NavBarService.getNativagtion = function () {
-  return HttpClient.get(API_GET_NAV_CONFIGS);
+  return HttpClient.get(API_GET_NAV_CONFIGS, {
+    isBackgroundRequest: true
+  });
 };
 
 var LOAD_NATIVGATION = 'LOAD_NATIVGATION';
@@ -3075,6 +3126,7 @@ var messages_en = {
 	"createPassword.title": "CREATE PASSWORD *",
 	"createPassword.password.required": "You must enter your password",
 	"createPassword.enterThePassword": "Enter the password *",
+	"createPassword.passwordMustMatch": "Password must match",
 	"createPassword.condition.1": "- At least 8 characters long",
 	"createPassword.condition.2": "- Include upper and lower case characters",
 	"createPassword.condition.3": "- Include numeric or special characters",
@@ -3204,6 +3256,7 @@ var messages_vi = {
 	"createPassword.title": "TẠO MẬT KHẨU *",
 	"createPassword.password.required": "Bạn phải nhập mật khẩu",
 	"createPassword.enterThePassword": "Nhập lại mật khẩu *",
+	"createPassword.passwordMustMatch": "Mật khẩu phải trùng khớp",
 	"createPassword.condition.1": "- Dài ít nhất 8 ký tự",
 	"createPassword.condition.2": "- Bao gồm ký tự viết hoa và viết thường",
 	"createPassword.condition.3": "- Bao gồm ký tự số hoặc ký tự đặc biệt",
@@ -4802,19 +4855,31 @@ var formSchema$3 = Yup.object().shape({
   password: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "createPassword.password.required"
   })),
-  enterThePassword: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "createPassword.enterThePassword.required"
+  enterThePassword: Yup.string().oneOf([Yup.ref('password'), null], /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "createPassword.passwordMustMatch"
   }))
 });
 
 var CreatePassword = function CreatePassword(_ref) {
   var isLanding2 = _ref.isLanding2;
+  var history = reactRouterDom.useHistory();
+  var dispatch = reactRedux.useDispatch();
+  var token = reactRedux.useSelector(function (state) {
+    return state.auth.registerToken;
+  });
+  React.useEffect(function () {
+    var code = new URLSearchParams(document.location.search).get('code') || token;
 
-  var onSubmit = function onSubmit(values, actions) {
-    setTimeout(function () {
-      alert(JSON.stringify(values, null, 2));
-      actions.setSubmitting(false);
-    }, 1000);
+    if (!code) {
+      history.push('/');
+    } else {
+      dispatch(saveRegisterToken(code));
+      history.push(history.location.pathname);
+    }
+  }, []);
+
+  var onClickContinue = function onClickContinue(values) {
+    dispatch(createPassword(values.password, token));
   };
 
   return /*#__PURE__*/React__default.createElement(formik.Formik, {
@@ -4822,7 +4887,7 @@ var CreatePassword = function CreatePassword(_ref) {
       password: '',
       repeatePassword: ''
     },
-    onSubmit: onSubmit,
+    onSubmit: onClickContinue,
     validationSchema: formSchema$3
   }, function (_ref2) {
     var errors = _ref2.errors,
@@ -5228,6 +5293,9 @@ var bank = [{
 
 var CompleteInformation = function CompleteInformation(_ref) {
   var intl = _ref.intl;
+  var token = useSelector(function (state) {
+    return state.auth.registerToken;
+  });
 
   var renderSelect = function renderSelect(option, fieldName, msgField) {
     return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -5370,9 +5438,13 @@ var CompleteInformation = function CompleteInformation(_ref) {
       touched: touched
     }))), /*#__PURE__*/React__default.createElement("div", {
       className: "d-flex justify-content-center justify-content-md-end"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
+      to: "/create-password"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      type: "button"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "completeInformation.back"
-    })), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
       type: "submit",
       className: "ml-2"
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -5513,7 +5585,7 @@ var AppRouter = function AppRouter(props) {
     render: function render(props) {
       return isAuthentication ? /*#__PURE__*/React__default.createElement(Layout$1, _extends({}, props, {
         appId: appId
-      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, ' ', settingRoutes.map(function (item) {
+      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, settingRoutes.map(function (item) {
         return /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
           key: item.path,
           path: "/" + item.path,
@@ -5523,12 +5595,12 @@ var AppRouter = function AppRouter(props) {
             });
           }
         });
-      }), ' ', /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
+      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
         path: "/",
         render: function render() {
           return children;
         }
-      }, ' '), ' '), ' ') : /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, ' ', landingPageRoutes.map(function (item) {
+      }))) : /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, landingPageRoutes.map(function (item) {
         return /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
           key: item.path,
           path: "/" + item.path,
@@ -5538,7 +5610,7 @@ var AppRouter = function AppRouter(props) {
             });
           }
         });
-      }), ' ', landingPage2Routes.map(function (item) {
+      }), landingPage2Routes.map(function (item) {
         return /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
           key: item.path,
           path: "/" + item.path,
@@ -5548,12 +5620,12 @@ var AppRouter = function AppRouter(props) {
             });
           }
         });
-      }), ' ', /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
+      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
         from: "/",
         to: "/login"
       }));
     }
-  }), ' '), ' '), ' ', /*#__PURE__*/React__default.createElement(reactToastify.ToastContainer, {
+  }))), /*#__PURE__*/React__default.createElement(reactToastify.ToastContainer, {
     position: "top-right",
     autoClose: 5000,
     hideProgressBar: false,
