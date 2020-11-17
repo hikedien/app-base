@@ -425,17 +425,13 @@ var loginAction = function loginAction(user) {
     }
   };
 };
-var createPassword = function createPassword(password, registerToken) {
-  return function () {
+var createPassword = function createPassword(password) {
+  return function (dispatch, getState) {
     try {
       var _temp8 = _catch(function () {
-        return Promise.resolve(AuthService.createPassword(password, registerToken)).then(function (respone) {
+        return Promise.resolve(AuthService.createPassword(password, getState().auth.registerToken)).then(function (respone) {
           if (respone.status === 200 && respone.data) {
-            history.push('/complete-information', {
-              state: {
-                registerToken: registerToken
-              }
-            });
+            history.push('/complete-information');
           }
         });
       }, function () {});
@@ -4861,7 +4857,7 @@ var CreatePassword = function CreatePassword(_ref) {
   var history = reactRouterDom.useHistory();
   var dispatch = reactRedux.useDispatch();
   React.useEffect(function () {
-    var code = new URLSearchParams(document.location.search).get('code') || token;
+    var code = new URLSearchParams(document.location.search).get('code');
 
     if (!code) {
       history.push('/');
@@ -4872,7 +4868,7 @@ var CreatePassword = function CreatePassword(_ref) {
   }, []);
 
   var onClickContinue = function onClickContinue(values) {
-    dispatch(createPassword(values.password, token));
+    dispatch(createPassword(values.password));
   };
 
   return /*#__PURE__*/React__default.createElement(formik.Formik, {
@@ -5286,9 +5282,6 @@ var bank = [{
 
 var CompleteInformation = function CompleteInformation(_ref) {
   var intl = _ref.intl;
-  var token = useSelector(function (state) {
-    return state.auth.registerToken;
-  });
 
   var renderSelect = function renderSelect(option, fieldName, msgField) {
     return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {

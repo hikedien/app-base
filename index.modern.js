@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Component, PureComponent } from 'react';
-import { connect, useSelector as useSelector$1, useDispatch, Provider } from 'react-redux';
+import { connect, useSelector, useDispatch, Provider } from 'react-redux';
 import { combineReducers, createStore, applyMiddleware, compose } from 'redux';
 import createDebounce from 'redux-debounced';
 import thunk from 'redux-thunk';
@@ -333,17 +333,13 @@ const loginAction = user => {
     }
   };
 };
-const createPassword = (password, registerToken) => {
-  return async () => {
+const createPassword = password => {
+  return async (dispatch, getState) => {
     try {
-      const respone = await AuthService.createPassword(password, registerToken);
+      const respone = await AuthService.createPassword(password, getState().auth.registerToken);
 
       if (respone.status === 200 && respone.data) {
-        history.push('/complete-information', {
-          state: {
-            registerToken
-          }
-        });
+        history.push('/complete-information');
       }
     } catch (error) {}
   };
@@ -1641,8 +1637,8 @@ const Footer = props => {
     width
   } = useWindowDimensions();
   const history = useHistory();
-  const navConfigs = useSelector$1(state => [...state.navbar.navConfigs]);
-  const authToken = useSelector$1(state => state.auth.authToken);
+  const navConfigs = useSelector(state => [...state.navbar.navConfigs]);
+  const authToken = useSelector(state => state.auth.authToken);
 
   const goToPage = (e, name) => {
     e.preventDefault();
@@ -4120,7 +4116,7 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(null);
   const [isRemeberMe, setIsRemeberMe] = useState(false);
   const dispatch = useDispatch();
-  const loginStatus = useSelector$1(state => state.auth.loginStatus);
+  const loginStatus = useSelector(state => state.auth.loginStatus);
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem(REMEMBER_ME_TOKEN));
 
@@ -4429,7 +4425,7 @@ const CreatePassword = ({
   const history = useHistory();
   const dispatch = useDispatch();
   useEffect(() => {
-    const code = new URLSearchParams(document.location.search).get('code') || token;
+    const code = new URLSearchParams(document.location.search).get('code');
 
     if (!code) {
       history.push('/');
@@ -4440,7 +4436,7 @@ const CreatePassword = ({
   }, []);
 
   const onClickContinue = values => {
-    dispatch(createPassword(values.password, token));
+    dispatch(createPassword(values.password));
   };
 
   return /*#__PURE__*/React.createElement(Formik, {
@@ -4819,8 +4815,6 @@ const bank = [{
 const CompleteInformation = ({
   intl
 }) => {
-  const token = useSelector(state => state.auth.registerToken);
-
   const renderSelect = (option, fieldName, msgField) => {
     return /*#__PURE__*/React.createElement(FormattedMessage, {
       id: msgField
