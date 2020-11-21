@@ -17,7 +17,7 @@ import { createBrowserHistory } from 'history';
 import sessionStorage from 'redux-persist/es/storage/session';
 import { useHistory, NavLink as NavLink$1, Link, Router, Switch, Route, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
-import { FormGroup, Label, DropdownMenu, DropdownItem, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Badge, Media, Navbar as Navbar$1, Button, Row, Col, Form, Input, Table, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane } from 'reactstrap';
+import { FormGroup, Label, DropdownMenu, DropdownItem, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Badge, Media, Navbar as Navbar$1, Button, Row, Col, Form, Input, Table, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, Modal, ModalBody } from 'reactstrap';
 export { Button } from 'reactstrap';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import ReactDOM from 'react-dom';
@@ -51,10 +51,16 @@ const API_GET_USER = '/user/api/users';
 const API_GET_NAV_CONFIGS = '/accesscontrol/api/roles';
 const API_CREATE_PASSWORD = '/onboarding/api/authenticate/create-new-password';
 const API_GET_USER_BY_REGISTER_TOKEN = '/onboarding/api/authenticate/get-partner';
+const API_COMPLETE_INFO = '/onboarding/api/authenticate/complete-info';
+const API_FORGOT_PASSWORD = 'http://localhost:8086/api/authenticate/forgot-password';
+const API_RESET_PASSWORD = 'http://localhost:8086/api/authenticate/reset-password';
+const API_EMAIL_SUGGESTION = '/user/api/authenticate/email-suggestion';
 const API_R_200 = 200;
 const MAX_MOBILE_WIDTH = 768;
 const MAX_TABLET_WIDTH = 1024;
 const REMEMBER_ME_TOKEN = 'rememberMe';
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])((?=.*[0-9])|(?=.*[!@#$%^&*])).{8,}$/gm;
+const PHONE_REGEX = /(03|07|08|09|01[2|6|8|9])+([0-9]{8})\b/;
 const LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
   FAIL: 'FAIL'
@@ -81,7 +87,12 @@ const HttpClient = Axios.create({
   timeout: 10000,
   adapter: throttleAdapterEnhancer(cacheAdapterEnhancer(Axios.defaults.adapter, {
     threshold: 15 * 60 * 1000
-  }))
+  })),
+  invalidate: async (config, request) => {
+    if (request.clearCacheEntry) {
+      await config.store.removeItem(config.uuid);
+    }
+  }
 });
 HttpClient.defaults.headers['Content-Type'] = 'application/json';
 const errorMessage = message => {
@@ -271,16 +282,38 @@ AuthService.checkLoginByToken = () => {
   return HttpClient.get(API_LOGIN_URL);
 };
 
+AuthService.getSuggestionEmail = username => {
+  return HttpClient.get(`${API_EMAIL_SUGGESTION}/${username}`);
+};
+
+AuthService.forgotPassword = (username, email) => {
+  return HttpClient.post(API_FORGOT_PASSWORD, {
+    username,
+    email
+  });
+};
+
+AuthService.resetPassword = (password, resetToken) => {
+  return HttpClient.post(API_RESET_PASSWORD, {
+    password,
+    resetToken
+  });
+};
+
 const LOGIN_ACTION = 'LOGIN_ACTION';
 const LOGIN_FAIL_ACTION = 'LOGIN_FAIL_ACTION';
 const LOGOUT_ACTION = 'LOGOUT_ACTION';
 const SAVE_REGISTER_TOKEN = 'SAVE_REGISTER_TOKEN';
+const SAVE_RESET_PASSWORD_TOKEN = 'SAVE_RESET_PASSWORD_TOKEN';
 const checkLoginStatus = authToken => {
   return async (dispatch, getState) => {
     try {
       let response = await AuthService.checkLoginByToken();
+      const {
+        username
+      } = getState().auth.user;
 
-      if (response.status === API_R_200) {
+      if (response.status === API_R_200 && username) {
         response = await AuthService.getUserInfo(getState().auth.user.username, authToken);
         dispatch({
           type: LOGIN_ACTION,
@@ -307,6 +340,7 @@ const checkLoginStatus = authToken => {
 const loginAction = user => {
   return async dispatch => {
     try {
+      user.rememberMe = user.isRemeberMe;
       let response = await AuthService.login(user);
 
       if (response.status === API_R_200) {
@@ -357,6 +391,21 @@ const createPassword = password => {
     } catch (error) {}
   };
 };
+const compeleteInfo = user => {
+  return async (dispatch, getState) => {
+    try {
+      user.registerToken = getState().auth.register.token;
+      const response = await AuthService.compeleteInfo(user);
+
+      if (response.status === 200 && response.data) {
+        toast.success('Hoàn tất đăng ký thành công');
+        history.push('/');
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+};
 const saveRegisterToken = registerToken => {
   return async dispatch => {
     const response = await AuthService.getUserByRegisterToken(registerToken);
@@ -372,6 +421,53 @@ const saveRegisterToken = registerToken => {
     } else {
       history.push('/');
     }
+  };
+};
+const saveResetPasswordToken = token => {
+  return dispatch => {
+    dispatch({
+      type: SAVE_RESET_PASSWORD_TOKEN,
+      payload: token
+    });
+  };
+};
+const forgotPassword = ({
+  username,
+  email
+}) => {
+  return async (dispatch, getState) => {
+    try {
+      const response = await AuthService.forgotPassword(username, email);
+
+      if (response.status === 200 && response.data) {
+        toast.success( /*#__PURE__*/React.createElement(FormattedMessage, {
+          id: "forgotPassword.successfull"
+        }));
+        dispatch({
+          type: SAVE_RESET_PASSWORD_TOKEN,
+          payload: ''
+        });
+        history.push('/');
+      }
+    } catch (error) {}
+  };
+};
+const resetPassword = password => {
+  return async (dispatch, getState) => {
+    try {
+      const response = await AuthService.resetPassword(password, getState().auth.resetPasswordToken);
+
+      if (response.status === 200 && response.data) {
+        toast.success( /*#__PURE__*/React.createElement(FormattedMessage, {
+          id: "resetPassword.resetSuccessfull"
+        }));
+        dispatch({
+          type: SAVE_RESET_PASSWORD_TOKEN,
+          payload: ''
+        });
+        history.push('/');
+      }
+    } catch (error) {}
   };
 };
 const logoutAction = () => {
@@ -396,7 +492,8 @@ const authInitialState = {
   register: {
     user: {},
     token: ''
-  }
+  },
+  resetPasswordToken: ''
 };
 const authReducers = (state = { ...authInitialState
 }, action) => {
@@ -426,6 +523,13 @@ const authReducers = (state = { ...authInitialState
       {
         return { ...state,
           register: action.payload
+        };
+      }
+
+    case SAVE_RESET_PASSWORD_TOKEN:
+      {
+        return { ...state,
+          resetPasswordToken: action.payload
         };
       }
 
@@ -2752,7 +2856,7 @@ class IntlProviderWrapper extends React.Component {
 
 var login = "Login";
 var register = "Register";
-var forgotPassword = "Forgot password";
+var forgotPassword$1 = "Forgot password";
 var setting = "Setting";
 var messages_en = {
 	login: login,
@@ -2780,12 +2884,16 @@ var messages_en = {
 	"register.agreeWith": "I agree with",
 	"register.policyAndCondition": "Terms and Condition",
 	"register.useService": "use service",
-	forgotPassword: forgotPassword,
+	forgotPassword: forgotPassword$1,
 	"forgotPassword.verify": "Verify",
 	"forgotPassword.username": "Username *",
 	"forgotPassword.username.required": "You must enter username",
 	"forgotPassword.email": "Email registration *",
 	"forgotPassword.email.required": "You must enter email registration",
+	"forgotPassword.successfull": "Your reset password link has sent to your email",
+	"forgotPassword.fail": "Your phone number or email is incorrect",
+	"forgotPassword.notFoundEmailSuggestion": "Not found any email with your username",
+	"forgotPassword.yourEmailIs": "Your email is",
 	"menu.home": "Home",
 	"menu.user": "User Management",
 	"menu.buyInsurance": "Buy Insurance",
@@ -2847,6 +2955,7 @@ var messages_en = {
 	"changePassword.passwordMustMatch": "Password must match",
 	"createPassword.title": "CREATE PASSWORD *",
 	"createPassword.password.required": "You must enter your password",
+	"createPassword.password.invalid": "You password is invalid",
 	"createPassword.enterThePassword": "Enter the password *",
 	"createPassword.passwordMustMatch": "Password must match",
 	"createPassword.condition.1": "- At least 8 characters long",
@@ -2859,8 +2968,9 @@ var messages_en = {
 	"provideNewPassword.password": "Enter your new password *",
 	"provideNewPassword.enterThePassword": "Enter a new password *",
 	"completeInformation.idType": "Type of identification*",
-	"completeInformation.nbrPer": "Identification document number*",
+	"completeInformation.nbrPer": "Identification number*",
 	"completeInformation.nbrPer.required": "You must enter infor number",
+	"completeInformation.nbrPer.invalid": "You Indenetication number is invalid",
 	"completeInformation.dateOfBirth": "Date of birth",
 	"completeInformation.dateOfBirth.required": "You must enter date of birth",
 	"completeInformation.address": "Address*",
@@ -2872,17 +2982,21 @@ var messages_en = {
 	"completeInformation.accountNbr.required": "You must enter account number",
 	"completeInformation.personalInfo": "Passport*",
 	"completeInformation.gender": "Gender",
-	"completeInformation.province": "Province*",
+	"completeInformation.province": "City*",
+	"completeInformation.province.required": "You must select your city",
 	"completeInformation.district": "District*",
-	"completeInformation.wards": "Wards*",
+	"completeInformation.district.required": "You must select your district",
+	"completeInformation.ward": "Wards*",
+	"completeInformation.ward.required": "You must select your ward",
 	"completeInformation.bank": "Bank*",
+	"completeInformation.bank.required": "Bạn phải chọn Ngân hàng*",
 	"completeInformation.back": "BACK",
 	"completeInformation.done": "DONE"
 };
 
 var login$1 = "Đăng nhập";
 var register$1 = "Đăng ký";
-var forgotPassword$1 = "Quên mật khẩu";
+var forgotPassword$2 = "Quên mật khẩu";
 var setting$1 = "Cài đặt";
 var messages_vi = {
 	login: login$1,
@@ -2910,12 +3024,16 @@ var messages_vi = {
 	"register.agreeWith": "Tôi đồng ý với",
 	"register.policyAndCondition": "Điều khoản và Điều kiện",
 	"register.useService": "sử dụng dịch vụ.",
-	forgotPassword: forgotPassword$1,
+	forgotPassword: forgotPassword$2,
 	"forgotPassword.verify": "Xác thực",
 	"forgotPassword.username": "Tên tài khoản *",
 	"forgotPassword.username.required": "Bạn phải nhập tên tài khoản",
 	"forgotPassword.email": "Email đăng ký *",
 	"forgotPassword.email.required": "Bạn phải nhập email đăng ký",
+	"forgotPassword.successfull": "Link thay đổi password đã được gửi đến email của bạn",
+	"forgotPassword.fail": "Số điện thoại hoặc Email của bạn không chính xác",
+	"forgotPassword.notFoundEmailSuggestion": "Không tìm thấy email với tên đăng nhập của bạn",
+	"forgotPassword.yourEmailIs": "Email của bạn là",
 	"menu.home": "Trang chủ",
 	"menu.user": "Tài khoản",
 	"menu.buyInsurance": "Mua bảo hiểm",
@@ -2977,6 +3095,7 @@ var messages_vi = {
 	"changePassword.passwordMustMatch": "Mật khẩu không trùng khớp",
 	"createPassword.title": "TẠO MẬT KHẨU *",
 	"createPassword.password.required": "Bạn phải nhập mật khẩu",
+	"createPassword.password.invalid": "Mật khẩu của bạn không hợp lệ",
 	"createPassword.enterThePassword": "Nhập lại mật khẩu *",
 	"createPassword.passwordMustMatch": "Mật khẩu phải trùng khớp",
 	"createPassword.condition.1": "- Dài ít nhất 8 ký tự",
@@ -2992,6 +3111,7 @@ var messages_vi = {
 	"completeInformation.idType": "Loại giấy tờ tùy thân *",
 	"completeInformation.nbrPer": "Số giấy tờ tuỳ thân *",
 	"completeInformation.nbrPer.required": "Bạn phải nhập số giấy tờ tuỳ thân",
+	"completeInformation.nbrPer.invalid": "Số giấy tờ tùy thân không hợp lệ",
 	"completeInformation.dateOfBirth": "Ngày sinh",
 	"completeInformation.dateOfBirth.required": "Bạn phải nhập ngày sinh",
 	"completeInformation.address": "Địa chỉ*",
@@ -3000,12 +3120,17 @@ var messages_vi = {
 	"completeInformation.branch": "Chi nhánh*",
 	"completeInformation.branch.required": "Bạn phải nhập chi nhánh",
 	"completeInformation.accountNbr": "Số tài khoản*",
+	"completeInformation.accountNbr.required": "Bạn phải nhập số tài khoản",
 	"completeInformation.personalInfo": "Hộ chiếu*",
 	"completeInformation.gender": "Giới tính",
 	"completeInformation.province": "Tỉnh/Thành Phố*",
+	"completeInformation.province.required": "Bạn phải chọn Tỉnh/Thành Phố",
 	"completeInformation.district": "Quận/Huyện*",
-	"completeInformation.wards": "Phường/Xã*",
+	"completeInformation.district.required": "Bạn phải chọn Quận/Huyện",
+	"completeInformation.ward": "Phường/Xã*",
+	"completeInformation.wards.required": "Bạn phải chọnPhường/Xã",
 	"completeInformation.bank": "Ngân hàng*",
+	"completeInformation.bank.required": "Bạn phải chọn Ngân hàng*",
 	"completeInformation.back": "Quay lại",
 	"completeInformation.done": "Hoàn thành"
 };
@@ -4250,7 +4375,6 @@ const Login = () => {
   })))));
 };
 
-const phoneRegExp = /(03|07|08|09|01[2|6|8|9])+([0-9]{8})\b/;
 const formSchema$1 = object().shape({
   fullName: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "register.fullname.required"
@@ -4260,14 +4384,14 @@ const formSchema$1 = object().shape({
   })).email( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "register.email.invalid"
   })),
-  phoneNumber: string().matches(phoneRegExp, () => /*#__PURE__*/React.createElement(FormattedMessage, {
+  phoneNumber: string().matches(PHONE_REGEX, () => /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "register.phoneNumber.invalid"
   })).required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "register.phoneNumber.required"
   })),
   refCode: string().length(10, () => /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "register.referalCode.invalid"
-  })).matches(phoneRegExp, () => /*#__PURE__*/React.createElement(FormattedMessage, {
+  })).matches(PHONE_REGEX, () => /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "register.referalCode.invalid"
   }))
 });
@@ -4377,13 +4501,28 @@ const formSchema$2 = object().shape({
 });
 
 const ForgotPassword = () => {
+  const [isModalOpen, setIsOpenModal] = useState(false);
+  const [emailSuggestion, setEmailSuggestion] = useState('');
+  const dispatch = useDispatch();
+
   const onSubmit = (values, actions) => {
-    actions.setSubmitting(false);
+    dispatch(forgotPassword(values));
   };
 
-  const onClickSuggestion = () => {};
+  const onClickSuggestion = async username => {
+    const res = await AuthService.getSuggestionEmail(username);
 
-  return /*#__PURE__*/React.createElement(Formik, {
+    if (res.status === 200) {
+      setEmailSuggestion(res.data);
+      toggleModal();
+    }
+  };
+
+  const toggleModal = () => {
+    setIsOpenModal(!isModalOpen);
+  };
+
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Formik, {
     initialValues: {
       username: '',
       email: ''
@@ -4392,7 +4531,8 @@ const ForgotPassword = () => {
     validationSchema: formSchema$2
   }, ({
     errors,
-    touched
+    touched,
+    values
   }) => /*#__PURE__*/React.createElement(Form$1, null, /*#__PURE__*/React.createElement("h4", {
     className: "text-center text-white"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -4423,27 +4563,48 @@ const ForgotPassword = () => {
     onChange: e => form.setFieldValue('email', e.target.value)
   }))), errors.email && touched.email ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
-  }, errors.email) : null, /*#__PURE__*/React.createElement("div", {
+  }, errors.email) : null, values.username ? /*#__PURE__*/React.createElement("div", {
     className: "form-control-position text-primary cursor-pointer",
-    onClick: onClickSuggestion
+    onClick: () => onClickSuggestion(values.username)
   }, /*#__PURE__*/React.createElement(Sun, {
     size: 15
-  })), /*#__PURE__*/React.createElement(Label, null, msg)))), /*#__PURE__*/React.createElement("div", {
+  })) : '', /*#__PURE__*/React.createElement(Label, null, msg)))), /*#__PURE__*/React.createElement("div", {
     className: "d-flex justify-content-center"
   }, /*#__PURE__*/React.createElement(Button, {
     color: "primary",
     type: "submit"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "forgotPassword.verify"
-  })))));
+  }))))), /*#__PURE__*/React.createElement(Modal, {
+    isOpen: isModalOpen,
+    toggle: toggleModal,
+    className: "modal-dialog-centered"
+  }, /*#__PURE__*/React.createElement(ModalBody, {
+    className: "modal-dialog-centered"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-100"
+  }, /*#__PURE__*/React.createElement("div", null, !emailSuggestion ? /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "forgotPassword.notFoundEmailSuggestion"
+  }) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "forgotPassword.yourEmailIs"
+  }), ":", ' ', /*#__PURE__*/React.createElement("b", null, emailSuggestion))), /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("div", {
+    className: "d-flex justify-content-end"
+  }, /*#__PURE__*/React.createElement(Button.Ripple, {
+    color: "primary",
+    onClick: toggleModal
+  }, "OK"), ' ')))));
 };
 
 const formSchema$3 = object().shape({
   password: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "createPassword.password.required"
+  })).matches(PASSWORD_REGEX, () => /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.password.invalid"
   })),
-  enterThePassword: string().oneOf([ref('password'), null], /*#__PURE__*/React.createElement(FormattedMessage, {
+  passwordConfirmation: string().oneOf([ref('password'), null], /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "createPassword.passwordMustMatch"
+  })).required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.password.required"
   }))
 });
 
@@ -4453,34 +4614,49 @@ const CreatePassword = ({
   const history = useHistory();
   const dispatch = useDispatch();
   useEffect(() => {
+    isLanding2 ? setRegisterToken() : setResetPassword();
+  }, []);
+
+  const onClickContinue = values => {
+    if (isLanding2) {
+      dispatch(createPassword(values.password));
+    } else {
+      dispatch(resetPassword(values.password));
+    }
+  };
+
+  const setRegisterToken = () => {
     const code = new URLSearchParams(document.location.search).get('registerToken');
 
     if (code) {
       dispatch(saveRegisterToken(code));
       history.push(history.location.pathname);
     }
-  }, []);
+  };
 
-  const onClickContinue = values => {
-    dispatch(createPassword(values.password));
+  const setResetPassword = () => {
+    const code = new URLSearchParams(document.location.search).get('resetToken');
+
+    if (code) {
+      dispatch(saveResetPasswordToken(code));
+      history.push(history.location.pathname);
+    }
   };
 
   return /*#__PURE__*/React.createElement(Formik, {
     initialValues: {
       password: '',
-      repeatePassword: ''
+      passwordConfirmation: ''
     },
     onSubmit: onClickContinue,
     validationSchema: formSchema$3
   }, ({
     errors,
     touched
-  }) => /*#__PURE__*/React.createElement(Form$1, {
-    className: ""
-  }, /*#__PURE__*/React.createElement("div", {
+  }) => /*#__PURE__*/React.createElement(Form$1, null, /*#__PURE__*/React.createElement("div", {
     className: "text-center mb-3"
   }, /*#__PURE__*/React.createElement("h4", {
-    className: "font-weight-bold"
+    className: isLanding2 ? 'font-weight-boild' : 'font-weight-boild text-white'
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "createPassword.title"
   }))), /*#__PURE__*/React.createElement(BaseFormGroup, {
@@ -4492,7 +4668,7 @@ const CreatePassword = ({
   }), /*#__PURE__*/React.createElement(BaseFormGroup, {
     type: "password",
     messageId: "createPassword.enterThePassword",
-    fieldName: "repeatePassword",
+    fieldName: "passwordConfirmation",
     errors: errors,
     touched: touched
   }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -4656,88 +4832,6 @@ const LandingPage = props => {
   }, /*#__PURE__*/React.createElement(TabView, null))), /*#__PURE__*/React.createElement(LandingFooter, null)));
 };
 
-const formSchema$4 = object().shape({
-  password: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "createPassword.password.required"
-  })),
-  enterThePassword: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "createPassword.password.required"
-  }))
-});
-
-const ProvideNewPassword = () => {
-  const [isAppcepted, setIsAppcepted] = useState(false);
-  const [isNotApccepted, setIsNotAccepted] = useState(false);
-
-  const onSubmit = (values, actions) => {
-    setTimeout(() => {
-      if (!isAppcepted) {
-        setIsNotAccepted(true);
-        return;
-      }
-
-      alert(JSON.stringify(values, null, 2));
-      actions.setSubmitting(false);
-    }, 1000);
-  };
-
-  return /*#__PURE__*/React.createElement(Formik, {
-    initialValues: {
-      password: '',
-      enterThePassword: ''
-    },
-    onSubmit: onSubmit,
-    validationSchema: formSchema$4
-  }, ({
-    errors,
-    touched
-  }) => /*#__PURE__*/React.createElement(Form$1, null, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
-    className: "d-flex justify-content-center"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "provideNewPassword.title"
-  }))), /*#__PURE__*/React.createElement(FormGroup, {
-    className: "form-label-group position-relative mt-2"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "provideNewPassword.password"
-  }, msg => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(FastField, {
-    name: "password"
-  }, ({
-    field,
-    form
-  }) => /*#__PURE__*/React.createElement(Input, Object.assign({
-    type: "password",
-    className: `form-control ${errors.password && touched.password && 'is-invalid'}`,
-    placeholder: msg
-  }, field, {
-    onChange: e => form.setFieldValue('password', e.target.value)
-  }))), errors.password && touched.password ? /*#__PURE__*/React.createElement("div", {
-    className: "text-danger"
-  }, errors.password) : null, /*#__PURE__*/React.createElement(Label, null, msg)))), /*#__PURE__*/React.createElement(FormGroup, {
-    className: "form-label-group position-relative mt-3"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "provideNewPassword.enterThePassword"
-  }, msg => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Field, {
-    name: "enterThePassword",
-    className: `form-control ${errors.enterThePassword && touched.enterThePassword && 'is-invalid'}`,
-    placeholder: msg
-  }), errors.enterThePassword && touched.enterThePassword ? /*#__PURE__*/React.createElement("div", {
-    className: "text-danger"
-  }, errors.enterThePassword) : null, /*#__PURE__*/React.createElement(Label, null, msg)))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "createPassword.condition.1"
-  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "createPassword.condition.2"
-  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "createPassword.condition.3"
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "d-flex justify-content-center mt-2"
-  }, /*#__PURE__*/React.createElement(Button, {
-    color: "primary",
-    type: "submit"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "provideNewPassword.continutes"
-  })))));
-};
-
 const Select = props => {
   const [inputValue, setInputValue] = useState(props.defaultValue || '');
   const [isFocused, setIsFocused] = useState(false);
@@ -4781,7 +4875,9 @@ const Select = props => {
         primary: '#338955'
       }
     })
-  })), /*#__PURE__*/React.createElement("input", {
+  })), !props.notRequired && props.errors[props.fieldName] && props.touched[props.fieldName] ? /*#__PURE__*/React.createElement("div", {
+    className: "text-danger"
+  }, props.errors[props.fieldName]) : null, /*#__PURE__*/React.createElement("input", {
     className: "d-none",
     placeholder: props.placeholder,
     value: inputValue
@@ -4794,7 +4890,9 @@ const Select = props => {
 
 const DatePicker = props => /*#__PURE__*/React.createElement(FormGroup, {
   className: "form-label-group position-relative"
-}, /*#__PURE__*/React.createElement(Flatpickr, props), /*#__PURE__*/React.createElement(Label, null, props.placeholder));
+}, /*#__PURE__*/React.createElement(Flatpickr, props), /*#__PURE__*/React.createElement(Label, null, props.placeholder), !props.notRequired && props.errors[props.fieldName] && props.touched[props.fieldName] ? /*#__PURE__*/React.createElement("div", {
+  className: "text-danger"
+}, props.errors[props.fieldName]) : null);
 
 const BaseFormGroupSelect = ({
   fieldName,
@@ -4803,9 +4901,10 @@ const BaseFormGroupSelect = ({
   messageId,
   options,
   intl,
+  defaultValue,
   isRequired: _isRequired = true
 }) => {
-  return /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(FastField, {
+  return /*#__PURE__*/React.createElement(FastField, {
     name: "fieldName"
   }, ({
     field,
@@ -4814,35 +4913,101 @@ const BaseFormGroupSelect = ({
     placeholder: intl.formatMessage({
       id: messageId
     }),
-    className: "form-label-group position-relative",
+    className: `${_isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'}`,
     classNamePrefix: "Select",
-    name: fieldName,
+    fieldName: fieldName,
+    notRequired: !_isRequired,
+    defaultValue: defaultValue,
+    errors: errors,
+    touched: touched,
     options: options,
     onChange: e => {
       form.setFieldValue(fieldName, e.value);
     }
-  })), _isRequired && errors[fieldName] && touched[fieldName] ? /*#__PURE__*/React.createElement("div", {
-    className: "text-danger"
-  }, errors.email) : null);
+  }));
 };
 
 var BaseFormGroupSelect$1 = injectIntl(BaseFormGroupSelect);
 
+const BaseFormDatePicker = ({
+  fieldName,
+  errors,
+  touched,
+  messageId,
+  value,
+  options,
+  intl,
+  isRequired: _isRequired = true
+}) => {
+  return /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(FastField, {
+    name: fieldName
+  }, ({
+    field,
+    form
+  }) => /*#__PURE__*/React.createElement(DatePicker, {
+    className: `bg-white form-control position-relative ${_isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'}`,
+    placeholder: intl.formatMessage({
+      id: messageId
+    }),
+    fieldName: fieldName,
+    notRequired: !_isRequired,
+    errors: errors,
+    touched: touched,
+    value: value,
+    options: options,
+    onChange: date => {
+      form.setFieldValue(fieldName, date[0]);
+    }
+  })));
+};
+
+var BaseFormDatePicker$1 = injectIntl(BaseFormDatePicker);
+
 const CompleteInforValidate = object().shape({
-  icNumber: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+  icType: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "completeInformation.nbrPer.required"
   })),
+  icNumber: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "completeInformation.nbrPer.required"
+  })).when('icType', {
+    is: 'CMND',
+    then: string().matches(/^(\d{9}|\d{12})$/, () => /*#__PURE__*/React.createElement(FormattedMessage, {
+      id: "completeInformation.nbrPer.invalid"
+    }))
+  }).when('icType', {
+    is: 'CCCD',
+    then: string().matches(/^(\d{12})$/, () => /*#__PURE__*/React.createElement(FormattedMessage, {
+      id: "completeInformation.nbrPer.invalid"
+    }))
+  }).when('icType', {
+    is: 'HC',
+    then: string().matches(/^(?!^0+$)[a-zA-Z0-9]{3,20}$/, () => /*#__PURE__*/React.createElement(FormattedMessage, {
+      id: "completeInformation.nbrPer.invalid"
+    }))
+  }),
   dateOfBirth: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "completeInformation.dateOfBirth.required"
   })),
   address: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "completeInformation.address.required"
   })),
+  bankName: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "completeInformation.bank.required"
+  })),
   bankBranch: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "completeInformation.branch.required"
   })),
   bankNumber: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "completeInformation.accountNbr.required"
+  })),
+  city: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "completeInformation.city.required"
+  })),
+  ward: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "completeInformation.ward.required"
+  })),
+  district: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "completeInformation.district.required"
   }))
 });
 const personalInfoOptions = [{
@@ -4858,11 +5023,6 @@ const personalInfoOptions = [{
 }, {
   value: 'CCCD',
   label: 'Căn cước công dân',
-  color: '#338955',
-  isFixed: true
-}, {
-  value: 'MST',
-  label: 'Mã số thuế',
   color: '#338955',
   isFixed: true
 }];
@@ -4886,17 +5046,45 @@ const bank = [{
   value: '3',
   label: 'BIDV'
 }];
+const city = [{
+  value: 'HN',
+  label: 'Hà Nội'
+}, {
+  value: 'TPHCM',
+  label: 'Thành phố HCM'
+}, {
+  value: 'DN',
+  label: 'Đà nẵng'
+}];
+const district = [{
+  value: 'HN',
+  label: 'Nam Từ Liêm'
+}, {
+  value: 'TPHCM',
+  label: 'Thành phố HCM'
+}, {
+  value: 'DN',
+  label: 'Đà nẵng'
+}];
+const wards = [{
+  value: 'HN',
+  label: 'Phạm Hùng'
+}, {
+  value: 'TPHCM',
+  label: 'Lưu Hữu Phước'
+}, {
+  value: 'DN',
+  label: 'Mễ Trì'
+}];
 
 const CompleteInformation = ({
   intl
 }) => {
   const user = useSelector(state => state.auth.register.user);
+  const dispatch = useDispatch();
 
   const onSubmit = (values, actions) => {
-    setTimeout(() => {
-      alert(JSON.stringify(values, null, 2));
-      actions.setSubmitting(false);
-    }, 1000);
+    dispatch(compeleteInfo(values));
   };
 
   return /*#__PURE__*/React.createElement("div", {
@@ -4906,7 +5094,7 @@ const CompleteInformation = ({
       icType: '',
       icNumber: '',
       dateOfBirth: '',
-      gender: '',
+      gender: 'MALE',
       city: '',
       district: '',
       ward: '',
@@ -4916,6 +5104,7 @@ const CompleteInformation = ({
       bankBranch: '',
       bankNumber: ''
     },
+    validationSchema: CompleteInforValidate,
     onSubmit: onSubmit
   }, ({
     errors,
@@ -4972,22 +5161,20 @@ const CompleteInformation = ({
     touched: touched
   }))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
     sm: "6"
-  }, /*#__PURE__*/React.createElement(DatePicker, {
-    className: "form-control bg-white",
-    placeholder: intl.formatMessage({
-      id: 'completeInformation.dateOfBirth'
-    }),
-    name: "dateOfBirth",
-    value: new Date(),
+  }, /*#__PURE__*/React.createElement(BaseFormDatePicker$1, {
+    messageId: "completeInformation.dateOfBirth",
+    fieldName: "dateOfBirth",
     options: {
       dateFormat: 'M \\ d \\, Y'
     },
-    onChange: date => {}
+    errors: errors,
+    touched: touched
   })), /*#__PURE__*/React.createElement(Col, {
     sm: "6"
   }, /*#__PURE__*/React.createElement(BaseFormGroupSelect$1, {
     messageId: "completeInformation.gender",
     fieldName: "gender",
+    defaultValue: genderOptions[0],
     options: genderOptions,
     errors: errors,
     touched: touched
@@ -4996,7 +5183,7 @@ const CompleteInformation = ({
   }, /*#__PURE__*/React.createElement(BaseFormGroupSelect$1, {
     messageId: "completeInformation.province",
     fieldName: "city",
-    options: bank,
+    options: city,
     errors: errors,
     touched: touched
   })), /*#__PURE__*/React.createElement(Col, {
@@ -5004,15 +5191,15 @@ const CompleteInformation = ({
   }, /*#__PURE__*/React.createElement(BaseFormGroupSelect$1, {
     messageId: "completeInformation.district",
     fieldName: "district",
-    options: bank,
+    options: district,
     errors: errors,
     touched: touched
   })), /*#__PURE__*/React.createElement(Col, {
     sm: "4"
   }, /*#__PURE__*/React.createElement(BaseFormGroupSelect$1, {
-    messageId: "completeInformation.wards",
+    messageId: "completeInformation.ward",
     fieldName: "ward",
-    options: bank,
+    options: wards,
     errors: errors,
     touched: touched
   }))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
@@ -5078,10 +5265,11 @@ const LandingPage2 = props => {
   const TabView = () => {
     switch (activeTab) {
       case 'create-password':
-        return /*#__PURE__*/React.createElement(CreatePassword, null);
-
-      case 'provide-new-password':
-        return /*#__PURE__*/React.createElement(ProvideNewPassword, null);
+        return /*#__PURE__*/React.createElement("div", {
+          className: "col-12 col-md-10 cpl-lg-8 mx-auto"
+        }, /*#__PURE__*/React.createElement(CreatePassword, {
+          isLanding2: true
+        }));
 
       case 'complete-information':
         return /*#__PURE__*/React.createElement(CompleteInformation$1, {
@@ -5352,5 +5540,5 @@ function useDeviceDetect() {
   };
 }
 
-export { AppId, Autocomplete as AutoComplete, App as BaseApp, BaseFormGroup, CheckBox as Checkbox, DatePicker, FallbackSpinner, HttpClient, Radio, Select, useDeviceDetect, useWindowDimensions };
+export { AppId, Autocomplete as AutoComplete, App as BaseApp, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect$1 as BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, HttpClient, Radio, Select, useDeviceDetect, useWindowDimensions };
 //# sourceMappingURL=index.modern.js.map
