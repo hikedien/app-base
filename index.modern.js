@@ -459,7 +459,7 @@ const resetPassword = password => {
 
       if (response.status === 200 && response.data) {
         toast.success( /*#__PURE__*/React.createElement(FormattedMessage, {
-          id: "resetPassword.resetSuccessfull"
+          id: "createPassword.resetSuccessFul"
         }));
         dispatch({
           type: SAVE_RESET_PASSWORD_TOKEN,
@@ -1867,7 +1867,7 @@ const Footer = props => {
     showUnder: 160
   }, /*#__PURE__*/React.createElement(Button, {
     color: "primary",
-    className: "btn-icon scroll-top"
+    className: "btn-icon scroll-top d-none d-md-block"
   }, /*#__PURE__*/React.createElement(ArrowUp, {
     size: 15
   }))) : null);
@@ -2919,6 +2919,9 @@ var messages_en = {
 	"menu.insuranceCertificate.newExport": "New Export",
 	"menu.insuranceCertificate.wrongImport": "Wrong Import",
 	"menu.insuranceCertificate.wrongExport": "Wrong Export",
+	"menu.insuranceMotobike": "Insurance Motibike",
+	"menu.insuranceCar": "Insurance Car",
+	"menu.approveOpenAccount": "Approve Open Account",
 	"menu.debt": "Debt",
 	"menu.createDebt": "Create Debt",
 	"menu.debtManagement": "Debt Management",
@@ -2963,6 +2966,7 @@ var messages_en = {
 	"createPassword.condition.3": "- Include numeric or special characters",
 	"createPassword.continutes": "CONTINUTE",
 	"createPassword.done": "DONE",
+	"createPassword.resetSuccessFul": "Change password successful",
 	"provideNewPassword.title": "PROVIDE A NEW PASSWORD",
 	"provideNewPassword.continutes": "DONE",
 	"provideNewPassword.password": "Enter your new password *",
@@ -3065,6 +3069,9 @@ var messages_vi = {
 	"menu.permissionGoup": "Nhóm quyền",
 	"menu.creatPermissionGoup": "Tạo mới nhóm quyền",
 	"menu.permissionGoupManagement": "Quản lý nhóm quyền",
+	"menu.insuranceMotobike": "Bảo hiểm xe máy",
+	"menu.insuranceCar": "Bảo hiểm ô tô",
+	"menu.approveOpenAccount": "Phê duyệt mở tài khoản  ",
 	"navbar.language.vi": "Tiếng Việt",
 	"navbar.language.en": "Tiếng Anh",
 	"navbar.logout": "Đăng xuất",
@@ -3103,6 +3110,7 @@ var messages_vi = {
 	"createPassword.condition.3": "- Bao gồm ký tự số hoặc ký tự đặc biệt",
 	"createPassword.continutes": "TIẾP TỤC",
 	"createPassword.done": "HOÀN THÀNH",
+	"createPassword.resetSuccessFul": "Thay đổi mật khẩu thành công",
 	"provideNewPassword.title": "CẤP MẬT KHẨU MỚI",
 	"provideNewPassword.continutes": "THỰC HIỆN",
 	"provideNewPassword.password": "Nhập mật khẩu mới *",
@@ -4875,9 +4883,9 @@ const Select = props => {
         primary: '#338955'
       }
     })
-  })), !props.notRequired && props.errors[props.fieldName] && props.touched[props.fieldName] ? /*#__PURE__*/React.createElement("div", {
+  })), props.required ? props.errors[props.fieldName] && props.touched[props.fieldName] ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
-  }, props.errors[props.fieldName]) : null, /*#__PURE__*/React.createElement("input", {
+  }, props.errors[props.fieldName]) : null : '', /*#__PURE__*/React.createElement("input", {
     className: "d-none",
     placeholder: props.placeholder,
     value: inputValue
@@ -4916,7 +4924,7 @@ const BaseFormGroupSelect = ({
     className: `${_isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'}`,
     classNamePrefix: "Select",
     fieldName: fieldName,
-    notRequired: !_isRequired,
+    required: _isRequired,
     defaultValue: defaultValue,
     errors: errors,
     touched: touched,
