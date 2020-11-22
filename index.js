@@ -6014,13 +6014,14 @@ var App = function App(_ref) {
       appId = _ref.appId,
       appReducer = _ref.appReducer,
       message = _ref.message,
+      apiBaseUrl = _ref.apiBaseUrl,
       history = _ref.history;
   var middlewares = [thunk, createDebounce()];
   var composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || redux.compose;
   var store = redux.createStore(rootReducer(appReducer), {}, composeEnhancers(redux.applyMiddleware.apply(void 0, middlewares)));
   var persistor = reduxPersist.persistStore(store);
   setBaseHistory(history);
-  setUpHttpClient(store);
+  setUpHttpClient(store, apiBaseUrl);
   return /*#__PURE__*/React__default.createElement(reactRedux.Provider, {
     store: store
   }, /*#__PURE__*/React__default.createElement(react.PersistGate, {

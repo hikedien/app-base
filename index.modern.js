@@ -5499,7 +5499,7 @@ const App = ({
   const store = createStore(rootReducer(appReducer), {}, composeEnhancers(applyMiddleware(...middlewares)));
   const persistor = persistStore(store);
   setBaseHistory(history);
-  setUpHttpClient(store);
+  setUpHttpClient(store, apiBaseUrl);
   return /*#__PURE__*/React.createElement(Provider, {
     store: store
   }, /*#__PURE__*/React.createElement(PersistGate, {
