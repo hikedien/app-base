@@ -7,7 +7,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { persistReducer, persistStore } from 'redux-persist';
 import Axios from 'axios';
 import * as Icon from 'react-feather';
-import { AlertTriangle, ShoppingCart, FileText, Circle, User, DollarSign, TrendingUp, Award, CreditCard, Share2, Settings, Lock, Power, Search, X, Bell, PlusSquare, DownloadCloud, CheckCircle, File, Menu, Home, List, PlusCircle, Gift, MessageSquare, ArrowUp, Disc, ChevronRight, Check, MapPin, Info, Sun } from 'react-feather';
+import { AlertTriangle, ShoppingCart, FileText, Circle, User, DollarSign, TrendingUp, Award, CreditCard, Share2, Lock, Power, Search, X, Bell, PlusSquare, DownloadCloud, CheckCircle, File, Menu, Home, List, PlusCircle, Gift, MessageSquare, ArrowUp, Disc, ChevronRight, Check, MapPin, Info, Sun } from 'react-feather';
 import { toast, ToastContainer } from 'react-toastify';
 export { toast } from 'react-toastify';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
@@ -17,18 +17,18 @@ import { createBrowserHistory } from 'history';
 import sessionStorage from 'redux-persist/es/storage/session';
 import { useHistory, NavLink as NavLink$1, Link, Router, Switch, Route, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
-import { FormGroup, Label, DropdownMenu, DropdownItem, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Badge, Media, Navbar as Navbar$1, Button, Row, Col, Form, Input, Table, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, Modal, ModalBody } from 'reactstrap';
+import { FormGroup, Label, DropdownMenu, DropdownItem, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Badge, Media, Navbar as Navbar$1, Button, Row, Col, Form as Form$1, Input, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, Table, Modal, ModalBody } from 'reactstrap';
 export { Button } from 'reactstrap';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import ScrollToTop from 'react-scroll-up';
 import Hammer from 'react-hammerjs';
+import { object, string, ref } from 'yup';
+import { Field, FastField, Formik, Form } from 'formik';
+import Flatpickr from 'react-flatpickr';
 import Select$1 from 'react-select';
 import chroma from 'chroma-js';
-import Flatpickr from 'react-flatpickr';
-import { Field, Formik, Form as Form$1, FastField } from 'formik';
-import { object, string, ref } from 'yup';
 import TopBarProgress from 'react-topbar-progress-indicator';
 import Ripples from 'react-ripples';
 import 'react-perfect-scrollbar/dist/css/styles.css';
@@ -65,6 +65,22 @@ const LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
   FAIL: 'FAIL'
 };
+const GENDER_OPTIONS = [{
+  value: 'MALE',
+  label: /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "Nam"
+  })
+}, {
+  value: 'FEMALE',
+  label: /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "N\u1EEF"
+  })
+}, {
+  value: 'OTHER',
+  label: /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "Kh\xE1c"
+  })
+}];
 const APP_URL = 'http://localhost:3000';
 const IMAGE = {
   LOGO: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Logo.png?alt=media&token=68d3ab7a-e9bb-4c43-a543-c65f72033bf9',
@@ -216,16 +232,6 @@ const customizerReducer = (state = { ...themeConfig
     case 'HIDE_SCROLL_TO_TOP':
       return { ...state,
         hideScrollToTop: action.value
-      };
-
-    case 'SHOW_LOADING_BAR':
-      return { ...state,
-        showLoadingBar: true
-      };
-
-    case 'HIDE_LOADING_BAR':
-      return { ...state,
-        showLoadingBar: false
       };
 
     default:
@@ -894,8 +900,30 @@ const navbarReducer = (state = initialState, action) => {
   }
 };
 
+const initialState$1 = {
+  isLoading: false
+};
+
+const uiReducer = (state = initialState$1, action) => {
+  switch (action.type) {
+    case 'SHOW_LOADING_BAR':
+      return { ...state,
+        isLoading: true
+      };
+
+    case 'HIDE_LOADING_BAR':
+      return { ...state,
+        isLoading: false
+      };
+
+    default:
+      return state;
+  }
+};
+
 const rootReducer = appReducer => combineReducers({
   customizer: customizerReducer,
+  ui: uiReducer,
   auth: persistReducer({
     storage: sessionStorage,
     key: 'root',
@@ -1299,7 +1327,7 @@ const UserDropdown = props => {
     tag: "a",
     href: "#",
     onClick: e => handleNavigation(e, '/account-info')
-  }, /*#__PURE__*/React.createElement(Settings, {
+  }, /*#__PURE__*/React.createElement(User, {
     size: 14,
     className: "mr-50"
   }), /*#__PURE__*/React.createElement("span", {
@@ -1426,6 +1454,10 @@ class NavbarUser extends React.PureComponent {
   }
 
   render() {
+    const {
+      userSettings,
+      userDetails
+    } = this.props.user;
     return /*#__PURE__*/React.createElement("ul", {
       className: "nav navbar-nav navbar-nav-user float-right"
     }, /*#__PURE__*/React.createElement(NavItem, {
@@ -1650,10 +1682,10 @@ class NavbarUser extends React.PureComponent {
       className: "user-nav d-sm-flex d-none"
     }, /*#__PURE__*/React.createElement("span", {
       className: "user-name text-bold-600"
-    }, this.props.userName)), /*#__PURE__*/React.createElement("span", {
+    }, userDetails.fullName)), /*#__PURE__*/React.createElement("span", {
       "data-tour": "user"
     }, /*#__PURE__*/React.createElement("img", {
-      src: "https://storage.live.com/Users/-6155523327610065665/MyProfile/ExpressionProfile/ProfilePhoto:Win8Static,UserTileMedium,UserTileStatic",
+      src: userSettings ? userSettings.avatar : '',
       className: "round",
       height: "40",
       width: "40",
@@ -1710,16 +1742,17 @@ const ThemeNavbar = props => {
     className: "ficon"
   })))), /*#__PURE__*/React.createElement("ul", {
     className: "nav navbar-nav d-none d-xl-flex bookmark-icons"
-  }, Array(5).fill(0).map((_, index) => /*#__PURE__*/React.createElement(NavItem, null, /*#__PURE__*/React.createElement("img", {
+  }, Array(5).fill(0).map((_, index) => /*#__PURE__*/React.createElement(NavItem, {
+    key: index
+  }, /*#__PURE__*/React.createElement("img", {
     className: "img-fluid",
-    key: index,
     src: IMAGE[`NAV_ICON_${index + 1}`]
   })))))), /*#__PURE__*/React.createElement(NavbarUser$1, {
     handleAppOverlay: props.handleAppOverlay,
     changeCurrentLang: props.changeCurrentLang,
     appId: props.appId,
     authToken: props.authToken,
-    userName: props.name,
+    user: props.user,
     roles: props.roles,
     isAuthenticated: props.isAuthenticated,
     logoutAction: props.logoutAction
@@ -1728,7 +1761,7 @@ const ThemeNavbar = props => {
 
 const mapStateToProps = state => {
   return {
-    name: state.auth.user.fullName,
+    user: state.auth.user,
     isAuthenticated: !!state.auth.name,
     roles: state.navbar.roles,
     authToken: state.auth.authToken
@@ -3143,6 +3176,439 @@ var messages_vi = {
 	"completeInformation.done": "Hoàn thành"
 };
 
+const BaseFormGroup = ({
+  fieldName,
+  errors,
+  touched,
+  messageId,
+  type,
+  isRequired: _isRequired = true
+}) => {
+  return /*#__PURE__*/React.createElement(FormGroup, {
+    className: "form-label-group position-relative"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: messageId
+  }, msg => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Field, {
+    type: type,
+    name: fieldName,
+    className: `form-control ${_isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'}`,
+    placeholder: msg
+  }), _isRequired && errors[fieldName] && touched[fieldName] ? /*#__PURE__*/React.createElement("div", {
+    className: "text-danger"
+  }, errors[fieldName]) : null, /*#__PURE__*/React.createElement(Label, null, msg))));
+};
+
+const DatePicker = props => /*#__PURE__*/React.createElement(FormGroup, {
+  className: "form-label-group position-relative"
+}, /*#__PURE__*/React.createElement(Flatpickr, props), /*#__PURE__*/React.createElement(Label, null, props.placeholder), !props.notRequired && props.errors[props.fieldName] && props.touched[props.fieldName] ? /*#__PURE__*/React.createElement("div", {
+  className: "text-danger"
+}, props.errors[props.fieldName]) : null);
+
+const BaseFormDatePicker = ({
+  fieldName,
+  errors,
+  touched,
+  messageId,
+  value,
+  options,
+  intl,
+  isRequired: _isRequired = true
+}) => {
+  const defaultOptions = {
+    dateFormat: 'm/d/Y'
+  };
+  return /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(FastField, {
+    name: fieldName
+  }, ({
+    field,
+    form
+  }) => /*#__PURE__*/React.createElement(DatePicker, {
+    className: `bg-white form-control position-relative ${_isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'}`,
+    placeholder: intl.formatMessage({
+      id: messageId
+    }),
+    fieldName: fieldName,
+    notRequired: !_isRequired,
+    errors: errors,
+    touched: touched,
+    value: value,
+    options: options || defaultOptions,
+    onChange: date => {
+      form.setFieldValue(fieldName, date[0]);
+    }
+  })));
+};
+
+var BaseFormDatePicker$1 = injectIntl(BaseFormDatePicker);
+
+const Select = props => {
+  const [inputValue, setInputValue] = useState(props.defaultValue || '');
+  const [isFocused, setIsFocused] = useState(false);
+
+  const onChange = (e, actions) => {
+    if (props.onChange) {
+      props.onChange(e, actions);
+    }
+
+    if (props.isMulti) {
+      setInputValue(e ? e.map(item => item.value).join() : '');
+    } else {
+      setInputValue(e ? e.value : '');
+    }
+  };
+
+  const onFocus = e => {
+    if (props.onFocus) {
+      props.onChange(e);
+    }
+
+    setIsFocused(true);
+  };
+
+  const onBlur = e => {
+    if (props.onBlur) {
+      props.onBlur(e);
+    }
+
+    setIsFocused(false);
+  };
+
+  return /*#__PURE__*/React.createElement(FormGroup, {
+    className: "form-label-group position-relative"
+  }, /*#__PURE__*/React.createElement(Select$1, Object.assign({}, props, {
+    onChange: onChange,
+    onBlur: onBlur,
+    onFocus: onFocus,
+    theme: theme => ({ ...theme,
+      colors: { ...theme.colors,
+        primary: '#338955'
+      }
+    })
+  })), props.required ? props.errors[props.fieldName] && props.touched[props.fieldName] ? /*#__PURE__*/React.createElement("div", {
+    className: "text-danger"
+  }, props.errors[props.fieldName]) : null : '', /*#__PURE__*/React.createElement("input", {
+    className: "d-none",
+    placeholder: props.placeholder,
+    value: inputValue
+  }), /*#__PURE__*/React.createElement(Label, {
+    className: classnames({
+      'text-primary': isFocused
+    })
+  }, props.placeholder));
+};
+
+const BaseFormGroupSelect = ({
+  fieldName,
+  errors,
+  touched,
+  messageId,
+  options,
+  intl,
+  defaultValue,
+  isRequired: _isRequired = true
+}) => {
+  return /*#__PURE__*/React.createElement(FastField, {
+    name: "fieldName"
+  }, ({
+    field,
+    form
+  }) => /*#__PURE__*/React.createElement(Select, {
+    placeholder: intl.formatMessage({
+      id: messageId
+    }),
+    className: `${_isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'}`,
+    classNamePrefix: "Select",
+    fieldName: fieldName,
+    required: _isRequired,
+    defaultValue: defaultValue,
+    errors: errors,
+    touched: touched,
+    options: options,
+    onChange: e => {
+      form.setFieldValue(fieldName, e.value);
+    }
+  }));
+};
+
+var BaseFormGroupSelect$1 = injectIntl(BaseFormGroupSelect);
+
+const validationSchema = object().shape({
+  icType: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "completeInformation.nbrPer.required"
+  })),
+  icNumber: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "completeInformation.nbrPer.required"
+  })).when('icType', {
+    is: 'CMND',
+    then: string().matches(/^(\d{9}|\d{12})$/, () => /*#__PURE__*/React.createElement(FormattedMessage, {
+      id: "completeInformation.nbrPer.invalid"
+    }))
+  }).when('icType', {
+    is: 'CCCD',
+    then: string().matches(/^(\d{12})$/, () => /*#__PURE__*/React.createElement(FormattedMessage, {
+      id: "completeInformation.nbrPer.invalid"
+    }))
+  }).when('icType', {
+    is: 'HC',
+    then: string().matches(/^(?!^0+$)[a-zA-Z0-9]{3,20}$/, () => /*#__PURE__*/React.createElement(FormattedMessage, {
+      id: "completeInformation.nbrPer.invalid"
+    }))
+  }),
+  dateOfBirth: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "completeInformation.dateOfBirth.required"
+  })),
+  address: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "completeInformation.address.required"
+  })),
+  bankName: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "completeInformation.bank.required"
+  })),
+  bankBranch: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "completeInformation.branch.required"
+  })),
+  bankNumber: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "completeInformation.accountNbr.required"
+  })),
+  city: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "completeInformation.city.required"
+  })),
+  ward: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "completeInformation.ward.required"
+  })),
+  district: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "completeInformation.district.required"
+  }))
+});
+const bank = [{
+  value: '1',
+  label: 'Tien Phong Bank'
+}, {
+  value: '2',
+  label: 'Vietcombank'
+}, {
+  value: '3',
+  label: 'BIDV'
+}];
+const city = [{
+  value: 'HN',
+  label: 'Hà Nội'
+}, {
+  value: 'TPHCM',
+  label: 'Thành phố HCM'
+}, {
+  value: 'DN',
+  label: 'Đà nẵng'
+}];
+const district = [{
+  value: 'HN',
+  label: 'Nam Từ Liêm'
+}, {
+  value: 'TPHCM',
+  label: 'Thành phố HCM'
+}, {
+  value: 'DN',
+  label: 'Đà nẵng'
+}];
+const wards = [{
+  value: 'HN',
+  label: 'Phạm Hùng'
+}, {
+  value: 'TPHCM',
+  label: 'Lưu Hữu Phước'
+}, {
+  value: 'DN',
+  label: 'Mễ Trì'
+}];
+
+const UserAccountTab = () => {
+  let {
+    userDetails,
+    userSettings,
+    ...user
+  } = useSelector(state => state.auth.user);
+  userDetails = userDetails || {};
+  userSettings = userSettings || {};
+  return /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
+    sm: "12"
+  }, /*#__PURE__*/React.createElement(Media, {
+    className: "mb-2"
+  }, /*#__PURE__*/React.createElement(Media, {
+    className: "mr-2 my-25",
+    left: true,
+    href: "#"
+  }, /*#__PURE__*/React.createElement(Media, {
+    className: "users-avatar-shadow rounded",
+    object: true,
+    src: userSettings ? userSettings.avatar : '',
+    alt: "user profile image",
+    height: "84",
+    width: "84"
+  })), /*#__PURE__*/React.createElement(Media, {
+    className: "mt-2",
+    body: true
+  }, /*#__PURE__*/React.createElement(Media, {
+    className: "font-medium-1 text-bold-600",
+    tag: "p",
+    heading: true
+  }, user.fullName), /*#__PURE__*/React.createElement("div", null, "M\xE3 t\xE0i kho\u1EA3n : ", user.userCode), /*#__PURE__*/React.createElement("div", {
+    className: "d-flex flex-wrap"
+  }, /*#__PURE__*/React.createElement(Button.Ripple, {
+    className: "mr-1 mt-2",
+    color: "primary",
+    outline: true
+  }, "Change"), /*#__PURE__*/React.createElement(Button.Ripple, {
+    className: "mt-2",
+    color: "danger",
+    outline: true
+  }, "Remove Avatar"))))), /*#__PURE__*/React.createElement(Col, {
+    sm: "12"
+  }, /*#__PURE__*/React.createElement(Formik, {
+    enableReinitialize: true,
+    validationSchema: validationSchema,
+    initialValues: {
+      fullName: user.fullName || '',
+      icNumber: user.icNumber || '',
+      dateOfBirth: user.dateOfBirth || '',
+      gender: user.gender || 'MALE',
+      city: userDetails.city || '',
+      district: userDetails.district || '',
+      ward: userDetails.ward || '',
+      address: userDetails.address || '',
+      bankName: userDetails.bankName || '',
+      bankBranch: userDetails.bankBranch || '',
+      bankNumber: userDetails.bankNumber || ''
+    }
+  }, ({
+    errors,
+    touched
+  }) => /*#__PURE__*/React.createElement(Form, null, /*#__PURE__*/React.createElement(Row, {
+    className: "mt-2"
+  }, /*#__PURE__*/React.createElement(Col, {
+    sm: "12",
+    md: "6"
+  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+    messageId: "resgister.fullName",
+    fieldName: "fullName",
+    errors: errors,
+    touched: touched
+  })), /*#__PURE__*/React.createElement(Col, {
+    sm: "12",
+    md: "6"
+  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+    messageId: "completeInformation.nbrPer",
+    fieldName: "icNumber",
+    errors: errors,
+    touched: touched
+  }))), /*#__PURE__*/React.createElement(Row, {
+    className: "mt-2"
+  }, /*#__PURE__*/React.createElement(Col, {
+    sm: "12",
+    md: "6"
+  }, /*#__PURE__*/React.createElement(BaseFormDatePicker$1, {
+    messageId: "completeInformation.dateOfBirth",
+    fieldName: "dateOfBirth",
+    errors: errors,
+    touched: touched
+  })), /*#__PURE__*/React.createElement(Col, {
+    sm: "12",
+    md: "6"
+  }, /*#__PURE__*/React.createElement(BaseFormGroupSelect$1, {
+    messageId: "completeInformation.gender",
+    fieldName: "gender",
+    defaultValue: GENDER_OPTIONS[0],
+    options: GENDER_OPTIONS,
+    errors: errors,
+    touched: touched
+  }))), /*#__PURE__*/React.createElement(Row, {
+    className: "mt-2"
+  }, /*#__PURE__*/React.createElement(Col, {
+    sm: "12",
+    md: "6"
+  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+    messageId: "register.phoneNumber",
+    fieldName: "phoneNumber",
+    errors: errors,
+    touched: touched
+  })), /*#__PURE__*/React.createElement(Col, {
+    sm: "12",
+    md: "6"
+  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+    messageId: "register.email",
+    fieldName: "email",
+    errors: errors,
+    touched: touched
+  }))), /*#__PURE__*/React.createElement(Row, {
+    className: "mt-2"
+  }, /*#__PURE__*/React.createElement(Col, {
+    sm: "12"
+  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+    messageId: "completeInformation.address",
+    fieldName: "address",
+    errors: errors,
+    touched: touched
+  }))), /*#__PURE__*/React.createElement(Row, {
+    className: "mt-2"
+  }, /*#__PURE__*/React.createElement(Col, {
+    sm: "4"
+  }, /*#__PURE__*/React.createElement(BaseFormGroupSelect$1, {
+    messageId: "completeInformation.province",
+    fieldName: "city",
+    options: city,
+    errors: errors,
+    touched: touched
+  })), /*#__PURE__*/React.createElement(Col, {
+    sm: "4"
+  }, /*#__PURE__*/React.createElement(BaseFormGroupSelect$1, {
+    messageId: "completeInformation.district",
+    fieldName: "district",
+    options: district,
+    errors: errors,
+    touched: touched
+  })), /*#__PURE__*/React.createElement(Col, {
+    sm: "4"
+  }, /*#__PURE__*/React.createElement(BaseFormGroupSelect$1, {
+    messageId: "completeInformation.ward",
+    fieldName: "ward",
+    options: wards,
+    errors: errors,
+    touched: touched
+  }))), /*#__PURE__*/React.createElement(Row, {
+    className: "mt-2"
+  }, /*#__PURE__*/React.createElement(Col, {
+    sm: "4"
+  }, /*#__PURE__*/React.createElement(BaseFormGroupSelect$1, {
+    messageId: "completeInformation.bank",
+    fieldName: "bankName",
+    options: bank,
+    errors: errors,
+    touched: touched
+  })), /*#__PURE__*/React.createElement(Col, {
+    sm: "4"
+  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+    messageId: "completeInformation.branch",
+    fieldName: "bankBranch",
+    errors: errors,
+    touched: touched
+  })), /*#__PURE__*/React.createElement(Col, {
+    sm: "4"
+  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+    messageId: "completeInformation.accountNbr",
+    fieldName: "bankNumber",
+    errors: errors,
+    touched: touched
+  }))), /*#__PURE__*/React.createElement(Col, {
+    className: "d-flex justify-content-end flex-wrap mt-2",
+    sm: "12"
+  }, /*#__PURE__*/React.createElement(Button.Ripple, {
+    type: "button",
+    color: "secondary"
+  }, "Trang ch\u1EE7"), /*#__PURE__*/React.createElement(Button.Ripple, {
+    className: "ml-3",
+    type: "submit",
+    color: "primary"
+  }, "L\u01B0u thay \u0111\u1ED5i")))), /*#__PURE__*/React.createElement(Row, null)));
+};
+
 class CheckBox extends React.Component {
   render() {
     return /*#__PURE__*/React.createElement("div", {
@@ -3160,222 +3626,6 @@ class CheckBox extends React.Component {
     }, /*#__PURE__*/React.createElement("span", {
       className: "vx-checkbox--check"
     }, this.props.icon)), /*#__PURE__*/React.createElement("span", null, this.props.label));
-  }
-
-}
-
-class UserAccountTab extends React.Component {
-  render() {
-    return /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
-      sm: "12"
-    }, /*#__PURE__*/React.createElement(Media, {
-      className: "mb-2"
-    }, /*#__PURE__*/React.createElement(Media, {
-      className: "mr-2 my-25",
-      left: true,
-      href: "#"
-    }, /*#__PURE__*/React.createElement(Media, {
-      className: "users-avatar-shadow rounded",
-      object: true,
-      src: 'https://storage.live.com/Users/-6155523327610065665/MyProfile/ExpressionProfile/ProfilePhoto:Win8Static,UserTileMedium,UserTileStatic',
-      alt: "user profile image",
-      height: "84",
-      width: "84"
-    })), /*#__PURE__*/React.createElement(Media, {
-      className: "mt-2",
-      body: true
-    }, /*#__PURE__*/React.createElement(Media, {
-      className: "font-medium-1 text-bold-600",
-      tag: "p",
-      heading: true
-    }, "Crystal Hamilton"), /*#__PURE__*/React.createElement("div", {
-      className: "d-flex flex-wrap"
-    }, /*#__PURE__*/React.createElement(Button.Ripple, {
-      className: "mr-1",
-      color: "primary",
-      outline: true
-    }, "Change"), /*#__PURE__*/React.createElement(Button.Ripple, {
-      color: "flat-danger"
-    }, "Remove Avatar"))))), /*#__PURE__*/React.createElement(Col, {
-      sm: "12"
-    }, /*#__PURE__*/React.createElement(Form, {
-      onSubmit: e => e.preventDefault()
-    }, /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
-      md: "6",
-      sm: "12"
-    }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
-      for: "username"
-    }, "Username"), /*#__PURE__*/React.createElement(Input, {
-      type: "text",
-      defaultValue: "crystal",
-      id: "username",
-      placeholder: "Username"
-    }))), /*#__PURE__*/React.createElement(Col, {
-      md: "6",
-      sm: "12"
-    }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
-      for: "status"
-    }, "Status"), /*#__PURE__*/React.createElement(Input, {
-      type: "select",
-      name: "status",
-      id: "status"
-    }, /*#__PURE__*/React.createElement("option", null, "Active"), /*#__PURE__*/React.createElement("option", null, "Banned"), /*#__PURE__*/React.createElement("option", null, "Closed")))), /*#__PURE__*/React.createElement(Col, {
-      md: "6",
-      sm: "12"
-    }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
-      for: "name"
-    }, "Name"), /*#__PURE__*/React.createElement(Input, {
-      type: "text",
-      defaultValue: "Crystal Hamilton",
-      id: "name",
-      placeholder: "Name"
-    }))), /*#__PURE__*/React.createElement(Col, {
-      md: "6",
-      sm: "12"
-    }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
-      for: "role"
-    }, "Role"), /*#__PURE__*/React.createElement(Input, {
-      type: "select",
-      name: "role",
-      id: "role"
-    }, /*#__PURE__*/React.createElement("option", null, "User"), /*#__PURE__*/React.createElement("option", null, "Staff")))), /*#__PURE__*/React.createElement(Col, {
-      md: "6",
-      sm: "12"
-    }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
-      for: "email"
-    }, "Email"), /*#__PURE__*/React.createElement(Input, {
-      type: "text",
-      defaultValue: "crystalhamilton@gmail.com",
-      id: "email",
-      placeholder: "Email"
-    }))), /*#__PURE__*/React.createElement(Col, {
-      md: "6",
-      sm: "12"
-    }, /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
-      for: "company"
-    }, "Company"), /*#__PURE__*/React.createElement(Input, {
-      type: "text",
-      id: "company",
-      defaultValue: "North Star Aviation Pvt Ltd",
-      placeholder: "company"
-    }))), /*#__PURE__*/React.createElement(Col, {
-      sm: "12"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "permissions border px-2"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "title pt-2 pb-0"
-    }, /*#__PURE__*/React.createElement(Lock, {
-      size: 19
-    }), /*#__PURE__*/React.createElement("span", {
-      className: "text-bold-500 font-medium-2 ml-50"
-    }, "Permissions"), /*#__PURE__*/React.createElement("hr", null)), /*#__PURE__*/React.createElement(Table, {
-      borderless: true,
-      responsive: true
-    }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "Module Permission"), /*#__PURE__*/React.createElement("th", null, "Read"), /*#__PURE__*/React.createElement("th", null, "Write"), /*#__PURE__*/React.createElement("th", null, "Create"), /*#__PURE__*/React.createElement("th", null, "Delete"))), /*#__PURE__*/React.createElement("tbody", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", null, "Users"), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React.createElement(Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: true
-    })), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React.createElement(Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: false
-    })), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React.createElement(Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: false
-    })), /*#__PURE__*/React.createElement("td", null, ' ', /*#__PURE__*/React.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React.createElement(Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: true
-    }))), /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", null, "Articles"), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React.createElement(Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: false
-    })), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React.createElement(Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: true
-    })), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React.createElement(Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: false
-    })), /*#__PURE__*/React.createElement("td", null, ' ', /*#__PURE__*/React.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React.createElement(Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: true
-    }))), /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", null, "Staff"), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React.createElement(Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: true
-    })), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React.createElement(Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: true
-    })), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React.createElement(Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: false
-    })), /*#__PURE__*/React.createElement("td", null, ' ', /*#__PURE__*/React.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React.createElement(Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: false
-    }))))))), /*#__PURE__*/React.createElement(Col, {
-      className: "d-flex justify-content-end flex-wrap mt-2",
-      sm: "12"
-    }, /*#__PURE__*/React.createElement(Button.Ripple, {
-      className: "mr-1",
-      color: "primary"
-    }, "Save Changes"), /*#__PURE__*/React.createElement(Button.Ripple, {
-      color: "flat-warning"
-    }, "Reset"))))));
   }
 
 }
@@ -3488,7 +3738,7 @@ class UserInfoTab extends React.Component {
   }
 
   render() {
-    return /*#__PURE__*/React.createElement(Form, {
+    return /*#__PURE__*/React.createElement(Form$1, {
       onSubmit: e => e.preventDefault()
     }, /*#__PURE__*/React.createElement(Row, {
       className: "mt-1"
@@ -3658,6 +3908,7 @@ class UserInfoTab extends React.Component {
 
 const AccountSettings = props => {
   const [activeTab, setActiveTab] = useState('account-info');
+  const history = useHistory();
   useEffect(() => setActiveTab(props.activeTab), [props.activeTab]);
   return /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
     sm: "12"
@@ -3672,7 +3923,7 @@ const AccountSettings = props => {
       active: activeTab === 'account-info'
     }),
     onClick: () => {
-      setActiveTab('account-info');
+      history.push('/account-info');
     }
   }, /*#__PURE__*/React.createElement(User, {
     size: 16
@@ -3685,7 +3936,7 @@ const AccountSettings = props => {
       active: activeTab === 'change-password'
     }),
     onClick: () => {
-      setActiveTab('change-password');
+      history.push('/change-password');
     }
   }, /*#__PURE__*/React.createElement(Info, {
     size: 16
@@ -3736,7 +3987,7 @@ class UserAccountTab$1 extends React.Component {
       color: "flat-danger"
     }, "Remove Avatar"))))), /*#__PURE__*/React.createElement(Col, {
       sm: "12"
-    }, /*#__PURE__*/React.createElement(Form, {
+    }, /*#__PURE__*/React.createElement(Form$1, {
       onSubmit: e => e.preventDefault()
     }, /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
       md: "6",
@@ -3998,7 +4249,7 @@ class UserInfoTab$1 extends React.Component {
   }
 
   render() {
-    return /*#__PURE__*/React.createElement(Form, {
+    return /*#__PURE__*/React.createElement(Form$1, {
       onSubmit: e => e.preventDefault()
     }, /*#__PURE__*/React.createElement(Row, {
       className: "mt-1"
@@ -4242,28 +4493,6 @@ const GeneralInfo = props => {
   }, /*#__PURE__*/React.createElement(UserInfoTab$1, null)))))));
 };
 
-const BaseFormGroup = ({
-  fieldName,
-  errors,
-  touched,
-  messageId,
-  type,
-  isRequired: _isRequired = true
-}) => {
-  return /*#__PURE__*/React.createElement(FormGroup, {
-    className: "form-label-group position-relative"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: messageId
-  }, msg => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Field, {
-    type: type,
-    name: fieldName,
-    className: `form-control ${_isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'}`,
-    placeholder: msg
-  }), _isRequired && errors[fieldName] && touched[fieldName] ? /*#__PURE__*/React.createElement("div", {
-    className: "text-danger"
-  }, errors[fieldName]) : null, /*#__PURE__*/React.createElement(Label, null, msg))));
-};
-
 const formSchema = object().shape({
   username: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "login.username.required"
@@ -4311,7 +4540,7 @@ const Login = () => {
   }, ({
     errors,
     touched
-  }) => /*#__PURE__*/React.createElement(Form$1, null, /*#__PURE__*/React.createElement("h4", {
+  }) => /*#__PURE__*/React.createElement(Form, null, /*#__PURE__*/React.createElement("h4", {
     className: "text-center text-white mb-3"
   }, rememberMe ? /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "login.sayHi",
@@ -4442,7 +4671,7 @@ const Register = () => {
   }, ({
     errors,
     touched
-  }) => /*#__PURE__*/React.createElement(Form$1, null, /*#__PURE__*/React.createElement(BaseFormGroup, {
+  }) => /*#__PURE__*/React.createElement(Form, null, /*#__PURE__*/React.createElement(BaseFormGroup, {
     fieldName: "fullName",
     errors: errors,
     touched: touched,
@@ -4541,7 +4770,7 @@ const ForgotPassword = () => {
     errors,
     touched,
     values
-  }) => /*#__PURE__*/React.createElement(Form$1, null, /*#__PURE__*/React.createElement("h4", {
+  }) => /*#__PURE__*/React.createElement(Form, null, /*#__PURE__*/React.createElement("h4", {
     className: "text-center text-white"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "forgotPassword"
@@ -4661,7 +4890,7 @@ const CreatePassword = ({
   }, ({
     errors,
     touched
-  }) => /*#__PURE__*/React.createElement(Form$1, null, /*#__PURE__*/React.createElement("div", {
+  }) => /*#__PURE__*/React.createElement(Form, null, /*#__PURE__*/React.createElement("div", {
     className: "text-center mb-3"
   }, /*#__PURE__*/React.createElement("h4", {
     className: isLanding2 ? 'font-weight-boild' : 'font-weight-boild text-white'
@@ -4840,137 +5069,6 @@ const LandingPage = props => {
   }, /*#__PURE__*/React.createElement(TabView, null))), /*#__PURE__*/React.createElement(LandingFooter, null)));
 };
 
-const Select = props => {
-  const [inputValue, setInputValue] = useState(props.defaultValue || '');
-  const [isFocused, setIsFocused] = useState(false);
-
-  const onChange = (e, actions) => {
-    if (props.onChange) {
-      props.onChange(e, actions);
-    }
-
-    if (props.isMulti) {
-      setInputValue(e ? e.map(item => item.value).join() : '');
-    } else {
-      setInputValue(e ? e.value : '');
-    }
-  };
-
-  const onFocus = e => {
-    if (props.onFocus) {
-      props.onChange(e);
-    }
-
-    setIsFocused(true);
-  };
-
-  const onBlur = e => {
-    if (props.onBlur) {
-      props.onBlur(e);
-    }
-
-    setIsFocused(false);
-  };
-
-  return /*#__PURE__*/React.createElement(FormGroup, {
-    className: "form-label-group position-relative"
-  }, /*#__PURE__*/React.createElement(Select$1, Object.assign({}, props, {
-    onChange: onChange,
-    onBlur: onBlur,
-    onFocus: onFocus,
-    theme: theme => ({ ...theme,
-      colors: { ...theme.colors,
-        primary: '#338955'
-      }
-    })
-  })), props.required ? props.errors[props.fieldName] && props.touched[props.fieldName] ? /*#__PURE__*/React.createElement("div", {
-    className: "text-danger"
-  }, props.errors[props.fieldName]) : null : '', /*#__PURE__*/React.createElement("input", {
-    className: "d-none",
-    placeholder: props.placeholder,
-    value: inputValue
-  }), /*#__PURE__*/React.createElement(Label, {
-    className: classnames({
-      'text-primary': isFocused
-    })
-  }, props.placeholder));
-};
-
-const DatePicker = props => /*#__PURE__*/React.createElement(FormGroup, {
-  className: "form-label-group position-relative"
-}, /*#__PURE__*/React.createElement(Flatpickr, props), /*#__PURE__*/React.createElement(Label, null, props.placeholder), !props.notRequired && props.errors[props.fieldName] && props.touched[props.fieldName] ? /*#__PURE__*/React.createElement("div", {
-  className: "text-danger"
-}, props.errors[props.fieldName]) : null);
-
-const BaseFormGroupSelect = ({
-  fieldName,
-  errors,
-  touched,
-  messageId,
-  options,
-  intl,
-  defaultValue,
-  isRequired: _isRequired = true
-}) => {
-  return /*#__PURE__*/React.createElement(FastField, {
-    name: "fieldName"
-  }, ({
-    field,
-    form
-  }) => /*#__PURE__*/React.createElement(Select, {
-    placeholder: intl.formatMessage({
-      id: messageId
-    }),
-    className: `${_isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'}`,
-    classNamePrefix: "Select",
-    fieldName: fieldName,
-    required: _isRequired,
-    defaultValue: defaultValue,
-    errors: errors,
-    touched: touched,
-    options: options,
-    onChange: e => {
-      form.setFieldValue(fieldName, e.value);
-    }
-  }));
-};
-
-var BaseFormGroupSelect$1 = injectIntl(BaseFormGroupSelect);
-
-const BaseFormDatePicker = ({
-  fieldName,
-  errors,
-  touched,
-  messageId,
-  value,
-  options,
-  intl,
-  isRequired: _isRequired = true
-}) => {
-  return /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(FastField, {
-    name: fieldName
-  }, ({
-    field,
-    form
-  }) => /*#__PURE__*/React.createElement(DatePicker, {
-    className: `bg-white form-control position-relative ${_isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'}`,
-    placeholder: intl.formatMessage({
-      id: messageId
-    }),
-    fieldName: fieldName,
-    notRequired: !_isRequired,
-    errors: errors,
-    touched: touched,
-    value: value,
-    options: options,
-    onChange: date => {
-      form.setFieldValue(fieldName, date[0]);
-    }
-  })));
-};
-
-var BaseFormDatePicker$1 = injectIntl(BaseFormDatePicker);
-
 const CompleteInforValidate = object().shape({
   icType: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "completeInformation.nbrPer.required"
@@ -5034,17 +5132,7 @@ const personalInfoOptions = [{
   color: '#338955',
   isFixed: true
 }];
-const genderOptions = [{
-  value: 'MALE',
-  label: 'Nam'
-}, {
-  value: 'FEMALE',
-  label: 'Nữ'
-}, {
-  value: 'OTHER',
-  label: 'Khác'
-}];
-const bank = [{
+const bank$1 = [{
   value: '1',
   label: 'Tien Phong Bank'
 }, {
@@ -5054,7 +5142,7 @@ const bank = [{
   value: '3',
   label: 'BIDV'
 }];
-const city = [{
+const city$1 = [{
   value: 'HN',
   label: 'Hà Nội'
 }, {
@@ -5064,7 +5152,7 @@ const city = [{
   value: 'DN',
   label: 'Đà nẵng'
 }];
-const district = [{
+const district$1 = [{
   value: 'HN',
   label: 'Nam Từ Liêm'
 }, {
@@ -5074,7 +5162,7 @@ const district = [{
   value: 'DN',
   label: 'Đà nẵng'
 }];
-const wards = [{
+const wards$1 = [{
   value: 'HN',
   label: 'Phạm Hùng'
 }, {
@@ -5117,7 +5205,7 @@ const CompleteInformation = ({
   }, ({
     errors,
     touched
-  }) => /*#__PURE__*/React.createElement(Form$1, null, /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
+  }) => /*#__PURE__*/React.createElement(Form, null, /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
     sm: "12",
     lg: "3",
     className: "mb-3"
@@ -5172,9 +5260,6 @@ const CompleteInformation = ({
   }, /*#__PURE__*/React.createElement(BaseFormDatePicker$1, {
     messageId: "completeInformation.dateOfBirth",
     fieldName: "dateOfBirth",
-    options: {
-      dateFormat: 'M \\ d \\, Y'
-    },
     errors: errors,
     touched: touched
   })), /*#__PURE__*/React.createElement(Col, {
@@ -5182,8 +5267,8 @@ const CompleteInformation = ({
   }, /*#__PURE__*/React.createElement(BaseFormGroupSelect$1, {
     messageId: "completeInformation.gender",
     fieldName: "gender",
-    defaultValue: genderOptions[0],
-    options: genderOptions,
+    defaultValue: GENDER_OPTIONS[0],
+    options: GENDER_OPTIONS,
     errors: errors,
     touched: touched
   }))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
@@ -5191,7 +5276,7 @@ const CompleteInformation = ({
   }, /*#__PURE__*/React.createElement(BaseFormGroupSelect$1, {
     messageId: "completeInformation.province",
     fieldName: "city",
-    options: city,
+    options: city$1,
     errors: errors,
     touched: touched
   })), /*#__PURE__*/React.createElement(Col, {
@@ -5199,7 +5284,7 @@ const CompleteInformation = ({
   }, /*#__PURE__*/React.createElement(BaseFormGroupSelect$1, {
     messageId: "completeInformation.district",
     fieldName: "district",
-    options: district,
+    options: district$1,
     errors: errors,
     touched: touched
   })), /*#__PURE__*/React.createElement(Col, {
@@ -5207,7 +5292,7 @@ const CompleteInformation = ({
   }, /*#__PURE__*/React.createElement(BaseFormGroupSelect$1, {
     messageId: "completeInformation.ward",
     fieldName: "ward",
-    options: wards,
+    options: wards$1,
     errors: errors,
     touched: touched
   }))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
@@ -5228,7 +5313,7 @@ const CompleteInformation = ({
   }, /*#__PURE__*/React.createElement(BaseFormGroupSelect$1, {
     messageId: "completeInformation.bank",
     fieldName: "bankName",
-    options: bank,
+    options: bank$1,
     errors: errors,
     touched: touched
   })), /*#__PURE__*/React.createElement(Col, {
@@ -5445,19 +5530,12 @@ TopBarProgress.config({
   barThickness: 5
 });
 
-const LoadingSpinner = ({
-  showLoadingBar
-}) => {
-  return showLoadingBar ? /*#__PURE__*/React.createElement(TopBarProgress, null) : null;
+const LoadingSpinner = () => {
+  const {
+    isLoading
+  } = useSelector(state => state.ui);
+  return isLoading ? /*#__PURE__*/React.createElement(TopBarProgress, null) : null;
 };
-
-const mapStateToProps$4 = state => {
-  return {
-    showLoadingBar: state.customizer.showLoadingBar
-  };
-};
-
-var LoadingSpinner$1 = connect(mapStateToProps$4)(LoadingSpinner);
 
 const RippleButton = ({
   rippleColor,
@@ -5505,7 +5583,7 @@ const App = ({
   }, /*#__PURE__*/React.createElement(PersistGate, {
     loading: null,
     persistor: persistor
-  }, /*#__PURE__*/React.createElement(LoadingSpinner$1, null), /*#__PURE__*/React.createElement(AppRouter$1, {
+  }, /*#__PURE__*/React.createElement(LoadingSpinner, null), /*#__PURE__*/React.createElement(AppRouter$1, {
     message: message,
     appId: appId,
     history: history,

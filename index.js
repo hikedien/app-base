@@ -23,11 +23,11 @@ var ReactDOM = _interopDefault(require('react-dom'));
 var PropTypes = _interopDefault(require('prop-types'));
 var ScrollToTop = _interopDefault(require('react-scroll-up'));
 var Hammer = _interopDefault(require('react-hammerjs'));
+var Yup = require('yup');
+var formik = require('formik');
+var Flatpickr = _interopDefault(require('react-flatpickr'));
 var Select$1 = _interopDefault(require('react-select'));
 var chroma = _interopDefault(require('chroma-js'));
-var Flatpickr = _interopDefault(require('react-flatpickr'));
-var formik = require('formik');
-var Yup = require('yup');
 var TopBarProgress = _interopDefault(require('react-topbar-progress-indicator'));
 var Ripples = _interopDefault(require('react-ripples'));
 require('react-perfect-scrollbar/dist/css/styles.css');
@@ -64,6 +64,22 @@ var LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
   FAIL: 'FAIL'
 };
+var GENDER_OPTIONS = [{
+  value: 'MALE',
+  label: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "Nam"
+  })
+}, {
+  value: 'FEMALE',
+  label: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "N\u1EEF"
+  })
+}, {
+  value: 'OTHER',
+  label: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "Kh\xE1c"
+  })
+}];
 var APP_URL = 'http://localhost:3000';
 var IMAGE = {
   LOGO: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Logo.png?alt=media&token=68d3ab7a-e9bb-4c43-a543-c65f72033bf9',
@@ -273,16 +289,6 @@ var customizerReducer = function customizerReducer(state, action) {
     case 'HIDE_SCROLL_TO_TOP':
       return _extends({}, state, {
         hideScrollToTop: action.value
-      });
-
-    case 'SHOW_LOADING_BAR':
-      return _extends({}, state, {
-        showLoadingBar: true
-      });
-
-    case 'HIDE_LOADING_BAR':
-      return _extends({}, state, {
-        showLoadingBar: false
       });
 
     default:
@@ -1036,9 +1042,35 @@ var navbarReducer = function navbarReducer(state, action) {
   }
 };
 
+var initialState$1 = {
+  isLoading: false
+};
+
+var uiReducer = function uiReducer(state, action) {
+  if (state === void 0) {
+    state = initialState$1;
+  }
+
+  switch (action.type) {
+    case 'SHOW_LOADING_BAR':
+      return _extends({}, state, {
+        isLoading: true
+      });
+
+    case 'HIDE_LOADING_BAR':
+      return _extends({}, state, {
+        isLoading: false
+      });
+
+    default:
+      return state;
+  }
+};
+
 var rootReducer = function rootReducer(appReducer) {
   return redux.combineReducers({
     customizer: customizerReducer,
+    ui: uiReducer,
     auth: reduxPersist.persistReducer({
       storage: sessionStorage,
       key: 'root',
@@ -1460,7 +1492,7 @@ var UserDropdown = function UserDropdown(props) {
     onClick: function onClick(e) {
       return handleNavigation(e, '/account-info');
     }
-  }, /*#__PURE__*/React__default.createElement(Icon.Settings, {
+  }, /*#__PURE__*/React__default.createElement(Icon.User, {
     size: 14,
     className: "mr-50"
   }), /*#__PURE__*/React__default.createElement("span", {
@@ -1613,6 +1645,9 @@ var NavbarUser = /*#__PURE__*/function (_React$PureComponent) {
   _proto.render = function render() {
     var _this3 = this;
 
+    var _this$props$user = this.props.user,
+        userSettings = _this$props$user.userSettings,
+        userDetails = _this$props$user.userDetails;
     return /*#__PURE__*/React__default.createElement("ul", {
       className: "nav navbar-nav navbar-nav-user float-right"
     }, /*#__PURE__*/React__default.createElement(reactstrap.NavItem, {
@@ -1844,10 +1879,10 @@ var NavbarUser = /*#__PURE__*/function (_React$PureComponent) {
       className: "user-nav d-sm-flex d-none"
     }, /*#__PURE__*/React__default.createElement("span", {
       className: "user-name text-bold-600"
-    }, this.props.userName)), /*#__PURE__*/React__default.createElement("span", {
+    }, userDetails.fullName)), /*#__PURE__*/React__default.createElement("span", {
       "data-tour": "user"
     }, /*#__PURE__*/React__default.createElement("img", {
-      src: "https://storage.live.com/Users/-6155523327610065665/MyProfile/ExpressionProfile/ProfilePhoto:Win8Static,UserTileMedium,UserTileStatic",
+      src: userSettings ? userSettings.avatar : '',
       className: "round",
       height: "40",
       width: "40",
@@ -1906,9 +1941,10 @@ var ThemeNavbar = function ThemeNavbar(props) {
   })))), /*#__PURE__*/React__default.createElement("ul", {
     className: "nav navbar-nav d-none d-xl-flex bookmark-icons"
   }, Array(5).fill(0).map(function (_, index) {
-    return /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement("img", {
+    return /*#__PURE__*/React__default.createElement(reactstrap.NavItem, {
+      key: index
+    }, /*#__PURE__*/React__default.createElement("img", {
       className: "img-fluid",
-      key: index,
       src: IMAGE["NAV_ICON_" + (index + 1)]
     }));
   })))), /*#__PURE__*/React__default.createElement(NavbarUser$1, {
@@ -1916,7 +1952,7 @@ var ThemeNavbar = function ThemeNavbar(props) {
     changeCurrentLang: props.changeCurrentLang,
     appId: props.appId,
     authToken: props.authToken,
-    userName: props.name,
+    user: props.user,
     roles: props.roles,
     isAuthenticated: props.isAuthenticated,
     logoutAction: props.logoutAction
@@ -1925,7 +1961,7 @@ var ThemeNavbar = function ThemeNavbar(props) {
 
 var mapStateToProps = function mapStateToProps(state) {
   return {
-    name: state.auth.user.fullName,
+    user: state.auth.user,
     isAuthenticated: !!state.auth.name,
     roles: state.navbar.roles,
     authToken: state.auth.authToken
@@ -3466,6 +3502,461 @@ var messages_vi = {
 	"completeInformation.done": "Hoàn thành"
 };
 
+var BaseFormGroup = function BaseFormGroup(_ref) {
+  var fieldName = _ref.fieldName,
+      errors = _ref.errors,
+      touched = _ref.touched,
+      messageId = _ref.messageId,
+      type = _ref.type,
+      _ref$isRequired = _ref.isRequired,
+      isRequired = _ref$isRequired === void 0 ? true : _ref$isRequired;
+  return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+    className: "form-label-group position-relative"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: messageId
+  }, function (msg) {
+    return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.Field, {
+      type: type,
+      name: fieldName,
+      className: "form-control " + (isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'),
+      placeholder: msg
+    }), isRequired && errors[fieldName] && touched[fieldName] ? /*#__PURE__*/React__default.createElement("div", {
+      className: "text-danger"
+    }, errors[fieldName]) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
+  }));
+};
+
+var DatePicker = function DatePicker(props) {
+  return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+    className: "form-label-group position-relative"
+  }, /*#__PURE__*/React__default.createElement(Flatpickr, props), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, props.placeholder), !props.notRequired && props.errors[props.fieldName] && props.touched[props.fieldName] ? /*#__PURE__*/React__default.createElement("div", {
+    className: "text-danger"
+  }, props.errors[props.fieldName]) : null);
+};
+
+var BaseFormDatePicker = function BaseFormDatePicker(_ref) {
+  var fieldName = _ref.fieldName,
+      errors = _ref.errors,
+      touched = _ref.touched,
+      messageId = _ref.messageId,
+      value = _ref.value,
+      options = _ref.options,
+      intl = _ref.intl,
+      _ref$isRequired = _ref.isRequired,
+      isRequired = _ref$isRequired === void 0 ? true : _ref$isRequired;
+  var defaultOptions = {
+    dateFormat: 'm/d/Y'
+  };
+  return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(formik.FastField, {
+    name: fieldName
+  }, function (_ref2) {
+    var form = _ref2.form;
+    return /*#__PURE__*/React__default.createElement(DatePicker, {
+      className: "bg-white form-control position-relative " + (isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'),
+      placeholder: intl.formatMessage({
+        id: messageId
+      }),
+      fieldName: fieldName,
+      notRequired: !isRequired,
+      errors: errors,
+      touched: touched,
+      value: value,
+      options: options || defaultOptions,
+      onChange: function onChange(date) {
+        form.setFieldValue(fieldName, date[0]);
+      }
+    });
+  }));
+};
+
+var BaseFormDatePicker$1 = reactIntl.injectIntl(BaseFormDatePicker);
+
+var Select = function Select(props) {
+  var _useState = React.useState(props.defaultValue || ''),
+      inputValue = _useState[0],
+      setInputValue = _useState[1];
+
+  var _useState2 = React.useState(false),
+      isFocused = _useState2[0],
+      setIsFocused = _useState2[1];
+
+  var onChange = function onChange(e, actions) {
+    if (props.onChange) {
+      props.onChange(e, actions);
+    }
+
+    if (props.isMulti) {
+      setInputValue(e ? e.map(function (item) {
+        return item.value;
+      }).join() : '');
+    } else {
+      setInputValue(e ? e.value : '');
+    }
+  };
+
+  var onFocus = function onFocus(e) {
+    if (props.onFocus) {
+      props.onChange(e);
+    }
+
+    setIsFocused(true);
+  };
+
+  var onBlur = function onBlur(e) {
+    if (props.onBlur) {
+      props.onBlur(e);
+    }
+
+    setIsFocused(false);
+  };
+
+  return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+    className: "form-label-group position-relative"
+  }, /*#__PURE__*/React__default.createElement(Select$1, _extends({}, props, {
+    onChange: onChange,
+    onBlur: onBlur,
+    onFocus: onFocus,
+    theme: function theme(_theme) {
+      return _extends({}, _theme, {
+        colors: _extends({}, _theme.colors, {
+          primary: '#338955'
+        })
+      });
+    }
+  })), props.required ? props.errors[props.fieldName] && props.touched[props.fieldName] ? /*#__PURE__*/React__default.createElement("div", {
+    className: "text-danger"
+  }, props.errors[props.fieldName]) : null : '', /*#__PURE__*/React__default.createElement("input", {
+    className: "d-none",
+    placeholder: props.placeholder,
+    value: inputValue
+  }), /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+    className: classnames({
+      'text-primary': isFocused
+    })
+  }, props.placeholder));
+};
+
+var BaseFormGroupSelect = function BaseFormGroupSelect(_ref) {
+  var fieldName = _ref.fieldName,
+      errors = _ref.errors,
+      touched = _ref.touched,
+      messageId = _ref.messageId,
+      options = _ref.options,
+      intl = _ref.intl,
+      defaultValue = _ref.defaultValue,
+      _ref$isRequired = _ref.isRequired,
+      isRequired = _ref$isRequired === void 0 ? true : _ref$isRequired;
+  return /*#__PURE__*/React__default.createElement(formik.FastField, {
+    name: "fieldName"
+  }, function (_ref2) {
+    var form = _ref2.form;
+    return /*#__PURE__*/React__default.createElement(Select, {
+      placeholder: intl.formatMessage({
+        id: messageId
+      }),
+      className: "" + (isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'),
+      classNamePrefix: "Select",
+      fieldName: fieldName,
+      required: isRequired,
+      defaultValue: defaultValue,
+      errors: errors,
+      touched: touched,
+      options: options,
+      onChange: function onChange(e) {
+        form.setFieldValue(fieldName, e.value);
+      }
+    });
+  });
+};
+
+var BaseFormGroupSelect$1 = reactIntl.injectIntl(BaseFormGroupSelect);
+
+var validationSchema = Yup.object().shape({
+  icType: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "completeInformation.nbrPer.required"
+  })),
+  icNumber: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "completeInformation.nbrPer.required"
+  })).when('icType', {
+    is: 'CMND',
+    then: Yup.string().matches(/^(\d{9}|\d{12})$/, function () {
+      return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "completeInformation.nbrPer.invalid"
+      });
+    })
+  }).when('icType', {
+    is: 'CCCD',
+    then: Yup.string().matches(/^(\d{12})$/, function () {
+      return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "completeInformation.nbrPer.invalid"
+      });
+    })
+  }).when('icType', {
+    is: 'HC',
+    then: Yup.string().matches(/^(?!^0+$)[a-zA-Z0-9]{3,20}$/, function () {
+      return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "completeInformation.nbrPer.invalid"
+      });
+    })
+  }),
+  dateOfBirth: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "completeInformation.dateOfBirth.required"
+  })),
+  address: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "completeInformation.address.required"
+  })),
+  bankName: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "completeInformation.bank.required"
+  })),
+  bankBranch: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "completeInformation.branch.required"
+  })),
+  bankNumber: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "completeInformation.accountNbr.required"
+  })),
+  city: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "completeInformation.city.required"
+  })),
+  ward: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "completeInformation.ward.required"
+  })),
+  district: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "completeInformation.district.required"
+  }))
+});
+var bank = [{
+  value: '1',
+  label: 'Tien Phong Bank'
+}, {
+  value: '2',
+  label: 'Vietcombank'
+}, {
+  value: '3',
+  label: 'BIDV'
+}];
+var city = [{
+  value: 'HN',
+  label: 'Hà Nội'
+}, {
+  value: 'TPHCM',
+  label: 'Thành phố HCM'
+}, {
+  value: 'DN',
+  label: 'Đà nẵng'
+}];
+var district = [{
+  value: 'HN',
+  label: 'Nam Từ Liêm'
+}, {
+  value: 'TPHCM',
+  label: 'Thành phố HCM'
+}, {
+  value: 'DN',
+  label: 'Đà nẵng'
+}];
+var wards = [{
+  value: 'HN',
+  label: 'Phạm Hùng'
+}, {
+  value: 'TPHCM',
+  label: 'Lưu Hữu Phước'
+}, {
+  value: 'DN',
+  label: 'Mễ Trì'
+}];
+
+var UserAccountTab = function UserAccountTab() {
+  var _useSelector = reactRedux.useSelector(function (state) {
+    return state.auth.user;
+  }),
+      userDetails = _useSelector.userDetails,
+      userSettings = _useSelector.userSettings,
+      user = _objectWithoutPropertiesLoose(_useSelector, ["userDetails", "userSettings"]);
+
+  userDetails = userDetails || {};
+  userSettings = userSettings || {};
+  return /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    sm: "12"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+    className: "mb-2"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+    className: "mr-2 my-25",
+    left: true,
+    href: "#"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+    className: "users-avatar-shadow rounded",
+    object: true,
+    src: userSettings ? userSettings.avatar : '',
+    alt: "user profile image",
+    height: "84",
+    width: "84"
+  })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+    className: "mt-2",
+    body: true
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+    className: "font-medium-1 text-bold-600",
+    tag: "p",
+    heading: true
+  }, user.fullName), /*#__PURE__*/React__default.createElement("div", null, "M\xE3 t\xE0i kho\u1EA3n : ", user.userCode), /*#__PURE__*/React__default.createElement("div", {
+    className: "d-flex flex-wrap"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+    className: "mr-1 mt-2",
+    color: "primary",
+    outline: true
+  }, "Change"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+    className: "mt-2",
+    color: "danger",
+    outline: true
+  }, "Remove Avatar"))))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    sm: "12"
+  }, /*#__PURE__*/React__default.createElement(formik.Formik, {
+    enableReinitialize: true,
+    validationSchema: validationSchema,
+    initialValues: {
+      fullName: user.fullName || '',
+      icNumber: user.icNumber || '',
+      dateOfBirth: user.dateOfBirth || '',
+      gender: user.gender || 'MALE',
+      city: userDetails.city || '',
+      district: userDetails.district || '',
+      ward: userDetails.ward || '',
+      address: userDetails.address || '',
+      bankName: userDetails.bankName || '',
+      bankBranch: userDetails.bankBranch || '',
+      bankNumber: userDetails.bankNumber || ''
+    }
+  }, function (_ref) {
+    var errors = _ref.errors,
+        touched = _ref.touched;
+    return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement(reactstrap.Row, {
+      className: "mt-2"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12",
+      md: "6"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      messageId: "resgister.fullName",
+      fieldName: "fullName",
+      errors: errors,
+      touched: touched
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12",
+      md: "6"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      messageId: "completeInformation.nbrPer",
+      fieldName: "icNumber",
+      errors: errors,
+      touched: touched
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Row, {
+      className: "mt-2"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12",
+      md: "6"
+    }, /*#__PURE__*/React__default.createElement(BaseFormDatePicker$1, {
+      messageId: "completeInformation.dateOfBirth",
+      fieldName: "dateOfBirth",
+      errors: errors,
+      touched: touched
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12",
+      md: "6"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
+      messageId: "completeInformation.gender",
+      fieldName: "gender",
+      defaultValue: GENDER_OPTIONS[0],
+      options: GENDER_OPTIONS,
+      errors: errors,
+      touched: touched
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Row, {
+      className: "mt-2"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12",
+      md: "6"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      messageId: "register.phoneNumber",
+      fieldName: "phoneNumber",
+      errors: errors,
+      touched: touched
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12",
+      md: "6"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      messageId: "register.email",
+      fieldName: "email",
+      errors: errors,
+      touched: touched
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Row, {
+      className: "mt-2"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      messageId: "completeInformation.address",
+      fieldName: "address",
+      errors: errors,
+      touched: touched
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Row, {
+      className: "mt-2"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "4"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
+      messageId: "completeInformation.province",
+      fieldName: "city",
+      options: city,
+      errors: errors,
+      touched: touched
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "4"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
+      messageId: "completeInformation.district",
+      fieldName: "district",
+      options: district,
+      errors: errors,
+      touched: touched
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "4"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
+      messageId: "completeInformation.ward",
+      fieldName: "ward",
+      options: wards,
+      errors: errors,
+      touched: touched
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Row, {
+      className: "mt-2"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "4"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
+      messageId: "completeInformation.bank",
+      fieldName: "bankName",
+      options: bank,
+      errors: errors,
+      touched: touched
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "4"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      messageId: "completeInformation.branch",
+      fieldName: "bankBranch",
+      errors: errors,
+      touched: touched
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "4"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      messageId: "completeInformation.accountNbr",
+      fieldName: "bankNumber",
+      errors: errors,
+      touched: touched
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      className: "d-flex justify-content-end flex-wrap mt-2",
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      type: "button",
+      color: "secondary"
+    }, "Trang ch\u1EE7"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      className: "ml-3",
+      type: "submit",
+      color: "primary"
+    }, "L\u01B0u thay \u0111\u1ED5i")));
+  }), /*#__PURE__*/React__default.createElement(reactstrap.Row, null)));
+};
+
 var CheckBox = /*#__PURE__*/function (_React$Component) {
   _inheritsLoose(CheckBox, _React$Component);
 
@@ -3494,233 +3985,6 @@ var CheckBox = /*#__PURE__*/function (_React$Component) {
   };
 
   return CheckBox;
-}(React__default.Component);
-
-var UserAccountTab = /*#__PURE__*/function (_React$Component) {
-  _inheritsLoose(UserAccountTab, _React$Component);
-
-  function UserAccountTab() {
-    return _React$Component.apply(this, arguments) || this;
-  }
-
-  var _proto = UserAccountTab.prototype;
-
-  _proto.render = function render() {
-    return /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "mb-2"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "mr-2 my-25",
-      left: true,
-      href: "#"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "users-avatar-shadow rounded",
-      object: true,
-      src: 'https://storage.live.com/Users/-6155523327610065665/MyProfile/ExpressionProfile/ProfilePhoto:Win8Static,UserTileMedium,UserTileStatic',
-      alt: "user profile image",
-      height: "84",
-      width: "84"
-    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "mt-2",
-      body: true
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "font-medium-1 text-bold-600",
-      tag: "p",
-      heading: true
-    }, "Crystal Hamilton"), /*#__PURE__*/React__default.createElement("div", {
-      className: "d-flex flex-wrap"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      className: "mr-1",
-      color: "primary",
-      outline: true
-    }, "Change"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      color: "flat-danger"
-    }, "Remove Avatar"))))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Form, {
-      onSubmit: function onSubmit(e) {
-        return e.preventDefault();
-      }
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      md: "6",
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "username"
-    }, "Username"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "text",
-      defaultValue: "crystal",
-      id: "username",
-      placeholder: "Username"
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      md: "6",
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "status"
-    }, "Status"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "select",
-      name: "status",
-      id: "status"
-    }, /*#__PURE__*/React__default.createElement("option", null, "Active"), /*#__PURE__*/React__default.createElement("option", null, "Banned"), /*#__PURE__*/React__default.createElement("option", null, "Closed")))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      md: "6",
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "name"
-    }, "Name"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "text",
-      defaultValue: "Crystal Hamilton",
-      id: "name",
-      placeholder: "Name"
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      md: "6",
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "role"
-    }, "Role"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "select",
-      name: "role",
-      id: "role"
-    }, /*#__PURE__*/React__default.createElement("option", null, "User"), /*#__PURE__*/React__default.createElement("option", null, "Staff")))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      md: "6",
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "email"
-    }, "Email"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "text",
-      defaultValue: "crystalhamilton@gmail.com",
-      id: "email",
-      placeholder: "Email"
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      md: "6",
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "company"
-    }, "Company"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "text",
-      id: "company",
-      defaultValue: "North Star Aviation Pvt Ltd",
-      placeholder: "company"
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement("div", {
-      className: "permissions border px-2"
-    }, /*#__PURE__*/React__default.createElement("div", {
-      className: "title pt-2 pb-0"
-    }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
-      size: 19
-    }), /*#__PURE__*/React__default.createElement("span", {
-      className: "text-bold-500 font-medium-2 ml-50"
-    }, "Permissions"), /*#__PURE__*/React__default.createElement("hr", null)), /*#__PURE__*/React__default.createElement(reactstrap.Table, {
-      borderless: true,
-      responsive: true
-    }, /*#__PURE__*/React__default.createElement("thead", null, /*#__PURE__*/React__default.createElement("tr", null, /*#__PURE__*/React__default.createElement("th", null, "Module Permission"), /*#__PURE__*/React__default.createElement("th", null, "Read"), /*#__PURE__*/React__default.createElement("th", null, "Write"), /*#__PURE__*/React__default.createElement("th", null, "Create"), /*#__PURE__*/React__default.createElement("th", null, "Delete"))), /*#__PURE__*/React__default.createElement("tbody", null, /*#__PURE__*/React__default.createElement("tr", null, /*#__PURE__*/React__default.createElement("td", null, "Users"), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: true
-    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: false
-    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: false
-    })), /*#__PURE__*/React__default.createElement("td", null, ' ', /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: true
-    }))), /*#__PURE__*/React__default.createElement("tr", null, /*#__PURE__*/React__default.createElement("td", null, "Articles"), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: false
-    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: true
-    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: false
-    })), /*#__PURE__*/React__default.createElement("td", null, ' ', /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: true
-    }))), /*#__PURE__*/React__default.createElement("tr", null, /*#__PURE__*/React__default.createElement("td", null, "Staff"), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: true
-    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: true
-    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: false
-    })), /*#__PURE__*/React__default.createElement("td", null, ' ', /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: false
-    }))))))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      className: "d-flex justify-content-end flex-wrap mt-2",
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      className: "mr-1",
-      color: "primary"
-    }, "Save Changes"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      color: "flat-warning"
-    }, "Reset"))))));
-  };
-
-  return UserAccountTab;
 }(React__default.Component);
 
 var Radio = /*#__PURE__*/function (_React$Component) {
@@ -4034,6 +4298,7 @@ var AccountSettings = function AccountSettings(props) {
       activeTab = _useState[0],
       setActiveTab = _useState[1];
 
+  var history = reactRouterDom.useHistory();
   React.useEffect(function () {
     return setActiveTab(props.activeTab);
   }, [props.activeTab]);
@@ -4050,7 +4315,7 @@ var AccountSettings = function AccountSettings(props) {
       active: activeTab === 'account-info'
     }),
     onClick: function onClick() {
-      setActiveTab('account-info');
+      history.push('/account-info');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.User, {
     size: 16
@@ -4063,7 +4328,7 @@ var AccountSettings = function AccountSettings(props) {
       active: activeTab === 'change-password'
     }),
     onClick: function onClick() {
-      setActiveTab('change-password');
+      history.push('/change-password');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Info, {
     size: 16
@@ -4655,30 +4920,6 @@ var GeneralInfo = function GeneralInfo(props) {
   }, /*#__PURE__*/React__default.createElement(UserAccountTab$1, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
     tabId: "contact"
   }, /*#__PURE__*/React__default.createElement(UserInfoTab$1, null)))))));
-};
-
-var BaseFormGroup = function BaseFormGroup(_ref) {
-  var fieldName = _ref.fieldName,
-      errors = _ref.errors,
-      touched = _ref.touched,
-      messageId = _ref.messageId,
-      type = _ref.type,
-      _ref$isRequired = _ref.isRequired,
-      isRequired = _ref$isRequired === void 0 ? true : _ref$isRequired;
-  return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
-    className: "form-label-group position-relative"
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: messageId
-  }, function (msg) {
-    return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.Field, {
-      type: type,
-      name: fieldName,
-      className: "form-control " + (isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'),
-      placeholder: msg
-    }), isRequired && errors[fieldName] && touched[fieldName] ? /*#__PURE__*/React__default.createElement("div", {
-      className: "text-danger"
-    }, errors[fieldName]) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
-  }));
 };
 
 var formSchema = Yup.object().shape({
@@ -5327,148 +5568,6 @@ var LandingPage = function LandingPage(props) {
   }, /*#__PURE__*/React__default.createElement(TabView, null))), /*#__PURE__*/React__default.createElement(LandingFooter, null)));
 };
 
-var Select = function Select(props) {
-  var _useState = React.useState(props.defaultValue || ''),
-      inputValue = _useState[0],
-      setInputValue = _useState[1];
-
-  var _useState2 = React.useState(false),
-      isFocused = _useState2[0],
-      setIsFocused = _useState2[1];
-
-  var onChange = function onChange(e, actions) {
-    if (props.onChange) {
-      props.onChange(e, actions);
-    }
-
-    if (props.isMulti) {
-      setInputValue(e ? e.map(function (item) {
-        return item.value;
-      }).join() : '');
-    } else {
-      setInputValue(e ? e.value : '');
-    }
-  };
-
-  var onFocus = function onFocus(e) {
-    if (props.onFocus) {
-      props.onChange(e);
-    }
-
-    setIsFocused(true);
-  };
-
-  var onBlur = function onBlur(e) {
-    if (props.onBlur) {
-      props.onBlur(e);
-    }
-
-    setIsFocused(false);
-  };
-
-  return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
-    className: "form-label-group position-relative"
-  }, /*#__PURE__*/React__default.createElement(Select$1, _extends({}, props, {
-    onChange: onChange,
-    onBlur: onBlur,
-    onFocus: onFocus,
-    theme: function theme(_theme) {
-      return _extends({}, _theme, {
-        colors: _extends({}, _theme.colors, {
-          primary: '#338955'
-        })
-      });
-    }
-  })), props.required ? props.errors[props.fieldName] && props.touched[props.fieldName] ? /*#__PURE__*/React__default.createElement("div", {
-    className: "text-danger"
-  }, props.errors[props.fieldName]) : null : '', /*#__PURE__*/React__default.createElement("input", {
-    className: "d-none",
-    placeholder: props.placeholder,
-    value: inputValue
-  }), /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-    className: classnames({
-      'text-primary': isFocused
-    })
-  }, props.placeholder));
-};
-
-var DatePicker = function DatePicker(props) {
-  return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
-    className: "form-label-group position-relative"
-  }, /*#__PURE__*/React__default.createElement(Flatpickr, props), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, props.placeholder), !props.notRequired && props.errors[props.fieldName] && props.touched[props.fieldName] ? /*#__PURE__*/React__default.createElement("div", {
-    className: "text-danger"
-  }, props.errors[props.fieldName]) : null);
-};
-
-var BaseFormGroupSelect = function BaseFormGroupSelect(_ref) {
-  var fieldName = _ref.fieldName,
-      errors = _ref.errors,
-      touched = _ref.touched,
-      messageId = _ref.messageId,
-      options = _ref.options,
-      intl = _ref.intl,
-      defaultValue = _ref.defaultValue,
-      _ref$isRequired = _ref.isRequired,
-      isRequired = _ref$isRequired === void 0 ? true : _ref$isRequired;
-  return /*#__PURE__*/React__default.createElement(formik.FastField, {
-    name: "fieldName"
-  }, function (_ref2) {
-    var form = _ref2.form;
-    return /*#__PURE__*/React__default.createElement(Select, {
-      placeholder: intl.formatMessage({
-        id: messageId
-      }),
-      className: "" + (isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'),
-      classNamePrefix: "Select",
-      fieldName: fieldName,
-      required: isRequired,
-      defaultValue: defaultValue,
-      errors: errors,
-      touched: touched,
-      options: options,
-      onChange: function onChange(e) {
-        form.setFieldValue(fieldName, e.value);
-      }
-    });
-  });
-};
-
-var BaseFormGroupSelect$1 = reactIntl.injectIntl(BaseFormGroupSelect);
-
-var BaseFormDatePicker = function BaseFormDatePicker(_ref) {
-  var fieldName = _ref.fieldName,
-      errors = _ref.errors,
-      touched = _ref.touched,
-      messageId = _ref.messageId,
-      value = _ref.value,
-      options = _ref.options,
-      intl = _ref.intl,
-      _ref$isRequired = _ref.isRequired,
-      isRequired = _ref$isRequired === void 0 ? true : _ref$isRequired;
-  return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(formik.FastField, {
-    name: fieldName
-  }, function (_ref2) {
-    var form = _ref2.form;
-    return /*#__PURE__*/React__default.createElement(DatePicker, {
-      className: "bg-white form-control position-relative " + (isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'),
-      placeholder: intl.formatMessage({
-        id: messageId
-      }),
-      fieldName: fieldName,
-      notRequired: !isRequired,
-      errors: errors,
-      touched: touched,
-      value: value,
-      options: options,
-      onChange: function onChange(date) {
-        form.setFieldValue(fieldName, date[0]);
-      }
-    });
-  }));
-};
-
-var BaseFormDatePicker$1 = reactIntl.injectIntl(BaseFormDatePicker);
-
 var CompleteInforValidate = Yup.object().shape({
   icType: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "completeInformation.nbrPer.required"
@@ -5538,17 +5637,7 @@ var personalInfoOptions = [{
   color: '#338955',
   isFixed: true
 }];
-var genderOptions = [{
-  value: 'MALE',
-  label: 'Nam'
-}, {
-  value: 'FEMALE',
-  label: 'Nữ'
-}, {
-  value: 'OTHER',
-  label: 'Khác'
-}];
-var bank = [{
+var bank$1 = [{
   value: '1',
   label: 'Tien Phong Bank'
 }, {
@@ -5558,7 +5647,7 @@ var bank = [{
   value: '3',
   label: 'BIDV'
 }];
-var city = [{
+var city$1 = [{
   value: 'HN',
   label: 'Hà Nội'
 }, {
@@ -5568,7 +5657,7 @@ var city = [{
   value: 'DN',
   label: 'Đà nẵng'
 }];
-var district = [{
+var district$1 = [{
   value: 'HN',
   label: 'Nam Từ Liêm'
 }, {
@@ -5578,7 +5667,7 @@ var district = [{
   value: 'DN',
   label: 'Đà nẵng'
 }];
-var wards = [{
+var wards$1 = [{
   value: 'HN',
   label: 'Phạm Hùng'
 }, {
@@ -5676,9 +5765,6 @@ var CompleteInformation = function CompleteInformation(_ref) {
     }, /*#__PURE__*/React__default.createElement(BaseFormDatePicker$1, {
       messageId: "completeInformation.dateOfBirth",
       fieldName: "dateOfBirth",
-      options: {
-        dateFormat: 'M \\ d \\, Y'
-      },
       errors: errors,
       touched: touched
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
@@ -5686,8 +5772,8 @@ var CompleteInformation = function CompleteInformation(_ref) {
     }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
       messageId: "completeInformation.gender",
       fieldName: "gender",
-      defaultValue: genderOptions[0],
-      options: genderOptions,
+      defaultValue: GENDER_OPTIONS[0],
+      options: GENDER_OPTIONS,
       errors: errors,
       touched: touched
     }))), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
@@ -5695,7 +5781,7 @@ var CompleteInformation = function CompleteInformation(_ref) {
     }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
       messageId: "completeInformation.province",
       fieldName: "city",
-      options: city,
+      options: city$1,
       errors: errors,
       touched: touched
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
@@ -5703,7 +5789,7 @@ var CompleteInformation = function CompleteInformation(_ref) {
     }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
       messageId: "completeInformation.district",
       fieldName: "district",
-      options: district,
+      options: district$1,
       errors: errors,
       touched: touched
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
@@ -5711,7 +5797,7 @@ var CompleteInformation = function CompleteInformation(_ref) {
     }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
       messageId: "completeInformation.ward",
       fieldName: "ward",
-      options: wards,
+      options: wards$1,
       errors: errors,
       touched: touched
     }))), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
@@ -5732,7 +5818,7 @@ var CompleteInformation = function CompleteInformation(_ref) {
     }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
       messageId: "completeInformation.bank",
       fieldName: "bankName",
-      options: bank,
+      options: bank$1,
       errors: errors,
       touched: touched
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
@@ -5967,18 +6053,14 @@ TopBarProgress.config({
   barThickness: 5
 });
 
-var LoadingSpinner = function LoadingSpinner(_ref) {
-  var showLoadingBar = _ref.showLoadingBar;
-  return showLoadingBar ? /*#__PURE__*/React__default.createElement(TopBarProgress, null) : null;
-};
+var LoadingSpinner = function LoadingSpinner() {
+  var _useSelector = reactRedux.useSelector(function (state) {
+    return state.ui;
+  }),
+      isLoading = _useSelector.isLoading;
 
-var mapStateToProps$4 = function mapStateToProps(state) {
-  return {
-    showLoadingBar: state.customizer.showLoadingBar
-  };
+  return isLoading ? /*#__PURE__*/React__default.createElement(TopBarProgress, null) : null;
 };
-
-var LoadingSpinner$1 = reactRedux.connect(mapStateToProps$4)(LoadingSpinner);
 
 var RippleButton = function RippleButton(_ref) {
   var rippleColor = _ref.rippleColor,
@@ -6027,7 +6109,7 @@ var App = function App(_ref) {
   }, /*#__PURE__*/React__default.createElement(react.PersistGate, {
     loading: null,
     persistor: persistor
-  }, /*#__PURE__*/React__default.createElement(LoadingSpinner$1, null), /*#__PURE__*/React__default.createElement(AppRouter$1, {
+  }, /*#__PURE__*/React__default.createElement(LoadingSpinner, null), /*#__PURE__*/React__default.createElement(AppRouter$1, {
     message: message,
     appId: appId,
     history: history,
