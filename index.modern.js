@@ -1454,10 +1454,12 @@ class NavbarUser extends React.PureComponent {
   }
 
   render() {
-    const {
+    let {
       userSettings,
       userDetails
     } = this.props.user;
+    userSettings = userSettings || {};
+    userDetails = userDetails || {};
     return /*#__PURE__*/React.createElement("ul", {
       className: "nav navbar-nav navbar-nav-user float-right"
     }, /*#__PURE__*/React.createElement(NavItem, {
@@ -1685,7 +1687,7 @@ class NavbarUser extends React.PureComponent {
     }, userDetails.fullName)), /*#__PURE__*/React.createElement("span", {
       "data-tour": "user"
     }, /*#__PURE__*/React.createElement("img", {
-      src: userSettings ? userSettings.avatar : '',
+      src: userSettings.avatar || '',
       className: "round",
       height: "40",
       width: "40",
