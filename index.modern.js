@@ -43,7 +43,7 @@ const generateUUID = () => {
   });
 };
 
-const API_BASE_URL = 'http://localhost:8086';
+const API_BASE_URL = 'https://apisit.inon.vn';
 const API_LOGIN_URL = '/api/authenticate';
 const API_LOGOUT_URL = '/api/authenticate';
 const API_REGISTER = '/nth/onboarding/api/authenticate/register';
@@ -81,7 +81,7 @@ const GENDER_OPTIONS = [{
     id: "Kh\xE1c"
   })
 }];
-const APP_URL = 'http://localhost:3000';
+const APP_URL = 'https://sit2.inon.vn';
 const IMAGE = {
   LOGO: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Logo.png?alt=media&token=68d3ab7a-e9bb-4c43-a543-c65f72033bf9',
   LOGO_NO_TEXT: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/logo-no-text.png?alt=media&token=4c266c6a-bd1c-49f9-b51c-1e2484925b06',
@@ -331,15 +331,14 @@ const checkLoginStatus = authToken => {
         history.push(history.location.pathname);
       } else {
         dispatch({
-          type: LOGIN_ACTION,
-          payload: {
-            authToken,
-            user: {}
-          }
+          type: LOGOUT_ACTION
         });
       }
     } catch (error) {
       console.log(error);
+      dispatch({
+        type: LOGOUT_ACTION
+      });
     }
   };
 };
@@ -374,8 +373,7 @@ const loginAction = user => {
           user: {}
         };
         dispatch({
-          type: LOGIN_ACTION,
-          payload: token
+          type: LOGOUT_ACTION
         });
         toast.error(errorMessage( /*#__PURE__*/React.createElement(FormattedMessage, {
           id: "login.fail"

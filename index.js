@@ -42,7 +42,7 @@ var generateUUID = function generateUUID() {
   });
 };
 
-var API_BASE_URL = 'http://localhost:8086';
+var API_BASE_URL = 'https://apisit.inon.vn';
 var API_LOGIN_URL = '/api/authenticate';
 var API_LOGOUT_URL = '/api/authenticate';
 var API_REGISTER = '/nth/onboarding/api/authenticate/register';
@@ -80,7 +80,7 @@ var GENDER_OPTIONS = [{
     id: "Kh\xE1c"
   })
 }];
-var APP_URL = 'http://localhost:3000';
+var APP_URL = 'https://sit2.inon.vn';
 var IMAGE = {
   LOGO: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Logo.png?alt=media&token=68d3ab7a-e9bb-4c43-a543-c65f72033bf9',
   LOGO_NO_TEXT: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/logo-no-text.png?alt=media&token=4c266c6a-bd1c-49f9-b51c-1e2484925b06',
@@ -409,11 +409,7 @@ var checkLoginStatus = function checkLoginStatus(authToken) {
               });
             } else {
               dispatch({
-                type: LOGIN_ACTION,
-                payload: {
-                  authToken: authToken,
-                  user: {}
-                }
+                type: LOGOUT_ACTION
               });
             }
           }();
@@ -422,6 +418,9 @@ var checkLoginStatus = function checkLoginStatus(authToken) {
         });
       }, function (error) {
         console.log(error);
+        dispatch({
+          type: LOGOUT_ACTION
+        });
       });
 
       return Promise.resolve(_temp3 && _temp3.then ? _temp3.then(function () {}) : void 0);
@@ -464,8 +463,7 @@ var loginAction = function loginAction(user) {
                 user: {}
               };
               dispatch({
-                type: LOGIN_ACTION,
-                payload: token
+                type: LOGOUT_ACTION
               });
               reactToastify.toast.error(errorMessage( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
                 id: "login.fail"
