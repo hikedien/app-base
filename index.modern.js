@@ -3199,6 +3199,8 @@ const BaseFormGroup = ({
   }, errors[fieldName]) : null, /*#__PURE__*/React.createElement(Label, null, msg))));
 };
 
+var BaseFormGroup$1 = React.memo(BaseFormGroup);
+
 const DatePicker = props => /*#__PURE__*/React.createElement(FormGroup, {
   className: "form-label-group position-relative"
 }, /*#__PURE__*/React.createElement(Flatpickr, props), /*#__PURE__*/React.createElement(Label, null, props.placeholder), !props.notRequired && props.errors[props.fieldName] && props.touched[props.fieldName] ? /*#__PURE__*/React.createElement("div", {
@@ -3240,7 +3242,7 @@ const BaseFormDatePicker = ({
   })));
 };
 
-var BaseFormDatePicker$1 = injectIntl(BaseFormDatePicker);
+var BaseFormDatePicker$1 = React.memo(injectIntl(BaseFormDatePicker));
 
 const Select = props => {
   const [inputValue, setInputValue] = useState(props.defaultValue || '');
@@ -3331,7 +3333,7 @@ const BaseFormGroupSelect = ({
   }));
 };
 
-var BaseFormGroupSelect$1 = injectIntl(BaseFormGroupSelect);
+var BaseFormGroupSelect$1 = React.memo(injectIntl(BaseFormGroupSelect));
 
 const validationSchema = object().shape({
   icType: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -3487,7 +3489,7 @@ const UserAccountTab = () => {
   }, /*#__PURE__*/React.createElement(Col, {
     sm: "12",
     md: "6"
-  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+  }, /*#__PURE__*/React.createElement(BaseFormGroup$1, {
     messageId: "resgister.fullName",
     fieldName: "fullName",
     errors: errors,
@@ -3495,7 +3497,7 @@ const UserAccountTab = () => {
   })), /*#__PURE__*/React.createElement(Col, {
     sm: "12",
     md: "6"
-  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+  }, /*#__PURE__*/React.createElement(BaseFormGroup$1, {
     messageId: "completeInformation.nbrPer",
     fieldName: "icNumber",
     errors: errors,
@@ -3525,7 +3527,7 @@ const UserAccountTab = () => {
   }, /*#__PURE__*/React.createElement(Col, {
     sm: "12",
     md: "6"
-  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+  }, /*#__PURE__*/React.createElement(BaseFormGroup$1, {
     messageId: "register.phoneNumber",
     fieldName: "phoneNumber",
     errors: errors,
@@ -3533,7 +3535,7 @@ const UserAccountTab = () => {
   })), /*#__PURE__*/React.createElement(Col, {
     sm: "12",
     md: "6"
-  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+  }, /*#__PURE__*/React.createElement(BaseFormGroup$1, {
     messageId: "register.email",
     fieldName: "email",
     errors: errors,
@@ -3542,7 +3544,7 @@ const UserAccountTab = () => {
     className: "mt-2"
   }, /*#__PURE__*/React.createElement(Col, {
     sm: "12"
-  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+  }, /*#__PURE__*/React.createElement(BaseFormGroup$1, {
     messageId: "completeInformation.address",
     fieldName: "address",
     errors: errors,
@@ -3585,14 +3587,14 @@ const UserAccountTab = () => {
     touched: touched
   })), /*#__PURE__*/React.createElement(Col, {
     sm: "4"
-  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+  }, /*#__PURE__*/React.createElement(BaseFormGroup$1, {
     messageId: "completeInformation.branch",
     fieldName: "bankBranch",
     errors: errors,
     touched: touched
   })), /*#__PURE__*/React.createElement(Col, {
     sm: "4"
-  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+  }, /*#__PURE__*/React.createElement(BaseFormGroup$1, {
     messageId: "completeInformation.accountNbr",
     fieldName: "bankNumber",
     errors: errors,
@@ -4541,7 +4543,7 @@ const Login = () => {
   }, ({
     errors,
     touched
-  }) => /*#__PURE__*/React.createElement(Form, null, /*#__PURE__*/React.createElement("h4", {
+  }) => /*#__PURE__*/React.createElement(Form, null, console.log('Render'), /*#__PURE__*/React.createElement("h4", {
     className: "text-center text-white mb-3"
   }, rememberMe ? /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "login.sayHi",
@@ -4554,7 +4556,7 @@ const Login = () => {
     className: "text-danger mt-1"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "login.fail"
-  })) : ''), rememberMe ? '' : /*#__PURE__*/React.createElement(BaseFormGroup, {
+  })) : ''), rememberMe ? '' : /*#__PURE__*/React.createElement(BaseFormGroup$1, {
     messageId: "login.username",
     fieldName: "username",
     errors: errors,
@@ -4672,7 +4674,7 @@ const Register = () => {
   }, ({
     errors,
     touched
-  }) => /*#__PURE__*/React.createElement(Form, null, /*#__PURE__*/React.createElement(BaseFormGroup, {
+  }) => /*#__PURE__*/React.createElement(Form, null, /*#__PURE__*/React.createElement(BaseFormGroup$1, {
     fieldName: "fullName",
     errors: errors,
     touched: touched,
@@ -4685,12 +4687,12 @@ const Register = () => {
     placeholder: "Email *"
   }), errors.email && touched.email ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
-  }, errors.email) : null, /*#__PURE__*/React.createElement(Label, null, "Email *")), /*#__PURE__*/React.createElement(BaseFormGroup, {
+  }, errors.email) : null, /*#__PURE__*/React.createElement(Label, null, "Email *")), /*#__PURE__*/React.createElement(BaseFormGroup$1, {
     fieldName: "phoneNumber",
     errors: errors,
     touched: touched,
     messageId: "register.phoneNumber"
-  }), /*#__PURE__*/React.createElement(BaseFormGroup, {
+  }), /*#__PURE__*/React.createElement(BaseFormGroup$1, {
     fieldName: "refCode",
     errors: errors,
     touched: touched,
@@ -4897,13 +4899,13 @@ const CreatePassword = ({
     className: isLanding2 ? 'font-weight-boild' : 'font-weight-boild text-white'
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "createPassword.title"
-  }))), /*#__PURE__*/React.createElement(BaseFormGroup, {
+  }))), /*#__PURE__*/React.createElement(BaseFormGroup$1, {
     type: "password",
     messageId: "login.password",
     fieldName: "password",
     errors: errors,
     touched: touched
-  }), /*#__PURE__*/React.createElement(BaseFormGroup, {
+  }), /*#__PURE__*/React.createElement(BaseFormGroup$1, {
     type: "password",
     messageId: "createPassword.enterThePassword",
     fieldName: "passwordConfirmation",
@@ -5251,7 +5253,7 @@ const CompleteInformation = ({
     touched: touched
   })), /*#__PURE__*/React.createElement(Col, {
     sm: "6"
-  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+  }, /*#__PURE__*/React.createElement(BaseFormGroup$1, {
     messageId: "completeInformation.nbrPer",
     fieldName: "icNumber",
     errors: errors,
@@ -5298,14 +5300,14 @@ const CompleteInformation = ({
     touched: touched
   }))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
     sm: "8"
-  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+  }, /*#__PURE__*/React.createElement(BaseFormGroup$1, {
     messageId: "completeInformation.address",
     fieldName: "address",
     errors: errors,
     touched: touched
   })), /*#__PURE__*/React.createElement(Col, {
     sm: "4"
-  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+  }, /*#__PURE__*/React.createElement(BaseFormGroup$1, {
     messageId: "completeInformation.gif",
     fieldName: "refCode",
     isRequired: false
@@ -5319,14 +5321,14 @@ const CompleteInformation = ({
     touched: touched
   })), /*#__PURE__*/React.createElement(Col, {
     sm: "4"
-  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+  }, /*#__PURE__*/React.createElement(BaseFormGroup$1, {
     messageId: "completeInformation.branch",
     fieldName: "bankBranch",
     errors: errors,
     touched: touched
   })), /*#__PURE__*/React.createElement(Col, {
     sm: "4"
-  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+  }, /*#__PURE__*/React.createElement(BaseFormGroup$1, {
     messageId: "completeInformation.accountNbr",
     fieldName: "bankNumber",
     errors: errors,
@@ -5627,5 +5629,5 @@ function useDeviceDetect() {
   };
 }
 
-export { AppId, Autocomplete as AutoComplete, App as BaseApp, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect$1 as BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, HttpClient, Radio, Select, useDeviceDetect, useWindowDimensions };
+export { AppId, Autocomplete as AutoComplete, App as BaseApp, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup$1 as BaseFormGroup, BaseFormGroupSelect$1 as BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, HttpClient, Radio, Select, useDeviceDetect, useWindowDimensions };
 //# sourceMappingURL=index.modern.js.map

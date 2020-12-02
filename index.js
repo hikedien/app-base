@@ -3526,6 +3526,8 @@ var BaseFormGroup = function BaseFormGroup(_ref) {
   }));
 };
 
+var BaseFormGroup$1 = React__default.memo(BaseFormGroup);
+
 var DatePicker = function DatePicker(props) {
   return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
     className: "form-label-group position-relative"
@@ -3569,7 +3571,7 @@ var BaseFormDatePicker = function BaseFormDatePicker(_ref) {
   }));
 };
 
-var BaseFormDatePicker$1 = reactIntl.injectIntl(BaseFormDatePicker);
+var BaseFormDatePicker$1 = React__default.memo(reactIntl.injectIntl(BaseFormDatePicker));
 
 var Select = function Select(props) {
   var _useState = React.useState(props.defaultValue || ''),
@@ -3669,7 +3671,7 @@ var BaseFormGroupSelect = function BaseFormGroupSelect(_ref) {
   });
 };
 
-var BaseFormGroupSelect$1 = reactIntl.injectIntl(BaseFormGroupSelect);
+var BaseFormGroupSelect$1 = React__default.memo(reactIntl.injectIntl(BaseFormGroupSelect));
 
 var validationSchema = Yup.object().shape({
   icType: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -3833,7 +3835,7 @@ var UserAccountTab = function UserAccountTab() {
     }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "12",
       md: "6"
-    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup$1, {
       messageId: "resgister.fullName",
       fieldName: "fullName",
       errors: errors,
@@ -3841,7 +3843,7 @@ var UserAccountTab = function UserAccountTab() {
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "12",
       md: "6"
-    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup$1, {
       messageId: "completeInformation.nbrPer",
       fieldName: "icNumber",
       errors: errors,
@@ -3871,7 +3873,7 @@ var UserAccountTab = function UserAccountTab() {
     }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "12",
       md: "6"
-    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup$1, {
       messageId: "register.phoneNumber",
       fieldName: "phoneNumber",
       errors: errors,
@@ -3879,7 +3881,7 @@ var UserAccountTab = function UserAccountTab() {
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "12",
       md: "6"
-    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup$1, {
       messageId: "register.email",
       fieldName: "email",
       errors: errors,
@@ -3888,7 +3890,7 @@ var UserAccountTab = function UserAccountTab() {
       className: "mt-2"
     }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "12"
-    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup$1, {
       messageId: "completeInformation.address",
       fieldName: "address",
       errors: errors,
@@ -3931,14 +3933,14 @@ var UserAccountTab = function UserAccountTab() {
       touched: touched
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "4"
-    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup$1, {
       messageId: "completeInformation.branch",
       fieldName: "bankBranch",
       errors: errors,
       touched: touched
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "4"
-    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup$1, {
       messageId: "completeInformation.accountNbr",
       fieldName: "bankNumber",
       errors: errors,
@@ -4977,7 +4979,7 @@ var Login = function Login() {
   }, function (_ref) {
     var errors = _ref.errors,
         touched = _ref.touched;
-    return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement("h4", {
+    return /*#__PURE__*/React__default.createElement(formik.Form, null, console.log('Render'), /*#__PURE__*/React__default.createElement("h4", {
       className: "text-center text-white mb-3"
     }, rememberMe ? /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "login.sayHi",
@@ -4990,7 +4992,7 @@ var Login = function Login() {
       className: "text-danger mt-1"
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "login.fail"
-    })) : ''), rememberMe ? '' : /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+    })) : ''), rememberMe ? '' : /*#__PURE__*/React__default.createElement(BaseFormGroup$1, {
       messageId: "login.username",
       fieldName: "username",
       errors: errors,
@@ -5132,7 +5134,7 @@ var Register = function Register() {
   }, function (_ref) {
     var errors = _ref.errors,
         touched = _ref.touched;
-    return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+    return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement(BaseFormGroup$1, {
       fieldName: "fullName",
       errors: errors,
       touched: touched,
@@ -5145,12 +5147,12 @@ var Register = function Register() {
       placeholder: "Email *"
     }), errors.email && touched.email ? /*#__PURE__*/React__default.createElement("div", {
       className: "text-danger"
-    }, errors.email) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, "Email *")), /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+    }, errors.email) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, "Email *")), /*#__PURE__*/React__default.createElement(BaseFormGroup$1, {
       fieldName: "phoneNumber",
       errors: errors,
       touched: touched,
       messageId: "register.phoneNumber"
-    }), /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+    }), /*#__PURE__*/React__default.createElement(BaseFormGroup$1, {
       fieldName: "refCode",
       errors: errors,
       touched: touched,
@@ -5381,13 +5383,13 @@ var CreatePassword = function CreatePassword(_ref) {
       className: isLanding2 ? 'font-weight-boild' : 'font-weight-boild text-white'
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "createPassword.title"
-    }))), /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+    }))), /*#__PURE__*/React__default.createElement(BaseFormGroup$1, {
       type: "password",
       messageId: "login.password",
       fieldName: "password",
       errors: errors,
       touched: touched
-    }), /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+    }), /*#__PURE__*/React__default.createElement(BaseFormGroup$1, {
       type: "password",
       messageId: "createPassword.enterThePassword",
       fieldName: "passwordConfirmation",
@@ -5755,7 +5757,7 @@ var CompleteInformation = function CompleteInformation(_ref) {
       touched: touched
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "6"
-    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup$1, {
       messageId: "completeInformation.nbrPer",
       fieldName: "icNumber",
       errors: errors,
@@ -5802,14 +5804,14 @@ var CompleteInformation = function CompleteInformation(_ref) {
       touched: touched
     }))), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "8"
-    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup$1, {
       messageId: "completeInformation.address",
       fieldName: "address",
       errors: errors,
       touched: touched
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "4"
-    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup$1, {
       messageId: "completeInformation.gif",
       fieldName: "refCode",
       isRequired: false
@@ -5823,14 +5825,14 @@ var CompleteInformation = function CompleteInformation(_ref) {
       touched: touched
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "4"
-    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup$1, {
       messageId: "completeInformation.branch",
       fieldName: "bankBranch",
       errors: errors,
       touched: touched
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "4"
-    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup$1, {
       messageId: "completeInformation.accountNbr",
       fieldName: "bankNumber",
       errors: errors,
@@ -6186,7 +6188,7 @@ exports.AppId = AppId;
 exports.AutoComplete = Autocomplete;
 exports.BaseApp = App;
 exports.BaseFormDatePicker = BaseFormDatePicker$1;
-exports.BaseFormGroup = BaseFormGroup;
+exports.BaseFormGroup = BaseFormGroup$1;
 exports.BaseFormGroupSelect = BaseFormGroupSelect$1;
 exports.Checkbox = CheckBox;
 exports.DatePicker = DatePicker;
