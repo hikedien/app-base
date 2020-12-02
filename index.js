@@ -1645,9 +1645,9 @@ var NavbarUser = /*#__PURE__*/function (_React$PureComponent) {
 
     var _this$props$user = this.props.user,
         userSettings = _this$props$user.userSettings,
-        userDetails = _this$props$user.userDetails;
+        user = _objectWithoutPropertiesLoose(_this$props$user, ["userSettings", "userDetails"]);
+
     userSettings = userSettings || {};
-    userDetails = userDetails || {};
     return /*#__PURE__*/React__default.createElement("ul", {
       className: "nav navbar-nav navbar-nav-user float-right"
     }, /*#__PURE__*/React__default.createElement(reactstrap.NavItem, {
@@ -1879,7 +1879,7 @@ var NavbarUser = /*#__PURE__*/function (_React$PureComponent) {
       className: "user-nav d-sm-flex d-none"
     }, /*#__PURE__*/React__default.createElement("span", {
       className: "user-name text-bold-600"
-    }, userDetails.fullName)), /*#__PURE__*/React__default.createElement("span", {
+    }, user.fullName)), /*#__PURE__*/React__default.createElement("span", {
       "data-tour": "user"
     }, /*#__PURE__*/React__default.createElement("img", {
       src: userSettings.avatar || '',

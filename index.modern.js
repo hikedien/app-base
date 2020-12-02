@@ -1454,7 +1454,8 @@ class NavbarUser extends React.PureComponent {
   render() {
     let {
       userSettings,
-      userDetails
+      userDetails,
+      ...user
     } = this.props.user;
     userSettings = userSettings || {};
     userDetails = userDetails || {};
@@ -1682,7 +1683,7 @@ class NavbarUser extends React.PureComponent {
       className: "user-nav d-sm-flex d-none"
     }, /*#__PURE__*/React.createElement("span", {
       className: "user-name text-bold-600"
-    }, userDetails.fullName)), /*#__PURE__*/React.createElement("span", {
+    }, user.fullName)), /*#__PURE__*/React.createElement("span", {
       "data-tour": "user"
     }, /*#__PURE__*/React.createElement("img", {
       src: userSettings.avatar || '',
