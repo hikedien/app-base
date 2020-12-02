@@ -4968,15 +4968,7 @@ var Login = function Login() {
     setRememberMe(null);
   };
 
-  return /*#__PURE__*/React__default.createElement(formik.Formik, {
-    enableReinitialize: true,
-    initialValues: {
-      username: rememberMe ? rememberMe.username : '',
-      password: ''
-    },
-    onSubmit: onSubmit,
-    validationSchema: formSchema
-  }, function (_ref) {
+  var renderForm = function renderForm(_ref) {
     var errors = _ref.errors,
         touched = _ref.touched;
     return /*#__PURE__*/React__default.createElement(formik.Form, null, console.log('Render'), /*#__PURE__*/React__default.createElement("h4", {
@@ -5056,6 +5048,17 @@ var Login = function Login() {
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "login"
     }))));
+  };
+
+  return /*#__PURE__*/React__default.createElement(formik.Formik, {
+    enableReinitialize: true,
+    initialValues: {
+      username: rememberMe ? rememberMe.username : '',
+      password: ''
+    },
+    render: renderForm,
+    onSubmit: onSubmit,
+    validationSchema: formSchema
   });
 };
 
@@ -5122,16 +5125,7 @@ var Register = function Register() {
     setIsNotAccepted(!checked);
   };
 
-  return /*#__PURE__*/React__default.createElement(formik.Formik, {
-    initialValues: {
-      fullName: '',
-      email: '',
-      phoneNumber: '',
-      refCode: ''
-    },
-    onSubmit: onSubmit,
-    validationSchema: formSchema$1
-  }, function (_ref) {
+  var renderForm = function renderForm(_ref) {
     var errors = _ref.errors,
         touched = _ref.touched;
     return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement(BaseFormGroup$1, {
@@ -5189,6 +5183,18 @@ var Register = function Register() {
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "register"
     })))));
+  };
+
+  return /*#__PURE__*/React__default.createElement(formik.Formik, {
+    initialValues: {
+      fullName: '',
+      email: '',
+      phoneNumber: '',
+      refCode: ''
+    },
+    render: renderForm,
+    onSubmit: onSubmit,
+    validationSchema: formSchema$1
   });
 };
 

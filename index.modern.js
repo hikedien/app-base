@@ -4532,15 +4532,7 @@ const Login = () => {
     setRememberMe(null);
   };
 
-  return /*#__PURE__*/React.createElement(Formik, {
-    enableReinitialize: true,
-    initialValues: {
-      username: rememberMe ? rememberMe.username : '',
-      password: ''
-    },
-    onSubmit: onSubmit,
-    validationSchema: formSchema
-  }, ({
+  const renderForm = ({
     errors,
     touched
   }) => /*#__PURE__*/React.createElement(Form, null, console.log('Render'), /*#__PURE__*/React.createElement("h4", {
@@ -4612,7 +4604,18 @@ const Login = () => {
     type: "submit"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "login"
-  })))));
+  }))));
+
+  return /*#__PURE__*/React.createElement(Formik, {
+    enableReinitialize: true,
+    initialValues: {
+      username: rememberMe ? rememberMe.username : '',
+      password: ''
+    },
+    render: renderForm,
+    onSubmit: onSubmit,
+    validationSchema: formSchema
+  });
 };
 
 const formSchema$1 = object().shape({
@@ -4662,16 +4665,7 @@ const Register = () => {
     setIsNotAccepted(!checked);
   };
 
-  return /*#__PURE__*/React.createElement(Formik, {
-    initialValues: {
-      fullName: '',
-      email: '',
-      phoneNumber: '',
-      refCode: ''
-    },
-    onSubmit: onSubmit,
-    validationSchema: formSchema$1
-  }, ({
+  const renderForm = ({
     errors,
     touched
   }) => /*#__PURE__*/React.createElement(Form, null, /*#__PURE__*/React.createElement(BaseFormGroup$1, {
@@ -4726,7 +4720,19 @@ const Register = () => {
     type: "submit"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "register"
-  }))))));
+  })))));
+
+  return /*#__PURE__*/React.createElement(Formik, {
+    initialValues: {
+      fullName: '',
+      email: '',
+      phoneNumber: '',
+      refCode: ''
+    },
+    render: renderForm,
+    onSubmit: onSubmit,
+    validationSchema: formSchema$1
+  });
 };
 
 const formSchema$2 = object().shape({
