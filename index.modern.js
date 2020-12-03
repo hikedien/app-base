@@ -899,6 +899,8 @@ const navbarReducer = (state = initialState, action) => {
   }
 };
 
+const SHOW_LOADING_BAR = 'SHOW_LOADING_BAR';
+const HIDE_LOADING_BAR = 'HIDE_LOADING_BAR';
 const SHOW_CONFIRM_ALERT = 'SHOW_CONFIRM_ALERT';
 const HIDE_CONFIRM_ALERT = 'HIDE_CONFIRM_ALERT';
 
@@ -919,12 +921,12 @@ const initialState$1 = {
 
 const uiReducer = (state = initialState$1, action) => {
   switch (action.type) {
-    case SHOW_CONFIRM_ALERT:
+    case SHOW_LOADING_BAR:
       return { ...state,
         isLoading: true
       };
 
-    case HIDE_CONFIRM_ALERT:
+    case HIDE_LOADING_BAR:
       return { ...state,
         isLoading: false
       };
@@ -5283,7 +5285,7 @@ const ConfirmAlert = () => {
     cancelBtnBsStyle: "secondary",
     confirmBtnText: confirmBtnText || 'OK',
     cancelBtnText: cancelBtnText || 'Cancel',
-    onConfirm: onConfirm,
+    onConfirm: onClickConfirm,
     onCancel: onCancel
   }, otherConfigs), content);
 };
