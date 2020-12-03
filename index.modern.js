@@ -5285,7 +5285,7 @@ const ConfirmAlert = () => {
     cancelBtnBsStyle: "secondary",
     confirmBtnText: confirmBtnText || 'OK',
     cancelBtnText: cancelBtnText || 'Cancel',
-    onConfirm: onClickConfirm,
+    onConfirm: onConfirm,
     onCancel: onCancel
   }, otherConfigs), content);
 };
