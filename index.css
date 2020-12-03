@@ -872,7 +872,6 @@ span.flatpickr-day.selected {
   width: 90%; }
 
 .landing-page {
-  height: 100vh;
   background-size: cover; }
   .landing-page .mobile-bg {
     width: 100%;
@@ -880,9 +879,11 @@ span.flatpickr-day.selected {
   .landing-page .ld-main {
     margin-right: 10rem;
     padding-top: 5rem;
-    color: white; }
+    color: white;
+    height: 90%;
+    min-height: 85vh; }
     .landing-page .ld-main .lg-content-header {
-      margin-top: 7rem; }
+      margin-top: 2rem; }
       .landing-page .ld-main .lg-content-header .tab-control {
         padding: 1rem; }
         .landing-page .ld-main .lg-content-header .tab-control.active {
@@ -934,10 +935,6 @@ span.flatpickr-day.selected {
       border-radius: 42px;
       border: 0.5px solid #88cd63;
       min-height: 60vh; }
-  .landing-page .ld-footer {
-    position: absolute;
-    width: 100%;
-    bottom: 20px; }
   .landing-page .divider {
     width: 1px;
     height: 20px;

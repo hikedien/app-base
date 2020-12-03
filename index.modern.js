@@ -29,6 +29,7 @@ import { Field, FastField, Formik, Form } from 'formik';
 import Flatpickr from 'react-flatpickr';
 import Select$1 from 'react-select';
 import chroma from 'chroma-js';
+import styled from 'styled-components';
 import TopBarProgress from 'react-topbar-progress-indicator';
 import Ripples from 'react-ripples';
 import 'react-perfect-scrollbar/dist/css/styles.css';
@@ -57,7 +58,6 @@ const API_RESET_PASSWORD = '/api/authenticate/reset-password';
 const API_EMAIL_SUGGESTION = '/nth/user/api/authenticate/email-suggestion';
 const API_R_200 = 200;
 const MAX_MOBILE_WIDTH = 768;
-const MAX_TABLET_WIDTH = 1024;
 const REMEMBER_ME_TOKEN = 'rememberMe';
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])((?=.*[0-9])|(?=.*[!@#$%^&*])).{8,}$/gm;
 const PHONE_REGEX = /(03|07|08|09|01[2|6|8|9])+([0-9]{8})\b/;
@@ -4963,7 +4963,7 @@ const LandingHeader = ({
 
 const LandingFooter = () => {
   return /*#__PURE__*/React.createElement("div", {
-    className: "ld-footer px-1 px-md-3 px-lg-5"
+    className: "ld-footer px-1 px-md-3 px-lg-5 my-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "d-none d-lg-flex justify-content-between"
   }, /*#__PURE__*/React.createElement("div", {
@@ -5015,12 +5015,34 @@ const LandingFooter = () => {
   })))));
 };
 
+const size = {
+  mobileS: '320px',
+  mobileM: '375px',
+  mobileL: '425px',
+  tablet: '768px',
+  laptop: '1024px',
+  laptopL: '1440px',
+  desktop: '2560px'
+};
+const devices = {
+  tablet: `(max-width: ${size.tablet})`
+};
+
+let _ = t => t,
+    _t;
+const PagetStyle = styled.div(_t || (_t = _`
+  .landing-page {
+    background-image: url('${0}');
+
+    @media ${0} {
+      background-image: url('${0}');
+    }
+  }
+`), IMAGE.LANDING_PAGE_BG, devices.tablet, IMAGE.LANDING_PAGE_TABLET_BG);
+
 const LandingPage = props => {
   const [activeTab, setActiveTab] = useState('');
   const history = useHistory();
-  const {
-    width
-  } = useWindowDimensions();
   useEffect(() => {
     setActiveTab(props.activeTab || 'login');
   }, [props.activeTab]);
@@ -5046,11 +5068,8 @@ const LandingPage = props => {
 
   const goToLink = link => history.push(link);
 
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "landing-page",
-    style: {
-      backgroundImage: width > MAX_TABLET_WIDTH ? `url('${IMAGE.LANDING_PAGE_BG}')` : `url('${IMAGE.LANDING_PAGE_TABLET_BG}')`
-    }
+  return /*#__PURE__*/React.createElement(PagetStyle, null, /*#__PURE__*/React.createElement("div", {
+    className: "landing-page"
   }, /*#__PURE__*/React.createElement("div", {
     className: "position-absolute w-100"
   }), /*#__PURE__*/React.createElement("div", {
@@ -5605,7 +5624,7 @@ unregister();
 class FallbackSpinner extends React.Component {
   render() {
     return /*#__PURE__*/React.createElement("div", {
-      className: "fallback-spinner vh-100"
+      className: "fallback-spinner"
     }, /*#__PURE__*/React.createElement("img", {
       className: "fallback-logo",
       src: IMAGE.LOGO,

@@ -28,6 +28,7 @@ var formik = require('formik');
 var Flatpickr = _interopDefault(require('react-flatpickr'));
 var Select$1 = _interopDefault(require('react-select'));
 var chroma = _interopDefault(require('chroma-js'));
+var styled = _interopDefault(require('styled-components'));
 var TopBarProgress = _interopDefault(require('react-topbar-progress-indicator'));
 var Ripples = _interopDefault(require('react-ripples'));
 require('react-perfect-scrollbar/dist/css/styles.css');
@@ -56,7 +57,6 @@ var API_RESET_PASSWORD = '/api/authenticate/reset-password';
 var API_EMAIL_SUGGESTION = '/nth/user/api/authenticate/email-suggestion';
 var API_R_200 = 200;
 var MAX_MOBILE_WIDTH = 768;
-var MAX_TABLET_WIDTH = 1024;
 var REMEMBER_ME_TOKEN = 'rememberMe';
 var PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])((?=.*[0-9])|(?=.*[!@#$%^&*])).{8,}$/gm;
 var PHONE_REGEX = /(03|07|08|09|01[2|6|8|9])+([0-9]{8})\b/;
@@ -233,6 +233,15 @@ function _assertThisInitialized(self) {
   }
 
   return self;
+}
+
+function _taggedTemplateLiteralLoose(strings, raw) {
+  if (!raw) {
+    raw = strings.slice(0);
+  }
+
+  strings.raw = raw;
+  return strings;
 }
 
 var themeConfig = {
@@ -5451,7 +5460,7 @@ var LandingHeader = function LandingHeader(_ref) {
 
 var LandingFooter = function LandingFooter() {
   return /*#__PURE__*/React__default.createElement("div", {
-    className: "ld-footer px-1 px-md-3 px-lg-5"
+    className: "ld-footer px-1 px-md-3 px-lg-5 my-3"
   }, /*#__PURE__*/React__default.createElement("div", {
     className: "d-none d-lg-flex justify-content-between"
   }, /*#__PURE__*/React__default.createElement("div", {
@@ -5503,16 +5512,36 @@ var LandingFooter = function LandingFooter() {
   })))));
 };
 
+var size = {
+  mobileS: '320px',
+  mobileM: '375px',
+  mobileL: '425px',
+  tablet: '768px',
+  laptop: '1024px',
+  laptopL: '1440px',
+  desktop: '2560px'
+};
+var devices = {
+  tablet: "(max-width: " + size.tablet + ")"
+};
+
+function _templateObject() {
+  var data = _taggedTemplateLiteralLoose(["\n  .landing-page {\n    background-image: url('", "');\n\n    @media ", " {\n      background-image: url('", "');\n    }\n  }\n"]);
+
+  _templateObject = function _templateObject() {
+    return data;
+  };
+
+  return data;
+}
+var PagetStyle = styled.div(_templateObject(), IMAGE.LANDING_PAGE_BG, devices.tablet, IMAGE.LANDING_PAGE_TABLET_BG);
+
 var LandingPage = function LandingPage(props) {
   var _useState = React.useState(''),
       activeTab = _useState[0],
       setActiveTab = _useState[1];
 
   var history = reactRouterDom.useHistory();
-
-  var _useWindowDimensions = useWindowDimensions(),
-      width = _useWindowDimensions.width;
-
   React.useEffect(function () {
     setActiveTab(props.activeTab || 'login');
   }, [props.activeTab]);
@@ -5540,11 +5569,8 @@ var LandingPage = function LandingPage(props) {
     return history.push(link);
   };
 
-  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("div", {
-    className: "landing-page",
-    style: {
-      backgroundImage: width > MAX_TABLET_WIDTH ? "url('" + IMAGE.LANDING_PAGE_BG + "')" : "url('" + IMAGE.LANDING_PAGE_TABLET_BG + "')"
-    }
+  return /*#__PURE__*/React__default.createElement(PagetStyle, null, /*#__PURE__*/React__default.createElement("div", {
+    className: "landing-page"
   }, /*#__PURE__*/React__default.createElement("div", {
     className: "position-absolute w-100"
   }), /*#__PURE__*/React__default.createElement("div", {
@@ -6138,7 +6164,7 @@ var FallbackSpinner = /*#__PURE__*/function (_React$Component) {
 
   _proto.render = function render() {
     return /*#__PURE__*/React__default.createElement("div", {
-      className: "fallback-spinner vh-100"
+      className: "fallback-spinner"
     }, /*#__PURE__*/React__default.createElement("img", {
       className: "fallback-logo",
       src: IMAGE.LOGO,
