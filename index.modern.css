@@ -872,17 +872,18 @@ span.false-cjs.false-cjs {
   width: 90%; }
 
 .false-cjs {
-  height: 100vh;
-  background-size: cover; }
+  background-size: cover;
+  height: 100%; }
   .false-cjs .false-cjs {
     width: 100%;
     max-height: 100%; }
   .false-cjs .false-cjs {
     margin-right: 10rem;
     padding-top: 5rem;
-    color: white; }
+    color: white;
+    min-height: 90vh; }
     .false-cjs .false-cjs .false-cjs {
-      margin-top: 7rem; }
+      margin-top: 2rem; }
       .false-cjs .false-cjs .false-cjs .false-cjs {
         padding: 1rem; }
         .false-cjs .false-cjs .false-cjs .false-cjs.false-cjs {
@@ -935,10 +936,6 @@ span.false-cjs.false-cjs {
       border: 0.5px solid #88cd63;
       min-height: 60vh; }
   .false-cjs .false-cjs {
-    position: absolute;
-    width: 100%;
-    bottom: 20px; }
-  .false-cjs .false-cjs {
     width: 1px;
     height: 20px;
     display: block;
@@ -962,7 +959,7 @@ span.false-cjs.false-cjs {
       margin-right: 5rem;
       padding-top: 1rem;
       color: white;
-      min-height: 85vh; }
+      min-height: 620px; }
       .false-cjs .false-cjs .false-cjs {
         margin-top: 2rem; }
       .false-cjs .false-cjs .false-cjs img {
@@ -983,6 +980,12 @@ span.false-cjs.false-cjs {
   border-radius: 20px;
   border: 1px solid #51912d;
   min-height: 30px; }
+
+/*========================================================
+        DARK LAYOUT
+=========================================================*/
+.false-cjs p {
+  color: #626262 !important; }
 
 /**
  * prism.js tomorrow night eighties for JavaScript, CoffeeScript, CSS and HTML
@@ -12001,30 +12004,45 @@ input[type="month"].false-cjs {
 /*========================================================
         DARK LAYOUT
 =========================================================*/
-.false-cjs header {
-  display: block;
-  padding-left: 0;
-  padding-right: 0; }
+/***** React Table ******/
+.false-cjs .false-cjs.false-cjs {
+  box-shadow: none; }
 
-.false-cjs .false-cjs .false-cjs .false-cjs .false-cjs {
-  min-height: 50px; }
+.false-cjs .false-cjs .false-cjs {
+  box-shadow: none;
+  background-color: #fff; }
 
-.false-cjs #false-cjs,
-.false-cjs #false-cjs,
-.false-cjs #false-cjs,
-.false-cjs #false-cjs {
-  background: #f0f0f0;
-  border-radius: 50%; }
-  .false-cjs #false-cjs[disabled] svg,
-  .false-cjs #false-cjs[disabled] svg,
-  .false-cjs #false-cjs[disabled] svg,
-  .false-cjs #false-cjs[disabled] svg {
-    fill: rgba(98, 98, 98, 0.5); }
-  .false-cjs #false-cjs:not(:last-of-type),
-  .false-cjs #false-cjs:not(:last-of-type),
-  .false-cjs #false-cjs:not(:last-of-type),
-  .false-cjs #false-cjs:not(:last-of-type) {
-    margin-right: 0.5rem; }
+.false-cjs .false-cjs {
+  text-align: center; }
+
+.false-cjs .false-cjs .false-cjs {
+  box-shadow: none;
+  border-top-width: 1px; }
+  .false-cjs .false-cjs .false-cjs .false-cjs {
+    background-color: #338955;
+    color: #fff; }
+    .false-cjs .false-cjs .false-cjs .false-cjs:not([disabled]):hover {
+      background-color: #2c7649; }
+
+.false-cjs.false-cjs .false-cjs .false-cjs .false-cjs:first-child {
+  background-color: #f8f8f8 !important; }
+
+@media (max-width: 769px) {
+  .false-cjs .false-cjs .false-cjs .false-cjs,
+  .false-cjs .false-cjs .false-cjs .false-cjs,
+  .false-cjs .false-cjs .false-cjs .false-cjs {
+    flex: unset !important; }
+    .false-cjs .false-cjs .false-cjs .false-cjs .false-cjs,
+    .false-cjs .false-cjs .false-cjs .false-cjs .false-cjs,
+    .false-cjs .false-cjs .false-cjs .false-cjs .false-cjs {
+      padding: 0.5rem 4rem; } }
+
+@media (max-width: 769px) {
+  .false-cjs .false-cjs .false-cjs {
+    justify-content: center; }
+    .false-cjs .false-cjs .false-cjs .false-cjs,
+    .false-cjs .false-cjs .false-cjs .false-cjs {
+      margin: 1rem 0; } }
 
 /*========================================================
         DARK LAYOUT
@@ -23489,6 +23507,9 @@ html[dir="rtl"] body .false-cjs {
     right: 28px !important; }
   html[dir="rtl"] .false-cjs .false-cjs .false-cjs.false-cjs .false-cjs {
     transform: translate3d(26px, 64px, 0px) !important; } }
+
+#false-cjs {
+  height: 100%; }
 
 .false-cjs {
   position: absolute;

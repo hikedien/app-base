@@ -30,12 +30,12 @@ import Flatpickr from 'react-flatpickr';
 import Select$1 from 'react-select';
 import chroma from 'chroma-js';
 import styled from 'styled-components';
+import SweetAlert from 'react-bootstrap-sweetalert';
 import TopBarProgress from 'react-topbar-progress-indicator';
 import Ripples from 'react-ripples';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import 'react-toastify/dist/ReactToastify.css';
 import 'prismjs/themes/prism-tomorrow.css';
-import SweetAlert from 'react-bootstrap-sweetalert';
 
 const generateUUID = () => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -899,20 +899,49 @@ const navbarReducer = (state = initialState, action) => {
   }
 };
 
+const SHOW_CONFIRM_ALERT = 'SHOW_CONFIRM_ALERT';
+const HIDE_CONFIRM_ALERT = 'HIDE_CONFIRM_ALERT';
+
+const DEFAULT_CONFIRM_ALERT = {
+  title: '',
+  isShow: false,
+  content: '',
+  onConfirm: null,
+  onCancel: null,
+  confirmBtnText: 'OK',
+  cancelBtnText: 'Cancel'
+};
 const initialState$1 = {
-  isLoading: false
+  isLoading: false,
+  confirmAlert: { ...DEFAULT_CONFIRM_ALERT
+  }
 };
 
 const uiReducer = (state = initialState$1, action) => {
   switch (action.type) {
-    case 'SHOW_LOADING_BAR':
+    case SHOW_CONFIRM_ALERT:
       return { ...state,
         isLoading: true
       };
 
-    case 'HIDE_LOADING_BAR':
+    case HIDE_CONFIRM_ALERT:
       return { ...state,
         isLoading: false
+      };
+
+    case SHOW_CONFIRM_ALERT:
+      return { ...state,
+        confirmAlert: {
+          isShow: true,
+          ...state.confirmAlert,
+          ...action.payload
+        }
+      };
+
+    case HIDE_CONFIRM_ALERT:
+      return { ...state,
+        confirmAlert: { ...DEFAULT_CONFIRM_ALERT
+        }
       };
 
     default:
@@ -5234,6 +5263,31 @@ const LandingPage2 = props => {
   }, /*#__PURE__*/React.createElement(TabView, null)))), /*#__PURE__*/React.createElement(LandingFooter, null)));
 };
 
+const ConfirmAlert = () => {
+  const {
+    title,
+    isShow,
+    content,
+    onConfirm,
+    onCancel,
+    confirmBtnText,
+    cancelBtnText,
+    ...otherConfigs
+  } = useSelector(state => state.ui.confirmAlert);
+  return /*#__PURE__*/React.createElement(SweetAlert, Object.assign({
+    title: title,
+    show: isShow,
+    showCancel: true,
+    reverseButtons: true,
+    btnSize: "md",
+    cancelBtnBsStyle: "secondary",
+    confirmBtnText: confirmBtnText || 'OK',
+    cancelBtnText: cancelBtnText || 'Cancel',
+    onConfirm: onConfirm,
+    onCancel: onCancel
+  }, otherConfigs), content);
+};
+
 const AppRouter = props => {
   const {
     checkLoginStatus,
@@ -5348,7 +5402,7 @@ const AppRouter = props => {
     hideProgressBar: false,
     closeOnClick: true,
     pauseOnHover: true
-  }));
+  }), /*#__PURE__*/React.createElement(ConfirmAlert, null));
 };
 
 const mapStateToProps$3 = state => {
@@ -5454,26 +5508,18 @@ class FallbackSpinner extends React.Component {
 
 }
 
-const ConfirmAlert = ({
-  title,
-  isShow,
-  message,
-  onConfirm,
-  onCancel,
-  confirmBtnText,
-  cancelBtnText
-}) => {
-  return /*#__PURE__*/React.createElement(SweetAlert, {
-    title: title,
-    show: isShow,
-    showCancel: true,
-    reverseButtons: true,
-    cancelBtnBsStyle: "danger",
-    confirmBtnText: confirmBtnText || 'OK',
-    cancelBtnText: cancelBtnText || 'Cancel',
-    onConfirm: onConfirm,
-    onCancel: onCancel
-  }, message);
+const SHOW_CONFIRM_ALERT$1 = 'SHOW_CONFIRM_ALERT';
+const HIDE_CONFIRM_ALERT$1 = 'HIDE_CONFIRM_ALERT';
+const showConfirmAlert = configs => {
+  return dispatch => dispatch({
+    type: SHOW_CONFIRM_ALERT$1,
+    payload: configs
+  });
+};
+const hideConfirmAlert = () => {
+  return dispatch => dispatch({
+    type: HIDE_CONFIRM_ALERT$1
+  });
 };
 
 function useDeviceDetect() {
@@ -5488,5 +5534,5 @@ function useDeviceDetect() {
   };
 }
 
-export { AppId, Autocomplete as AutoComplete, App as BaseApp, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup$1 as BaseFormGroup, BaseFormGroupSelect$1 as BaseFormGroupSelect, CheckBox as Checkbox, ConfirmAlert, DatePicker, FallbackSpinner, HttpClient, Radio, Select, useDeviceDetect, useWindowDimensions };
+export { AppId, Autocomplete as AutoComplete, App as BaseApp, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup$1 as BaseFormGroup, BaseFormGroupSelect$1 as BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, HttpClient, Radio, Select, hideConfirmAlert, showConfirmAlert, useDeviceDetect, useWindowDimensions };
 //# sourceMappingURL=index.modern.js.map
