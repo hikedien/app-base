@@ -7,7 +7,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { persistReducer, persistStore } from 'redux-persist';
 import Axios from 'axios';
 import * as Icon from 'react-feather';
-import { AlertTriangle, ShoppingCart, FileText, Circle, User, DollarSign, TrendingUp, Award, CreditCard, Share2, Lock, Power, Search, X, Bell, PlusSquare, DownloadCloud, CheckCircle, File, Menu, Home, List, PlusCircle, Gift, MessageSquare, ArrowUp, Disc, ChevronRight, Check, MapPin, Info, Sun } from 'react-feather';
+import { AlertTriangle, ShoppingCart, FileText, Circle, User, DollarSign, TrendingUp, Award, CreditCard, Share2, Power, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, MessageSquare, ArrowUp, Disc, ChevronRight, Check, MapPin, Info, Lock, Sun } from 'react-feather';
 import { toast, ToastContainer } from 'react-toastify';
 export { toast } from 'react-toastify';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
@@ -17,7 +17,7 @@ import { createBrowserHistory } from 'history';
 import sessionStorage from 'redux-persist/es/storage/session';
 import { useHistory, NavLink as NavLink$1, Link, Router, Switch, Route, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
-import { FormGroup, Label, DropdownMenu, DropdownItem, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Badge, Media, Navbar as Navbar$1, Button, Row, Col, Form as Form$1, Input, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, Table, Modal, ModalBody } from 'reactstrap';
+import { FormGroup, Label, DropdownMenu, DropdownItem, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Navbar as Navbar$1, Button, Badge, Row, Col, Media, Form as Form$1, Input, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, Table, Modal, ModalBody } from 'reactstrap';
 export { Button } from 'reactstrap';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import ReactDOM from 'react-dom';
@@ -35,6 +35,7 @@ import Ripples from 'react-ripples';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import 'react-toastify/dist/ReactToastify.css';
 import 'prismjs/themes/prism-tomorrow.css';
+import SweetAlert from 'react-bootstrap-sweetalert';
 
 const generateUUID = () => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -44,7 +45,7 @@ const generateUUID = () => {
   });
 };
 
-const API_BASE_URL = 'https://apisit.inon.vn';
+const API_BASE_URL = 'http://localhost:8086';
 const API_LOGIN_URL = '/api/authenticate';
 const API_LOGOUT_URL = '/api/authenticate';
 const API_REGISTER = '/nth/onboarding/api/authenticate/register';
@@ -1334,65 +1335,6 @@ const UserDropdown = props => {
     id: "setting.accountInformation"
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
-    href: "#",
-    onClick: e => handleNavigation(e, '/change-password')
-  }, /*#__PURE__*/React.createElement(Lock, {
-    size: 14,
-    className: "mr-50"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "align-middle"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "setting.changePassword"
-  }))), /*#__PURE__*/React.createElement(DropdownItem, {
-    divider: true
-  }), /*#__PURE__*/React.createElement(DropdownItem, {
-    tag: "a",
-    href: "#",
-    onClick: e => handleNavigation(e, '/terms-and-condition')
-  }, /*#__PURE__*/React.createElement(Lock, {
-    size: 14,
-    className: "mr-50"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "align-middle"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "setting.termAndCondition"
-  }))), /*#__PURE__*/React.createElement(DropdownItem, {
-    tag: "a",
-    href: "#",
-    onClick: e => handleNavigation(e, '/privacy-policy')
-  }, /*#__PURE__*/React.createElement(Lock, {
-    size: 14,
-    className: "mr-50"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "align-middle"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "setting.privacyPolicy"
-  }))), /*#__PURE__*/React.createElement(DropdownItem, {
-    tag: "a",
-    href: "#",
-    onClick: e => handleNavigation(e, '/language')
-  }, /*#__PURE__*/React.createElement(Lock, {
-    size: 14,
-    className: "mr-50"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "align-middle"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "setting.language"
-  }))), /*#__PURE__*/React.createElement(DropdownItem, {
-    tag: "a",
-    href: "#",
-    onClick: e => handleNavigation(e, '/contact')
-  }, /*#__PURE__*/React.createElement(Lock, {
-    size: 14,
-    className: "mr-50"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "align-middle"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "setting.contact"
-  }))), /*#__PURE__*/React.createElement(DropdownItem, {
-    divider: true
-  }), /*#__PURE__*/React.createElement(DropdownItem, {
-    tag: "a",
     onClick: logoutAction
   }, /*#__PURE__*/React.createElement(Power, {
     size: 14,
@@ -1540,140 +1482,7 @@ class NavbarUser extends React.PureComponent {
       className: "nav-link nav-link-label"
     }, /*#__PURE__*/React.createElement(Bell, {
       size: 21
-    }), /*#__PURE__*/React.createElement(Badge, {
-      pill: true,
-      color: "primary",
-      className: "badge-up"
-    }, ' ', "5", ' ')), /*#__PURE__*/React.createElement(DropdownMenu, {
-      tag: "ul",
-      right: true,
-      className: "dropdown-menu-media"
-    }, /*#__PURE__*/React.createElement("li", {
-      className: "dropdown-menu-header"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "dropdown-header mt-0"
-    }, /*#__PURE__*/React.createElement("h3", {
-      className: "text-white"
-    }, "5 New"), /*#__PURE__*/React.createElement("span", {
-      className: "notification-title"
-    }, "App Notifications"))), /*#__PURE__*/React.createElement(PerfectScrollbar, {
-      className: "media-list overflow-hidden position-relative",
-      options: {
-        wheelPropagation: false
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "d-flex justify-content-between"
-    }, /*#__PURE__*/React.createElement(Media, {
-      className: "d-flex align-items-start"
-    }, /*#__PURE__*/React.createElement(Media, {
-      left: true,
-      href: "#"
-    }, /*#__PURE__*/React.createElement(PlusSquare, {
-      className: "font-medium-5 primary",
-      size: 21
-    })), /*#__PURE__*/React.createElement(Media, {
-      body: true
-    }, /*#__PURE__*/React.createElement(Media, {
-      heading: true,
-      className: "primary media-heading",
-      tag: "h6"
-    }, "You have new order!"), /*#__PURE__*/React.createElement("p", {
-      className: "notification-text"
-    }, "Are your going to meet me tonight?")), /*#__PURE__*/React.createElement("small", null, /*#__PURE__*/React.createElement("time", {
-      className: "media-meta",
-      dateTime: "2015-06-11T18:29:20+08:00"
-    }, "9 hours ago")))), /*#__PURE__*/React.createElement("div", {
-      className: "d-flex justify-content-between"
-    }, /*#__PURE__*/React.createElement(Media, {
-      className: "d-flex align-items-start"
-    }, /*#__PURE__*/React.createElement(Media, {
-      left: true,
-      href: "#"
-    }, /*#__PURE__*/React.createElement(DownloadCloud, {
-      className: "font-medium-5 success",
-      size: 21
-    })), /*#__PURE__*/React.createElement(Media, {
-      body: true
-    }, /*#__PURE__*/React.createElement(Media, {
-      heading: true,
-      className: "success media-heading",
-      tag: "h6"
-    }, "99% Server load"), /*#__PURE__*/React.createElement("p", {
-      className: "notification-text"
-    }, "You got new order of goods?")), /*#__PURE__*/React.createElement("small", null, /*#__PURE__*/React.createElement("time", {
-      className: "media-meta",
-      dateTime: "2015-06-11T18:29:20+08:00"
-    }, "5 hours ago")))), /*#__PURE__*/React.createElement("div", {
-      className: "d-flex justify-content-between"
-    }, /*#__PURE__*/React.createElement(Media, {
-      className: "d-flex align-items-start"
-    }, /*#__PURE__*/React.createElement(Media, {
-      left: true,
-      href: "#"
-    }, /*#__PURE__*/React.createElement(AlertTriangle, {
-      className: "font-medium-5 danger",
-      size: 21
-    })), /*#__PURE__*/React.createElement(Media, {
-      body: true
-    }, /*#__PURE__*/React.createElement(Media, {
-      heading: true,
-      className: "danger media-heading",
-      tag: "h6"
-    }, "Warning Notification"), /*#__PURE__*/React.createElement("p", {
-      className: "notification-text"
-    }, "Server has used 99% of CPU")), /*#__PURE__*/React.createElement("small", null, /*#__PURE__*/React.createElement("time", {
-      className: "media-meta",
-      dateTime: "2015-06-11T18:29:20+08:00"
-    }, "Today")))), /*#__PURE__*/React.createElement("div", {
-      className: "d-flex justify-content-between"
-    }, /*#__PURE__*/React.createElement(Media, {
-      className: "d-flex align-items-start"
-    }, /*#__PURE__*/React.createElement(Media, {
-      left: true,
-      href: "#"
-    }, /*#__PURE__*/React.createElement(CheckCircle, {
-      className: "font-medium-5 info",
-      size: 21
-    })), /*#__PURE__*/React.createElement(Media, {
-      body: true
-    }, /*#__PURE__*/React.createElement(Media, {
-      heading: true,
-      className: "info media-heading",
-      tag: "h6"
-    }, "Complete the task"), /*#__PURE__*/React.createElement("p", {
-      className: "notification-text"
-    }, "One of your task is pending.")), /*#__PURE__*/React.createElement("small", null, /*#__PURE__*/React.createElement("time", {
-      className: "media-meta",
-      dateTime: "2015-06-11T18:29:20+08:00"
-    }, "Last week")))), /*#__PURE__*/React.createElement("div", {
-      className: "d-flex justify-content-between"
-    }, /*#__PURE__*/React.createElement(Media, {
-      className: "d-flex align-items-start"
-    }, /*#__PURE__*/React.createElement(Media, {
-      left: true,
-      href: "#"
-    }, /*#__PURE__*/React.createElement(File, {
-      className: "font-medium-5 warning",
-      size: 21
-    })), /*#__PURE__*/React.createElement(Media, {
-      body: true
-    }, /*#__PURE__*/React.createElement(Media, {
-      heading: true,
-      className: "warning media-heading",
-      tag: "h6"
-    }, "Generate monthly report"), /*#__PURE__*/React.createElement("p", {
-      className: "notification-text"
-    }, "Reminder to generate monthly report")), /*#__PURE__*/React.createElement("small", null, /*#__PURE__*/React.createElement("time", {
-      className: "media-meta",
-      dateTime: "2015-06-11T18:29:20+08:00"
-    }, "Last month"))))), /*#__PURE__*/React.createElement("li", {
-      className: "dropdown-menu-footer"
-    }, /*#__PURE__*/React.createElement(DropdownItem, {
-      tag: "a",
-      className: "p-1 text-center"
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "align-middle"
-    }, "Read all notifications"))))), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
+    }))), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
       tag: "li",
       className: "dropdown-user nav-item"
     }, /*#__PURE__*/React.createElement(DropdownToggle, {
@@ -1865,14 +1674,14 @@ const Footer = props => {
     className: "w-25"
   }, /*#__PURE__*/React.createElement("a", {
     href: "#",
-    onClick: e => goToPage(e, 'buyInsurance')
+    onClick: e => goToPage(e, 'contract/management')
   }, /*#__PURE__*/React.createElement(List, null), /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
   }, "H\u1EE3p \u0111\u1ED3ng"))), /*#__PURE__*/React.createElement("div", {
     className: "position-relative w-25"
   }, /*#__PURE__*/React.createElement("a", {
     href: "#",
-    onClick: e => goToPage(e, 'contractManagemen')
+    onClick: e => goToPage(e, 'buy-insurance')
   }, /*#__PURE__*/React.createElement("img", {
     src: IMAGE.BUY_INSURANCE,
     className: "buy-insurance",
@@ -1894,7 +1703,7 @@ const Footer = props => {
     className: "w-25"
   }, /*#__PURE__*/React.createElement("a", {
     href: "#",
-    onClick: e => goToPage(e, 'home')
+    onClick: e => goToPage(e, 'contact')
   }, /*#__PURE__*/React.createElement(MessageSquare, null), /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
   }, "Li\xEAn h\u1EC7")))), props.hideScrollToTop === false ? /*#__PURE__*/React.createElement(ScrollToTop, {
@@ -4535,7 +4344,7 @@ const Login = () => {
   const renderForm = ({
     errors,
     touched
-  }) => /*#__PURE__*/React.createElement(Form, null, console.log('Render'), /*#__PURE__*/React.createElement("h4", {
+  }) => /*#__PURE__*/React.createElement(Form, null, /*#__PURE__*/React.createElement("h4", {
     className: "text-center text-white mb-3"
   }, rememberMe ? /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "login.sayHi",
@@ -4937,10 +4746,12 @@ const LandingHeader = ({
   isLanding2
 }) => {
   return /*#__PURE__*/React.createElement(Context.Consumer, null, context => {
-    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("img", {
+    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Link, {
+      to: "/"
+    }, /*#__PURE__*/React.createElement("img", {
       src: isLanding2 ? IMAGE.LOGO : IMAGE.LOGO_WHITE,
       alt: "logo"
-    }), /*#__PURE__*/React.createElement("div", {
+    })), /*#__PURE__*/React.createElement("div", {
       className: "languages d-flex align-items-center "
     }, /*#__PURE__*/React.createElement("div", {
       onClick: () => context.switchLanguage('vi'),
@@ -4963,7 +4774,7 @@ const LandingHeader = ({
 
 const LandingFooter = () => {
   return /*#__PURE__*/React.createElement("div", {
-    className: "ld-footer px-1 px-md-3 px-lg-5 my-3"
+    className: "ld-footer px-1 px-md-3 px-lg-5"
   }, /*#__PURE__*/React.createElement("div", {
     className: "d-none d-lg-flex justify-content-between"
   }, /*#__PURE__*/React.createElement("div", {
@@ -5031,6 +4842,7 @@ const devices = {
 let _ = t => t,
     _t;
 const PagetStyle = styled.div(_t || (_t = _`
+  height: 100%;
   .landing-page {
     background-image: url('${0}');
 
@@ -5073,7 +4885,7 @@ const LandingPage = props => {
   }, /*#__PURE__*/React.createElement("div", {
     className: "position-absolute w-100"
   }), /*#__PURE__*/React.createElement("div", {
-    className: "ld-main ml-auto col-12 col-md-6 col-xl-4"
+    className: "ld-main ml-auto col-12 col-md-6 col-xl-4 pb-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ld-header d-flex justify-content-between mb-1 mb-md-3 mb-xl-5"
   }, /*#__PURE__*/React.createElement(LandingHeader, null)), /*#__PURE__*/React.createElement("div", {
@@ -5642,6 +5454,28 @@ class FallbackSpinner extends React.Component {
 
 }
 
+const ConfirmAlert = ({
+  title,
+  isShow,
+  message,
+  onConfirm,
+  onCancel,
+  confirmBtnText,
+  cancelBtnText
+}) => {
+  return /*#__PURE__*/React.createElement(SweetAlert, {
+    title: title,
+    show: isShow,
+    showCancel: true,
+    reverseButtons: true,
+    cancelBtnBsStyle: "danger",
+    confirmBtnText: confirmBtnText || 'OK',
+    cancelBtnText: cancelBtnText || 'Cancel',
+    onConfirm: onConfirm,
+    onCancel: onCancel
+  }, message);
+};
+
 function useDeviceDetect() {
   const [isMobile, setMobile] = React.useState(false);
   React.useEffect(() => {
@@ -5654,5 +5488,5 @@ function useDeviceDetect() {
   };
 }
 
-export { AppId, Autocomplete as AutoComplete, App as BaseApp, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup$1 as BaseFormGroup, BaseFormGroupSelect$1 as BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, HttpClient, Radio, Select, useDeviceDetect, useWindowDimensions };
+export { AppId, Autocomplete as AutoComplete, App as BaseApp, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup$1 as BaseFormGroup, BaseFormGroupSelect$1 as BaseFormGroupSelect, CheckBox as Checkbox, ConfirmAlert, DatePicker, FallbackSpinner, HttpClient, Radio, Select, useDeviceDetect, useWindowDimensions };
 //# sourceMappingURL=index.modern.js.map

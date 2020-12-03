@@ -34,6 +34,7 @@ var Ripples = _interopDefault(require('react-ripples'));
 require('react-perfect-scrollbar/dist/css/styles.css');
 require('react-toastify/dist/ReactToastify.css');
 require('prismjs/themes/prism-tomorrow.css');
+var SweetAlert = _interopDefault(require('react-bootstrap-sweetalert'));
 
 var generateUUID = function generateUUID() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -43,7 +44,7 @@ var generateUUID = function generateUUID() {
   });
 };
 
-var API_BASE_URL = 'https://apisit.inon.vn';
+var API_BASE_URL = 'http://localhost:8086';
 var API_LOGIN_URL = '/api/authenticate';
 var API_LOGOUT_URL = '/api/authenticate';
 var API_REGISTER = '/nth/onboarding/api/authenticate/register';
@@ -1508,75 +1509,6 @@ var UserDropdown = function UserDropdown(props) {
     id: "setting.accountInformation"
   }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
     tag: "a",
-    href: "#",
-    onClick: function onClick(e) {
-      return handleNavigation(e, '/change-password');
-    }
-  }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
-    size: 14,
-    className: "mr-50"
-  }), /*#__PURE__*/React__default.createElement("span", {
-    className: "align-middle"
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "setting.changePassword"
-  }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
-    divider: true
-  }), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
-    tag: "a",
-    href: "#",
-    onClick: function onClick(e) {
-      return handleNavigation(e, '/terms-and-condition');
-    }
-  }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
-    size: 14,
-    className: "mr-50"
-  }), /*#__PURE__*/React__default.createElement("span", {
-    className: "align-middle"
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "setting.termAndCondition"
-  }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
-    tag: "a",
-    href: "#",
-    onClick: function onClick(e) {
-      return handleNavigation(e, '/privacy-policy');
-    }
-  }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
-    size: 14,
-    className: "mr-50"
-  }), /*#__PURE__*/React__default.createElement("span", {
-    className: "align-middle"
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "setting.privacyPolicy"
-  }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
-    tag: "a",
-    href: "#",
-    onClick: function onClick(e) {
-      return handleNavigation(e, '/language');
-    }
-  }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
-    size: 14,
-    className: "mr-50"
-  }), /*#__PURE__*/React__default.createElement("span", {
-    className: "align-middle"
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "setting.language"
-  }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
-    tag: "a",
-    href: "#",
-    onClick: function onClick(e) {
-      return handleNavigation(e, '/contact');
-    }
-  }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
-    size: 14,
-    className: "mr-50"
-  }), /*#__PURE__*/React__default.createElement("span", {
-    className: "align-middle"
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "setting.contact"
-  }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
-    divider: true
-  }), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
-    tag: "a",
     onClick: logoutAction
   }, /*#__PURE__*/React__default.createElement(Icon.Power, {
     size: 14,
@@ -1745,140 +1677,7 @@ var NavbarUser = /*#__PURE__*/function (_React$PureComponent) {
       className: "nav-link nav-link-label"
     }, /*#__PURE__*/React__default.createElement(Icon.Bell, {
       size: 21
-    }), /*#__PURE__*/React__default.createElement(reactstrap.Badge, {
-      pill: true,
-      color: "primary",
-      className: "badge-up"
-    }, ' ', "5", ' ')), /*#__PURE__*/React__default.createElement(reactstrap.DropdownMenu, {
-      tag: "ul",
-      right: true,
-      className: "dropdown-menu-media"
-    }, /*#__PURE__*/React__default.createElement("li", {
-      className: "dropdown-menu-header"
-    }, /*#__PURE__*/React__default.createElement("div", {
-      className: "dropdown-header mt-0"
-    }, /*#__PURE__*/React__default.createElement("h3", {
-      className: "text-white"
-    }, "5 New"), /*#__PURE__*/React__default.createElement("span", {
-      className: "notification-title"
-    }, "App Notifications"))), /*#__PURE__*/React__default.createElement(PerfectScrollbar, {
-      className: "media-list overflow-hidden position-relative",
-      options: {
-        wheelPropagation: false
-      }
-    }, /*#__PURE__*/React__default.createElement("div", {
-      className: "d-flex justify-content-between"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "d-flex align-items-start"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      left: true,
-      href: "#"
-    }, /*#__PURE__*/React__default.createElement(Icon.PlusSquare, {
-      className: "font-medium-5 primary",
-      size: 21
-    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      body: true
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      heading: true,
-      className: "primary media-heading",
-      tag: "h6"
-    }, "You have new order!"), /*#__PURE__*/React__default.createElement("p", {
-      className: "notification-text"
-    }, "Are your going to meet me tonight?")), /*#__PURE__*/React__default.createElement("small", null, /*#__PURE__*/React__default.createElement("time", {
-      className: "media-meta",
-      dateTime: "2015-06-11T18:29:20+08:00"
-    }, "9 hours ago")))), /*#__PURE__*/React__default.createElement("div", {
-      className: "d-flex justify-content-between"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "d-flex align-items-start"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      left: true,
-      href: "#"
-    }, /*#__PURE__*/React__default.createElement(Icon.DownloadCloud, {
-      className: "font-medium-5 success",
-      size: 21
-    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      body: true
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      heading: true,
-      className: "success media-heading",
-      tag: "h6"
-    }, "99% Server load"), /*#__PURE__*/React__default.createElement("p", {
-      className: "notification-text"
-    }, "You got new order of goods?")), /*#__PURE__*/React__default.createElement("small", null, /*#__PURE__*/React__default.createElement("time", {
-      className: "media-meta",
-      dateTime: "2015-06-11T18:29:20+08:00"
-    }, "5 hours ago")))), /*#__PURE__*/React__default.createElement("div", {
-      className: "d-flex justify-content-between"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "d-flex align-items-start"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      left: true,
-      href: "#"
-    }, /*#__PURE__*/React__default.createElement(Icon.AlertTriangle, {
-      className: "font-medium-5 danger",
-      size: 21
-    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      body: true
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      heading: true,
-      className: "danger media-heading",
-      tag: "h6"
-    }, "Warning Notification"), /*#__PURE__*/React__default.createElement("p", {
-      className: "notification-text"
-    }, "Server has used 99% of CPU")), /*#__PURE__*/React__default.createElement("small", null, /*#__PURE__*/React__default.createElement("time", {
-      className: "media-meta",
-      dateTime: "2015-06-11T18:29:20+08:00"
-    }, "Today")))), /*#__PURE__*/React__default.createElement("div", {
-      className: "d-flex justify-content-between"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "d-flex align-items-start"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      left: true,
-      href: "#"
-    }, /*#__PURE__*/React__default.createElement(Icon.CheckCircle, {
-      className: "font-medium-5 info",
-      size: 21
-    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      body: true
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      heading: true,
-      className: "info media-heading",
-      tag: "h6"
-    }, "Complete the task"), /*#__PURE__*/React__default.createElement("p", {
-      className: "notification-text"
-    }, "One of your task is pending.")), /*#__PURE__*/React__default.createElement("small", null, /*#__PURE__*/React__default.createElement("time", {
-      className: "media-meta",
-      dateTime: "2015-06-11T18:29:20+08:00"
-    }, "Last week")))), /*#__PURE__*/React__default.createElement("div", {
-      className: "d-flex justify-content-between"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "d-flex align-items-start"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      left: true,
-      href: "#"
-    }, /*#__PURE__*/React__default.createElement(Icon.File, {
-      className: "font-medium-5 warning",
-      size: 21
-    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      body: true
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      heading: true,
-      className: "warning media-heading",
-      tag: "h6"
-    }, "Generate monthly report"), /*#__PURE__*/React__default.createElement("p", {
-      className: "notification-text"
-    }, "Reminder to generate monthly report")), /*#__PURE__*/React__default.createElement("small", null, /*#__PURE__*/React__default.createElement("time", {
-      className: "media-meta",
-      dateTime: "2015-06-11T18:29:20+08:00"
-    }, "Last month"))))), /*#__PURE__*/React__default.createElement("li", {
-      className: "dropdown-menu-footer"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
-      tag: "a",
-      className: "p-1 text-center"
-    }, /*#__PURE__*/React__default.createElement("span", {
-      className: "align-middle"
-    }, "Read all notifications"))))), /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledDropdown, {
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledDropdown, {
       tag: "li",
       className: "dropdown-user nav-item"
     }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
@@ -2086,7 +1885,7 @@ var Footer = function Footer(props) {
   }, /*#__PURE__*/React__default.createElement("a", {
     href: "#",
     onClick: function onClick(e) {
-      return goToPage(e, 'buyInsurance');
+      return goToPage(e, 'contract/management');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.List, null), /*#__PURE__*/React__default.createElement("div", {
     className: "mt-1"
@@ -2095,7 +1894,7 @@ var Footer = function Footer(props) {
   }, /*#__PURE__*/React__default.createElement("a", {
     href: "#",
     onClick: function onClick(e) {
-      return goToPage(e, 'contractManagemen');
+      return goToPage(e, 'buy-insurance');
     }
   }, /*#__PURE__*/React__default.createElement("img", {
     src: IMAGE.BUY_INSURANCE,
@@ -2121,7 +1920,7 @@ var Footer = function Footer(props) {
   }, /*#__PURE__*/React__default.createElement("a", {
     href: "#",
     onClick: function onClick(e) {
-      return goToPage(e, 'home');
+      return goToPage(e, 'contact');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.MessageSquare, null), /*#__PURE__*/React__default.createElement("div", {
     className: "mt-1"
@@ -4980,7 +4779,7 @@ var Login = function Login() {
   var renderForm = function renderForm(_ref) {
     var errors = _ref.errors,
         touched = _ref.touched;
-    return /*#__PURE__*/React__default.createElement(formik.Form, null, console.log('Render'), /*#__PURE__*/React__default.createElement("h4", {
+    return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement("h4", {
       className: "text-center text-white mb-3"
     }, rememberMe ? /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "login.sayHi",
@@ -5430,10 +5229,12 @@ var CreatePassword = function CreatePassword(_ref) {
 var LandingHeader = function LandingHeader(_ref) {
   var isLanding2 = _ref.isLanding2;
   return /*#__PURE__*/React__default.createElement(Context.Consumer, null, function (context) {
-    return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("img", {
+    return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
+      to: "/"
+    }, /*#__PURE__*/React__default.createElement("img", {
       src: isLanding2 ? IMAGE.LOGO : IMAGE.LOGO_WHITE,
       alt: "logo"
-    }), /*#__PURE__*/React__default.createElement("div", {
+    })), /*#__PURE__*/React__default.createElement("div", {
       className: "languages d-flex align-items-center "
     }, /*#__PURE__*/React__default.createElement("div", {
       onClick: function onClick() {
@@ -5460,7 +5261,7 @@ var LandingHeader = function LandingHeader(_ref) {
 
 var LandingFooter = function LandingFooter() {
   return /*#__PURE__*/React__default.createElement("div", {
-    className: "ld-footer px-1 px-md-3 px-lg-5 my-3"
+    className: "ld-footer px-1 px-md-3 px-lg-5"
   }, /*#__PURE__*/React__default.createElement("div", {
     className: "d-none d-lg-flex justify-content-between"
   }, /*#__PURE__*/React__default.createElement("div", {
@@ -5526,7 +5327,7 @@ var devices = {
 };
 
 function _templateObject() {
-  var data = _taggedTemplateLiteralLoose(["\n  .landing-page {\n    background-image: url('", "');\n\n    @media ", " {\n      background-image: url('", "');\n    }\n  }\n"]);
+  var data = _taggedTemplateLiteralLoose(["\n  height: 100%;\n  .landing-page {\n    background-image: url('", "');\n\n    @media ", " {\n      background-image: url('", "');\n    }\n  }\n"]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -5574,7 +5375,7 @@ var LandingPage = function LandingPage(props) {
   }, /*#__PURE__*/React__default.createElement("div", {
     className: "position-absolute w-100"
   }), /*#__PURE__*/React__default.createElement("div", {
-    className: "ld-main ml-auto col-12 col-md-6 col-xl-4"
+    className: "ld-main ml-auto col-12 col-md-6 col-xl-4 pb-3"
   }, /*#__PURE__*/React__default.createElement("div", {
     className: "ld-header d-flex justify-content-between mb-1 mb-md-3 mb-xl-5"
   }, /*#__PURE__*/React__default.createElement(LandingHeader, null)), /*#__PURE__*/React__default.createElement("div", {
@@ -6183,6 +5984,27 @@ var FallbackSpinner = /*#__PURE__*/function (_React$Component) {
   return FallbackSpinner;
 }(React__default.Component);
 
+var ConfirmAlert = function ConfirmAlert(_ref) {
+  var title = _ref.title,
+      isShow = _ref.isShow,
+      message = _ref.message,
+      onConfirm = _ref.onConfirm,
+      onCancel = _ref.onCancel,
+      confirmBtnText = _ref.confirmBtnText,
+      cancelBtnText = _ref.cancelBtnText;
+  return /*#__PURE__*/React__default.createElement(SweetAlert, {
+    title: title,
+    show: isShow,
+    showCancel: true,
+    reverseButtons: true,
+    cancelBtnBsStyle: "danger",
+    confirmBtnText: confirmBtnText || 'OK',
+    cancelBtnText: cancelBtnText || 'Cancel',
+    onConfirm: onConfirm,
+    onCancel: onCancel
+  }, message);
+};
+
 function useDeviceDetect() {
   var _React$useState = React__default.useState(false),
       isMobile = _React$useState[0],
@@ -6223,6 +6045,7 @@ exports.BaseFormDatePicker = BaseFormDatePicker$1;
 exports.BaseFormGroup = BaseFormGroup$1;
 exports.BaseFormGroupSelect = BaseFormGroupSelect$1;
 exports.Checkbox = CheckBox;
+exports.ConfirmAlert = ConfirmAlert;
 exports.DatePicker = DatePicker;
 exports.FallbackSpinner = FallbackSpinner;
 exports.HttpClient = HttpClient;
