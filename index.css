@@ -959,11 +959,11 @@ span.flatpickr-day.selected {
       margin-right: 5rem;
       padding-top: 1rem;
       color: white;
-      min-height: 620px; }
+      min-height: 85vh; }
       .landing-page .ld-main .lg-content-header {
         margin-top: 2rem; }
       .landing-page .ld-main .ld-header img {
-        width: 50%;
+        width: 200px;
         padding: 2rem; }
     .landing-page .ld-footer {
       position: relative;

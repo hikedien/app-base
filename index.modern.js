@@ -878,8 +878,11 @@ const getNativgationConfig = (appId, navConfigs) => {
 
 class NavBarService {}
 
-NavBarService.getNativagtion = () => {
+NavBarService.getNativagtion = groupId => {
   return HttpClient.get(API_GET_NAV_CONFIGS, {
+    params: {
+      groupId
+    },
     isBackgroundRequest: true
   });
 };
@@ -2665,10 +2668,10 @@ var Layout$1 = connect(mapStateToProps$2, {
 })(Layout);
 
 const LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
-const loadNavtigation = appId => {
+const loadNavtigation = (appId, groupId) => {
   return async dispatch => {
     try {
-      const res = await NavBarService.getNativagtion();
+      const res = await NavBarService.getNativagtion(groupId);
       const roles = res.data || [];
       const navConfigs = getNativgationConfig(appId, roles);
       dispatch({
@@ -4869,7 +4872,8 @@ const size = {
   desktop: '2560px'
 };
 const devices = {
-  tablet: `(max-width: ${size.tablet})`
+  tablet: `(max-width: ${size.tablet})`,
+  laptop: `(max-width: ${size.laptop})`
 };
 
 let _ = t => t,
@@ -4883,7 +4887,7 @@ const PagetStyle = styled.div(_t || (_t = _`
       background-image: url('${0}');
     }
   }
-`), IMAGE.LANDING_PAGE_BG, devices.tablet, IMAGE.LANDING_PAGE_TABLET_BG);
+`), IMAGE.LANDING_PAGE_BG, devices.laptop, IMAGE.LANDING_PAGE_TABLET_BG);
 
 const LandingPage = props => {
   const [activeTab, setActiveTab] = useState('');
@@ -5302,6 +5306,7 @@ const AppRouter = props => {
     children,
     loadNavtigation,
     history,
+    user,
     message
   } = props;
   useEffect(() => {
@@ -5312,7 +5317,7 @@ const AppRouter = props => {
     }
 
     if (authToken) {
-      loadNavtigation(appId);
+      loadNavtigation(appId, user.groupId);
     }
   }, [authToken]);
 
@@ -5413,6 +5418,7 @@ const mapStateToProps$3 = state => {
   return {
     isAuthentication: !!state.auth.authToken,
     authToken: state.auth.authToken,
+    user: state.auth.user,
     loginStatus: state.auth.loginStatus
   };
 };

@@ -1019,8 +1019,11 @@ var getNativgationConfig = function getNativgationConfig(appId, navConfigs) {
 
 var NavBarService = function NavBarService() {};
 
-NavBarService.getNativagtion = function () {
+NavBarService.getNativagtion = function (groupId) {
   return HttpClient.get(API_GET_NAV_CONFIGS, {
+    params: {
+      groupId: groupId
+    },
     isBackgroundRequest: true
   });
 };
@@ -2958,11 +2961,11 @@ var Layout$1 = reactRedux.connect(mapStateToProps$2, {
 })(Layout);
 
 var LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
-var loadNavtigation = function loadNavtigation(appId) {
+var loadNavtigation = function loadNavtigation(appId, groupId) {
   return function (dispatch) {
     try {
       var _temp2 = _catch(function () {
-        return Promise.resolve(NavBarService.getNativagtion()).then(function (res) {
+        return Promise.resolve(NavBarService.getNativagtion(groupId)).then(function (res) {
           var roles = res.data || [];
           var navConfigs = getNativgationConfig(appId, roles);
           dispatch({
@@ -5344,7 +5347,8 @@ var size = {
   desktop: '2560px'
 };
 var devices = {
-  tablet: "(max-width: " + size.tablet + ")"
+  tablet: "(max-width: " + size.tablet + ")",
+  laptop: "(max-width: " + size.laptop + ")"
 };
 
 function _templateObject() {
@@ -5356,7 +5360,7 @@ function _templateObject() {
 
   return data;
 }
-var PagetStyle = styled.div(_templateObject(), IMAGE.LANDING_PAGE_BG, devices.tablet, IMAGE.LANDING_PAGE_TABLET_BG);
+var PagetStyle = styled.div(_templateObject(), IMAGE.LANDING_PAGE_BG, devices.laptop, IMAGE.LANDING_PAGE_TABLET_BG);
 
 var LandingPage = function LandingPage(props) {
   var _useState = React.useState(''),
@@ -5795,6 +5799,7 @@ var AppRouter = function AppRouter(props) {
       children = props.children,
       loadNavtigation = props.loadNavtigation,
       history = props.history,
+      user = props.user,
       message = props.message;
   React.useEffect(function () {
     var code = new URLSearchParams(document.location.search).get('code') || authToken;
@@ -5804,7 +5809,7 @@ var AppRouter = function AppRouter(props) {
     }
 
     if (authToken) {
-      loadNavtigation(appId);
+      loadNavtigation(appId, user.groupId);
     }
   }, [authToken]);
 
@@ -5921,6 +5926,7 @@ var mapStateToProps$3 = function mapStateToProps(state) {
   return {
     isAuthentication: !!state.auth.authToken,
     authToken: state.auth.authToken,
+    user: state.auth.user,
     loginStatus: state.auth.loginStatus
   };
 };
