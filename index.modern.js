@@ -44,6 +44,9 @@ const generateUUID = () => {
     return v.toString(16);
   });
 };
+const trimValue = value => {
+  return value ? value.trim() : '';
+};
 
 const API_BASE_URL = 'http://localhost:8086';
 const API_LOGIN_URL = '/api/authenticate';
@@ -100,6 +103,11 @@ const IMAGE = {
   DOWNLOAD_APP_ANDROID: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-APP%26GP-01.png?alt=media&token=b2aefa9d-d464-41d3-9fd0-b374ed0dca93'
 };
 
+const SHOW_LOADING_BAR = 'SHOW_LOADING_BAR';
+const HIDE_LOADING_BAR = 'HIDE_LOADING_BAR';
+const SHOW_CONFIRM_ALERT = 'SHOW_CONFIRM_ALERT';
+const HIDE_CONFIRM_ALERT = 'HIDE_CONFIRM_ALERT';
+
 const HttpClient = Axios.create({
   timeout: 10000,
   adapter: throttleAdapterEnhancer(cacheAdapterEnhancer(Axios.defaults.adapter, {
@@ -143,10 +151,13 @@ const setUpHttpClient = (store, apiBaseUrl) => {
 
     config.headers.deviceId = deviceId;
     config.headers.language = language;
+    const requestUUID = generateUUID();
+    config.uuid = requestUUID;
 
     if (!config.isBackgroundRequest) {
       store.dispatch({
-        type: 'SHOW_LOADING_BAR'
+        type: SHOW_LOADING_BAR,
+        payload: requestUUID
       });
     }
 
@@ -154,12 +165,14 @@ const setUpHttpClient = (store, apiBaseUrl) => {
   });
   HttpClient.interceptors.response.use(response => {
     store.dispatch({
-      type: 'HIDE_LOADING_BAR'
+      type: 'HIDE_LOADING_BAR',
+      payload: response.config.uuid
     });
     return response;
   }, e => {
     store.dispatch({
-      type: 'HIDE_LOADING_BAR'
+      type: 'HIDE_LOADING_BAR',
+      payload: e.config.uuid
     });
 
     if (!e.response) {
@@ -899,21 +912,17 @@ const navbarReducer = (state = initialState, action) => {
   }
 };
 
-const SHOW_LOADING_BAR = 'SHOW_LOADING_BAR';
-const HIDE_LOADING_BAR = 'HIDE_LOADING_BAR';
-const SHOW_CONFIRM_ALERT = 'SHOW_CONFIRM_ALERT';
-const HIDE_CONFIRM_ALERT = 'HIDE_CONFIRM_ALERT';
-
 const DEFAULT_CONFIRM_ALERT = {
   title: '',
   isShow: false,
   content: '',
-  onConfirm: null,
-  onCancel: null,
+  onConfirm: () => {},
+  onCancel: () => {},
   confirmBtnText: 'OK',
   cancelBtnText: 'Cancel'
 };
 const initialState$1 = {
+  loading: new Set(),
   isLoading: false,
   confirmAlert: { ...DEFAULT_CONFIRM_ALERT
   }
@@ -923,12 +932,14 @@ const uiReducer = (state = initialState$1, action) => {
   switch (action.type) {
     case SHOW_LOADING_BAR:
       return { ...state,
-        isLoading: true
+        isLoading: true,
+        loading: state.loading.add(action.payload)
       };
 
     case HIDE_LOADING_BAR:
+      state.loading.delete(action.payload);
       return { ...state,
-        isLoading: false
+        isLoading: state.loading.size
       };
 
     case SHOW_CONFIRM_ALERT:
@@ -2733,6 +2744,7 @@ var register = "Register";
 var forgotPassword$1 = "Forgot password";
 var setting = "Setting";
 var messages_en = {
+	"commom.error.requireField": "You must enter {fieldName}",
 	login: login,
 	"login.firstWelcome": "Welcome you to InOn X!",
 	"login.logedWelcome": "Hi,",
@@ -2877,6 +2889,7 @@ var register$1 = "Đăng ký";
 var forgotPassword$2 = "Quên mật khẩu";
 var setting$1 = "Cài đặt";
 var messages_vi = {
+	"commom.error.requireField": "Bạn phải nhập {fieldName}",
 	login: login$1,
 	"login.firstWelcome": "Chào mừng bạn đến với InOn X!",
 	"login.logedWelcome": "Xin chào,",
@@ -4360,7 +4373,7 @@ const Login = () => {
 
   const onSubmit = (values, actions) => {
     dispatch(loginAction({
-      username: values.username,
+      username: trimValue(values.username),
       password: values.password,
       isRemeberMe
     }));
@@ -4490,7 +4503,7 @@ const Register = () => {
       return;
     }
 
-    const res = await AuthService.register(values);
+    const res = await AuthService.register(trimObjectValues(values));
 
     if (res.status === 200 && res.data) {
       toast.success( /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -5050,8 +5063,8 @@ const CompleteInformation = ({
   const user = useSelector(state => state.auth.register.user);
   const dispatch = useDispatch();
 
-  const onSubmit = (values, actions) => {
-    dispatch(compeleteInfo(values));
+  const onSubmit = values => {
+    dispatch(compeleteInfo(trimObjectValues(values)));
   };
 
   return /*#__PURE__*/React.createElement("div", {
@@ -5479,12 +5492,12 @@ const App = ({
   }, /*#__PURE__*/React.createElement(PersistGate, {
     loading: null,
     persistor: persistor
-  }, /*#__PURE__*/React.createElement(LoadingSpinner, null), /*#__PURE__*/React.createElement(AppRouter$1, {
+  }, /*#__PURE__*/React.createElement(LoadingSpinner, null), /*#__PURE__*/React.createElement(PerfectScrollbar, null, /*#__PURE__*/React.createElement(AppRouter$1, {
     message: message,
     appId: appId,
     history: history,
     children: children
-  })));
+  }))));
 };
 
 unregister();

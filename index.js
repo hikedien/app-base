@@ -29,12 +29,12 @@ var Flatpickr = _interopDefault(require('react-flatpickr'));
 var Select$1 = _interopDefault(require('react-select'));
 var chroma = _interopDefault(require('chroma-js'));
 var styled = _interopDefault(require('styled-components'));
+var SweetAlert = _interopDefault(require('react-bootstrap-sweetalert'));
 var TopBarProgress = _interopDefault(require('react-topbar-progress-indicator'));
 var Ripples = _interopDefault(require('react-ripples'));
 require('react-perfect-scrollbar/dist/css/styles.css');
 require('react-toastify/dist/ReactToastify.css');
 require('prismjs/themes/prism-tomorrow.css');
-var SweetAlert = _interopDefault(require('react-bootstrap-sweetalert'));
 
 var generateUUID = function generateUUID() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -42,6 +42,9 @@ var generateUUID = function generateUUID() {
         v = c == 'x' ? r : r & 0x3 | 0x8;
     return v.toString(16);
   });
+};
+var trimValue = function trimValue(value) {
+  return value ? value.trim() : '';
 };
 
 var API_BASE_URL = 'http://localhost:8086';
@@ -99,6 +102,11 @@ var IMAGE = {
   DOWNLOAD_APP_ANDROID: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-APP%26GP-01.png?alt=media&token=b2aefa9d-d464-41d3-9fd0-b374ed0dca93'
 };
 
+var SHOW_LOADING_BAR = 'SHOW_LOADING_BAR';
+var HIDE_LOADING_BAR = 'HIDE_LOADING_BAR';
+var SHOW_CONFIRM_ALERT = 'SHOW_CONFIRM_ALERT';
+var HIDE_CONFIRM_ALERT = 'HIDE_CONFIRM_ALERT';
+
 var HttpClient = Axios.create({
   timeout: 10000,
   adapter: axiosExtensions.throttleAdapterEnhancer(axiosExtensions.cacheAdapterEnhancer(Axios.defaults.adapter, {
@@ -150,10 +158,13 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
 
     config.headers.deviceId = deviceId;
     config.headers.language = language;
+    var requestUUID = generateUUID();
+    config.uuid = requestUUID;
 
     if (!config.isBackgroundRequest) {
       store.dispatch({
-        type: 'SHOW_LOADING_BAR'
+        type: SHOW_LOADING_BAR,
+        payload: requestUUID
       });
     }
 
@@ -161,12 +172,14 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
   });
   HttpClient.interceptors.response.use(function (response) {
     store.dispatch({
-      type: 'HIDE_LOADING_BAR'
+      type: 'HIDE_LOADING_BAR',
+      payload: response.config.uuid
     });
     return response;
   }, function (e) {
     store.dispatch({
-      type: 'HIDE_LOADING_BAR'
+      type: 'HIDE_LOADING_BAR',
+      payload: e.config.uuid
     });
 
     if (!e.response) {
@@ -1050,8 +1063,19 @@ var navbarReducer = function navbarReducer(state, action) {
   }
 };
 
+var DEFAULT_CONFIRM_ALERT = {
+  title: '',
+  isShow: false,
+  content: '',
+  onConfirm: function onConfirm() {},
+  onCancel: function onCancel() {},
+  confirmBtnText: 'OK',
+  cancelBtnText: 'Cancel'
+};
 var initialState$1 = {
-  isLoading: false
+  loading: new Set(),
+  isLoading: false,
+  confirmAlert: _extends({}, DEFAULT_CONFIRM_ALERT)
 };
 
 var uiReducer = function uiReducer(state, action) {
@@ -1060,14 +1084,28 @@ var uiReducer = function uiReducer(state, action) {
   }
 
   switch (action.type) {
-    case 'SHOW_LOADING_BAR':
+    case SHOW_LOADING_BAR:
       return _extends({}, state, {
-        isLoading: true
+        isLoading: true,
+        loading: state.loading.add(action.payload)
       });
 
-    case 'HIDE_LOADING_BAR':
+    case HIDE_LOADING_BAR:
+      state.loading["delete"](action.payload);
       return _extends({}, state, {
-        isLoading: false
+        isLoading: state.loading.size
+      });
+
+    case SHOW_CONFIRM_ALERT:
+      return _extends({}, state, {
+        confirmAlert: _extends({
+          isShow: true
+        }, state.confirmAlert, action.payload)
+      });
+
+    case HIDE_CONFIRM_ALERT:
+      return _extends({}, state, {
+        confirmAlert: _extends({}, DEFAULT_CONFIRM_ALERT)
       });
 
     default:
@@ -3026,6 +3064,7 @@ var register = "Register";
 var forgotPassword$1 = "Forgot password";
 var setting = "Setting";
 var messages_en = {
+	"commom.error.requireField": "You must enter {fieldName}",
 	login: login,
 	"login.firstWelcome": "Welcome you to InOn X!",
 	"login.logedWelcome": "Hi,",
@@ -3170,6 +3209,7 @@ var register$1 = "Đăng ký";
 var forgotPassword$2 = "Quên mật khẩu";
 var setting$1 = "Cài đặt";
 var messages_vi = {
+	"commom.error.requireField": "Bạn phải nhập {fieldName}",
 	login: login$1,
 	"login.firstWelcome": "Chào mừng bạn đến với InOn X!",
 	"login.logedWelcome": "Xin chào,",
@@ -4764,7 +4804,7 @@ var Login = function Login() {
 
   var onSubmit = function onSubmit(values, actions) {
     dispatch(loginAction({
-      username: values.username,
+      username: trimValue(values.username),
       password: values.password,
       isRemeberMe: isRemeberMe
     }));
@@ -4915,7 +4955,7 @@ var Register = function Register() {
         return Promise.resolve();
       }
 
-      return Promise.resolve(AuthService.register(values)).then(function (res) {
+      return Promise.resolve(AuthService.register(trimObjectValues(values))).then(function (res) {
         if (res.status === 200 && res.data) {
           reactToastify.toast.success( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
             id: "register.registerSuccess"
@@ -5519,8 +5559,8 @@ var CompleteInformation = function CompleteInformation(_ref) {
   });
   var dispatch = reactRedux.useDispatch();
 
-  var onSubmit = function onSubmit(values, actions) {
-    dispatch(compeleteInfo(values));
+  var onSubmit = function onSubmit(values) {
+    dispatch(compeleteInfo(trimObjectValues(values)));
   };
 
   return /*#__PURE__*/React__default.createElement("div", {
@@ -5738,6 +5778,33 @@ var LandingPage2 = function LandingPage2(props) {
   }, /*#__PURE__*/React__default.createElement(TabView, null)))), /*#__PURE__*/React__default.createElement(LandingFooter, null)));
 };
 
+var ConfirmAlert = function ConfirmAlert() {
+  var _useSelector = reactRedux.useSelector(function (state) {
+    return state.ui.confirmAlert;
+  }),
+      title = _useSelector.title,
+      isShow = _useSelector.isShow,
+      content = _useSelector.content,
+      onConfirm = _useSelector.onConfirm,
+      onCancel = _useSelector.onCancel,
+      confirmBtnText = _useSelector.confirmBtnText,
+      cancelBtnText = _useSelector.cancelBtnText,
+      otherConfigs = _objectWithoutPropertiesLoose(_useSelector, ["title", "isShow", "content", "onConfirm", "onCancel", "confirmBtnText", "cancelBtnText"]);
+
+  return /*#__PURE__*/React__default.createElement(SweetAlert, _extends({
+    title: title,
+    show: isShow,
+    showCancel: true,
+    reverseButtons: true,
+    btnSize: "md",
+    cancelBtnBsStyle: "secondary",
+    confirmBtnText: confirmBtnText || 'OK',
+    cancelBtnText: cancelBtnText || 'Cancel',
+    onConfirm: onConfirm,
+    onCancel: onCancel
+  }, otherConfigs), content);
+};
+
 var AppRouter = function AppRouter(props) {
   var checkLoginStatus = props.checkLoginStatus,
       appId = props.appId,
@@ -5866,7 +5933,7 @@ var AppRouter = function AppRouter(props) {
     hideProgressBar: false,
     closeOnClick: true,
     pauseOnHover: true
-  }));
+  }), /*#__PURE__*/React__default.createElement(ConfirmAlert, null));
 };
 
 var mapStateToProps$3 = function mapStateToProps(state) {
@@ -5944,12 +6011,12 @@ var App = function App(_ref) {
   }, /*#__PURE__*/React__default.createElement(react.PersistGate, {
     loading: null,
     persistor: persistor
-  }, /*#__PURE__*/React__default.createElement(LoadingSpinner, null), /*#__PURE__*/React__default.createElement(AppRouter$1, {
+  }, /*#__PURE__*/React__default.createElement(LoadingSpinner, null), /*#__PURE__*/React__default.createElement(PerfectScrollbar, null, /*#__PURE__*/React__default.createElement(AppRouter$1, {
     message: message,
     appId: appId,
     history: history,
     children: children
-  })));
+  }))));
 };
 
 unregister();
@@ -5984,25 +6051,22 @@ var FallbackSpinner = /*#__PURE__*/function (_React$Component) {
   return FallbackSpinner;
 }(React__default.Component);
 
-var ConfirmAlert = function ConfirmAlert(_ref) {
-  var title = _ref.title,
-      isShow = _ref.isShow,
-      message = _ref.message,
-      onConfirm = _ref.onConfirm,
-      onCancel = _ref.onCancel,
-      confirmBtnText = _ref.confirmBtnText,
-      cancelBtnText = _ref.cancelBtnText;
-  return /*#__PURE__*/React__default.createElement(SweetAlert, {
-    title: title,
-    show: isShow,
-    showCancel: true,
-    reverseButtons: true,
-    cancelBtnBsStyle: "danger",
-    confirmBtnText: confirmBtnText || 'OK',
-    cancelBtnText: cancelBtnText || 'Cancel',
-    onConfirm: onConfirm,
-    onCancel: onCancel
-  }, message);
+var SHOW_CONFIRM_ALERT$1 = 'SHOW_CONFIRM_ALERT';
+var HIDE_CONFIRM_ALERT$1 = 'HIDE_CONFIRM_ALERT';
+var showConfirmAlert = function showConfirmAlert(configs) {
+  return function (dispatch) {
+    return dispatch({
+      type: SHOW_CONFIRM_ALERT$1,
+      payload: configs
+    });
+  };
+};
+var hideConfirmAlert = function hideConfirmAlert() {
+  return function (dispatch) {
+    return dispatch({
+      type: HIDE_CONFIRM_ALERT$1
+    });
+  };
 };
 
 function useDeviceDetect() {
@@ -6045,12 +6109,13 @@ exports.BaseFormDatePicker = BaseFormDatePicker$1;
 exports.BaseFormGroup = BaseFormGroup$1;
 exports.BaseFormGroupSelect = BaseFormGroupSelect$1;
 exports.Checkbox = CheckBox;
-exports.ConfirmAlert = ConfirmAlert;
 exports.DatePicker = DatePicker;
 exports.FallbackSpinner = FallbackSpinner;
 exports.HttpClient = HttpClient;
 exports.Radio = Radio;
 exports.Select = Select;
+exports.hideConfirmAlert = hideConfirmAlert;
+exports.showConfirmAlert = showConfirmAlert;
 exports.useDeviceDetect = useDeviceDetect;
 exports.useWindowDimensions = useWindowDimensions;
 //# sourceMappingURL=index.js.map
