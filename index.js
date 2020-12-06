@@ -45,6 +45,41 @@ var generateUUID = function generateUUID() {
 var trimValue = function trimValue(value) {
   return value ? value.trim() : '';
 };
+var trimObjectValues$1 = function trimObjectValues(object, excludeKeys) {
+  if (excludeKeys === void 0) {
+    excludeKeys = [];
+  }
+
+  Object.keys(object).forEach(function (key) {
+    if (excludeKeys.indexOf(key) === -1) {
+      object[key] = trimValue(object[key]);
+    }
+  });
+  return object;
+};
+var toastError = function toastError(message) {
+  reactToastify.toast.error( /*#__PURE__*/React__default.createElement("div", {
+    className: "d-flex align-items-center"
+  }, /*#__PURE__*/React__default.createElement(Icon.AlertTriangle, null), " ", /*#__PURE__*/React__default.createElement("span", {
+    className: "ml-1"
+  }, message)));
+};
+var toastSuccess = function toastSuccess(message) {
+  reactToastify.toast.success( /*#__PURE__*/React__default.createElement("div", {
+    className: "d-flex align-items-center"
+  }, /*#__PURE__*/React__default.createElement(Icon.Check, null), " ", /*#__PURE__*/React__default.createElement("span", {
+    className: "ml-1"
+  }, message)));
+};
+
+var index = {
+  __proto__: null,
+  generateUUID: generateUUID,
+  trimValue: trimValue,
+  trimObjectValues: trimObjectValues$1,
+  toastError: toastError,
+  toastSuccess: toastSuccess
+};
 
 var API_BASE_URL = 'https://apidev.inon.vn';
 var API_LOGIN_URL = '/api/authenticate';
@@ -110,13 +145,6 @@ var HttpClient = Axios.create({
   timeout: 10000
 });
 HttpClient.defaults.headers['Content-Type'] = 'application/json';
-var errorMessage = function errorMessage(message) {
-  return /*#__PURE__*/React__default.createElement("div", {
-    className: "d-flex align-items-center"
-  }, /*#__PURE__*/React__default.createElement(Icon.AlertTriangle, null), " ", /*#__PURE__*/React__default.createElement("span", {
-    className: "ml-1"
-  }, message));
-};
 var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
   var deviceId = localStorage.getItem('deviceId');
   var language = localStorage.getItem('language');
@@ -171,14 +199,14 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
 
     switch (e.response.status) {
       case 403:
-        reactToastify.toast.error(errorMessage(e.response.data.message));
+        toastError(errorMessage(e.response.data.message));
         store.dispatch({
           type: 'LOGOUT_ACTION'
         });
 
       case 400:
       case 500:
-        reactToastify.toast.error(errorMessage(e.response.data.message));
+        toastError(e.response.data.message);
     }
 
     return e.response;
@@ -471,9 +499,9 @@ var loginAction = function loginAction(user) {
               dispatch({
                 type: LOGOUT_ACTION
               });
-              reactToastify.toast.error(errorMessage( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+              toastError( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
                 id: "login.fail"
-              })));
+              }));
             }
           }();
 
@@ -513,7 +541,7 @@ var compeleteInfo = function compeleteInfo(user) {
         user.registerToken = getState().auth.register.token;
         return Promise.resolve(AuthService.compeleteInfo(user)).then(function (response) {
           if (response.status === 200 && response.data) {
-            reactToastify.toast.success('Hoàn tất đăng ký thành công');
+            toastSuccess('Hoàn tất đăng ký thành công');
             history.push('/');
           }
         });
@@ -564,7 +592,7 @@ var forgotPassword = function forgotPassword(_ref) {
       var _temp12 = _catch(function () {
         return Promise.resolve(AuthService.forgotPassword(username, email)).then(function (response) {
           if (response.status === 200 && response.data) {
-            reactToastify.toast.success( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+            toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
               id: "forgotPassword.successfull"
             }));
             dispatch({
@@ -588,7 +616,7 @@ var resetPassword = function resetPassword(password) {
       var _temp14 = _catch(function () {
         return Promise.resolve(AuthService.resetPassword(password, getState().auth.resetPasswordToken)).then(function (response) {
           if (response.status === 200 && response.data) {
-            reactToastify.toast.success( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+            toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
               id: "createPassword.resetSuccessFul"
             }));
             dispatch({
@@ -4936,7 +4964,7 @@ var Register = function Register() {
         return Promise.resolve();
       }
 
-      return Promise.resolve(AuthService.register(trimObjectValues(values))).then(function (res) {
+      return Promise.resolve(AuthService.register(trimObjectValues$1(values))).then(function (res) {
         if (res.status === 200 && res.data) {
           reactToastify.toast.success( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
             id: "register.registerSuccess"
@@ -6087,6 +6115,7 @@ Object.defineProperty(exports, 'Button', {
 exports.AppId = AppId;
 exports.AutoComplete = Autocomplete;
 exports.BaseApp = App;
+exports.BaseAppUltils = index;
 exports.BaseFormDatePicker = BaseFormDatePicker$1;
 exports.BaseFormGroup = BaseFormGroup;
 exports.BaseFormGroupSelect = BaseFormGroupSelect$1;

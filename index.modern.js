@@ -7,7 +7,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { persistReducer, persistStore } from 'redux-persist';
 import Axios from 'axios';
 import * as Icon from 'react-feather';
-import { AlertTriangle, ShoppingCart, FileText, Circle, User, DollarSign, TrendingUp, Award, CreditCard, Share2, Power, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, MessageSquare, ArrowUp, Disc, ChevronRight, Check, MapPin, Info, Lock, Sun } from 'react-feather';
+import { AlertTriangle, Check, ShoppingCart, FileText, Circle, User, DollarSign, TrendingUp, Award, CreditCard, Share2, Power, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, MessageSquare, ArrowUp, Disc, ChevronRight, MapPin, Info, Lock, Sun } from 'react-feather';
 import { toast, ToastContainer } from 'react-toastify';
 export { toast } from 'react-toastify';
 import { FormattedMessage, injectIntl, IntlProvider } from 'react-intl';
@@ -45,6 +45,37 @@ const generateUUID = () => {
 };
 const trimValue = value => {
   return value ? value.trim() : '';
+};
+const trimObjectValues$1 = (object, excludeKeys = []) => {
+  Object.keys(object).forEach(key => {
+    if (excludeKeys.indexOf(key) === -1) {
+      object[key] = trimValue(object[key]);
+    }
+  });
+  return object;
+};
+const toastError = message => {
+  toast.error( /*#__PURE__*/React.createElement("div", {
+    className: "d-flex align-items-center"
+  }, /*#__PURE__*/React.createElement(AlertTriangle, null), " ", /*#__PURE__*/React.createElement("span", {
+    className: "ml-1"
+  }, message)));
+};
+const toastSuccess = message => {
+  toast.success( /*#__PURE__*/React.createElement("div", {
+    className: "d-flex align-items-center"
+  }, /*#__PURE__*/React.createElement(Check, null), " ", /*#__PURE__*/React.createElement("span", {
+    className: "ml-1"
+  }, message)));
+};
+
+var index = {
+  __proto__: null,
+  generateUUID: generateUUID,
+  trimValue: trimValue,
+  trimObjectValues: trimObjectValues$1,
+  toastError: toastError,
+  toastSuccess: toastSuccess
 };
 
 const API_BASE_URL = 'https://apidev.inon.vn';
@@ -111,13 +142,6 @@ const HttpClient = Axios.create({
   timeout: 10000
 });
 HttpClient.defaults.headers['Content-Type'] = 'application/json';
-const errorMessage = message => {
-  return /*#__PURE__*/React.createElement("div", {
-    className: "d-flex align-items-center"
-  }, /*#__PURE__*/React.createElement(AlertTriangle, null), " ", /*#__PURE__*/React.createElement("span", {
-    className: "ml-1"
-  }, message));
-};
 const setUpHttpClient = (store, apiBaseUrl) => {
   let deviceId = localStorage.getItem('deviceId');
   let language = localStorage.getItem('language');
@@ -172,14 +196,14 @@ const setUpHttpClient = (store, apiBaseUrl) => {
 
     switch (e.response.status) {
       case 403:
-        toast.error(errorMessage(e.response.data.message));
+        toastError(errorMessage(e.response.data.message));
         store.dispatch({
           type: 'LOGOUT_ACTION'
         });
 
       case 400:
       case 500:
-        toast.error(errorMessage(e.response.data.message));
+        toastError(e.response.data.message);
     }
 
     return e.response;
@@ -380,9 +404,9 @@ const loginAction = user => {
         dispatch({
           type: LOGOUT_ACTION
         });
-        toast.error(errorMessage( /*#__PURE__*/React.createElement(FormattedMessage, {
+        toastError( /*#__PURE__*/React.createElement(FormattedMessage, {
           id: "login.fail"
-        })));
+        }));
       }
     } catch (error) {
       console.log(error);
@@ -407,7 +431,7 @@ const compeleteInfo = user => {
       const response = await AuthService.compeleteInfo(user);
 
       if (response.status === 200 && response.data) {
-        toast.success('Hoàn tất đăng ký thành công');
+        toastSuccess('Hoàn tất đăng ký thành công');
         history.push('/');
       }
     } catch (error) {
@@ -449,7 +473,7 @@ const forgotPassword = ({
       const response = await AuthService.forgotPassword(username, email);
 
       if (response.status === 200 && response.data) {
-        toast.success( /*#__PURE__*/React.createElement(FormattedMessage, {
+        toastSuccess( /*#__PURE__*/React.createElement(FormattedMessage, {
           id: "forgotPassword.successfull"
         }));
         dispatch({
@@ -467,7 +491,7 @@ const resetPassword = password => {
       const response = await AuthService.resetPassword(password, getState().auth.resetPasswordToken);
 
       if (response.status === 200 && response.data) {
-        toast.success( /*#__PURE__*/React.createElement(FormattedMessage, {
+        toastSuccess( /*#__PURE__*/React.createElement(FormattedMessage, {
           id: "createPassword.resetSuccessFul"
         }));
         dispatch({
@@ -4492,7 +4516,7 @@ const Register = () => {
       return;
     }
 
-    const res = await AuthService.register(trimObjectValues(values));
+    const res = await AuthService.register(trimObjectValues$1(values));
 
     if (res.status === 200 && res.data) {
       toast.success( /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -5539,5 +5563,5 @@ function useDeviceDetect() {
   };
 }
 
-export { AppId, Autocomplete as AutoComplete, App as BaseApp, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect$1 as BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, HttpClient, Radio, Select, hideConfirmAlert, showConfirmAlert, useDeviceDetect, useWindowDimensions };
+export { AppId, Autocomplete as AutoComplete, App as BaseApp, index as BaseAppUltils, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect$1 as BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, HttpClient, Radio, Select, hideConfirmAlert, showConfirmAlert, useDeviceDetect, useWindowDimensions };
 //# sourceMappingURL=index.modern.js.map
