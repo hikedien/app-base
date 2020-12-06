@@ -105,17 +105,17 @@ var LOGIN_STATUS = {
 var GENDER_OPTIONS = [{
   value: 'MALE',
   label: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "Nam"
+    id: "common.gender.male"
   })
 }, {
   value: 'FEMALE',
   label: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "N\u1EEF"
+    id: "common.gender.female"
   })
 }, {
   value: 'OTHER',
   label: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "Kh\xE1c"
+    id: "common.gender.other"
   })
 }];
 var APP_URL = 'https://sit2.inon.vn';
@@ -3076,6 +3076,9 @@ var forgotPassword$1 = "Forgot password";
 var setting = "Setting";
 var messages_en = {
 	"commom.error.requireField": "You must enter {fieldName}",
+	"common.gender.male": "Male",
+	"common.gender.female": "Female",
+	"common.gender.other": "Other",
 	login: login,
 	"login.firstWelcome": "Welcome you to InOn X!",
 	"login.logedWelcome": "Hi,",
@@ -3221,6 +3224,9 @@ var forgotPassword$2 = "Quên mật khẩu";
 var setting$1 = "Cài đặt";
 var messages_vi = {
 	"commom.error.requireField": "Bạn phải nhập {fieldName}",
+	"common.gender.male": "Nam",
+	"common.gender.female": "Nữ",
+	"common.gender.other": "Khác",
 	login: login$1,
 	"login.firstWelcome": "Chào mừng bạn đến với InOn X!",
 	"login.logedWelcome": "Xin chào,",
