@@ -249,13 +249,13 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
   HttpClient.interceptors.response.use(function (response) {
     store.dispatch({
       type: HIDE_LOADING_BAR,
-      payload: response.config.uuid
+      payload: ''
     });
     return response;
   }, function (e) {
     store.dispatch({
       type: HIDE_LOADING_BAR,
-      payload: e.config.uuid
+      payload: ''
     });
 
     if (!e.response) {

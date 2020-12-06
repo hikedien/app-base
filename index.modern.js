@@ -238,13 +238,13 @@ const setUpHttpClient = (store, apiBaseUrl) => {
   HttpClient.interceptors.response.use(response => {
     store.dispatch({
       type: HIDE_LOADING_BAR,
-      payload: response.config.uuid
+      payload: ''
     });
     return response;
   }, e => {
     store.dispatch({
       type: HIDE_LOADING_BAR,
-      payload: e.config.uuid
+      payload: ''
     });
 
     if (!e.response) {
