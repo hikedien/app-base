@@ -9,6 +9,7 @@ var thunk = _interopDefault(require('redux-thunk'));
 var react = require('redux-persist/integration/react');
 var reduxPersist = require('redux-persist');
 var Axios = _interopDefault(require('axios'));
+var axiosExtensions = require('axios-extensions');
 var Icon = require('react-feather');
 var reactToastify = require('react-toastify');
 var reactIntl = require('react-intl');
@@ -193,7 +194,7 @@ var HIDE_CONFIRM_ALERT = 'HIDE_CONFIRM_ALERT';
 
 var HttpClient = Axios.create({
   timeout: 10000,
-  adapter: throttleAdapterEnhancer(cacheAdapterEnhancer(Axios.defaults.adapter, {
+  adapter: axiosExtensions.throttleAdapterEnhancer(axiosExtensions.cacheAdapterEnhancer(Axios.defaults.adapter, {
     threshold: 15 * 60 * 1000
   })),
   invalidate: function (config, request) {
