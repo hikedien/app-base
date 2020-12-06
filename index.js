@@ -95,9 +95,13 @@ var API_RESET_PASSWORD = '/api/authenticate/reset-password';
 var API_EMAIL_SUGGESTION = '/nth/user/api/authenticate/email-suggestion';
 var API_R_200 = 200;
 var MAX_MOBILE_WIDTH = 768;
+var MAX_TABLET_WIDTH = 1024;
 var REMEMBER_ME_TOKEN = 'rememberMe';
 var PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])((?=.*[0-9])|(?=.*[!@#$%^&*])).{8,}$/gm;
 var PHONE_REGEX = /(03|07|08|09|01[2|6|8|9])+([0-9]{8})\b/;
+var PERSONAL_ID_REGEX$1 = /^(\d{9}|\d{12})$/;
+var CITIZEN_INDENTIFY_REGEX = /^(\d{12})$/;
+var PASSPORT_REGEX = /^(?!^0+$)[a-zA-Z0-9]{3,20}$/;
 var LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
   FAIL: 'FAIL'
@@ -118,6 +122,22 @@ var GENDER_OPTIONS = [{
     id: "common.gender.other"
   })
 }];
+var IC_TYPES_OPTIONS = [{
+  value: 'HC',
+  label: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "common.icType.passport"
+  })
+}, {
+  value: 'CMND',
+  label: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "common.icType.personalID"
+  })
+}, {
+  value: 'CCCD',
+  label: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "common.icType.citizenIdentify"
+  })
+}];
 var APP_URL = 'https://sit2.inon.vn';
 var IMAGE = {
   LOGO: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Logo.png?alt=media&token=68d3ab7a-e9bb-4c43-a543-c65f72033bf9',
@@ -134,6 +154,36 @@ var IMAGE = {
   LANDING_PAGE_TABLET_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-Bg-ipad(doc)-05.png?alt=media&token=2a140f47-3de6-4a08-9eed-5e2e26e57252',
   DOWNLOAD_APP_IOS: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-APP%26GP-03.png?alt=media&token=c9a13eca-3fe6-40d0-ac1d-df417b95385d',
   DOWNLOAD_APP_ANDROID: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-APP%26GP-01.png?alt=media&token=b2aefa9d-d464-41d3-9fd0-b374ed0dca93'
+};
+
+var appConfigs = {
+  __proto__: null,
+  API_BASE_URL: API_BASE_URL,
+  API_LOGIN_URL: API_LOGIN_URL,
+  API_LOGOUT_URL: API_LOGOUT_URL,
+  API_REGISTER: API_REGISTER,
+  API_GET_USER: API_GET_USER,
+  API_GET_NAV_CONFIGS: API_GET_NAV_CONFIGS,
+  API_CREATE_PASSWORD: API_CREATE_PASSWORD,
+  API_GET_USER_BY_REGISTER_TOKEN: API_GET_USER_BY_REGISTER_TOKEN,
+  API_COMPLETE_INFO: API_COMPLETE_INFO,
+  API_FORGOT_PASSWORD: API_FORGOT_PASSWORD,
+  API_RESET_PASSWORD: API_RESET_PASSWORD,
+  API_EMAIL_SUGGESTION: API_EMAIL_SUGGESTION,
+  API_R_200: API_R_200,
+  MAX_MOBILE_WIDTH: MAX_MOBILE_WIDTH,
+  MAX_TABLET_WIDTH: MAX_TABLET_WIDTH,
+  REMEMBER_ME_TOKEN: REMEMBER_ME_TOKEN,
+  PASSWORD_REGEX: PASSWORD_REGEX,
+  PHONE_REGEX: PHONE_REGEX,
+  PERSONAL_ID_REGEX: PERSONAL_ID_REGEX$1,
+  CITIZEN_INDENTIFY_REGEX: CITIZEN_INDENTIFY_REGEX,
+  PASSPORT_REGEX: PASSPORT_REGEX,
+  LOGIN_STATUS: LOGIN_STATUS,
+  GENDER_OPTIONS: GENDER_OPTIONS,
+  IC_TYPES_OPTIONS: IC_TYPES_OPTIONS,
+  APP_URL: APP_URL,
+  IMAGE: IMAGE
 };
 
 var SHOW_LOADING_BAR = 'SHOW_LOADING_BAR';
@@ -3079,6 +3129,9 @@ var messages_en = {
 	"common.gender.male": "Male",
 	"common.gender.female": "Female",
 	"common.gender.other": "Other",
+	"common.icType.personalID": "Identity Card",
+	"common.icType.citizenIdentify": "Identification",
+	"common.icType.passport": "Passport",
 	login: login,
 	"login.firstWelcome": "Welcome you to InOn X!",
 	"login.logedWelcome": "Hi,",
@@ -3227,6 +3280,9 @@ var messages_vi = {
 	"common.gender.male": "Nam",
 	"common.gender.female": "Nữ",
 	"common.gender.other": "Khác",
+	"common.icType.personalID": "Chứng minh nhân dân",
+	"common.icType.citizenIdentify": "Căn cước công dân",
+	"common.icType.passport": "Hộ chiếu",
 	login: login$1,
 	"login.firstWelcome": "Chào mừng bạn đến với InOn X!",
 	"login.logedWelcome": "Xin chào,",
@@ -5467,21 +5523,21 @@ var CompleteInforValidate = Yup.object().shape({
     id: "completeInformation.nbrPer.required"
   })).when('icType', {
     is: 'CMND',
-    then: Yup.string().matches(/^(\d{9}|\d{12})$/, function () {
+    then: Yup.string().matches(PERSONAL_ID_REGEX, function () {
       return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "completeInformation.nbrPer.invalid"
       });
     })
   }).when('icType', {
     is: 'CCCD',
-    then: Yup.string().matches(/^(\d{12})$/, function () {
+    then: Yup.string().matches(CITIZEN_INDENTIFY_REGEX, function () {
       return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "completeInformation.nbrPer.invalid"
       });
     })
   }).when('icType', {
     is: 'HC',
-    then: Yup.string().matches(/^(?!^0+$)[a-zA-Z0-9]{3,20}$/, function () {
+    then: Yup.string().matches(PASSPORT_REGEX, function () {
       return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "completeInformation.nbrPer.invalid"
       });
@@ -5512,22 +5568,6 @@ var CompleteInforValidate = Yup.object().shape({
     id: "completeInformation.district.required"
   }))
 });
-var personalInfoOptions = [{
-  value: 'HC',
-  label: 'Hộ chiếu',
-  color: '#338955',
-  isFixed: true
-}, {
-  value: 'CMND',
-  label: 'Chứng minh nhân dân',
-  color: '#338955',
-  isFixed: true
-}, {
-  value: 'CCCD',
-  label: 'Căn cước công dân',
-  color: '#338955',
-  isFixed: true
-}];
 var bank$1 = [{
   value: '1',
   label: 'Tien Phong Bank'
@@ -5641,7 +5681,7 @@ var CompleteInformation = function CompleteInformation(_ref) {
     }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
       messageId: "completeInformation.idType",
       fieldName: "icType",
-      options: personalInfoOptions,
+      options: IC_TYPES_OPTIONS,
       errors: errors,
       touched: touched
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
@@ -6121,6 +6161,7 @@ Object.defineProperty(exports, 'Button', {
 exports.AppId = AppId;
 exports.AutoComplete = Autocomplete;
 exports.BaseApp = App;
+exports.BaseAppConfigs = appConfigs;
 exports.BaseAppUltils = index;
 exports.BaseFormDatePicker = BaseFormDatePicker$1;
 exports.BaseFormGroup = BaseFormGroup;
