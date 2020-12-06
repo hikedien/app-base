@@ -236,13 +236,11 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
 
     config.headers.deviceId = deviceId;
     config.headers.language = language;
-    var requestUUID = generateUUID();
-    config.uuid = '';
 
     if (!config.isBackgroundRequest) {
       store.dispatch({
         type: SHOW_LOADING_BAR,
-        payload: requestUUID
+        payload: ''
       });
     }
 
