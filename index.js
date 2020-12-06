@@ -99,7 +99,7 @@ var MAX_TABLET_WIDTH = 1024;
 var REMEMBER_ME_TOKEN = 'rememberMe';
 var PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])((?=.*[0-9])|(?=.*[!@#$%^&*])).{8,}$/gm;
 var PHONE_REGEX = /(03|07|08|09|01[2|6|8|9])+([0-9]{8})\b/;
-var PERSONAL_ID_REGEX$1 = /^(\d{9}|\d{12})$/;
+var PERSONAL_ID_REGEX = /^(\d{9}|\d{12})$/;
 var CITIZEN_INDENTIFY_REGEX = /^(\d{12})$/;
 var PASSPORT_REGEX = /^(?!^0+$)[a-zA-Z0-9]{3,20}$/;
 var LOGIN_STATUS = {
@@ -176,7 +176,7 @@ var appConfigs = {
   REMEMBER_ME_TOKEN: REMEMBER_ME_TOKEN,
   PASSWORD_REGEX: PASSWORD_REGEX,
   PHONE_REGEX: PHONE_REGEX,
-  PERSONAL_ID_REGEX: PERSONAL_ID_REGEX$1,
+  PERSONAL_ID_REGEX: PERSONAL_ID_REGEX,
   CITIZEN_INDENTIFY_REGEX: CITIZEN_INDENTIFY_REGEX,
   PASSPORT_REGEX: PASSPORT_REGEX,
   LOGIN_STATUS: LOGIN_STATUS,
@@ -192,7 +192,23 @@ var SHOW_CONFIRM_ALERT = 'SHOW_CONFIRM_ALERT';
 var HIDE_CONFIRM_ALERT = 'HIDE_CONFIRM_ALERT';
 
 var HttpClient = Axios.create({
-  timeout: 10000
+  timeout: 10000,
+  adapter: throttleAdapterEnhancer(cacheAdapterEnhancer(Axios.defaults.adapter, {
+    threshold: 15 * 60 * 1000
+  })),
+  invalidate: function (config, request) {
+    try {
+      var _temp2 = function () {
+        if (request.clearCacheEntry) {
+          return Promise.resolve(config.store.removeItem(config.uuid)).then(function () {});
+        }
+      }();
+
+      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }
 });
 HttpClient.defaults.headers['Content-Type'] = 'application/json';
 var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {

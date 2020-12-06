@@ -96,7 +96,7 @@ const MAX_TABLET_WIDTH = 1024;
 const REMEMBER_ME_TOKEN = 'rememberMe';
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])((?=.*[0-9])|(?=.*[!@#$%^&*])).{8,}$/gm;
 const PHONE_REGEX = /(03|07|08|09|01[2|6|8|9])+([0-9]{8})\b/;
-const PERSONAL_ID_REGEX$1 = /^(\d{9}|\d{12})$/;
+const PERSONAL_ID_REGEX = /^(\d{9}|\d{12})$/;
 const CITIZEN_INDENTIFY_REGEX = /^(\d{12})$/;
 const PASSPORT_REGEX = /^(?!^0+$)[a-zA-Z0-9]{3,20}$/;
 const LOGIN_STATUS = {
@@ -173,7 +173,7 @@ var appConfigs = {
   REMEMBER_ME_TOKEN: REMEMBER_ME_TOKEN,
   PASSWORD_REGEX: PASSWORD_REGEX,
   PHONE_REGEX: PHONE_REGEX,
-  PERSONAL_ID_REGEX: PERSONAL_ID_REGEX$1,
+  PERSONAL_ID_REGEX: PERSONAL_ID_REGEX,
   CITIZEN_INDENTIFY_REGEX: CITIZEN_INDENTIFY_REGEX,
   PASSPORT_REGEX: PASSPORT_REGEX,
   LOGIN_STATUS: LOGIN_STATUS,
@@ -189,7 +189,15 @@ const SHOW_CONFIRM_ALERT = 'SHOW_CONFIRM_ALERT';
 const HIDE_CONFIRM_ALERT = 'HIDE_CONFIRM_ALERT';
 
 const HttpClient = Axios.create({
-  timeout: 10000
+  timeout: 10000,
+  adapter: throttleAdapterEnhancer(cacheAdapterEnhancer(Axios.defaults.adapter, {
+    threshold: 15 * 60 * 1000
+  })),
+  invalidate: async (config, request) => {
+    if (request.clearCacheEntry) {
+      await config.store.removeItem(config.uuid);
+    }
+  }
 });
 HttpClient.defaults.headers['Content-Type'] = 'application/json';
 const setUpHttpClient = (store, apiBaseUrl) => {
