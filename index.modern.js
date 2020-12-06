@@ -47,7 +47,7 @@ const trimValue = value => {
   return value ? value.trim() : '';
 };
 
-const API_BASE_URL = 'http://localhost:8086';
+const API_BASE_URL = 'https://apidev.inon.vn';
 const API_LOGIN_URL = '/api/authenticate';
 const API_LOGOUT_URL = '/api/authenticate';
 const API_REGISTER = '/nth/onboarding/api/authenticate/register';
@@ -878,11 +878,8 @@ const getNativgationConfig = (appId, navConfigs) => {
 
 class NavBarService {}
 
-NavBarService.getNativagtion = groupId => {
+NavBarService.getNativagtion = () => {
   return HttpClient.get(API_GET_NAV_CONFIGS, {
-    params: {
-      groupId
-    },
     isBackgroundRequest: true
   });
 };
@@ -2668,10 +2665,10 @@ var Layout$1 = connect(mapStateToProps$2, {
 })(Layout);
 
 const LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
-const loadNavtigation = (appId, groupId) => {
+const loadNavtigation = appId => {
   return async dispatch => {
     try {
-      const res = await NavBarService.getNativagtion(groupId);
+      const res = await NavBarService.getNativagtion();
       const roles = res.data || [];
       const navConfigs = getNativgationConfig(appId, roles);
       dispatch({
@@ -5306,7 +5303,6 @@ const AppRouter = props => {
     children,
     loadNavtigation,
     history,
-    user,
     message
   } = props;
   useEffect(() => {
@@ -5317,7 +5313,7 @@ const AppRouter = props => {
     }
 
     if (authToken) {
-      loadNavtigation(appId, user.groupId);
+      loadNavtigation(appId);
     }
   }, [authToken]);
 
@@ -5418,7 +5414,6 @@ const mapStateToProps$3 = state => {
   return {
     isAuthentication: !!state.auth.authToken,
     authToken: state.auth.authToken,
-    user: state.auth.user,
     loginStatus: state.auth.loginStatus
   };
 };

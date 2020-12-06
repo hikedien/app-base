@@ -46,7 +46,7 @@ var trimValue = function trimValue(value) {
   return value ? value.trim() : '';
 };
 
-var API_BASE_URL = 'http://localhost:8086';
+var API_BASE_URL = 'https://apidev.inon.vn';
 var API_LOGIN_URL = '/api/authenticate';
 var API_LOGOUT_URL = '/api/authenticate';
 var API_REGISTER = '/nth/onboarding/api/authenticate/register';
@@ -1019,11 +1019,8 @@ var getNativgationConfig = function getNativgationConfig(appId, navConfigs) {
 
 var NavBarService = function NavBarService() {};
 
-NavBarService.getNativagtion = function (groupId) {
+NavBarService.getNativagtion = function () {
   return HttpClient.get(API_GET_NAV_CONFIGS, {
-    params: {
-      groupId: groupId
-    },
     isBackgroundRequest: true
   });
 };
@@ -2961,11 +2958,11 @@ var Layout$1 = reactRedux.connect(mapStateToProps$2, {
 })(Layout);
 
 var LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
-var loadNavtigation = function loadNavtigation(appId, groupId) {
+var loadNavtigation = function loadNavtigation(appId) {
   return function (dispatch) {
     try {
       var _temp2 = _catch(function () {
-        return Promise.resolve(NavBarService.getNativagtion(groupId)).then(function (res) {
+        return Promise.resolve(NavBarService.getNativagtion()).then(function (res) {
           var roles = res.data || [];
           var navConfigs = getNativgationConfig(appId, roles);
           dispatch({
@@ -5799,7 +5796,6 @@ var AppRouter = function AppRouter(props) {
       children = props.children,
       loadNavtigation = props.loadNavtigation,
       history = props.history,
-      user = props.user,
       message = props.message;
   React.useEffect(function () {
     var code = new URLSearchParams(document.location.search).get('code') || authToken;
@@ -5809,7 +5805,7 @@ var AppRouter = function AppRouter(props) {
     }
 
     if (authToken) {
-      loadNavtigation(appId, user.groupId);
+      loadNavtigation(appId);
     }
   }, [authToken]);
 
@@ -5926,7 +5922,6 @@ var mapStateToProps$3 = function mapStateToProps(state) {
   return {
     isAuthentication: !!state.auth.authToken,
     authToken: state.auth.authToken,
-    user: state.auth.user,
     loginStatus: state.auth.loginStatus
   };
 };
