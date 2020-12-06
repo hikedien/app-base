@@ -226,7 +226,7 @@ const setUpHttpClient = (store, apiBaseUrl) => {
     config.headers.deviceId = deviceId;
     config.headers.language = language;
     const requestUUID = generateUUID();
-    config.uuid = requestUUID;
+    config.uuid = '';
 
     if (!config.isBackgroundRequest) {
       store.dispatch({
