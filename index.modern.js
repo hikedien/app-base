@@ -58,14 +58,22 @@ const trimObjectValues$1 = (object, excludeKeys = []) => {
 const toastError = message => {
   toast.error( /*#__PURE__*/React.createElement("div", {
     className: "d-flex align-items-center"
-  }, /*#__PURE__*/React.createElement(AlertTriangle, null), " ", /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "col-1 p-0"
+  }, /*#__PURE__*/React.createElement(AlertTriangle, {
+    size: 24
+  })), /*#__PURE__*/React.createElement("span", {
     className: "ml-1"
   }, message)));
 };
 const toastSuccess = message => {
   toast.success( /*#__PURE__*/React.createElement("div", {
     className: "d-flex align-items-center"
-  }, /*#__PURE__*/React.createElement(Check, null), " ", /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "col-1 p-0"
+  }, /*#__PURE__*/React.createElement(Check, {
+    size: 24
+  })), /*#__PURE__*/React.createElement("span", {
     className: "ml-1"
   }, message)));
 };
@@ -100,6 +108,7 @@ const PHONE_REGEX = /(03|07|08|09|01[2|6|8|9])+([0-9]{8})\b/;
 const PERSONAL_ID_REGEX = /^(\d{9}|\d{12})$/;
 const CITIZEN_INDENTIFY_REGEX = /^(\d{12})$/;
 const PASSPORT_REGEX = /^(?!^0+$)[a-zA-Z0-9]{3,20}$/;
+const NOT_ALLOW_SPECIAL_CHAR_REGEX = /^[A-Za-z0-9 ]+$/;
 const LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
   FAIL: 'FAIL'
@@ -177,6 +186,7 @@ var appConfigs = {
   PERSONAL_ID_REGEX: PERSONAL_ID_REGEX,
   CITIZEN_INDENTIFY_REGEX: CITIZEN_INDENTIFY_REGEX,
   PASSPORT_REGEX: PASSPORT_REGEX,
+  NOT_ALLOW_SPECIAL_CHAR_REGEX: NOT_ALLOW_SPECIAL_CHAR_REGEX,
   LOGIN_STATUS: LOGIN_STATUS,
   GENDER_OPTIONS: GENDER_OPTIONS,
   IC_TYPES_OPTIONS: IC_TYPES_OPTIONS,
@@ -421,7 +431,6 @@ const checkLoginStatus = authToken => {
         });
       }
     } catch (error) {
-      console.log(error);
       dispatch({
         type: LOGOUT_ACTION
       });
@@ -477,6 +486,20 @@ const createPassword = password => {
 
       if (response.status === 200 && response.data) {
         history.push('/complete-information');
+      }
+    } catch (error) {}
+  };
+};
+const register = values => {
+  return async () => {
+    try {
+      const res = await AuthService.register(trimObjectValues$1(values));
+
+      if (res.status === 200 && res.data) {
+        toastSuccess( /*#__PURE__*/React.createElement(FormattedMessage, {
+          id: "register.registerSuccess"
+        }));
+        history.push('/login');
       }
     } catch (error) {}
   };
@@ -2719,9 +2742,9 @@ class Layout extends PureComponent {
         'show-overlay': this.state.appOverlay === true
       }),
       onClick: this.handleAppOverlayClick
-    }, /*#__PURE__*/React.createElement(PerfectScrollbar, null, /*#__PURE__*/React.createElement(Navbar, navbarProps), /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement(Navbar, navbarProps), /*#__PURE__*/React.createElement("div", {
       className: "content-wrapper"
-    }, this.props.children))), /*#__PURE__*/React.createElement(Footer, footerProps), /*#__PURE__*/React.createElement("div", {
+    }, this.props.children)), /*#__PURE__*/React.createElement(Footer, footerProps), /*#__PURE__*/React.createElement("div", {
       className: "sidenav-overlay",
       onClick: this.handleSidebarVisibility
     }));
@@ -2812,7 +2835,7 @@ class IntlProviderWrapper extends React.Component {
 }
 
 var login = "Login";
-var register = "Register";
+var register$1 = "Register";
 var forgotPassword$1 = "Forgot password";
 var setting = "Setting";
 var messages_en = {
@@ -2833,9 +2856,10 @@ var messages_en = {
 	"login.rememberMe": "Remember me",
 	"login.fail": "Username or password was incorrect",
 	"login.sayHi": "Hi, {name}",
-	register: register,
+	register: register$1,
 	"register.fullname": "Full name *",
 	"register.fullname.required": "You must enter your full name",
+	"register.fullname.invalid": "Your full name can not enter special charater",
 	"register.email.required": "You must enter your email address",
 	"register.email.invalid": "You must enter your valid email address",
 	"register.phoneNumber": "Phone mumber *",
@@ -2844,7 +2868,7 @@ var messages_en = {
 	"register.refCode": "Referal code",
 	"register.refCode.invalid": "Referal code is invalid",
 	"register.mustAppcepted": "Your must accept our terms and conditions",
-	"register.registerSuccess": "Register Successful",
+	"register.registerSuccess": "Partner registration request is being processed. Please check email to complete.Thank you!",
 	"register.agreeWith": "I agree with",
 	"register.policyAndCondition": "Terms and Condition",
 	"register.useService": "use service",
@@ -2963,7 +2987,7 @@ var messages_en = {
 };
 
 var login$1 = "Đăng nhập";
-var register$1 = "Đăng ký";
+var register$2 = "Đăng ký";
 var forgotPassword$2 = "Quên mật khẩu";
 var setting$1 = "Cài đặt";
 var messages_vi = {
@@ -2984,8 +3008,9 @@ var messages_vi = {
 	"login.rememberMe": "Ghi nhớ tôi",
 	"login.fail": "Tài khoản hoặc mật khẩu của bạn không chính xác",
 	"login.sayHi": "Xin chào, {name}",
-	register: register$1,
+	register: register$2,
 	"register.fullname": "Họ và tên *",
+	"register.fullname.invalid": "Tên của bạn không thể chứa ký tự đặc biệt",
 	"register.fullname.required": "Bạn phải nhập họ và tên",
 	"register.email.required": "Bạn phải nhập địa chỉ email",
 	"register.email.invalid": "Địa chỉ email không hợp lệ",
@@ -2995,7 +3020,7 @@ var messages_vi = {
 	"register.refCode": "Mã giới thiệu",
 	"register.refCode.invalid": "Mã giới thiệu không hợp lệ",
 	"register.mustAppcepted": "Bạn phải đồng ý điều khoản và điều kiện của chúng tôi",
-	"register.registerSuccess": "Đăng ký thành công",
+	"register.registerSuccess": "Đề nghị đăng ký của đối tác đang được xử lý.Vui lòng kiểm tra email để hoàn thành.Xin cảm ơn!",
 	"register.agreeWith": "Tôi đồng ý với",
 	"register.policyAndCondition": "Điều khoản và Điều kiện",
 	"register.useService": "sử dụng dịch vụ.",
@@ -3138,7 +3163,7 @@ const BaseFormGroup = ({
 
 const DatePicker = props => /*#__PURE__*/React.createElement(FormGroup, {
   className: "form-label-group position-relative"
-}, /*#__PURE__*/React.createElement(Flatpickr, props), /*#__PURE__*/React.createElement(Label, null, props.placeholder), !props.notRequired && props.errors[props.fieldName] && props.touched[props.fieldName] ? /*#__PURE__*/React.createElement("div", {
+}, /*#__PURE__*/React.createElement(Flatpickr, props), /*#__PURE__*/React.createElement(Label, null, props.placeholder), props.errors && props.touched && props.errors[props.fieldName] && props.touched[props.fieldName] ? /*#__PURE__*/React.createElement("div", {
   className: "text-danger"
 }, props.errors[props.fieldName]) : null);
 
@@ -4437,6 +4462,8 @@ const formSchema = object().shape({
   })),
   password: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "login.password.required"
+  })).matches(PASSWORD_REGEX, () => /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.password.invalid"
   }))
 });
 
@@ -4556,6 +4583,8 @@ const Login = () => {
 const formSchema$1 = object().shape({
   fullName: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "register.fullname.required"
+  })).matches(NOT_ALLOW_SPECIAL_CHAR_REGEX, () => /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "register.fullname.invalid"
   })),
   email: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "register.email.required"
@@ -4577,7 +4606,7 @@ const formSchema$1 = object().shape({
 const Register = () => {
   const [isAppcepted, setIsAppcepted] = useState(false);
   const [isNotApccepted, setIsNotAccepted] = useState(false);
-  const history = useHistory();
+  const dispatch = useDispatch();
 
   const onSubmit = async values => {
     if (!isAppcepted) {
@@ -4585,14 +4614,7 @@ const Register = () => {
       return;
     }
 
-    const res = await AuthService.register(trimObjectValues$1(values));
-
-    if (res.status === 200 && res.data) {
-      toast.success( /*#__PURE__*/React.createElement(FormattedMessage, {
-        id: "register.registerSuccess"
-      }));
-      history.push('/login');
-    }
+    dispatch(register(values));
   };
 
   const ontoggleAccepted = checked => {
@@ -5479,9 +5501,9 @@ const AppRouter = props => {
       to: "/login"
     }))
   }))), /*#__PURE__*/React.createElement(ToastContainer, {
+    hideProgressBar: true,
     position: "top-right",
     autoClose: 5000,
-    hideProgressBar: false,
     closeOnClick: true,
     pauseOnHover: true
   }), /*#__PURE__*/React.createElement(ConfirmAlert, null));

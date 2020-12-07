@@ -23567,6 +23567,9 @@ html[dir="rtl"] body .ps__rail-y {
 #root {
   height: 100%; }
 
+.ps__rail-y {
+  z-index: 15; }
+
 .loading {
   position: absolute;
   left: calc(50% - 35px);

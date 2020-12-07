@@ -61,14 +61,22 @@ var trimObjectValues$1 = function trimObjectValues(object, excludeKeys) {
 var toastError = function toastError(message) {
   reactToastify.toast.error( /*#__PURE__*/React__default.createElement("div", {
     className: "d-flex align-items-center"
-  }, /*#__PURE__*/React__default.createElement(Icon.AlertTriangle, null), " ", /*#__PURE__*/React__default.createElement("span", {
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "col-1 p-0"
+  }, /*#__PURE__*/React__default.createElement(Icon.AlertTriangle, {
+    size: 24
+  })), /*#__PURE__*/React__default.createElement("span", {
     className: "ml-1"
   }, message)));
 };
 var toastSuccess = function toastSuccess(message) {
   reactToastify.toast.success( /*#__PURE__*/React__default.createElement("div", {
     className: "d-flex align-items-center"
-  }, /*#__PURE__*/React__default.createElement(Icon.Check, null), " ", /*#__PURE__*/React__default.createElement("span", {
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "col-1 p-0"
+  }, /*#__PURE__*/React__default.createElement(Icon.Check, {
+    size: 24
+  })), /*#__PURE__*/React__default.createElement("span", {
     className: "ml-1"
   }, message)));
 };
@@ -103,6 +111,7 @@ var PHONE_REGEX = /(03|07|08|09|01[2|6|8|9])+([0-9]{8})\b/;
 var PERSONAL_ID_REGEX = /^(\d{9}|\d{12})$/;
 var CITIZEN_INDENTIFY_REGEX = /^(\d{12})$/;
 var PASSPORT_REGEX = /^(?!^0+$)[a-zA-Z0-9]{3,20}$/;
+var NOT_ALLOW_SPECIAL_CHAR_REGEX = /^[A-Za-z0-9 ]+$/;
 var LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
   FAIL: 'FAIL'
@@ -180,6 +189,7 @@ var appConfigs = {
   PERSONAL_ID_REGEX: PERSONAL_ID_REGEX,
   CITIZEN_INDENTIFY_REGEX: CITIZEN_INDENTIFY_REGEX,
   PASSPORT_REGEX: PASSPORT_REGEX,
+  NOT_ALLOW_SPECIAL_CHAR_REGEX: NOT_ALLOW_SPECIAL_CHAR_REGEX,
   LOGIN_STATUS: LOGIN_STATUS,
   GENDER_OPTIONS: GENDER_OPTIONS,
   IC_TYPES_OPTIONS: IC_TYPES_OPTIONS,
@@ -515,8 +525,7 @@ var checkLoginStatus = function checkLoginStatus(authToken) {
 
           if (_temp && _temp.then) return _temp.then(function () {});
         });
-      }, function (error) {
-        console.log(error);
+      }, function () {
         dispatch({
           type: LOGOUT_ACTION
         });
@@ -599,10 +608,30 @@ var createPassword = function createPassword(password) {
     }
   };
 };
+var register = function register(values) {
+  return function () {
+    try {
+      var _temp10 = _catch(function () {
+        return Promise.resolve(AuthService.register(trimObjectValues$1(values))).then(function (res) {
+          if (res.status === 200 && res.data) {
+            toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+              id: "register.registerSuccess"
+            }));
+            history.push('/login');
+          }
+        });
+      }, function () {});
+
+      return Promise.resolve(_temp10 && _temp10.then ? _temp10.then(function () {}) : void 0);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+};
 var compeleteInfo = function compeleteInfo(user) {
   return function (dispatch, getState) {
     try {
-      var _temp10 = _catch(function () {
+      var _temp12 = _catch(function () {
         user.registerToken = getState().auth.register.token;
         return Promise.resolve(AuthService.compeleteInfo(user)).then(function (response) {
           if (response.status === 200 && response.data) {
@@ -614,7 +643,7 @@ var compeleteInfo = function compeleteInfo(user) {
         console.log(error);
       });
 
-      return Promise.resolve(_temp10 && _temp10.then ? _temp10.then(function () {}) : void 0);
+      return Promise.resolve(_temp12 && _temp12.then ? _temp12.then(function () {}) : void 0);
     } catch (e) {
       return Promise.reject(e);
     }
@@ -654,7 +683,7 @@ var forgotPassword = function forgotPassword(_ref) {
       email = _ref.email;
   return function (dispatch, getState) {
     try {
-      var _temp12 = _catch(function () {
+      var _temp14 = _catch(function () {
         return Promise.resolve(AuthService.forgotPassword(username, email)).then(function (response) {
           if (response.status === 200 && response.data) {
             toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -669,7 +698,7 @@ var forgotPassword = function forgotPassword(_ref) {
         });
       }, function () {});
 
-      return Promise.resolve(_temp12 && _temp12.then ? _temp12.then(function () {}) : void 0);
+      return Promise.resolve(_temp14 && _temp14.then ? _temp14.then(function () {}) : void 0);
     } catch (e) {
       return Promise.reject(e);
     }
@@ -678,7 +707,7 @@ var forgotPassword = function forgotPassword(_ref) {
 var resetPassword = function resetPassword(password) {
   return function (dispatch, getState) {
     try {
-      var _temp14 = _catch(function () {
+      var _temp16 = _catch(function () {
         return Promise.resolve(AuthService.resetPassword(password, getState().auth.resetPasswordToken)).then(function (response) {
           if (response.status === 200 && response.data) {
             toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -693,7 +722,7 @@ var resetPassword = function resetPassword(password) {
         });
       }, function () {});
 
-      return Promise.resolve(_temp14 && _temp14.then ? _temp14.then(function () {}) : void 0);
+      return Promise.resolve(_temp16 && _temp16.then ? _temp16.then(function () {}) : void 0);
     } catch (e) {
       return Promise.reject(e);
     }
@@ -3023,9 +3052,9 @@ var Layout = /*#__PURE__*/function (_PureComponent) {
         'show-overlay': this.state.appOverlay === true
       }),
       onClick: this.handleAppOverlayClick
-    }, /*#__PURE__*/React__default.createElement(PerfectScrollbar, null, /*#__PURE__*/React__default.createElement(Navbar, navbarProps), /*#__PURE__*/React__default.createElement("div", {
+    }, /*#__PURE__*/React__default.createElement(Navbar, navbarProps), /*#__PURE__*/React__default.createElement("div", {
       className: "content-wrapper"
-    }, this.props.children))), /*#__PURE__*/React__default.createElement(Footer, footerProps), /*#__PURE__*/React__default.createElement("div", {
+    }, this.props.children)), /*#__PURE__*/React__default.createElement(Footer, footerProps), /*#__PURE__*/React__default.createElement("div", {
       className: "sidenav-overlay",
       onClick: this.handleSidebarVisibility
     }));
@@ -3136,7 +3165,7 @@ var IntlProviderWrapper = /*#__PURE__*/function (_React$Component) {
 }(React__default.Component);
 
 var login = "Login";
-var register = "Register";
+var register$1 = "Register";
 var forgotPassword$1 = "Forgot password";
 var setting = "Setting";
 var messages_en = {
@@ -3157,9 +3186,10 @@ var messages_en = {
 	"login.rememberMe": "Remember me",
 	"login.fail": "Username or password was incorrect",
 	"login.sayHi": "Hi, {name}",
-	register: register,
+	register: register$1,
 	"register.fullname": "Full name *",
 	"register.fullname.required": "You must enter your full name",
+	"register.fullname.invalid": "Your full name can not enter special charater",
 	"register.email.required": "You must enter your email address",
 	"register.email.invalid": "You must enter your valid email address",
 	"register.phoneNumber": "Phone mumber *",
@@ -3168,7 +3198,7 @@ var messages_en = {
 	"register.refCode": "Referal code",
 	"register.refCode.invalid": "Referal code is invalid",
 	"register.mustAppcepted": "Your must accept our terms and conditions",
-	"register.registerSuccess": "Register Successful",
+	"register.registerSuccess": "Partner registration request is being processed. Please check email to complete.Thank you!",
 	"register.agreeWith": "I agree with",
 	"register.policyAndCondition": "Terms and Condition",
 	"register.useService": "use service",
@@ -3287,7 +3317,7 @@ var messages_en = {
 };
 
 var login$1 = "Đăng nhập";
-var register$1 = "Đăng ký";
+var register$2 = "Đăng ký";
 var forgotPassword$2 = "Quên mật khẩu";
 var setting$1 = "Cài đặt";
 var messages_vi = {
@@ -3308,8 +3338,9 @@ var messages_vi = {
 	"login.rememberMe": "Ghi nhớ tôi",
 	"login.fail": "Tài khoản hoặc mật khẩu của bạn không chính xác",
 	"login.sayHi": "Xin chào, {name}",
-	register: register$1,
+	register: register$2,
 	"register.fullname": "Họ và tên *",
+	"register.fullname.invalid": "Tên của bạn không thể chứa ký tự đặc biệt",
 	"register.fullname.required": "Bạn phải nhập họ và tên",
 	"register.email.required": "Bạn phải nhập địa chỉ email",
 	"register.email.invalid": "Địa chỉ email không hợp lệ",
@@ -3319,7 +3350,7 @@ var messages_vi = {
 	"register.refCode": "Mã giới thiệu",
 	"register.refCode.invalid": "Mã giới thiệu không hợp lệ",
 	"register.mustAppcepted": "Bạn phải đồng ý điều khoản và điều kiện của chúng tôi",
-	"register.registerSuccess": "Đăng ký thành công",
+	"register.registerSuccess": "Đề nghị đăng ký của đối tác đang được xử lý.Vui lòng kiểm tra email để hoàn thành.Xin cảm ơn!",
 	"register.agreeWith": "Tôi đồng ý với",
 	"register.policyAndCondition": "Điều khoản và Điều kiện",
 	"register.useService": "sử dụng dịch vụ.",
@@ -3465,7 +3496,7 @@ var BaseFormGroup = function BaseFormGroup(_ref) {
 var DatePicker = function DatePicker(props) {
   return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
     className: "form-label-group position-relative"
-  }, /*#__PURE__*/React__default.createElement(Flatpickr, props), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, props.placeholder), !props.notRequired && props.errors[props.fieldName] && props.touched[props.fieldName] ? /*#__PURE__*/React__default.createElement("div", {
+  }, /*#__PURE__*/React__default.createElement(Flatpickr, props), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, props.placeholder), props.errors && props.touched && props.errors[props.fieldName] && props.touched[props.fieldName] ? /*#__PURE__*/React__default.createElement("div", {
     className: "text-danger"
   }, props.errors[props.fieldName]) : null);
 };
@@ -4864,7 +4895,11 @@ var formSchema = Yup.object().shape({
   })),
   password: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "login.password.required"
-  }))
+  })).matches(PASSWORD_REGEX, function () {
+    return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "createPassword.password.invalid"
+    });
+  })
 });
 
 var Login = function Login() {
@@ -4999,7 +5034,11 @@ var Login = function Login() {
 var formSchema$1 = Yup.object().shape({
   fullName: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "register.fullname.required"
-  })),
+  })).matches(NOT_ALLOW_SPECIAL_CHAR_REGEX, function () {
+    return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "register.fullname.invalid"
+    });
+  }),
   email: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "register.email.required"
   })).email( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -5032,7 +5071,7 @@ var Register = function Register() {
       isNotApccepted = _useState2[0],
       setIsNotAccepted = _useState2[1];
 
-  var history = reactRouterDom.useHistory();
+  var dispatch = reactRedux.useDispatch();
 
   var onSubmit = function onSubmit(values) {
     try {
@@ -5041,14 +5080,8 @@ var Register = function Register() {
         return Promise.resolve();
       }
 
-      return Promise.resolve(AuthService.register(trimObjectValues$1(values))).then(function (res) {
-        if (res.status === 200 && res.data) {
-          reactToastify.toast.success( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-            id: "register.registerSuccess"
-          }));
-          history.push('/login');
-        }
-      });
+      dispatch(register(values));
+      return Promise.resolve();
     } catch (e) {
       return Promise.reject(e);
     }
@@ -5999,9 +6032,9 @@ var AppRouter = function AppRouter(props) {
       }));
     }
   }))), /*#__PURE__*/React__default.createElement(reactToastify.ToastContainer, {
+    hideProgressBar: true,
     position: "top-right",
     autoClose: 5000,
-    hideProgressBar: false,
     closeOnClick: true,
     pauseOnHover: true
   }), /*#__PURE__*/React__default.createElement(ConfirmAlert, null));
