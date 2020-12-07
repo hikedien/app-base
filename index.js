@@ -150,8 +150,9 @@ var IC_TYPES_OPTIONS = [{
 }];
 var APP_URL = 'https://sit2.inon.vn';
 var IMAGE = {
-  LOGO: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Logo.png?alt=media&token=68d3ab7a-e9bb-4c43-a543-c65f72033bf9',
-  LOGO_NO_TEXT: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/logo-no-text.png?alt=media&token=4c266c6a-bd1c-49f9-b51c-1e2484925b06',
+  LOGO: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Logo.svg?alt=media&token=e2aad749-912d-45c3-969b-060528c6c7ef',
+  LOGO_NO_TEXT: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/logo-no-text.svg?alt=media&token=e2383562-e9d0-4b31-80fa-58a3fc47b1bd',
+  LOGO_TEXT: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/logo-text.svg?alt=media&token=52459968-57b8-4b21-9af2-febdd7a7650d',
   NAV_ICON_1: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-1.png?alt=media&token=0ccdb6bc-09da-43a3-b18f-56d2598e542b',
   NAV_ICON_2: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-2.png?alt=media&token=def3402b-65f0-458b-b4f8-e9c6d8d3bb09',
   NAV_ICON_3: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-3.png?alt=media&token=1ce1a25c-b095-4f80-8987-3ae9b977e3a8',
@@ -2148,7 +2149,6 @@ var SidebarHeader = /*#__PURE__*/function (_Component) {
         toggleSidebarMenu = _this$props.toggleSidebarMenu,
         activeTheme = _this$props.activeTheme,
         collapsed = _this$props.collapsed,
-        sidebarState = _this$props.sidebarState,
         toggle = _this$props.toggle,
         sidebarVisibility = _this$props.sidebarVisibility,
         menuShadow = _this$props.menuShadow;
@@ -2162,7 +2162,11 @@ var SidebarHeader = /*#__PURE__*/function (_Component) {
       to: "/"
     }, /*#__PURE__*/React__default.createElement("img", {
       className: "img-fluid logo-img",
-      src: !sidebarState || !collapsed ? IMAGE.LOGO : IMAGE.LOGO_NO_TEXT,
+      src: IMAGE.LOGO_NO_TEXT,
+      alt: "logo"
+    }), /*#__PURE__*/React__default.createElement("img", {
+      className: "img-fluid logo-text",
+      src: IMAGE.LOGO_TEXT,
       alt: "logo"
     }))), /*#__PURE__*/React__default.createElement("li", {
       className: "nav-item nav-toggle"

@@ -9306,7 +9306,8 @@ footer .footer-mobile {
   position: fixed;
   width: 100%;
   padding: 0.5rem 0 0 0;
-  bottom: 0; }
+  bottom: 0;
+  z-index: 100; }
   footer .footer-mobile .main-button {
     text-align: center;
     margin-left: -30px;
@@ -9668,7 +9669,11 @@ footer.navbar-border {
     padding: 0.35rem 1rem 0.3rem 1.64rem;
     transition: 300ms ease all; }
     .main-menu .navbar-header .logo-img {
-      max-width: 110px; }
+      max-width: 45px; }
+    .main-menu .navbar-header .logo-text {
+      max-width: 85px;
+      margin-top: 5px;
+      margin-left: 12px; }
     .main-menu .navbar-header .navbar-brand {
       display: flex;
       align-items: center;
