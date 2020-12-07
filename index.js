@@ -6115,12 +6115,12 @@ var App = function App(_ref) {
   }, /*#__PURE__*/React__default.createElement(react.PersistGate, {
     loading: null,
     persistor: persistor
-  }, /*#__PURE__*/React__default.createElement(LoadingSpinner, null), /*#__PURE__*/React__default.createElement(PerfectScrollbar, null, /*#__PURE__*/React__default.createElement(AppRouter$1, {
+  }, /*#__PURE__*/React__default.createElement(LoadingSpinner, null), /*#__PURE__*/React__default.createElement(AppRouter$1, {
     message: message,
     appId: appId,
     history: history,
     children: children
-  }))));
+  })));
 };
 
 unregister();

@@ -5581,12 +5581,12 @@ const App = ({
   }, /*#__PURE__*/React.createElement(PersistGate, {
     loading: null,
     persistor: persistor
-  }, /*#__PURE__*/React.createElement(LoadingSpinner, null), /*#__PURE__*/React.createElement(PerfectScrollbar, null, /*#__PURE__*/React.createElement(AppRouter$1, {
+  }, /*#__PURE__*/React.createElement(LoadingSpinner, null), /*#__PURE__*/React.createElement(AppRouter$1, {
     message: message,
     appId: appId,
     history: history,
     children: children
-  }))));
+  })));
 };
 
 unregister();
