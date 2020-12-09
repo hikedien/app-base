@@ -27,6 +27,7 @@ var Yup = require('yup');
 var formik = require('formik');
 var Flatpickr = _interopDefault(require('react-flatpickr'));
 var Select$1 = _interopDefault(require('react-select'));
+var AsyncSelect = _interopDefault(require('react-select/async'));
 var chroma = _interopDefault(require('chroma-js'));
 var styled = _interopDefault(require('styled-components'));
 var SweetAlert = _interopDefault(require('react-bootstrap-sweetalert'));
@@ -103,9 +104,14 @@ var API_FORGOT_PASSWORD = '/api/authenticate/forgot-password';
 var API_RESET_PASSWORD = '/api/authenticate/reset-password';
 var API_EMAIL_SUGGESTION = '/nth/user/api/authenticate/email-suggestion';
 var API_R_200 = 200;
+var API_GET_CITIES_BY_COUNTRY = '/nth/datacollection/api/citiesbycountry';
+var API_GET_DISTRICTS_BY_CITY = '/nth/datacollection/api/districtsbycity';
+var API_GET_WARDS_BY_CITY = '/nth/datacollection/api/wardsbydistrict';
+var API_GET_BANKS = '/nth/datacollection/api/allBanks';
 var MAX_MOBILE_WIDTH = 768;
 var MAX_TABLET_WIDTH = 1024;
 var REMEMBER_ME_TOKEN = 'rememberMe';
+var VN_COUNTRY_CODE = 192;
 var PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])((?=.*[0-9])|(?=.*[!@#$%^&*])).{8,}$/gm;
 var PHONE_REGEX = /(03|07|08|09|01[2|6|8|9])+([0-9]{8})\b/;
 var PERSONAL_ID_REGEX = /^(\d{9}|\d{12})$/;
@@ -182,9 +188,14 @@ var appConfigs = {
   API_RESET_PASSWORD: API_RESET_PASSWORD,
   API_EMAIL_SUGGESTION: API_EMAIL_SUGGESTION,
   API_R_200: API_R_200,
+  API_GET_CITIES_BY_COUNTRY: API_GET_CITIES_BY_COUNTRY,
+  API_GET_DISTRICTS_BY_CITY: API_GET_DISTRICTS_BY_CITY,
+  API_GET_WARDS_BY_CITY: API_GET_WARDS_BY_CITY,
+  API_GET_BANKS: API_GET_BANKS,
   MAX_MOBILE_WIDTH: MAX_MOBILE_WIDTH,
   MAX_TABLET_WIDTH: MAX_TABLET_WIDTH,
   REMEMBER_ME_TOKEN: REMEMBER_ME_TOKEN,
+  VN_COUNTRY_CODE: VN_COUNTRY_CODE,
   PASSWORD_REGEX: PASSWORD_REGEX,
   PHONE_REGEX: PHONE_REGEX,
   PERSONAL_ID_REGEX: PERSONAL_ID_REGEX,
@@ -1144,6 +1155,9 @@ var NavBarService = function NavBarService() {};
 
 NavBarService.getNativagtion = function () {
   return HttpClient.get(API_GET_NAV_CONFIGS, {
+    params: {
+      date: new Date().getMilliseconds()
+    },
     isBackgroundRequest: true
   });
 };
@@ -3194,6 +3208,7 @@ var messages_en = {
 	"register.fullname": "Full name *",
 	"register.fullname.required": "You must enter your full name",
 	"register.fullname.invalid": "Your full name can not enter special charater",
+	"register.email": "Email",
 	"register.email.required": "You must enter your email address",
 	"register.email.invalid": "You must enter your valid email address",
 	"register.phoneNumber": "Phone mumber *",
@@ -3344,6 +3359,7 @@ var messages_vi = {
 	"login.sayHi": "Xin chào, {name}",
 	register: register$2,
 	"register.fullname": "Họ và tên *",
+	"register.email": "Email",
 	"register.fullname.invalid": "Tên của bạn không thể chứa ký tự đặc biệt",
 	"register.fullname.required": "Bạn phải nhập họ và tên",
 	"register.email.required": "Bạn phải nhập địa chỉ email",
@@ -3510,18 +3526,19 @@ var BaseFormDatePicker = function BaseFormDatePicker(_ref) {
       errors = _ref.errors,
       touched = _ref.touched,
       messageId = _ref.messageId,
-      value = _ref.value,
       options = _ref.options,
       intl = _ref.intl,
+      _onChange = _ref.onChange,
       _ref$isRequired = _ref.isRequired,
       isRequired = _ref$isRequired === void 0 ? true : _ref$isRequired;
   var defaultOptions = {
     dateFormat: 'm/d/Y'
   };
-  return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(formik.FastField, {
+  return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(formik.Field, {
     name: fieldName
   }, function (_ref2) {
-    var form = _ref2.form;
+    var field = _ref2.field,
+        form = _ref2.form;
     return /*#__PURE__*/React__default.createElement(DatePicker, {
       className: "bg-white form-control position-relative " + (isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'),
       placeholder: intl.formatMessage({
@@ -3531,10 +3548,14 @@ var BaseFormDatePicker = function BaseFormDatePicker(_ref) {
       notRequired: !isRequired,
       errors: errors,
       touched: touched,
-      value: value,
+      value: field.value,
       options: options || defaultOptions,
       onChange: function onChange(date) {
         form.setFieldValue(fieldName, date[0]);
+
+        if (_onChange) {
+          _onChange(date);
+        }
       }
     });
   }));
@@ -3583,13 +3604,24 @@ var Select = function Select(props) {
 
   return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
     className: "form-label-group position-relative"
-  }, /*#__PURE__*/React__default.createElement(Select$1, _extends({}, props, {
+  }, props.isAsync ? /*#__PURE__*/React__default.createElement(AsyncSelect, _extends({}, props, {
     onChange: onChange,
     onBlur: onBlur,
     onFocus: onFocus,
     theme: function theme(_theme) {
       return _extends({}, _theme, {
         colors: _extends({}, _theme.colors, {
+          primary: '#338955'
+        })
+      });
+    }
+  })) : /*#__PURE__*/React__default.createElement(Select$1, _extends({}, props, {
+    onChange: onChange,
+    onBlur: onBlur,
+    onFocus: onFocus,
+    theme: function theme(_theme2) {
+      return _extends({}, _theme2, {
+        colors: _extends({}, _theme2.colors, {
           primary: '#338955'
         })
       });
@@ -3613,14 +3645,20 @@ var BaseFormGroupSelect = function BaseFormGroupSelect(_ref) {
       touched = _ref.touched,
       messageId = _ref.messageId,
       options = _ref.options,
-      intl = _ref.intl,
       defaultValue = _ref.defaultValue,
       _ref$isRequired = _ref.isRequired,
-      isRequired = _ref$isRequired === void 0 ? true : _ref$isRequired;
-  return /*#__PURE__*/React__default.createElement(formik.FastField, {
-    name: "fieldName"
+      isRequired = _ref$isRequired === void 0 ? true : _ref$isRequired,
+      isAsync = _ref.isAsync,
+      _onChange = _ref.onChange,
+      isTextValue = _ref.isTextValue,
+      loadOptions = _ref.loadOptions,
+      defaultOptions = _ref.defaultOptions;
+  var intl = reactIntl.useIntl();
+  return /*#__PURE__*/React__default.createElement(formik.Field, {
+    name: fieldName
   }, function (_ref2) {
-    var form = _ref2.form;
+    var field = _ref2.field,
+        form = _ref2.form;
     return /*#__PURE__*/React__default.createElement(Select, {
       placeholder: intl.formatMessage({
         id: messageId
@@ -3629,18 +3667,218 @@ var BaseFormGroupSelect = function BaseFormGroupSelect(_ref) {
       classNamePrefix: "Select",
       fieldName: fieldName,
       required: isRequired,
-      defaultValue: defaultValue,
+      defaultValue: isTextValue ? options.find(function (item) {
+        return item.value === field.value;
+      }) : defaultValue,
       errors: errors,
+      isAsync: isAsync,
+      loadOptions: loadOptions,
+      defaultOptions: defaultOptions,
       touched: touched,
       options: options,
       onChange: function onChange(e) {
         form.setFieldValue(fieldName, e.value);
+
+        if (_onChange) {
+          _onChange(e);
+        }
       }
     });
   });
 };
 
-var BaseFormGroupSelect$1 = reactIntl.injectIntl(BaseFormGroupSelect);
+var DataColetionService = /*#__PURE__*/function () {
+  function DataColetionService() {}
+
+  DataColetionService.getCitiesByCountry = function getCitiesByCountry(countryId, locale) {
+    try {
+      return Promise.resolve(HttpClient.get(API_GET_CITIES_BY_COUNTRY, {
+        params: {
+          countryId: countryId
+        },
+        isBackgroundRequest: true
+      })).then(function (res) {
+        return res.status === 200 ? mapDataToSelectOptions(res.data, locale) : [];
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
+  DataColetionService.getDistrictByCity = function getDistrictByCity(cityId, locale) {
+    try {
+      return Promise.resolve(HttpClient.get(API_GET_DISTRICTS_BY_CITY, {
+        params: {
+          cityId: cityId
+        },
+        isBackgroundRequest: true
+      })).then(function (res) {
+        return res.status === 200 ? mapDataToSelectOptions(res.data, locale) : [];
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
+  DataColetionService.getWardsByDistrict = function getWardsByDistrict(districtId, locale) {
+    try {
+      return Promise.resolve(HttpClient.get(API_GET_WARDS_BY_CITY, {
+        params: {
+          districtId: districtId
+        },
+        isBackgroundRequest: true
+      })).then(function (res) {
+        return res.status === 200 ? mapDataToSelectOptions(res.data, locale) : [];
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
+  DataColetionService.getAllBanks = function getAllBanks(locale) {
+    try {
+      return Promise.resolve(HttpClient.get(API_GET_BANKS, {
+        isBackgroundRequest: true
+      })).then(function (res) {
+        return res.status === 200 ? mapDataToSelectOptions(res.data, locale) : [];
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
+  return DataColetionService;
+}();
+var mapDataToSelectOptions = function mapDataToSelectOptions(data, lang) {
+  return data.map(function (item) {
+    return {
+      value: item.id + '',
+      id: item.id,
+      label: item[lang === 'vi' ? 'vn' : 'en']
+    };
+  });
+};
+
+var useCityList = function useCityList(countryCode) {
+  var _useState = React.useState([]),
+      cities = _useState[0],
+      setCities = _useState[1];
+
+  var _useIntl = reactIntl.useIntl(),
+      locale = _useIntl.locale;
+
+  React.useEffect(function () {
+    if (!countryCode) {
+      return;
+    }
+
+    loadCitiesByCountry(countryCode);
+  }, [countryCode]);
+
+  var loadCitiesByCountry = function loadCitiesByCountry(code) {
+    try {
+      return Promise.resolve(DataColetionService.getCitiesByCountry(code, locale)).then(function (_DataColetionService$) {
+        setCities(_DataColetionService$);
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
+  return {
+    cities: cities,
+    loadCitiesByCountry: loadCitiesByCountry
+  };
+};
+var useDistrictList = function useDistrictList(cityCode) {
+  var _useState2 = React.useState([]),
+      districts = _useState2[0],
+      setDistricts = _useState2[1];
+
+  var _useIntl2 = reactIntl.useIntl(),
+      locale = _useIntl2.locale;
+
+  React.useEffect(function () {
+    if (!cityCode) {
+      return;
+    }
+
+    loadDitrictsByCity(cityCode);
+  }, [cityCode]);
+
+  var loadDitrictsByCity = function loadDitrictsByCity(code) {
+    try {
+      return Promise.resolve(DataColetionService.getDistrictByCity(code, locale)).then(function (_DataColetionService$2) {
+        setDistricts(_DataColetionService$2);
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
+  return {
+    districts: districts,
+    loadDitrictsByCity: loadDitrictsByCity
+  };
+};
+var useWardList = function useWardList(districtCode) {
+  var _useState3 = React.useState([]),
+      wards = _useState3[0],
+      setWards = _useState3[1];
+
+  var _useIntl3 = reactIntl.useIntl(),
+      locale = _useIntl3.locale;
+
+  React.useEffect(function () {
+    if (!districtCode) {
+      return;
+    }
+
+    loadWardsByDistrict(districtCode);
+  }, [districtCode]);
+
+  var loadWardsByDistrict = function loadWardsByDistrict(code) {
+    try {
+      return Promise.resolve(DataColetionService.getWardsByDistrict(code, locale)).then(function (_DataColetionService$3) {
+        setWards(_DataColetionService$3);
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
+  return {
+    wards: wards,
+    loadWardsByDistrict: loadWardsByDistrict
+  };
+};
+var useBankList = function useBankList() {
+  var _useState4 = React.useState([]),
+      banks = _useState4[0],
+      setBanks = _useState4[1];
+
+  var _useIntl4 = reactIntl.useIntl(),
+      locale = _useIntl4.locale;
+
+  React.useEffect(function () {
+    loadBanks();
+  }, []);
+
+  var loadBanks = function loadBanks() {
+    try {
+      return Promise.resolve(DataColetionService.getAllBanks(locale)).then(function (_DataColetionService$4) {
+        setBanks(_DataColetionService$4);
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
+  return {
+    banks: banks,
+    loadBanks: loadBanks
+  };
+};
 
 var validationSchema = Yup.object().shape({
   icType: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -3695,46 +3933,6 @@ var validationSchema = Yup.object().shape({
     id: "completeInformation.district.required"
   }))
 });
-var bank = [{
-  value: '1',
-  label: 'Tien Phong Bank'
-}, {
-  value: '2',
-  label: 'Vietcombank'
-}, {
-  value: '3',
-  label: 'BIDV'
-}];
-var city = [{
-  value: 'HN',
-  label: 'Hà Nội'
-}, {
-  value: 'TPHCM',
-  label: 'Thành phố HCM'
-}, {
-  value: 'DN',
-  label: 'Đà nẵng'
-}];
-var district = [{
-  value: 'HN',
-  label: 'Nam Từ Liêm'
-}, {
-  value: 'TPHCM',
-  label: 'Thành phố HCM'
-}, {
-  value: 'DN',
-  label: 'Đà nẵng'
-}];
-var wards = [{
-  value: 'HN',
-  label: 'Phạm Hùng'
-}, {
-  value: 'TPHCM',
-  label: 'Lưu Hữu Phước'
-}, {
-  value: 'DN',
-  label: 'Mễ Trì'
-}];
 
 var UserAccountTab = function UserAccountTab() {
   var _useSelector = reactRedux.useSelector(function (state) {
@@ -3746,6 +3944,25 @@ var UserAccountTab = function UserAccountTab() {
 
   userDetails = userDetails || {};
   userSettings = userSettings || {};
+
+  var _useCityList = useCityList(VN_COUNTRY_CODE),
+      cities = _useCityList.cities;
+
+  var _useDistrictList = useDistrictList(null),
+      districts = _useDistrictList.districts,
+      loadDitrictsByCity = _useDistrictList.loadDitrictsByCity;
+
+  var _useWardList = useWardList(null),
+      wards = _useWardList.wards,
+      loadWardsByDistrict = _useWardList.loadWardsByDistrict;
+
+  var _useBankList = useBankList(),
+      banks = _useBankList.banks;
+
+  React.useEffect(function () {
+    loadDitrictsByCity(userDetails.city);
+    loadWardsByDistrict(userDetails.district);
+  }, []);
   return /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
     sm: "12"
   }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
@@ -3805,7 +4022,7 @@ var UserAccountTab = function UserAccountTab() {
       sm: "12",
       md: "6"
     }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
-      messageId: "resgister.fullName",
+      messageId: "register.fullname",
       fieldName: "fullName",
       errors: errors,
       touched: touched
@@ -3830,7 +4047,7 @@ var UserAccountTab = function UserAccountTab() {
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "12",
       md: "6"
-    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect, {
       messageId: "completeInformation.gender",
       fieldName: "gender",
       defaultValue: GENDER_OPTIONS[0],
@@ -3868,23 +4085,32 @@ var UserAccountTab = function UserAccountTab() {
       className: "mt-2"
     }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "4"
-    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect, {
       messageId: "completeInformation.province",
       fieldName: "city",
-      options: city,
+      options: cities,
+      isTextValue: true,
+      onChange: function onChange(_ref2) {
+        var id = _ref2.id;
+        return loadDitrictsByCity(id);
+      },
       errors: errors,
       touched: touched
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "4"
-    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect, {
       messageId: "completeInformation.district",
       fieldName: "district",
-      options: district,
+      options: districts,
+      onChange: function onChange(_ref3) {
+        var id = _ref3.id;
+        return loadWardsByDistrict(id);
+      },
       errors: errors,
       touched: touched
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "4"
-    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect, {
       messageId: "completeInformation.ward",
       fieldName: "ward",
       options: wards,
@@ -3894,10 +4120,10 @@ var UserAccountTab = function UserAccountTab() {
       className: "mt-2"
     }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "4"
-    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect, {
       messageId: "completeInformation.bank",
       fieldName: "bankName",
-      options: bank,
+      options: banks,
       errors: errors,
       touched: touched
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
@@ -5539,7 +5765,7 @@ var LandingPage = function LandingPage(props) {
   }, /*#__PURE__*/React__default.createElement("div", {
     className: "position-absolute w-100"
   }), /*#__PURE__*/React__default.createElement("div", {
-    className: "ld-main ml-auto col-12 col-md-6 col-xl-4 pb-3"
+    className: "ld-main"
   }, /*#__PURE__*/React__default.createElement("div", {
     className: "ld-header d-flex justify-content-between mb-1 mb-md-3 mb-xl-5"
   }, /*#__PURE__*/React__default.createElement(LandingHeader, null)), /*#__PURE__*/React__default.createElement("div", {
@@ -5620,51 +5846,27 @@ var CompleteInforValidate = Yup.object().shape({
     id: "completeInformation.district.required"
   }))
 });
-var bank$1 = [{
-  value: '1',
-  label: 'Tien Phong Bank'
-}, {
-  value: '2',
-  label: 'Vietcombank'
-}, {
-  value: '3',
-  label: 'BIDV'
-}];
-var city$1 = [{
-  value: 'HN',
-  label: 'Hà Nội'
-}, {
-  value: 'TPHCM',
-  label: 'Thành phố HCM'
-}, {
-  value: 'DN',
-  label: 'Đà nẵng'
-}];
-var district$1 = [{
-  value: 'HN',
-  label: 'Nam Từ Liêm'
-}, {
-  value: 'TPHCM',
-  label: 'Thành phố HCM'
-}, {
-  value: 'DN',
-  label: 'Đà nẵng'
-}];
-var wards$1 = [{
-  value: 'HN',
-  label: 'Phạm Hùng'
-}, {
-  value: 'TPHCM',
-  label: 'Lưu Hữu Phước'
-}, {
-  value: 'DN',
-  label: 'Mễ Trì'
-}];
 
-var CompleteInformation = function CompleteInformation(_ref) {
+var CompleteInformation = function CompleteInformation() {
+  var intl = reactIntl.useIntl();
   var user = reactRedux.useSelector(function (state) {
     return state.auth.register.user;
   });
+
+  var _useCityList = useCityList(VN_COUNTRY_CODE),
+      cities = _useCityList.cities;
+
+  var _useDistrictList = useDistrictList(cities[0] ? cities[0].id : null),
+      districts = _useDistrictList.districts,
+      loadDitrictsByCity = _useDistrictList.loadDitrictsByCity;
+
+  var _useWardList = useWardList(districts[0] ? districts[0].id : null),
+      wards = _useWardList.wards,
+      loadWardsByDistrict = _useWardList.loadWardsByDistrict;
+
+  var _useBankList = useBankList(),
+      banks = _useBankList.banks;
+
   var dispatch = reactRedux.useDispatch();
 
   var onSubmit = function onSubmit(values) {
@@ -5690,9 +5892,9 @@ var CompleteInformation = function CompleteInformation(_ref) {
     },
     validationSchema: CompleteInforValidate,
     onSubmit: onSubmit
-  }, function (_ref2) {
-    var errors = _ref2.errors,
-        touched = _ref2.touched;
+  }, function (_ref) {
+    var errors = _ref.errors,
+        touched = _ref.touched;
     return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "12",
       lg: "3",
@@ -5730,7 +5932,7 @@ var CompleteInformation = function CompleteInformation(_ref) {
       lg: "9"
     }, /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "6"
-    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect, {
       messageId: "completeInformation.idType",
       fieldName: "icType",
       options: IC_TYPES_OPTIONS,
@@ -5752,7 +5954,7 @@ var CompleteInformation = function CompleteInformation(_ref) {
       touched: touched
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "6"
-    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect, {
       messageId: "completeInformation.gender",
       fieldName: "gender",
       defaultValue: GENDER_OPTIONS[0],
@@ -5761,26 +5963,34 @@ var CompleteInformation = function CompleteInformation(_ref) {
       touched: touched
     }))), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "4"
-    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect, {
       messageId: "completeInformation.province",
       fieldName: "city",
-      options: city$1,
+      options: cities,
+      onChange: function onChange(_ref2) {
+        var id = _ref2.id;
+        return loadDitrictsByCity(id);
+      },
       errors: errors,
       touched: touched
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "4"
-    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect, {
       messageId: "completeInformation.district",
       fieldName: "district",
-      options: district$1,
+      options: districts,
+      onChange: function onChange(_ref3) {
+        var id = _ref3.id;
+        return loadWardsByDistrict(id);
+      },
       errors: errors,
       touched: touched
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "4"
-    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect, {
       messageId: "completeInformation.ward",
       fieldName: "ward",
-      options: wards$1,
+      options: wards,
       errors: errors,
       touched: touched
     }))), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
@@ -5798,10 +6008,10 @@ var CompleteInformation = function CompleteInformation(_ref) {
       isRequired: false
     }))), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "4"
-    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect$1, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect, {
       messageId: "completeInformation.bank",
       fieldName: "bankName",
-      options: bank$1,
+      options: banks,
       errors: errors,
       touched: touched
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
@@ -5835,8 +6045,6 @@ var CompleteInformation = function CompleteInformation(_ref) {
   }));
 };
 
-var CompleteInformation$1 = reactIntl.injectIntl(CompleteInformation);
-
 var LandingPage2 = function LandingPage2(props) {
   var _useState = React.useState(''),
       activeTab = _useState[0],
@@ -5857,7 +6065,7 @@ var LandingPage2 = function LandingPage2(props) {
         }));
 
       case 'complete-information':
-        return /*#__PURE__*/React__default.createElement(CompleteInformation$1, {
+        return /*#__PURE__*/React__default.createElement(CompleteInformation, {
           isLanding2: true
         });
 
@@ -6217,7 +6425,7 @@ exports.BaseAppConfigs = appConfigs;
 exports.BaseAppUltils = index;
 exports.BaseFormDatePicker = BaseFormDatePicker$1;
 exports.BaseFormGroup = BaseFormGroup;
-exports.BaseFormGroupSelect = BaseFormGroupSelect$1;
+exports.BaseFormGroupSelect = BaseFormGroupSelect;
 exports.Checkbox = CheckBox;
 exports.DatePicker = DatePicker;
 exports.FallbackSpinner = FallbackSpinner;
@@ -6226,6 +6434,10 @@ exports.Radio = Radio;
 exports.Select = Select;
 exports.hideConfirmAlert = hideConfirmAlert;
 exports.showConfirmAlert = showConfirmAlert;
+exports.useBankList = useBankList;
+exports.useCityList = useCityList;
 exports.useDeviceDetect = useDeviceDetect;
+exports.useDistrictList = useDistrictList;
+exports.useWardList = useWardList;
 exports.useWindowDimensions = useWindowDimensions;
 //# sourceMappingURL=index.js.map
