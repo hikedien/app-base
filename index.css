@@ -23588,9 +23588,6 @@ html[dir="rtl"] body .ps__rail-y {
   html[dir="rtl"] .app-content .header-navbar .dropdown.dropdown-language .dropdown-menu {
     transform: translate3d(26px, 64px, 0px) !important; } }
 
-#root {
-  height: 100%; }
-
 .Select__menu-list {
   max-height: 120px !important; }
 

@@ -1917,7 +1917,6 @@ class SidebarHeader extends Component {
       toggleSidebarMenu,
       activeTheme,
       collapsed,
-      sidebarState,
       toggle,
       sidebarVisibility,
       menuShadow
@@ -2488,8 +2487,7 @@ class Sidebar extends Component {
       activeTheme: activeTheme,
       collapsed: collapsed,
       menuShadow: menuShadow,
-      activePath: activePath,
-      sidebarState: sidebarState
+      activePath: activePath
     }), /*#__PURE__*/React.createElement(ScrollbarTag, Object.assign({
       className: classnames("main-menu-content", {
         "overflow-hidden": ScrollbarTag !== "div",
@@ -2865,6 +2863,8 @@ var messages_en = {
 	"common.icType.personalID": "Identity Card",
 	"common.icType.citizenIdentify": "Identification",
 	"common.icType.passport": "Passport",
+	"common.home": "Home",
+	"common.saveChanges": "Save Changes",
 	login: login,
 	"login.firstWelcome": "Welcome you to InOn X!",
 	"login.logedWelcome": "Hi,",
@@ -3018,6 +3018,8 @@ var messages_vi = {
 	"common.icType.personalID": "Chứng minh nhân dân",
 	"common.icType.citizenIdentify": "Căn cước công dân",
 	"common.icType.passport": "Hộ chiếu",
+	"common.home": "Trang chủ",
+	"common.saveChanges": "Lưu thay đổi",
 	login: login$1,
 	"login.firstWelcome": "Chào mừng bạn đến với InOn X!",
 	"login.logedWelcome": "Xin chào,",
@@ -3546,6 +3548,7 @@ const UserAccountTab = () => {
     userSettings,
     ...user
   } = useSelector(state => state.auth.user);
+  const history = useHistory();
   userDetails = userDetails || {};
   userSettings = userSettings || {};
   const {
@@ -3746,12 +3749,17 @@ const UserAccountTab = () => {
     sm: "12"
   }, /*#__PURE__*/React.createElement(Button.Ripple, {
     type: "button",
-    color: "secondary"
-  }, "Trang ch\u1EE7"), /*#__PURE__*/React.createElement(Button.Ripple, {
+    color: "secondary",
+    onClick: () => history.push('/')
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: `common.home`
+  })), /*#__PURE__*/React.createElement(Button.Ripple, {
     className: "ml-3",
     type: "submit",
     color: "primary"
-  }, "L\u01B0u thay \u0111\u1ED5i")))), /*#__PURE__*/React.createElement(Row, null)));
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: `common.saveChanges`
+  }))))), /*#__PURE__*/React.createElement(Row, null)));
 };
 
 class CheckBox extends React.Component {
@@ -4676,7 +4684,15 @@ const Login = () => {
     setRememberMe(null);
   };
 
-  const renderForm = ({
+  return /*#__PURE__*/React.createElement(Formik, {
+    enableReinitialize: true,
+    initialValues: {
+      username: rememberMe ? rememberMe.username : '',
+      password: ''
+    },
+    onSubmit: onSubmit,
+    validationSchema: formSchema
+  }, ({
     errors,
     touched
   }) => /*#__PURE__*/React.createElement(Form, null, /*#__PURE__*/React.createElement("h4", {
@@ -4748,18 +4764,7 @@ const Login = () => {
     type: "submit"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "login"
-  }))));
-
-  return /*#__PURE__*/React.createElement(Formik, {
-    enableReinitialize: true,
-    initialValues: {
-      username: rememberMe ? rememberMe.username : '',
-      password: ''
-    },
-    render: renderForm,
-    onSubmit: onSubmit,
-    validationSchema: formSchema
-  });
+  })))));
 };
 
 const formSchema$1 = object().shape({
@@ -4804,7 +4809,16 @@ const Register = () => {
     setIsNotAccepted(!checked);
   };
 
-  const renderForm = ({
+  return /*#__PURE__*/React.createElement(Formik, {
+    initialValues: {
+      fullName: '',
+      email: '',
+      phoneNumber: '',
+      refCode: ''
+    },
+    onSubmit: onSubmit,
+    validationSchema: formSchema$1
+  }, ({
     errors,
     touched
   }) => /*#__PURE__*/React.createElement(Form, null, /*#__PURE__*/React.createElement(BaseFormGroup, {
@@ -4859,19 +4873,7 @@ const Register = () => {
     type: "submit"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "register"
-  })))));
-
-  return /*#__PURE__*/React.createElement(Formik, {
-    initialValues: {
-      fullName: '',
-      email: '',
-      phoneNumber: '',
-      refCode: ''
-    },
-    render: renderForm,
-    onSubmit: onSubmit,
-    validationSchema: formSchema$1
-  });
+  }))))));
 };
 
 const formSchema$2 = object().shape({
@@ -5104,7 +5106,7 @@ const LandingHeader = ({
 
 const LandingFooter = () => {
   return /*#__PURE__*/React.createElement("div", {
-    className: "ld-footer px-1 px-md-3 px-lg-5"
+    className: "ld-footer px-1 px-md-3 px-lg-5 mt-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "d-none d-lg-flex justify-content-between"
   }, /*#__PURE__*/React.createElement("div", {

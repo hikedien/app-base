@@ -2784,8 +2784,7 @@ var Sidebar = /*#__PURE__*/function (_Component) {
       activeTheme: activeTheme,
       collapsed: collapsed,
       menuShadow: menuShadow,
-      activePath: activePath,
-      sidebarState: sidebarState
+      activePath: activePath
     }), /*#__PURE__*/React__default.createElement(ScrollbarTag, _extends({
       className: classnames("main-menu-content", {
         "overflow-hidden": ScrollbarTag !== "div",
@@ -3194,6 +3193,8 @@ var messages_en = {
 	"common.icType.personalID": "Identity Card",
 	"common.icType.citizenIdentify": "Identification",
 	"common.icType.passport": "Passport",
+	"common.home": "Home",
+	"common.saveChanges": "Save Changes",
 	login: login,
 	"login.firstWelcome": "Welcome you to InOn X!",
 	"login.logedWelcome": "Hi,",
@@ -3347,6 +3348,8 @@ var messages_vi = {
 	"common.icType.personalID": "Chứng minh nhân dân",
 	"common.icType.citizenIdentify": "Căn cước công dân",
 	"common.icType.passport": "Hộ chiếu",
+	"common.home": "Trang chủ",
+	"common.saveChanges": "Lưu thay đổi",
 	login: login$1,
 	"login.firstWelcome": "Chào mừng bạn đến với InOn X!",
 	"login.logedWelcome": "Xin chào,",
@@ -3942,6 +3945,7 @@ var UserAccountTab = function UserAccountTab() {
       userSettings = _useSelector.userSettings,
       user = _objectWithoutPropertiesLoose(_useSelector, ["userDetails", "userSettings"]);
 
+  var history = reactRouterDom.useHistory();
   userDetails = userDetails || {};
   userSettings = userSettings || {};
 
@@ -4145,12 +4149,19 @@ var UserAccountTab = function UserAccountTab() {
       sm: "12"
     }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
       type: "button",
-      color: "secondary"
-    }, "Trang ch\u1EE7"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      color: "secondary",
+      onClick: function onClick() {
+        return history.push('/');
+      }
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "common.home"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
       className: "ml-3",
       type: "submit",
       color: "primary"
-    }, "L\u01B0u thay \u0111\u1ED5i")));
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "common.saveChanges"
+    }))));
   }), /*#__PURE__*/React__default.createElement(reactstrap.Row, null)));
 };
 
@@ -5167,7 +5178,15 @@ var Login = function Login() {
     setRememberMe(null);
   };
 
-  var renderForm = function renderForm(_ref) {
+  return /*#__PURE__*/React__default.createElement(formik.Formik, {
+    enableReinitialize: true,
+    initialValues: {
+      username: rememberMe ? rememberMe.username : '',
+      password: ''
+    },
+    onSubmit: onSubmit,
+    validationSchema: formSchema
+  }, function (_ref) {
     var errors = _ref.errors,
         touched = _ref.touched;
     return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement("h4", {
@@ -5247,17 +5266,6 @@ var Login = function Login() {
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "login"
     }))));
-  };
-
-  return /*#__PURE__*/React__default.createElement(formik.Formik, {
-    enableReinitialize: true,
-    initialValues: {
-      username: rememberMe ? rememberMe.username : '',
-      password: ''
-    },
-    render: renderForm,
-    onSubmit: onSubmit,
-    validationSchema: formSchema
   });
 };
 
@@ -5322,7 +5330,16 @@ var Register = function Register() {
     setIsNotAccepted(!checked);
   };
 
-  var renderForm = function renderForm(_ref) {
+  return /*#__PURE__*/React__default.createElement(formik.Formik, {
+    initialValues: {
+      fullName: '',
+      email: '',
+      phoneNumber: '',
+      refCode: ''
+    },
+    onSubmit: onSubmit,
+    validationSchema: formSchema$1
+  }, function (_ref) {
     var errors = _ref.errors,
         touched = _ref.touched;
     return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
@@ -5380,18 +5397,6 @@ var Register = function Register() {
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "register"
     })))));
-  };
-
-  return /*#__PURE__*/React__default.createElement(formik.Formik, {
-    initialValues: {
-      fullName: '',
-      email: '',
-      phoneNumber: '',
-      refCode: ''
-    },
-    render: renderForm,
-    onSubmit: onSubmit,
-    validationSchema: formSchema$1
   });
 };
 
@@ -5650,7 +5655,7 @@ var LandingHeader = function LandingHeader(_ref) {
 
 var LandingFooter = function LandingFooter() {
   return /*#__PURE__*/React__default.createElement("div", {
-    className: "ld-footer px-1 px-md-3 px-lg-5"
+    className: "ld-footer px-1 px-md-3 px-lg-5 mt-2"
   }, /*#__PURE__*/React__default.createElement("div", {
     className: "d-none d-lg-flex justify-content-between"
   }, /*#__PURE__*/React__default.createElement("div", {
