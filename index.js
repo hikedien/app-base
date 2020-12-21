@@ -52,9 +52,22 @@ var trimObjectValues$1 = function trimObjectValues(object, excludeKeys) {
     excludeKeys = [];
   }
 
+  if (!object) {
+    return;
+  }
+
   Object.keys(object).forEach(function (key) {
-    if (excludeKeys.indexOf(key) === -1) {
-      object[key] = trimValue(object[key]);
+    if (excludeKeys.indexOf(key) >= 0) {
+      return;
+    }
+
+    switch (typeof object[key]) {
+      case 'string':
+        object[key] = trimValue(object[key]);
+        break;
+
+      case 'object':
+        trimObjectValues(object[key]);
     }
   });
   return object;
@@ -91,11 +104,19 @@ var index = {
   toastSuccess: toastSuccess
 };
 
+var AppId = {
+  APP_NO1: 'APP_NO1',
+  INSURANCE_APP: 'INSURANCE_APP',
+  SUPPLEMENT_APP: 'SUPPLEMENT_APP',
+  ELITE_APP: 'ELITE_APP'
+};
+
 var API_BASE_URL = 'https://apidev.inon.vn';
 var API_LOGIN_URL = '/api/authenticate';
 var API_LOGOUT_URL = '/api/authenticate';
 var API_REGISTER = '/nth/onboarding/api/authenticate/register';
 var API_GET_USER = '/nth/user/api/users';
+var API_UPDATE_USER_INFO$1 = '/nth/user/api/update-user-info';
 var API_GET_NAV_CONFIGS = '/nth/accesscontrol/api/roles';
 var API_CREATE_PASSWORD = '/nth/onboarding/api/authenticate/create-new-password';
 var API_GET_USER_BY_REGISTER_TOKEN = '/nth/onboarding/api/authenticate/get-partner';
@@ -121,6 +142,10 @@ var NOT_ALLOW_SPECIAL_CHAR_REGEX = /^[A-Za-z0-9 ]+$/;
 var LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
   FAIL: 'FAIL'
+};
+var USER_TYPE = {
+  KD: 'KD',
+  HTKD: 'HTKD'
 };
 var GENDER_OPTIONS = [{
   value: 'MALE',
@@ -155,6 +180,21 @@ var IC_TYPES_OPTIONS = [{
   })
 }];
 var APP_URL = 'https://sit2.inon.vn';
+var getAppUrl$1 = function getAppUrl(appId) {
+  switch (appId) {
+    case AppId.APP_NO1:
+      return APP_URL + "/app-no1";
+
+    case AppId.INSURANCE_APP:
+      return APP_URL + "/insurance-app";
+
+    case AppId.SUPPLEMENT_APP:
+      return APP_URL + "/supplement-app";
+
+    case AppId.ELITE_APP:
+      return APP_URL + "/elite-app";
+  }
+};
 var IMAGE = {
   LOGO: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Logo.svg?alt=media&token=e2aad749-912d-45c3-969b-060528c6c7ef',
   LOGO_NO_TEXT: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/logo-no-text.svg?alt=media&token=e2383562-e9d0-4b31-80fa-58a3fc47b1bd',
@@ -180,6 +220,7 @@ var appConfigs = {
   API_LOGOUT_URL: API_LOGOUT_URL,
   API_REGISTER: API_REGISTER,
   API_GET_USER: API_GET_USER,
+  API_UPDATE_USER_INFO: API_UPDATE_USER_INFO$1,
   API_GET_NAV_CONFIGS: API_GET_NAV_CONFIGS,
   API_CREATE_PASSWORD: API_CREATE_PASSWORD,
   API_GET_USER_BY_REGISTER_TOKEN: API_GET_USER_BY_REGISTER_TOKEN,
@@ -203,9 +244,11 @@ var appConfigs = {
   PASSPORT_REGEX: PASSPORT_REGEX,
   NOT_ALLOW_SPECIAL_CHAR_REGEX: NOT_ALLOW_SPECIAL_CHAR_REGEX,
   LOGIN_STATUS: LOGIN_STATUS,
+  USER_TYPE: USER_TYPE,
   GENDER_OPTIONS: GENDER_OPTIONS,
   IC_TYPES_OPTIONS: IC_TYPES_OPTIONS,
   APP_URL: APP_URL,
+  getAppUrl: getAppUrl$1,
   IMAGE: IMAGE
 };
 
@@ -357,6 +400,7 @@ function _taggedTemplateLiteralLoose(strings, raw) {
 }
 
 var themeConfig = {
+  appId: '',
   layout: "vertical",
   theme: "light",
   sidebarCollapsed: false,
@@ -377,9 +421,14 @@ var customizerReducer = function customizerReducer(state, action) {
   }
 
   switch (action.type) {
-    case 'CHANGE_MODE':
+    case 'CHANGE_THEME':
       return _extends({}, state, {
-        theme: action.mode
+        theme: action.theme
+      });
+
+    case 'SET_APP_ID':
+      return _extends({}, state, {
+        appId: action.appId
       });
 
     case 'COLLAPSE_SIDEBAR':
@@ -503,11 +552,16 @@ AuthService.resetPassword = function (password, resetToken) {
   });
 };
 
+AuthService.updateUserInfo = function (user) {
+  return HttpClient.post(API_UPDATE_USER_INFO, user);
+};
+
 var LOGIN_ACTION = 'LOGIN_ACTION';
 var LOGIN_FAIL_ACTION = 'LOGIN_FAIL_ACTION';
 var LOGOUT_ACTION = 'LOGOUT_ACTION';
 var SAVE_REGISTER_TOKEN = 'SAVE_REGISTER_TOKEN';
 var SAVE_RESET_PASSWORD_TOKEN = 'SAVE_RESET_PASSWORD_TOKEN';
+var UPDATE_USER_INFO = 'UPDATE_USER_INFO';
 var checkLoginStatus = function checkLoginStatus(authToken) {
   return function (dispatch, getState) {
     try {
@@ -550,7 +604,7 @@ var checkLoginStatus = function checkLoginStatus(authToken) {
   };
 };
 var loginAction = function loginAction(user) {
-  return function (dispatch) {
+  return function (dispatch, getState) {
     try {
       var _temp6 = _catch(function () {
         user.rememberMe = user.isRemeberMe;
@@ -575,7 +629,11 @@ var loginAction = function loginAction(user) {
                     user: response.data || []
                   }
                 });
-                history.push('/');
+                var appId = getState().customizer.appId;
+
+                if (appId === AppId.APP_NO1) {
+                  history.push('/');
+                }
               });
             } else {
               var token = {
@@ -760,6 +818,33 @@ var logoutAction = function logoutAction() {
     }
   };
 };
+var updateUserInfo = function updateUserInfo(user) {
+  return function (dispatch) {
+    try {
+      var _temp18 = _catch(function () {
+        return Promise.resolve(AuthService.updateUserInfo(user)).then(function (res) {
+          if (res.status === 200) {
+            dispatch({
+              type: UPDATE_USER_INFO,
+              payload: res.data
+            });
+            toastSuccess('Cập nhật thông tin thành công !');
+            history.push('/');
+          }
+        });
+      }, function () {
+        history.push('/');
+        dispatch({
+          type: LOGOUT_ACTION
+        });
+      });
+
+      return Promise.resolve(_temp18 && _temp18.then ? _temp18.then(function () {}) : void 0);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+};
 
 var authInitialState = {
   authToken: '',
@@ -810,272 +895,17 @@ var authReducers = function authReducers(state, action) {
         });
       }
 
+    case UPDATE_USER_INFO:
+      {
+        return _extends({}, state, {
+          user: action.payload
+        });
+      }
+
     default:
       return state;
   }
 };
-
-var AppId = {
-  APP_NO1: 'APP_NO1',
-  INSURANCE_APP: 'INSURANCE_APP',
-  SUPPLEMENT_APP: 'SUPPLEMENT_APP'
-};
-
-var _ref;
-var navigationConfig = [{
-  id: 'buyInsurance',
-  appId: AppId.INSURANCE_APP,
-  type: 'item',
-  title: 'menu.buyInsurance',
-  icon: /*#__PURE__*/React__default.createElement(Icon.ShoppingCart, {
-    size: 20
-  }),
-  navLink: '/buy-insurance'
-}, {
-  id: 'contractManagement',
-  appId: AppId.INSURANCE_APP,
-  title: 'menu.contractManagement',
-  icon: /*#__PURE__*/React__default.createElement(Icon.FileText, {
-    size: 20
-  }),
-  permissions: ['admin', 'editor'],
-  navLink: '/contracts',
-  type: 'collapse',
-  children: [{
-    id: 'personalContracts',
-    type: 'item',
-    title: 'menu.personalContracts',
-    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
-      size: 20
-    }),
-    navLink: '/contracts/personal'
-  }, {
-    id: 'partnerContracts',
-    type: 'item',
-    title: 'menu.partnerContracts',
-    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
-      size: 20
-    }),
-    navLink: '/contracts/partner'
-  }, {
-    id: 'allContracts',
-    type: 'item',
-    title: 'menu.allContracts',
-    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
-      size: 20
-    }),
-    navLink: '/contracts/all'
-  }]
-}, {
-  id: 'account',
-  appId: AppId.APP_NO1,
-  title: 'menu.account',
-  icon: /*#__PURE__*/React__default.createElement(Icon.User, {
-    size: 20
-  }),
-  permissions: ['admin', 'editor'],
-  navLink: '/accounts',
-  type: 'collapse',
-  children: [{
-    id: 'createAccount',
-    type: 'item',
-    title: 'menu.createAccount',
-    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
-      size: 20
-    }),
-    navLink: '/accounts/create'
-  }, {
-    id: 'accountManagement',
-    type: 'item',
-    title: 'menu.accountManagement',
-    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
-      size: 20
-    }),
-    navLink: '/accounts/management'
-  }]
-}, {
-  id: 'insuranceFeeManagement',
-  appId: AppId.INSURANCE_APP,
-  title: 'menu.insuranceFeeManagement',
-  icon: /*#__PURE__*/React__default.createElement(Icon.DollarSign, {
-    size: 20
-  }),
-  permissions: ['admin', 'editor'],
-  navLink: '/insurance-fee',
-  type: 'collapse',
-  children: [{
-    id: 'systemFee',
-    type: 'item',
-    title: 'menu.systemFee',
-    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
-      size: 20
-    }),
-    navLink: '/insurance-fee/system'
-  }, {
-    id: 'personalFee',
-    type: 'item',
-    title: 'menu.personalFee',
-    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
-      size: 20
-    }),
-    navLink: '/insurance-fee/personal'
-  }, {
-    id: 'partnerFee',
-    type: 'item',
-    title: 'menu.partnerFee',
-    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
-      size: 20
-    }),
-    navLink: '/insurance-fee/partner'
-  }, {
-    id: 'allFee',
-    type: 'item',
-    title: 'menu.allFee',
-    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
-      size: 20
-    }),
-    navLink: '/insurance-fee/all'
-  }]
-}, {
-  id: 'bonusManagement',
-  appId: AppId.SUPPLEMENT_APP,
-  title: 'menu.bonusManagement',
-  icon: /*#__PURE__*/React__default.createElement(Icon.TrendingUp, {
-    size: 20
-  }),
-  permissions: ['admin', 'editor'],
-  navLink: '/bonus',
-  type: 'collapse',
-  children: [{
-    id: 'systemBonus',
-    type: 'item',
-    title: 'menu.systemBonus',
-    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
-      size: 20
-    }),
-    navLink: '/bonus/system'
-  }, {
-    id: 'personalBonus',
-    type: 'item',
-    title: 'menu.personalBonus',
-    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
-      size: 20
-    }),
-    navLink: '/bonus/personal'
-  }, {
-    id: 'partnerBonus',
-    type: 'item',
-    title: 'menu.partnerBonus',
-    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
-      size: 20
-    }),
-    navLink: '/bonus/partner'
-  }, {
-    id: 'allBonus',
-    type: 'item',
-    title: 'menu.allBonus',
-    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
-      size: 20
-    }),
-    navLink: '/bonus/all'
-  }]
-}, (_ref = {
-  id: 'insuranceCertificate',
-  appId: AppId.INSURANCE_APP,
-  type: 'item',
-  title: 'menu.insuranceCertificate',
-  icon: /*#__PURE__*/React__default.createElement(Icon.Award, {
-    size: 20
-  }),
-  permissions: ['admin', 'editor'],
-  navLink: '/insurance-certificate'
-}, _ref["type"] = 'collapse', _ref.children = [{
-  id: 'newImport',
-  type: 'item',
-  title: 'menu.insuranceCertificate.newImport',
-  icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
-    size: 20
-  }),
-  navLink: '/insurance-certificate/new-import'
-}, {
-  id: 'newExport',
-  type: 'item',
-  title: 'menu.insuranceCertificate.newImport',
-  icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
-    size: 20
-  }),
-  navLink: '/insurance-certificate/new-export'
-}, {
-  id: 'wrongImport',
-  type: 'item',
-  title: 'menu.insuranceCertificate.wrongImport',
-  icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
-    size: 20
-  }),
-  navLink: '/insurance-certificate/wrong-import'
-}, {
-  id: 'wrongExport',
-  type: 'item',
-  title: 'menu.insuranceCertificate.wrongExport',
-  icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
-    size: 20
-  }),
-  navLink: '/insurance-certificate/wrong-export'
-}], _ref), {
-  id: 'debt',
-  appId: AppId.SUPPLEMENT_APP,
-  title: 'menu.debt',
-  icon: /*#__PURE__*/React__default.createElement(Icon.CreditCard, {
-    size: 20
-  }),
-  permissions: ['admin', 'editor'],
-  type: 'collapse',
-  navLink: '/debt',
-  children: [{
-    id: 'createDebt',
-    type: 'item',
-    title: 'menu.createDebt',
-    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
-      size: 20
-    }),
-    navLink: '/debt/create'
-  }, {
-    id: 'debtManagement',
-    type: 'item',
-    title: 'menu.debtManagement',
-    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
-      size: 20
-    }),
-    navLink: '/debt/management'
-  }]
-}, {
-  id: 'permissionGoup',
-  appId: AppId.SUPPLEMENT_APP,
-  type: 'collapse',
-  title: 'menu.permissionGoup',
-  icon: /*#__PURE__*/React__default.createElement(Icon.Share2, {
-    size: 20
-  }),
-  permissions: ['admin', 'editor'],
-  navLink: '/permission-group',
-  children: [{
-    id: 'creatPermissionGoup',
-    type: 'item',
-    title: 'menu.creatPermissionGoup',
-    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
-      size: 20
-    }),
-    navLink: '/permission-group/create'
-  }, {
-    id: 'permissionGoupManagement',
-    type: 'item',
-    title: 'menu.permissionGoupManagement',
-    icon: /*#__PURE__*/React__default.createElement(Icon.Circle, {
-      size: 20
-    }),
-    navLink: '/permission-group/management'
-  }]
-}];
 
 var mapRoleListToNavConfigs = function mapRoleListToNavConfigs(roleList) {
   if (roleList === void 0) {
@@ -1667,6 +1497,75 @@ var UserDropdown = function UserDropdown(props) {
     id: "setting.accountInformation"
   }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
     tag: "a",
+    href: "#",
+    onClick: function onClick(e) {
+      return handleNavigation(e, '/change-password');
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React__default.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "setting.changePassword"
+  }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+    divider: true
+  }), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+    tag: "a",
+    href: "#",
+    onClick: function onClick(e) {
+      return handleNavigation(e, '/terms-and-condition');
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React__default.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "setting.termAndCondition"
+  }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+    tag: "a",
+    href: "#",
+    onClick: function onClick(e) {
+      return handleNavigation(e, '/privacy-policy');
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React__default.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "setting.privacyPolicy"
+  }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+    tag: "a",
+    href: "#",
+    onClick: function onClick(e) {
+      return handleNavigation(e, '/language');
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React__default.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "setting.language"
+  }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+    tag: "a",
+    href: "#",
+    onClick: function onClick(e) {
+      return handleNavigation(e, '/contact');
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React__default.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "setting.contact"
+  }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+    divider: true
+  }), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+    tag: "a",
     onClick: logoutAction
   }, /*#__PURE__*/React__default.createElement(Icon.Power, {
     size: 14,
@@ -1730,7 +1629,7 @@ var NavbarUser = /*#__PURE__*/function (_React$PureComponent) {
           id: "menu." + item.keyLang
         });
         item.isExternalApp = item.appId !== _this2.props.appId;
-        item.navLinkExternal = APP_URL + item.menuPath + "?code=" + _this2.props.authToken;
+        item.navLinkExternal = getAppUrl$1(item.appId) + item.menuPath + "?code=" + _this2.props.authToken;
         return item;
       });
       this.setState({
@@ -1994,7 +1893,7 @@ var Footer = function Footer(props) {
     if (!currentRoute.isExternalApp) {
       history.push("" + currentRoute.navLink);
     } else {
-      window.location.href = APP_URL + currentRoute.navLink + "?code=" + authToken;
+      window.location.href = getAppUrl(currentRoute.appId) + currentRoute.navLink + "?code=" + authToken;
     }
   };
 
@@ -2092,11 +1991,19 @@ var Footer = function Footer(props) {
   }))) : null);
 };
 
-var changeMode = function changeMode(mode) {
+var changeTheme = function changeTheme(theme) {
   return function (dispatch) {
     return dispatch({
-      type: "CHANGE_MODE",
-      mode: mode
+      type: "CHANGE_THEME",
+      theme: theme
+    });
+  };
+};
+var setAppId = function setAppId(appId) {
+  return function (dispatch) {
+    return dispatch({
+      type: "SET_APP_ID",
+      appId: appId
     });
   };
 };
@@ -2473,7 +2380,7 @@ var SideMenuContent = /*#__PURE__*/function (_React$Component) {
     };
 
     _this.getItemLink = function (item) {
-      return item.isExternalApp ? APP_URL + item.navLink + "?code=" + _this.props.currentUser.authToken : '';
+      return item.isExternalApp ? getAppUrl$1(item.appId) + item.navLink + "?code=" + _this.props.currentUser.authToken : '';
     };
 
     _this.parentArr = [];
@@ -3087,7 +2994,7 @@ var mapStateToProps$2 = function mapStateToProps(state) {
 };
 
 var Layout$1 = reactRedux.connect(mapStateToProps$2, {
-  changeMode: changeMode,
+  changeTheme: changeTheme,
   collapseSidebar: collapseSidebar,
   changeNavbarColor: changeNavbarColor,
   changeNavbarType: changeNavbarType,
@@ -3112,15 +3019,7 @@ var loadNavtigation = function loadNavtigation(appId) {
             }
           });
         });
-      }, function () {
-        dispatch({
-          type: LOAD_NATIVGATION$1,
-          payload: {
-            navConfigs: getNativgationConfig(appId),
-            roles: []
-          }
-        });
-      });
+      }, function () {});
 
       return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
     } catch (e) {
@@ -3567,7 +3466,7 @@ var BaseFormDatePicker = function BaseFormDatePicker(_ref) {
 var BaseFormDatePicker$1 = reactIntl.injectIntl(BaseFormDatePicker);
 
 var Select = function Select(props) {
-  var _useState = React.useState(props.defaultValue || ''),
+  var _useState = React.useState(''),
       inputValue = _useState[0],
       setInputValue = _useState[1];
 
@@ -3653,7 +3552,6 @@ var BaseFormGroupSelect = function BaseFormGroupSelect(_ref) {
       isRequired = _ref$isRequired === void 0 ? true : _ref$isRequired,
       isAsync = _ref.isAsync,
       _onChange = _ref.onChange,
-      isTextValue = _ref.isTextValue,
       loadOptions = _ref.loadOptions,
       defaultOptions = _ref.defaultOptions;
   var intl = reactIntl.useIntl();
@@ -3670,9 +3568,10 @@ var BaseFormGroupSelect = function BaseFormGroupSelect(_ref) {
       classNamePrefix: "Select",
       fieldName: fieldName,
       required: isRequired,
-      defaultValue: isTextValue ? options.find(function (item) {
+      value: options.find(function (item) {
         return item.value === field.value;
-      }) : defaultValue,
+      }),
+      defaultValue: defaultValue,
       errors: errors,
       isAsync: isAsync,
       loadOptions: loadOptions,
@@ -3914,27 +3813,38 @@ var validationSchema = Yup.object().shape({
   dateOfBirth: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "completeInformation.dateOfBirth.required"
   })),
-  address: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "completeInformation.address.required"
-  })),
-  bankName: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "completeInformation.bank.required"
-  })),
-  bankBranch: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "completeInformation.branch.required"
-  })),
-  bankNumber: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "completeInformation.accountNbr.required"
-  })),
-  city: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "completeInformation.city.required"
-  })),
-  ward: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "completeInformation.ward.required"
-  })),
-  district: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "completeInformation.district.required"
-  }))
+  userDetails: Yup.object().shape({
+    address: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "completeInformation.address.required"
+    })),
+    bankNumber: Yup.string().when('userType', {
+      is: USER_TYPE.KD,
+      then: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "completeInformation.accountNbr.required"
+      }))
+    }),
+    bankName: Yup.string().when('userType', {
+      is: USER_TYPE.KD,
+      then: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "completeInformation.bank.required"
+      }))
+    }),
+    bankBranch: Yup.string().when('userType', {
+      is: USER_TYPE.KD,
+      then: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "completeInformation.branch.required"
+      }))
+    }),
+    city: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "completeInformation.province.required"
+    })),
+    ward: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "completeInformation.ward.required"
+    })),
+    district: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "completeInformation.district.required"
+    }))
+  })
 });
 
 var UserAccountTab = function UserAccountTab() {
@@ -3946,6 +3856,7 @@ var UserAccountTab = function UserAccountTab() {
       user = _objectWithoutPropertiesLoose(_useSelector, ["userDetails", "userSettings"]);
 
   var history = reactRouterDom.useHistory();
+  var dispatch = reactRedux.useDispatch();
   userDetails = userDetails || {};
   userSettings = userSettings || {};
 
@@ -3967,6 +3878,16 @@ var UserAccountTab = function UserAccountTab() {
     loadDitrictsByCity(userDetails.city);
     loadWardsByDistrict(userDetails.district);
   }, []);
+
+  var onSubmit = function onSubmit(values) {
+    try {
+      dispatch(updateUserInfo(trimObjectValues$1(values)));
+      return Promise.resolve();
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
   return /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
     sm: "12"
   }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
@@ -4004,22 +3925,15 @@ var UserAccountTab = function UserAccountTab() {
   }, /*#__PURE__*/React__default.createElement(formik.Formik, {
     enableReinitialize: true,
     validationSchema: validationSchema,
-    initialValues: {
-      fullName: user.fullName || '',
-      icNumber: user.icNumber || '',
-      dateOfBirth: user.dateOfBirth || '',
-      gender: user.gender || 'MALE',
-      city: userDetails.city || '',
-      district: userDetails.district || '',
-      ward: userDetails.ward || '',
-      address: userDetails.address || '',
-      bankName: userDetails.bankName || '',
-      bankBranch: userDetails.bankBranch || '',
-      bankNumber: userDetails.bankNumber || ''
-    }
+    onSubmit: onSubmit,
+    initialValues: _extends({
+      userDetails: userDetails,
+      userSettings: userSettings
+    }, user)
   }, function (_ref) {
     var errors = _ref.errors,
-        touched = _ref.touched;
+        touched = _ref.touched,
+        values = _ref.values;
     return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement(reactstrap.Row, {
       className: "mt-2"
     }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
@@ -4082,7 +3996,7 @@ var UserAccountTab = function UserAccountTab() {
       sm: "12"
     }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
       messageId: "completeInformation.address",
-      fieldName: "address",
+      fieldName: "userDetails.address",
       errors: errors,
       touched: touched
     }))), /*#__PURE__*/React__default.createElement(reactstrap.Row, {
@@ -4091,9 +4005,8 @@ var UserAccountTab = function UserAccountTab() {
       sm: "4"
     }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect, {
       messageId: "completeInformation.province",
-      fieldName: "city",
+      fieldName: "userDetails.city",
       options: cities,
-      isTextValue: true,
       onChange: function onChange(_ref2) {
         var id = _ref2.id;
         return loadDitrictsByCity(id);
@@ -4104,7 +4017,7 @@ var UserAccountTab = function UserAccountTab() {
       sm: "4"
     }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect, {
       messageId: "completeInformation.district",
-      fieldName: "district",
+      fieldName: "userDetails.district",
       options: districts,
       onChange: function onChange(_ref3) {
         var id = _ref3.id;
@@ -4116,17 +4029,17 @@ var UserAccountTab = function UserAccountTab() {
       sm: "4"
     }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect, {
       messageId: "completeInformation.ward",
-      fieldName: "ward",
+      fieldName: "userDetails.ward",
       options: wards,
       errors: errors,
       touched: touched
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.Row, {
+    }))), values.userType === USER_TYPE.KD ? /*#__PURE__*/React__default.createElement(reactstrap.Row, {
       className: "mt-2"
     }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "4"
     }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect, {
       messageId: "completeInformation.bank",
-      fieldName: "bankName",
+      fieldName: "userDetails.bankName",
       options: banks,
       errors: errors,
       touched: touched
@@ -4134,17 +4047,17 @@ var UserAccountTab = function UserAccountTab() {
       sm: "4"
     }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
       messageId: "completeInformation.branch",
-      fieldName: "bankBranch",
+      fieldName: "userDetails.bankBranch",
       errors: errors,
       touched: touched
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "4"
     }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
       messageId: "completeInformation.accountNbr",
-      fieldName: "bankNumber",
+      fieldName: "userDetails.bankNumber",
       errors: errors,
       touched: touched
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    }))) : '', /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       className: "d-flex justify-content-end flex-wrap mt-2",
       sm: "12"
     }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
@@ -5754,6 +5667,7 @@ var LandingPage = function LandingPage(props) {
         return /*#__PURE__*/React__default.createElement(ForgotPassword, null);
 
       case 'reset-password':
+      case 'provide-new-password':
         return /*#__PURE__*/React__default.createElement(CreatePassword, null);
 
       default:
@@ -6190,12 +6104,12 @@ var AppRouter = function AppRouter(props) {
   }, {
     path: 'forgot-password'
   }, {
+    path: 'provide-new-password'
+  }, {
     path: 'reset-password'
   }];
   var landingPage2Routes = [{
     path: 'create-password'
-  }, {
-    path: 'provide-new-password'
   }, {
     path: 'complete-information'
   }];
@@ -6243,9 +6157,17 @@ var AppRouter = function AppRouter(props) {
             });
           }
         });
-      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
+      }), appId === AppId.ELITE_APP ? /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
+        path: "/",
+        render: function render() {
+          return children;
+        }
+      }) : /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
         from: "/",
         to: "/login"
+      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
+        from: "/",
+        to: "/"
       }));
     }
   }))), /*#__PURE__*/React__default.createElement(reactToastify.ToastContainer, {
@@ -6268,7 +6190,8 @@ var mapStateToProps$3 = function mapStateToProps(state) {
 var AppRouter$1 = reactRedux.connect(mapStateToProps$3, {
   checkLoginStatus: checkLoginStatus,
   loadNavtigation: loadNavtigation,
-  loginAction: loginAction
+  loginAction: loginAction,
+  setAppId: setAppId
 })(AppRouter);
 
 TopBarProgress.config({

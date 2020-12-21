@@ -8,7 +8,7 @@ import { persistReducer, persistStore } from 'redux-persist';
 import Axios from 'axios';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
 import * as Icon from 'react-feather';
-import { AlertTriangle, Check, ShoppingCart, FileText, Circle, User, DollarSign, TrendingUp, Award, CreditCard, Share2, Power, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, MessageSquare, ArrowUp, Disc, ChevronRight, MapPin, Info, Lock, Sun } from 'react-feather';
+import { AlertTriangle, Check, User, Lock, Power, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, MessageSquare, ArrowUp, Disc, Circle, ChevronRight, MapPin, Info, Sun } from 'react-feather';
 import { toast, ToastContainer } from 'react-toastify';
 export { toast } from 'react-toastify';
 import { FormattedMessage, injectIntl, IntlProvider, useIntl } from 'react-intl';
@@ -49,9 +49,22 @@ const trimValue = value => {
   return value ? value.trim() : '';
 };
 const trimObjectValues$1 = (object, excludeKeys = []) => {
+  if (!object) {
+    return;
+  }
+
   Object.keys(object).forEach(key => {
-    if (excludeKeys.indexOf(key) === -1) {
-      object[key] = trimValue(object[key]);
+    if (excludeKeys.indexOf(key) >= 0) {
+      return;
+    }
+
+    switch (typeof object[key]) {
+      case 'string':
+        object[key] = trimValue(object[key]);
+        break;
+
+      case 'object':
+        trimObjectValues$1(object[key]);
     }
   });
   return object;
@@ -88,11 +101,19 @@ var index = {
   toastSuccess: toastSuccess
 };
 
+const AppId = {
+  APP_NO1: 'APP_NO1',
+  INSURANCE_APP: 'INSURANCE_APP',
+  SUPPLEMENT_APP: 'SUPPLEMENT_APP',
+  ELITE_APP: 'ELITE_APP'
+};
+
 const API_BASE_URL = 'https://apidev.inon.vn';
 const API_LOGIN_URL = '/api/authenticate';
 const API_LOGOUT_URL = '/api/authenticate';
 const API_REGISTER = '/nth/onboarding/api/authenticate/register';
 const API_GET_USER = '/nth/user/api/users';
+const API_UPDATE_USER_INFO$1 = '/nth/user/api/update-user-info';
 const API_GET_NAV_CONFIGS = '/nth/accesscontrol/api/roles';
 const API_CREATE_PASSWORD = '/nth/onboarding/api/authenticate/create-new-password';
 const API_GET_USER_BY_REGISTER_TOKEN = '/nth/onboarding/api/authenticate/get-partner';
@@ -118,6 +139,10 @@ const NOT_ALLOW_SPECIAL_CHAR_REGEX = /^[A-Za-z0-9 ]+$/;
 const LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
   FAIL: 'FAIL'
+};
+const USER_TYPE = {
+  KD: 'KD',
+  HTKD: 'HTKD'
 };
 const GENDER_OPTIONS = [{
   value: 'MALE',
@@ -152,6 +177,21 @@ const IC_TYPES_OPTIONS = [{
   })
 }];
 const APP_URL = 'https://sit2.inon.vn';
+const getAppUrl$1 = appId => {
+  switch (appId) {
+    case AppId.APP_NO1:
+      return `${APP_URL}/app-no1`;
+
+    case AppId.INSURANCE_APP:
+      return `${APP_URL}/insurance-app`;
+
+    case AppId.SUPPLEMENT_APP:
+      return `${APP_URL}/supplement-app`;
+
+    case AppId.ELITE_APP:
+      return `${APP_URL}/elite-app`;
+  }
+};
 const IMAGE = {
   LOGO: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Logo.svg?alt=media&token=e2aad749-912d-45c3-969b-060528c6c7ef',
   LOGO_NO_TEXT: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/logo-no-text.svg?alt=media&token=e2383562-e9d0-4b31-80fa-58a3fc47b1bd',
@@ -177,6 +217,7 @@ var appConfigs = {
   API_LOGOUT_URL: API_LOGOUT_URL,
   API_REGISTER: API_REGISTER,
   API_GET_USER: API_GET_USER,
+  API_UPDATE_USER_INFO: API_UPDATE_USER_INFO$1,
   API_GET_NAV_CONFIGS: API_GET_NAV_CONFIGS,
   API_CREATE_PASSWORD: API_CREATE_PASSWORD,
   API_GET_USER_BY_REGISTER_TOKEN: API_GET_USER_BY_REGISTER_TOKEN,
@@ -200,9 +241,11 @@ var appConfigs = {
   PASSPORT_REGEX: PASSPORT_REGEX,
   NOT_ALLOW_SPECIAL_CHAR_REGEX: NOT_ALLOW_SPECIAL_CHAR_REGEX,
   LOGIN_STATUS: LOGIN_STATUS,
+  USER_TYPE: USER_TYPE,
   GENDER_OPTIONS: GENDER_OPTIONS,
   IC_TYPES_OPTIONS: IC_TYPES_OPTIONS,
   APP_URL: APP_URL,
+  getAppUrl: getAppUrl$1,
   IMAGE: IMAGE
 };
 
@@ -290,6 +333,7 @@ const setUpHttpClient = (store, apiBaseUrl) => {
 };
 
 const themeConfig = {
+  appId: '',
   layout: "vertical",
   theme: "light",
   sidebarCollapsed: false,
@@ -307,9 +351,14 @@ const themeConfig = {
 const customizerReducer = (state = { ...themeConfig
 }, action) => {
   switch (action.type) {
-    case 'CHANGE_MODE':
+    case 'CHANGE_THEME':
       return { ...state,
-        theme: action.mode
+        theme: action.theme
+      };
+
+    case 'SET_APP_ID':
+      return { ...state,
+        appId: action.appId
       };
 
     case 'COLLAPSE_SIDEBAR':
@@ -414,11 +463,16 @@ AuthService.resetPassword = (password, resetToken) => {
   });
 };
 
+AuthService.updateUserInfo = user => {
+  return HttpClient.post(API_UPDATE_USER_INFO, user);
+};
+
 const LOGIN_ACTION = 'LOGIN_ACTION';
 const LOGIN_FAIL_ACTION = 'LOGIN_FAIL_ACTION';
 const LOGOUT_ACTION = 'LOGOUT_ACTION';
 const SAVE_REGISTER_TOKEN = 'SAVE_REGISTER_TOKEN';
 const SAVE_RESET_PASSWORD_TOKEN = 'SAVE_RESET_PASSWORD_TOKEN';
+const UPDATE_USER_INFO = 'UPDATE_USER_INFO';
 const checkLoginStatus = authToken => {
   return async (dispatch, getState) => {
     try {
@@ -450,7 +504,7 @@ const checkLoginStatus = authToken => {
   };
 };
 const loginAction = user => {
-  return async dispatch => {
+  return async (dispatch, getState) => {
     try {
       user.rememberMe = user.isRemeberMe;
       let response = await AuthService.login(user);
@@ -473,7 +527,13 @@ const loginAction = user => {
             user: response.data || []
           }
         });
-        history.push('/');
+        const {
+          appId
+        } = getState().customizer;
+
+        if (appId === AppId.APP_NO1) {
+          history.push('/');
+        } else {}
       } else {
         const token = {
           authToken: 'authToken',
@@ -609,6 +669,27 @@ const logoutAction = () => {
     }
   };
 };
+const updateUserInfo = user => {
+  return async dispatch => {
+    try {
+      const res = await AuthService.updateUserInfo(user);
+
+      if (res.status === 200) {
+        dispatch({
+          type: UPDATE_USER_INFO,
+          payload: res.data
+        });
+        toastSuccess('Cập nhật thông tin thành công !');
+        history.push('/');
+      }
+    } catch (error) {
+      history.push('/');
+      dispatch({
+        type: LOGOUT_ACTION
+      });
+    }
+  };
+};
 
 const authInitialState = {
   authToken: '',
@@ -658,273 +739,17 @@ const authReducers = (state = { ...authInitialState
         };
       }
 
+    case UPDATE_USER_INFO:
+      {
+        return { ...state,
+          user: action.payload
+        };
+      }
+
     default:
       return state;
   }
 };
-
-const AppId = {
-  APP_NO1: 'APP_NO1',
-  INSURANCE_APP: 'INSURANCE_APP',
-  SUPPLEMENT_APP: 'SUPPLEMENT_APP'
-};
-
-const navigationConfig = [{
-  id: 'buyInsurance',
-  appId: AppId.INSURANCE_APP,
-  type: 'item',
-  title: 'menu.buyInsurance',
-  icon: /*#__PURE__*/React.createElement(ShoppingCart, {
-    size: 20
-  }),
-  navLink: '/buy-insurance'
-}, {
-  id: 'contractManagement',
-  appId: AppId.INSURANCE_APP,
-  title: 'menu.contractManagement',
-  icon: /*#__PURE__*/React.createElement(FileText, {
-    size: 20
-  }),
-  permissions: ['admin', 'editor'],
-  navLink: '/contracts',
-  type: 'collapse',
-  children: [{
-    id: 'personalContracts',
-    type: 'item',
-    title: 'menu.personalContracts',
-    icon: /*#__PURE__*/React.createElement(Circle, {
-      size: 20
-    }),
-    navLink: '/contracts/personal'
-  }, {
-    id: 'partnerContracts',
-    type: 'item',
-    title: 'menu.partnerContracts',
-    icon: /*#__PURE__*/React.createElement(Circle, {
-      size: 20
-    }),
-    navLink: '/contracts/partner'
-  }, {
-    id: 'allContracts',
-    type: 'item',
-    title: 'menu.allContracts',
-    icon: /*#__PURE__*/React.createElement(Circle, {
-      size: 20
-    }),
-    navLink: '/contracts/all'
-  }]
-}, {
-  id: 'account',
-  appId: AppId.APP_NO1,
-  title: 'menu.account',
-  icon: /*#__PURE__*/React.createElement(User, {
-    size: 20
-  }),
-  permissions: ['admin', 'editor'],
-  navLink: '/accounts',
-  type: 'collapse',
-  children: [{
-    id: 'createAccount',
-    type: 'item',
-    title: 'menu.createAccount',
-    icon: /*#__PURE__*/React.createElement(Circle, {
-      size: 20
-    }),
-    navLink: '/accounts/create'
-  }, {
-    id: 'accountManagement',
-    type: 'item',
-    title: 'menu.accountManagement',
-    icon: /*#__PURE__*/React.createElement(Circle, {
-      size: 20
-    }),
-    navLink: '/accounts/management'
-  }]
-}, {
-  id: 'insuranceFeeManagement',
-  appId: AppId.INSURANCE_APP,
-  title: 'menu.insuranceFeeManagement',
-  icon: /*#__PURE__*/React.createElement(DollarSign, {
-    size: 20
-  }),
-  permissions: ['admin', 'editor'],
-  navLink: '/insurance-fee',
-  type: 'collapse',
-  children: [{
-    id: 'systemFee',
-    type: 'item',
-    title: 'menu.systemFee',
-    icon: /*#__PURE__*/React.createElement(Circle, {
-      size: 20
-    }),
-    navLink: '/insurance-fee/system'
-  }, {
-    id: 'personalFee',
-    type: 'item',
-    title: 'menu.personalFee',
-    icon: /*#__PURE__*/React.createElement(Circle, {
-      size: 20
-    }),
-    navLink: '/insurance-fee/personal'
-  }, {
-    id: 'partnerFee',
-    type: 'item',
-    title: 'menu.partnerFee',
-    icon: /*#__PURE__*/React.createElement(Circle, {
-      size: 20
-    }),
-    navLink: '/insurance-fee/partner'
-  }, {
-    id: 'allFee',
-    type: 'item',
-    title: 'menu.allFee',
-    icon: /*#__PURE__*/React.createElement(Circle, {
-      size: 20
-    }),
-    navLink: '/insurance-fee/all'
-  }]
-}, {
-  id: 'bonusManagement',
-  appId: AppId.SUPPLEMENT_APP,
-  title: 'menu.bonusManagement',
-  icon: /*#__PURE__*/React.createElement(TrendingUp, {
-    size: 20
-  }),
-  permissions: ['admin', 'editor'],
-  navLink: '/bonus',
-  type: 'collapse',
-  children: [{
-    id: 'systemBonus',
-    type: 'item',
-    title: 'menu.systemBonus',
-    icon: /*#__PURE__*/React.createElement(Circle, {
-      size: 20
-    }),
-    navLink: '/bonus/system'
-  }, {
-    id: 'personalBonus',
-    type: 'item',
-    title: 'menu.personalBonus',
-    icon: /*#__PURE__*/React.createElement(Circle, {
-      size: 20
-    }),
-    navLink: '/bonus/personal'
-  }, {
-    id: 'partnerBonus',
-    type: 'item',
-    title: 'menu.partnerBonus',
-    icon: /*#__PURE__*/React.createElement(Circle, {
-      size: 20
-    }),
-    navLink: '/bonus/partner'
-  }, {
-    id: 'allBonus',
-    type: 'item',
-    title: 'menu.allBonus',
-    icon: /*#__PURE__*/React.createElement(Circle, {
-      size: 20
-    }),
-    navLink: '/bonus/all'
-  }]
-}, {
-  id: 'insuranceCertificate',
-  appId: AppId.INSURANCE_APP,
-  type: 'item',
-  title: 'menu.insuranceCertificate',
-  icon: /*#__PURE__*/React.createElement(Award, {
-    size: 20
-  }),
-  permissions: ['admin', 'editor'],
-  navLink: '/insurance-certificate',
-  type: 'collapse',
-  children: [{
-    id: 'newImport',
-    type: 'item',
-    title: 'menu.insuranceCertificate.newImport',
-    icon: /*#__PURE__*/React.createElement(Circle, {
-      size: 20
-    }),
-    navLink: '/insurance-certificate/new-import'
-  }, {
-    id: 'newExport',
-    type: 'item',
-    title: 'menu.insuranceCertificate.newImport',
-    icon: /*#__PURE__*/React.createElement(Circle, {
-      size: 20
-    }),
-    navLink: '/insurance-certificate/new-export'
-  }, {
-    id: 'wrongImport',
-    type: 'item',
-    title: 'menu.insuranceCertificate.wrongImport',
-    icon: /*#__PURE__*/React.createElement(Circle, {
-      size: 20
-    }),
-    navLink: '/insurance-certificate/wrong-import'
-  }, {
-    id: 'wrongExport',
-    type: 'item',
-    title: 'menu.insuranceCertificate.wrongExport',
-    icon: /*#__PURE__*/React.createElement(Circle, {
-      size: 20
-    }),
-    navLink: '/insurance-certificate/wrong-export'
-  }]
-}, {
-  id: 'debt',
-  appId: AppId.SUPPLEMENT_APP,
-  title: 'menu.debt',
-  icon: /*#__PURE__*/React.createElement(CreditCard, {
-    size: 20
-  }),
-  permissions: ['admin', 'editor'],
-  type: 'collapse',
-  navLink: '/debt',
-  children: [{
-    id: 'createDebt',
-    type: 'item',
-    title: 'menu.createDebt',
-    icon: /*#__PURE__*/React.createElement(Circle, {
-      size: 20
-    }),
-    navLink: '/debt/create'
-  }, {
-    id: 'debtManagement',
-    type: 'item',
-    title: 'menu.debtManagement',
-    icon: /*#__PURE__*/React.createElement(Circle, {
-      size: 20
-    }),
-    navLink: '/debt/management'
-  }]
-}, {
-  id: 'permissionGoup',
-  appId: AppId.SUPPLEMENT_APP,
-  type: 'collapse',
-  title: 'menu.permissionGoup',
-  icon: /*#__PURE__*/React.createElement(Share2, {
-    size: 20
-  }),
-  permissions: ['admin', 'editor'],
-  navLink: '/permission-group',
-  children: [{
-    id: 'creatPermissionGoup',
-    type: 'item',
-    title: 'menu.creatPermissionGoup',
-    icon: /*#__PURE__*/React.createElement(Circle, {
-      size: 20
-    }),
-    navLink: '/permission-group/create'
-  }, {
-    id: 'permissionGoupManagement',
-    type: 'item',
-    title: 'menu.permissionGoupManagement',
-    icon: /*#__PURE__*/React.createElement(Circle, {
-      size: 20
-    }),
-    navLink: '/permission-group/management'
-  }]
-}];
 
 const mapRoleListToNavConfigs = (roleList = []) => {
   roleList = roleList.filter(item => item.order < 1000);
@@ -1487,6 +1312,65 @@ const UserDropdown = props => {
     id: "setting.accountInformation"
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
+    href: "#",
+    onClick: e => handleNavigation(e, '/change-password')
+  }, /*#__PURE__*/React.createElement(Lock, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "setting.changePassword"
+  }))), /*#__PURE__*/React.createElement(DropdownItem, {
+    divider: true
+  }), /*#__PURE__*/React.createElement(DropdownItem, {
+    tag: "a",
+    href: "#",
+    onClick: e => handleNavigation(e, '/terms-and-condition')
+  }, /*#__PURE__*/React.createElement(Lock, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "setting.termAndCondition"
+  }))), /*#__PURE__*/React.createElement(DropdownItem, {
+    tag: "a",
+    href: "#",
+    onClick: e => handleNavigation(e, '/privacy-policy')
+  }, /*#__PURE__*/React.createElement(Lock, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "setting.privacyPolicy"
+  }))), /*#__PURE__*/React.createElement(DropdownItem, {
+    tag: "a",
+    href: "#",
+    onClick: e => handleNavigation(e, '/language')
+  }, /*#__PURE__*/React.createElement(Lock, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "setting.language"
+  }))), /*#__PURE__*/React.createElement(DropdownItem, {
+    tag: "a",
+    href: "#",
+    onClick: e => handleNavigation(e, '/contact')
+  }, /*#__PURE__*/React.createElement(Lock, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "setting.contact"
+  }))), /*#__PURE__*/React.createElement(DropdownItem, {
+    divider: true
+  }), /*#__PURE__*/React.createElement(DropdownItem, {
+    tag: "a",
     onClick: logoutAction
   }, /*#__PURE__*/React.createElement(Power, {
     size: 14,
@@ -1536,7 +1420,7 @@ class NavbarUser extends React.PureComponent {
           id: `menu.${item.keyLang}`
         });
         item.isExternalApp = item.appId !== this.props.appId;
-        item.navLinkExternal = `${APP_URL + item.menuPath}?code=${this.props.authToken}`;
+        item.navLinkExternal = `${getAppUrl$1(item.appId) + item.menuPath}?code=${this.props.authToken}`;
         return item;
       });
       this.setState({
@@ -1780,7 +1664,7 @@ const Footer = props => {
     if (!currentRoute.isExternalApp) {
       history.push(`${currentRoute.navLink}`);
     } else {
-      window.location.href = `${APP_URL + currentRoute.navLink}?code=${authToken}`;
+      window.location.href = `${getAppUrl(currentRoute.appId) + currentRoute.navLink}?code=${authToken}`;
     }
   };
 
@@ -1868,10 +1752,16 @@ const Footer = props => {
   }))) : null);
 };
 
-const changeMode = mode => {
+const changeTheme = theme => {
   return dispatch => dispatch({
-    type: "CHANGE_MODE",
-    mode
+    type: "CHANGE_THEME",
+    theme
+  });
+};
+const setAppId = appId => {
+  return dispatch => dispatch({
+    type: "SET_APP_ID",
+    appId
   });
 };
 const collapseSidebar = value => {
@@ -2203,7 +2093,7 @@ class SideMenuContent extends React.Component {
     };
 
     this.getItemLink = item => {
-      return item.isExternalApp ? `${APP_URL + item.navLink}?code=${this.props.currentUser.authToken}` : '';
+      return item.isExternalApp ? `${getAppUrl$1(item.appId) + item.navLink}?code=${this.props.currentUser.authToken}` : '';
     };
 
     this.parentArr = [];
@@ -2776,7 +2666,7 @@ const mapStateToProps$2 = state => {
 };
 
 var Layout$1 = connect(mapStateToProps$2, {
-  changeMode,
+  changeTheme,
   collapseSidebar,
   changeNavbarColor,
   changeNavbarType,
@@ -2799,15 +2689,7 @@ const loadNavtigation = appId => {
           roles
         }
       });
-    } catch (error) {
-      dispatch({
-        type: LOAD_NATIVGATION$1,
-        payload: {
-          navConfigs: getNativgationConfig(appId),
-          roles: []
-        }
-      });
-    }
+    } catch (error) {}
   };
 };
 
@@ -3233,7 +3115,7 @@ const BaseFormDatePicker = ({
 var BaseFormDatePicker$1 = injectIntl(BaseFormDatePicker);
 
 const Select = props => {
-  const [inputValue, setInputValue] = useState(props.defaultValue || '');
+  const [inputValue, setInputValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
 
   const onChange = (e, actions) => {
@@ -3307,7 +3189,6 @@ const BaseFormGroupSelect = ({
   isRequired: _isRequired = true,
   isAsync,
   onChange,
-  isTextValue,
   loadOptions,
   defaultOptions
 }) => {
@@ -3325,7 +3206,8 @@ const BaseFormGroupSelect = ({
     classNamePrefix: "Select",
     fieldName: fieldName,
     required: _isRequired,
-    defaultValue: isTextValue ? options.find(item => item.value === field.value) : defaultValue,
+    value: options.find(item => item.value === field.value),
+    defaultValue: defaultValue,
     errors: errors,
     isAsync: isAsync,
     loadOptions: loadOptions,
@@ -3519,27 +3401,38 @@ const validationSchema = object().shape({
   dateOfBirth: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "completeInformation.dateOfBirth.required"
   })),
-  address: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "completeInformation.address.required"
-  })),
-  bankName: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "completeInformation.bank.required"
-  })),
-  bankBranch: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "completeInformation.branch.required"
-  })),
-  bankNumber: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "completeInformation.accountNbr.required"
-  })),
-  city: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "completeInformation.city.required"
-  })),
-  ward: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "completeInformation.ward.required"
-  })),
-  district: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "completeInformation.district.required"
-  }))
+  userDetails: object().shape({
+    address: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+      id: "completeInformation.address.required"
+    })),
+    bankNumber: string().when('userType', {
+      is: USER_TYPE.KD,
+      then: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "completeInformation.accountNbr.required"
+      }))
+    }),
+    bankName: string().when('userType', {
+      is: USER_TYPE.KD,
+      then: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "completeInformation.bank.required"
+      }))
+    }),
+    bankBranch: string().when('userType', {
+      is: USER_TYPE.KD,
+      then: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "completeInformation.branch.required"
+      }))
+    }),
+    city: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+      id: "completeInformation.province.required"
+    })),
+    ward: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+      id: "completeInformation.ward.required"
+    })),
+    district: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+      id: "completeInformation.district.required"
+    }))
+  })
 });
 
 const UserAccountTab = () => {
@@ -3549,6 +3442,7 @@ const UserAccountTab = () => {
     ...user
   } = useSelector(state => state.auth.user);
   const history = useHistory();
+  const dispatch = useDispatch();
   userDetails = userDetails || {};
   userSettings = userSettings || {};
   const {
@@ -3569,6 +3463,11 @@ const UserAccountTab = () => {
     loadDitrictsByCity(userDetails.city);
     loadWardsByDistrict(userDetails.district);
   }, []);
+
+  const onSubmit = async values => {
+    dispatch(updateUserInfo(trimObjectValues$1(values)));
+  };
+
   return /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
     sm: "12"
   }, /*#__PURE__*/React.createElement(Media, {
@@ -3606,22 +3505,16 @@ const UserAccountTab = () => {
   }, /*#__PURE__*/React.createElement(Formik, {
     enableReinitialize: true,
     validationSchema: validationSchema,
+    onSubmit: onSubmit,
     initialValues: {
-      fullName: user.fullName || '',
-      icNumber: user.icNumber || '',
-      dateOfBirth: user.dateOfBirth || '',
-      gender: user.gender || 'MALE',
-      city: userDetails.city || '',
-      district: userDetails.district || '',
-      ward: userDetails.ward || '',
-      address: userDetails.address || '',
-      bankName: userDetails.bankName || '',
-      bankBranch: userDetails.bankBranch || '',
-      bankNumber: userDetails.bankNumber || ''
+      userDetails,
+      userSettings,
+      ...user
     }
   }, ({
     errors,
-    touched
+    touched,
+    values
   }) => /*#__PURE__*/React.createElement(Form, null, /*#__PURE__*/React.createElement(Row, {
     className: "mt-2"
   }, /*#__PURE__*/React.createElement(Col, {
@@ -3684,7 +3577,7 @@ const UserAccountTab = () => {
     sm: "12"
   }, /*#__PURE__*/React.createElement(BaseFormGroup, {
     messageId: "completeInformation.address",
-    fieldName: "address",
+    fieldName: "userDetails.address",
     errors: errors,
     touched: touched
   }))), /*#__PURE__*/React.createElement(Row, {
@@ -3693,9 +3586,8 @@ const UserAccountTab = () => {
     sm: "4"
   }, /*#__PURE__*/React.createElement(BaseFormGroupSelect, {
     messageId: "completeInformation.province",
-    fieldName: "city",
+    fieldName: "userDetails.city",
     options: cities,
-    isTextValue: true,
     onChange: ({
       id
     }) => loadDitrictsByCity(id),
@@ -3705,7 +3597,7 @@ const UserAccountTab = () => {
     sm: "4"
   }, /*#__PURE__*/React.createElement(BaseFormGroupSelect, {
     messageId: "completeInformation.district",
-    fieldName: "district",
+    fieldName: "userDetails.district",
     options: districts,
     onChange: ({
       id
@@ -3716,17 +3608,17 @@ const UserAccountTab = () => {
     sm: "4"
   }, /*#__PURE__*/React.createElement(BaseFormGroupSelect, {
     messageId: "completeInformation.ward",
-    fieldName: "ward",
+    fieldName: "userDetails.ward",
     options: wards,
     errors: errors,
     touched: touched
-  }))), /*#__PURE__*/React.createElement(Row, {
+  }))), values.userType === USER_TYPE.KD ? /*#__PURE__*/React.createElement(Row, {
     className: "mt-2"
   }, /*#__PURE__*/React.createElement(Col, {
     sm: "4"
   }, /*#__PURE__*/React.createElement(BaseFormGroupSelect, {
     messageId: "completeInformation.bank",
-    fieldName: "bankName",
+    fieldName: "userDetails.bankName",
     options: banks,
     errors: errors,
     touched: touched
@@ -3734,17 +3626,17 @@ const UserAccountTab = () => {
     sm: "4"
   }, /*#__PURE__*/React.createElement(BaseFormGroup, {
     messageId: "completeInformation.branch",
-    fieldName: "bankBranch",
+    fieldName: "userDetails.bankBranch",
     errors: errors,
     touched: touched
   })), /*#__PURE__*/React.createElement(Col, {
     sm: "4"
   }, /*#__PURE__*/React.createElement(BaseFormGroup, {
     messageId: "completeInformation.accountNbr",
-    fieldName: "bankNumber",
+    fieldName: "userDetails.bankNumber",
     errors: errors,
     touched: touched
-  }))), /*#__PURE__*/React.createElement(Col, {
+  }))) : '', /*#__PURE__*/React.createElement(Col, {
     className: "d-flex justify-content-end flex-wrap mt-2",
     sm: "12"
   }, /*#__PURE__*/React.createElement(Button.Ripple, {
@@ -5204,6 +5096,7 @@ const LandingPage = props => {
         return /*#__PURE__*/React.createElement(ForgotPassword, null);
 
       case 'reset-password':
+      case 'provide-new-password':
         return /*#__PURE__*/React.createElement(CreatePassword, null);
 
       default:
@@ -5619,12 +5512,12 @@ const AppRouter = props => {
   }, {
     path: 'forgot-password'
   }, {
+    path: 'provide-new-password'
+  }, {
     path: 'reset-password'
   }];
   const landingPage2Routes = [{
     path: 'create-password'
-  }, {
-    path: 'provide-new-password'
   }, {
     path: 'complete-information'
   }];
@@ -5657,9 +5550,15 @@ const AppRouter = props => {
       render: () => /*#__PURE__*/React.createElement(LandingPage2, {
         activeTab: item.path
       })
-    })), /*#__PURE__*/React.createElement(Redirect, {
+    })), appId === AppId.ELITE_APP ? /*#__PURE__*/React.createElement(Route, {
+      path: "/",
+      render: () => children
+    }) : /*#__PURE__*/React.createElement(Redirect, {
       from: "/",
       to: "/login"
+    }), /*#__PURE__*/React.createElement(Redirect, {
+      from: "/",
+      to: "/"
     }))
   }))), /*#__PURE__*/React.createElement(ToastContainer, {
     hideProgressBar: true,
@@ -5681,7 +5580,8 @@ const mapStateToProps$3 = state => {
 var AppRouter$1 = connect(mapStateToProps$3, {
   checkLoginStatus,
   loadNavtigation,
-  loginAction
+  loginAction,
+  setAppId
 })(AppRouter);
 
 TopBarProgress.config({
