@@ -15,7 +15,7 @@ import { FormattedMessage, injectIntl, IntlProvider, useIntl } from 'react-intl'
 export { FormattedMessage } from 'react-intl';
 import { createBrowserHistory } from 'history';
 import sessionStorage from 'redux-persist/es/storage/session';
-import { useHistory, NavLink as NavLink$1, Link, Router, Switch, Route, Redirect } from 'react-router-dom';
+import { useHistory, Link, Router, Switch, Route, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
 import { FormGroup, Label, DropdownMenu, DropdownItem, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Navbar as Navbar$1, Button, Badge, Row, Col, Media, Form as Form$1, Input, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, Table, Modal, ModalBody } from 'reactstrap';
 export { Button } from 'reactstrap';
@@ -490,7 +490,7 @@ const checkLoginStatus = authToken => {
             user: response.data || {}
           }
         });
-        history.push(history.location.pathname);
+        history.push('/');
       } else {
         dispatch({
           type: LOGOUT_ACTION
@@ -530,12 +530,7 @@ const loginAction = user => {
         const {
           appId
         } = getState().customizer;
-
-        if (appId === AppId.APP_NO1) {
-          history.push('/');
-        } else {
-          window.location.href = `${getAppUrl$1(appId)}/`;
-        }
+        history.push('/');
       } else {
         const token = {
           authToken: 'authToken',
@@ -659,16 +654,10 @@ const resetPassword = password => {
 };
 const logoutAction = () => {
   return async dispatch => {
-    try {
-      dispatch({
-        type: LOGOUT_ACTION
-      });
-    } catch (error) {
-      history.push('/');
-      dispatch({
-        type: LOGOUT_ACTION
-      });
-    }
+    dispatch({
+      type: LOGOUT_ACTION
+    });
+    window.location.href = `${getAppUrl$1(AppId.APP_NO1)}/login`;
   };
 };
 const updateUserInfo = user => {
@@ -1813,14 +1802,16 @@ class SidebarHeader extends Component {
       sidebarVisibility,
       menuShadow
     } = this.props;
+
+    const onClickHome = () => {};
+
     return /*#__PURE__*/React.createElement("div", {
       className: "navbar-header"
     }, /*#__PURE__*/React.createElement("ul", {
       className: "nav navbar-nav flex-row"
     }, /*#__PURE__*/React.createElement("li", {
-      className: "nav-item my-auto mr-auto"
-    }, /*#__PURE__*/React.createElement(NavLink$1, {
-      to: "/"
+      className: "nav-item my-auto mr-auto",
+      onClick: onClickHome
     }, /*#__PURE__*/React.createElement("img", {
       className: "img-fluid logo-img",
       src: IMAGE.LOGO_NO_TEXT,
@@ -1829,7 +1820,7 @@ class SidebarHeader extends Component {
       className: "img-fluid logo-text",
       src: IMAGE.LOGO_TEXT,
       alt: "logo"
-    }))), /*#__PURE__*/React.createElement("li", {
+    })), /*#__PURE__*/React.createElement("li", {
       className: "nav-item nav-toggle"
     }, /*#__PURE__*/React.createElement("div", {
       className: "nav-link modern-nav-toggle"
@@ -2423,6 +2414,7 @@ class Sidebar extends Component {
 const mapStateToProps$1 = state => {
   return {
     currentUser: state.auth,
+    appId: state.customizer.appId,
     navConfigs: state.navbar.navConfigs
   };
 };

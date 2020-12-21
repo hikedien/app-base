@@ -580,7 +580,7 @@ var checkLoginStatus = function checkLoginStatus(authToken) {
                     user: response.data || {}
                   }
                 });
-                history.push(history.location.pathname);
+                history.push('/');
               });
             } else {
               dispatch({
@@ -630,12 +630,7 @@ var loginAction = function loginAction(user) {
                   }
                 });
                 var appId = getState().customizer.appId;
-
-                if (appId === AppId.APP_NO1) {
-                  history.push('/');
-                } else {
-                  window.location.href = getAppUrl$1(appId) + "/";
-                }
+                history.push('/');
               });
             } else {
               var token = {
@@ -803,17 +798,10 @@ var resetPassword = function resetPassword(password) {
 var logoutAction = function logoutAction() {
   return function (dispatch) {
     try {
-      try {
-        dispatch({
-          type: LOGOUT_ACTION
-        });
-      } catch (error) {
-        history.push('/');
-        dispatch({
-          type: LOGOUT_ACTION
-        });
-      }
-
+      dispatch({
+        type: LOGOUT_ACTION
+      });
+      window.location.href = getAppUrl$1(AppId.APP_NO1) + "/login";
       return Promise.resolve();
     } catch (e) {
       return Promise.reject(e);
@@ -2075,14 +2063,16 @@ var SidebarHeader = /*#__PURE__*/function (_Component) {
         toggle = _this$props.toggle,
         sidebarVisibility = _this$props.sidebarVisibility,
         menuShadow = _this$props.menuShadow;
+
+    var onClickHome = function onClickHome() {};
+
     return /*#__PURE__*/React__default.createElement("div", {
       className: "navbar-header"
     }, /*#__PURE__*/React__default.createElement("ul", {
       className: "nav navbar-nav flex-row"
     }, /*#__PURE__*/React__default.createElement("li", {
-      className: "nav-item my-auto mr-auto"
-    }, /*#__PURE__*/React__default.createElement(reactRouterDom.NavLink, {
-      to: "/"
+      className: "nav-item my-auto mr-auto",
+      onClick: onClickHome
     }, /*#__PURE__*/React__default.createElement("img", {
       className: "img-fluid logo-img",
       src: IMAGE.LOGO_NO_TEXT,
@@ -2091,7 +2081,7 @@ var SidebarHeader = /*#__PURE__*/function (_Component) {
       className: "img-fluid logo-text",
       src: IMAGE.LOGO_TEXT,
       alt: "logo"
-    }))), /*#__PURE__*/React__default.createElement("li", {
+    })), /*#__PURE__*/React__default.createElement("li", {
       className: "nav-item nav-toggle"
     }, /*#__PURE__*/React__default.createElement("div", {
       className: "nav-link modern-nav-toggle"
@@ -2744,6 +2734,7 @@ var Sidebar = /*#__PURE__*/function (_Component) {
 var mapStateToProps$1 = function mapStateToProps(state) {
   return {
     currentUser: state.auth,
+    appId: state.customizer.appId,
     navConfigs: state.navbar.navConfigs
   };
 };
