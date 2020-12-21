@@ -653,11 +653,14 @@ const resetPassword = password => {
   };
 };
 const logoutAction = () => {
-  return async dispatch => {
+  return async (dispatch, getState) => {
     dispatch({
       type: LOGOUT_ACTION
     });
-    window.location.href = `${getAppUrl$1(AppId.APP_NO1)}/login`;
+
+    if (getState().customizer.appId !== AppId.APP_NO1) {
+      window.location.href = `${getAppUrl$1(AppId.APP_NO1)}/login`;
+    }
   };
 };
 const updateUserInfo = user => {
