@@ -633,6 +633,8 @@ var loginAction = function loginAction(user) {
 
                 if (appId === AppId.APP_NO1) {
                   history.push('/');
+                } else {
+                  window.location.href = getAppUrl$1(appId) + "/";
                 }
               });
             } else {
@@ -1629,7 +1631,7 @@ var NavbarUser = /*#__PURE__*/function (_React$PureComponent) {
           id: "menu." + item.keyLang
         });
         item.isExternalApp = item.appId !== _this2.props.appId;
-        item.navLinkExternal = getAppUrl$1(item.appId) + item.menuPath + "?code=" + _this2.props.authToken;
+        item.navLinkExternal = "" + (getAppUrl$1(item.appId) + item.menuPath);
         return item;
       });
       this.setState({
@@ -1893,7 +1895,7 @@ var Footer = function Footer(props) {
     if (!currentRoute.isExternalApp) {
       history.push("" + currentRoute.navLink);
     } else {
-      window.location.href = getAppUrl(currentRoute.appId) + currentRoute.navLink + "?code=" + authToken;
+      window.location.href = "" + (getAppUrl(currentRoute.appId) + currentRoute.navLink);
     }
   };
 
@@ -2380,7 +2382,7 @@ var SideMenuContent = /*#__PURE__*/function (_React$Component) {
     };
 
     _this.getItemLink = function (item) {
-      return item.isExternalApp ? getAppUrl$1(item.appId) + item.navLink + "?code=" + _this.props.currentUser.authToken : '';
+      return item.isExternalApp ? "" + (getAppUrl$1(item.appId) + item.navLink) : '';
     };
 
     _this.parentArr = [];
@@ -6048,9 +6050,11 @@ var AppRouter = function AppRouter(props) {
       authToken = props.authToken,
       children = props.children,
       loadNavtigation = props.loadNavtigation,
+      setAppId = props.setAppId,
       history = props.history,
       message = props.message;
   React.useEffect(function () {
+    setAppId(appId);
     var code = new URLSearchParams(document.location.search).get('code') || authToken;
 
     if (code && loginStatus !== LOGIN_STATUS.SUCCESS) {

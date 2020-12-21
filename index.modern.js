@@ -533,7 +533,9 @@ const loginAction = user => {
 
         if (appId === AppId.APP_NO1) {
           history.push('/');
-        } else {}
+        } else {
+          window.location.href = `${getAppUrl$1(appId)}/`;
+        }
       } else {
         const token = {
           authToken: 'authToken',
@@ -1420,7 +1422,7 @@ class NavbarUser extends React.PureComponent {
           id: `menu.${item.keyLang}`
         });
         item.isExternalApp = item.appId !== this.props.appId;
-        item.navLinkExternal = `${getAppUrl$1(item.appId) + item.menuPath}?code=${this.props.authToken}`;
+        item.navLinkExternal = `${getAppUrl$1(item.appId) + item.menuPath}`;
         return item;
       });
       this.setState({
@@ -1664,7 +1666,7 @@ const Footer = props => {
     if (!currentRoute.isExternalApp) {
       history.push(`${currentRoute.navLink}`);
     } else {
-      window.location.href = `${getAppUrl(currentRoute.appId) + currentRoute.navLink}?code=${authToken}`;
+      window.location.href = `${getAppUrl(currentRoute.appId) + currentRoute.navLink}`;
     }
   };
 
@@ -2093,7 +2095,7 @@ class SideMenuContent extends React.Component {
     };
 
     this.getItemLink = item => {
-      return item.isExternalApp ? `${getAppUrl$1(item.appId) + item.navLink}?code=${this.props.currentUser.authToken}` : '';
+      return item.isExternalApp ? `${getAppUrl$1(item.appId) + item.navLink}` : '';
     };
 
     this.parentArr = [];
@@ -5455,10 +5457,12 @@ const AppRouter = props => {
     authToken,
     children,
     loadNavtigation,
+    setAppId,
     history,
     message
   } = props;
   useEffect(() => {
+    setAppId(appId);
     const code = new URLSearchParams(document.location.search).get('code') || authToken;
 
     if (code && loginStatus !== LOGIN_STATUS.SUCCESS) {
