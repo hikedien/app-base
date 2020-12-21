@@ -111,7 +111,7 @@ var AppId = {
   ELITE_APP: 'ELITE_APP'
 };
 
-var API_BASE_URL = 'https://apidev.inon.vn';
+var API_BASE_URL = 'https://apisit.inon.vn';
 var API_LOGIN_URL = '/api/authenticate';
 var API_LOGOUT_URL = '/api/authenticate';
 var API_REGISTER = '/nth/onboarding/api/authenticate/register';
