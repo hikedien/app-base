@@ -8,7 +8,7 @@ import { persistReducer, persistStore } from 'redux-persist';
 import Axios from 'axios';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
 import * as Icon from 'react-feather';
-import { AlertTriangle, Check, User, Lock, Power, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, MessageSquare, ArrowUp, Disc, Circle, ChevronRight, MapPin, Info, Sun } from 'react-feather';
+import { AlertTriangle, Check, User, Lock, Power, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, MessageSquare, ArrowUp, Disc, Circle, ChevronRight, Info, MapPin, Sun } from 'react-feather';
 import { toast, ToastContainer } from 'react-toastify';
 export { toast } from 'react-toastify';
 import { FormattedMessage, injectIntl, IntlProvider, useIntl } from 'react-intl';
@@ -17,7 +17,7 @@ import { createBrowserHistory } from 'history';
 import sessionStorage from 'redux-persist/es/storage/session';
 import { useHistory, Link, Router, Switch, Route, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
-import { FormGroup, Label, DropdownMenu, DropdownItem, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Navbar as Navbar$1, Button, Badge, Row, Col, Media, Form as Form$1, Input, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, Table, Modal, ModalBody } from 'reactstrap';
+import { FormGroup, Label, DropdownMenu, DropdownItem, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Navbar as Navbar$1, Button, Badge, Row, Col, Media, Input, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, Form as Form$1, Table, Modal, ModalBody } from 'reactstrap';
 export { Button } from 'reactstrap';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import ReactDOM from 'react-dom';
@@ -27,7 +27,7 @@ import Hammer from 'react-hammerjs';
 import { object, string, ref } from 'yup';
 import { Field, Formik, Form, FastField } from 'formik';
 import Flatpickr from 'react-flatpickr';
-import Select$1 from 'react-select';
+import ReactSelect from 'react-select';
 import AsyncSelect from 'react-select/async';
 import chroma from 'chroma-js';
 import styled from 'styled-components';
@@ -111,9 +111,10 @@ const AppId = {
 const API_BASE_URL = 'https://apisit.inon.vn';
 const API_LOGIN_URL = '/api/authenticate';
 const API_LOGOUT_URL = '/api/authenticate';
+const API_CHANGE_PASSWORD = '/api/change-password';
 const API_REGISTER = '/nth/onboarding/api/authenticate/register';
 const API_GET_USER = '/nth/user/api/users';
-const API_UPDATE_USER_INFO$1 = '/nth/user/api/update-user-info';
+const API_UPDATE_USER_INFO = '/nth/user/api/update-user-info';
 const API_GET_NAV_CONFIGS = '/nth/accesscontrol/api/roles';
 const API_CREATE_PASSWORD = '/nth/onboarding/api/authenticate/create-new-password';
 const API_GET_USER_BY_REGISTER_TOKEN = '/nth/onboarding/api/authenticate/get-partner';
@@ -126,6 +127,8 @@ const API_GET_CITIES_BY_COUNTRY = '/nth/datacollection/api/citiesbycountry';
 const API_GET_DISTRICTS_BY_CITY = '/nth/datacollection/api/districtsbycity';
 const API_GET_WARDS_BY_CITY = '/nth/datacollection/api/wardsbydistrict';
 const API_GET_BANKS = '/nth/datacollection/api/allBanks';
+const API_UPLOAD_FILE = '/nth/file/api/upload';
+const API_GET_FILE = '/nth/file/api/file';
 const MAX_MOBILE_WIDTH = 768;
 const MAX_TABLET_WIDTH = 1024;
 const REMEMBER_ME_TOKEN = 'rememberMe';
@@ -177,20 +180,45 @@ const IC_TYPES_OPTIONS = [{
   })
 }];
 const APP_URL = 'https://sit2.inon.vn';
-const getAppUrl$1 = appId => {
+const getExternalAppUrl$1 = (appId, url) => {
   switch (appId) {
     case AppId.APP_NO1:
-      return `${APP_URL}/app-no1`;
+      return `${APP_URL}/app/${url}?isRedirect=true`;
 
     case AppId.INSURANCE_APP:
-      return `${APP_URL}/insurance-app`;
+      return `${APP_URL}/insurance/${url}?isRedirect=true`;
 
     case AppId.SUPPLEMENT_APP:
-      return `${APP_URL}/supplement-app`;
+      return `${APP_URL}/supplement/${url}?isRedirect=true`;
 
     case AppId.ELITE_APP:
-      return `${APP_URL}/elite-app`;
+      return `${APP_URL}/elite/${url}?isRedirect=true`;
   }
+};
+const getPropObject = (obj, prop) => {
+  if (!obj) {
+    return null;
+  }
+
+  return prop.split('.').reduce((r, e) => {
+    return r ? r[e] : null;
+  }, obj);
+};
+const USER_ROLE = {
+  ADMIN: 'AD.IO',
+  KD: 'KD.IO',
+  HTKD: 'HTKD.IO',
+  KT: 'KT.IO',
+  VH: 'VH.IO',
+  DTL1: 'L1.DT',
+  DTL2: 'L2.DT',
+  DTL3: 'L3.DT',
+  DTL4: 'L4.DT',
+  DTL5: 'L5.DT',
+  DTLX: 'LX.DT',
+  BH: 'BH',
+  BTBH: 'BTBH',
+  HTDT: 'HT.DT'
 };
 const IMAGE = {
   LOGO: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Logo.svg?alt=media&token=e2aad749-912d-45c3-969b-060528c6c7ef',
@@ -215,9 +243,10 @@ var appConfigs = {
   API_BASE_URL: API_BASE_URL,
   API_LOGIN_URL: API_LOGIN_URL,
   API_LOGOUT_URL: API_LOGOUT_URL,
+  API_CHANGE_PASSWORD: API_CHANGE_PASSWORD,
   API_REGISTER: API_REGISTER,
   API_GET_USER: API_GET_USER,
-  API_UPDATE_USER_INFO: API_UPDATE_USER_INFO$1,
+  API_UPDATE_USER_INFO: API_UPDATE_USER_INFO,
   API_GET_NAV_CONFIGS: API_GET_NAV_CONFIGS,
   API_CREATE_PASSWORD: API_CREATE_PASSWORD,
   API_GET_USER_BY_REGISTER_TOKEN: API_GET_USER_BY_REGISTER_TOKEN,
@@ -230,6 +259,8 @@ var appConfigs = {
   API_GET_DISTRICTS_BY_CITY: API_GET_DISTRICTS_BY_CITY,
   API_GET_WARDS_BY_CITY: API_GET_WARDS_BY_CITY,
   API_GET_BANKS: API_GET_BANKS,
+  API_UPLOAD_FILE: API_UPLOAD_FILE,
+  API_GET_FILE: API_GET_FILE,
   MAX_MOBILE_WIDTH: MAX_MOBILE_WIDTH,
   MAX_TABLET_WIDTH: MAX_TABLET_WIDTH,
   REMEMBER_ME_TOKEN: REMEMBER_ME_TOKEN,
@@ -245,7 +276,9 @@ var appConfigs = {
   GENDER_OPTIONS: GENDER_OPTIONS,
   IC_TYPES_OPTIONS: IC_TYPES_OPTIONS,
   APP_URL: APP_URL,
-  getAppUrl: getAppUrl$1,
+  getExternalAppUrl: getExternalAppUrl$1,
+  getPropObject: getPropObject,
+  USER_ROLE: USER_ROLE,
   IMAGE: IMAGE
 };
 
@@ -396,11 +429,11 @@ const customizerReducer = (state = { ...themeConfig
   }
 };
 
-let history = createBrowserHistory({
+let history$1 = createBrowserHistory({
   basename: ''
 });
 const setBaseHistory = appHistory => {
-  history = appHistory;
+  history$1 = appHistory;
 };
 
 class AuthService {}
@@ -464,7 +497,29 @@ AuthService.resetPassword = (password, resetToken) => {
 };
 
 AuthService.updateUserInfo = user => {
-  return HttpClient.post(API_UPDATE_USER_INFO, user);
+  return HttpClient.put(API_UPDATE_USER_INFO, user);
+};
+
+AuthService.updateAvatar = async (user, file) => {
+  const formData = new FormData();
+  formData.append('fileInfo', new Blob([JSON.stringify({
+    userId: user.id,
+    docType: 'AVATAR'
+  })], {
+    type: 'application/json'
+  }));
+  formData.append('file', file);
+  const res = await HttpClient.post(API_UPLOAD_FILE, formData, {
+    headers: {
+      'Content-Type': undefined
+    }
+  });
+
+  if (res.status === 200) {
+    return HttpClient.defaults.baseURL + API_GET_FILE + '?fileCode=' + res.data.code;
+  }
+
+  return '';
 };
 
 const LOGIN_ACTION = 'LOGIN_ACTION';
@@ -473,7 +528,7 @@ const LOGOUT_ACTION = 'LOGOUT_ACTION';
 const SAVE_REGISTER_TOKEN = 'SAVE_REGISTER_TOKEN';
 const SAVE_RESET_PASSWORD_TOKEN = 'SAVE_RESET_PASSWORD_TOKEN';
 const UPDATE_USER_INFO = 'UPDATE_USER_INFO';
-const checkLoginStatus = authToken => {
+const checkLoginStatus = (authToken, isRedirect) => {
   return async (dispatch, getState) => {
     try {
       let response = await AuthService.checkLoginByToken();
@@ -490,7 +545,7 @@ const checkLoginStatus = authToken => {
             user: response.data || {}
           }
         });
-        history.push('/');
+        history$1.push(isRedirect ? '/' : window.location.pathname);
       } else {
         dispatch({
           type: LOGOUT_ACTION
@@ -530,7 +585,7 @@ const loginAction = user => {
         const {
           appId
         } = getState().customizer;
-        history.push('/');
+        history$1.push('/');
       } else {
         const token = {
           authToken: 'authToken',
@@ -554,7 +609,7 @@ const createPassword = password => {
       const response = await AuthService.createPassword(password, getState().auth.register.token);
 
       if (response.status === 200 && response.data) {
-        history.push('/complete-information');
+        history$1.push('/complete-information');
       }
     } catch (error) {}
   };
@@ -568,7 +623,7 @@ const register = values => {
         toastSuccess( /*#__PURE__*/React.createElement(FormattedMessage, {
           id: "register.registerSuccess"
         }));
-        history.push('/login');
+        history$1.push('/login');
       }
     } catch (error) {}
   };
@@ -581,7 +636,7 @@ const compeleteInfo = user => {
 
       if (response.status === 200 && response.data) {
         toastSuccess('Hoàn tất đăng ký thành công');
-        history.push('/');
+        history$1.push('/');
       }
     } catch (error) {
       console.log(error);
@@ -601,7 +656,7 @@ const saveRegisterToken = registerToken => {
         }
       });
     } else {
-      history.push('/');
+      history$1.push('/');
     }
   };
 };
@@ -629,7 +684,7 @@ const forgotPassword = ({
           type: SAVE_RESET_PASSWORD_TOKEN,
           payload: ''
         });
-        history.push('/');
+        history$1.push('/');
       }
     } catch (error) {}
   };
@@ -647,7 +702,7 @@ const resetPassword = password => {
           type: SAVE_RESET_PASSWORD_TOKEN,
           payload: ''
         });
-        history.push('/');
+        history$1.push('/');
       }
     } catch (error) {}
   };
@@ -659,28 +714,28 @@ const logoutAction = () => {
     });
 
     if (getState().customizer.appId !== AppId.APP_NO1) {
-      window.location.href = `${getAppUrl$1(AppId.APP_NO1)}/login`;
+      window.location.href = getExternalAppUrl$1(item.appId, '/login');
     }
   };
 };
-const updateUserInfo = user => {
+const updateUserInfo = (user, avatarImage) => {
   return async dispatch => {
-    try {
-      const res = await AuthService.updateUserInfo(user);
+    if (avatarImage) {
+      const url = await AuthService.updateAvatar(user, avatarImage);
+      user.userSettings.avatar = url || user.userSettings.avatar;
+    }
 
-      if (res.status === 200) {
-        dispatch({
-          type: UPDATE_USER_INFO,
-          payload: res.data
-        });
-        toastSuccess('Cập nhật thông tin thành công !');
-        history.push('/');
-      }
-    } catch (error) {
-      history.push('/');
+    const res = await AuthService.updateUserInfo(user);
+
+    if (res.status === 200) {
       dispatch({
-        type: LOGOUT_ACTION
+        type: UPDATE_USER_INFO,
+        payload: res.data
       });
+      toastSuccess( /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "setting.updateInfo.success"
+      }));
+      history$1.push('/');
     }
   };
 };
@@ -823,6 +878,19 @@ NavBarService.getNativagtion = () => {
 };
 
 const LOAD_NATIVGATION = 'LOAD_NATIVGATION';
+const goBackHomePage$1 = () => {
+  return async (dispatch, getState) => {
+    const {
+      appId
+    } = getState().customizer;
+
+    if (appId === AppId.APP_NO1) {
+      history.push('/');
+    } else {
+      window.location.href = getExternalAppUrl$1(AppId.APP_NO1, '/home');
+    }
+  };
+};
 
 const initialState = {
   navConfigs: [],
@@ -1400,7 +1468,7 @@ class NavbarUser extends React.PureComponent {
 
     this.onSuggestionItemClick = item => {
       if (!item.isExternalApp) {
-        history.push(`${item.menuPath}`);
+        history$1.push(`${item.menuPath}`);
       } else {
         window.location.href = item.navLinkExternal;
       }
@@ -1414,7 +1482,7 @@ class NavbarUser extends React.PureComponent {
           id: `menu.${item.keyLang}`
         });
         item.isExternalApp = item.appId !== this.props.appId;
-        item.navLinkExternal = `${getAppUrl$1(item.appId) + item.menuPath}`;
+        item.navLinkExternal = getExternalAppUrl$1(item.appId, item.menuPath);
         return item;
       });
       this.setState({
@@ -1658,7 +1726,7 @@ const Footer = props => {
     if (!currentRoute.isExternalApp) {
       history.push(`${currentRoute.navLink}`);
     } else {
-      window.location.href = `${getAppUrl(currentRoute.appId) + currentRoute.navLink}`;
+      window.location.href = getExternalAppUrl(currentRoute.appId, currentRoute.navLink);
     }
   };
 
@@ -2089,7 +2157,7 @@ class SideMenuContent extends React.Component {
     };
 
     this.getItemLink = item => {
-      return item.isExternalApp ? `${getAppUrl$1(item.appId) + item.navLink}` : '';
+      return item.isExternalApp ? getExternalAppUrl$1(item.appId, item.navLink) : '';
     };
 
     this.parentArr = [];
@@ -2823,8 +2891,10 @@ var messages_en = {
 	setting: setting,
 	"setting.accountInformation": "Account Information",
 	"setting.changePassword": "Change password",
+	"setting.change": "Change",
 	"setting.partnerCode": "Partner code",
-	"setting.referralCode": "Referral code",
+	"setting.referralCode": "Referal code",
+	"setting.accountCode": "Account code",
 	"setting.personalSetting": "Personal Settings",
 	"setting.generalInformation": "General Information",
 	"setting.notification": "Notification",
@@ -2842,6 +2912,10 @@ var messages_en = {
 	"setting.gender.M": "Male",
 	"setting.gender.F": "FeMale",
 	"setting.gender.O": "Others",
+	"setting.updateInfo.success": "Update account infomation successfull !",
+	"setting.saveChanges": "Save Changes",
+	"changePassword.newPassword": "New Password",
+	"changePassword.oldPassword": "Old Password",
 	"changePassword.passwordMustMatch": "Password must match",
 	"createPassword.title": "CREATE PASSWORD *",
 	"createPassword.password.required": "You must enter your password",
@@ -2978,7 +3052,9 @@ var messages_vi = {
 	setting: setting$1,
 	"setting.accountInformation": "Thông tin tài khoản",
 	"setting.changePassword": "Thay đổi mật khẩu",
+	"setting.change": "Thay đổi",
 	"setting.partnerCode": "Mã đối tác",
+	"setting.accountCode": "Mã tài khoản",
 	"setting.referralCode": "Mã giới thiệu",
 	"setting.personalSetting": "Cài đặt Cá nhân",
 	"setting.generalInformation": "Thông tin chung",
@@ -2997,6 +3073,10 @@ var messages_vi = {
 	"setting.gender.M": "Name",
 	"setting.gender.F": "Nữ",
 	"setting.gender.O": "Khác",
+	"setting.updateInfo.success": "Thay đổi thông tin thành công !",
+	"setting.saveChanges": "Save Changes",
+	"changePassword.newPassword": "New Password",
+	"changePassword.oldPassword": "Old Password",
 	"changePassword.passwordMustMatch": "Mật khẩu không trùng khớp",
 	"createPassword.title": "TẠO MẬT KHẨU *",
 	"createPassword.password.required": "Bạn phải nhập mật khẩu",
@@ -3056,11 +3136,11 @@ const BaseFormGroup = ({
   }, msg => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Field, {
     type: type,
     name: fieldName,
-    className: `form-control ${_isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'}`,
+    className: `form-control ${_isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'}`,
     placeholder: msg
-  }), _isRequired && errors[fieldName] && touched[fieldName] ? /*#__PURE__*/React.createElement("div", {
+  }), _isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
-  }, errors[fieldName]) : null, /*#__PURE__*/React.createElement(Label, null, msg))));
+  }, getPropObject(errors, fieldName)) : null, /*#__PURE__*/React.createElement(Label, null, msg))));
 };
 
 const DatePicker = props => /*#__PURE__*/React.createElement(FormGroup, {
@@ -3154,7 +3234,7 @@ const Select = props => {
         primary: '#338955'
       }
     })
-  })) : /*#__PURE__*/React.createElement(Select$1, Object.assign({}, props, {
+  })) : /*#__PURE__*/React.createElement(ReactSelect, Object.assign({}, props, {
     onChange: onChange,
     onBlur: onBlur,
     onFocus: onFocus,
@@ -3199,7 +3279,7 @@ const BaseFormGroupSelect = ({
     placeholder: intl.formatMessage({
       id: messageId
     }),
-    className: `${_isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'}`,
+    className: `${_isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'}`,
     classNamePrefix: "Select",
     fieldName: fieldName,
     required: _isRequired,
@@ -3374,24 +3454,21 @@ const useBankList = () => {
 };
 
 const validationSchema = object().shape({
-  icType: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "completeInformation.nbrPer.required"
-  })),
   icNumber: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "completeInformation.nbrPer.required"
   })).when('icType', {
     is: 'CMND',
-    then: string().matches(/^(\d{9}|\d{12})$/, () => /*#__PURE__*/React.createElement(FormattedMessage, {
+    then: string().matches(PERSONAL_ID_REGEX, () => /*#__PURE__*/React.createElement(FormattedMessage, {
       id: "completeInformation.nbrPer.invalid"
     }))
   }).when('icType', {
     is: 'CCCD',
-    then: string().matches(/^(\d{12})$/, () => /*#__PURE__*/React.createElement(FormattedMessage, {
+    then: string().matches(CITIZEN_INDENTIFY_REGEX, () => /*#__PURE__*/React.createElement(FormattedMessage, {
       id: "completeInformation.nbrPer.invalid"
     }))
   }).when('icType', {
     is: 'HC',
-    then: string().matches(/^(?!^0+$)[a-zA-Z0-9]{3,20}$/, () => /*#__PURE__*/React.createElement(FormattedMessage, {
+    then: string().matches(PASSPORT_REGEX, () => /*#__PURE__*/React.createElement(FormattedMessage, {
       id: "completeInformation.nbrPer.invalid"
     }))
   }),
@@ -3402,7 +3479,7 @@ const validationSchema = object().shape({
     address: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
       id: "completeInformation.address.required"
     })),
-    bankNumber: string().when('userType', {
+    bankAccount: string().when('userType', {
       is: USER_TYPE.KD,
       then: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "completeInformation.accountNbr.required"
@@ -3434,14 +3511,12 @@ const validationSchema = object().shape({
 
 const UserAccountTab = () => {
   let {
-    userDetails,
-    userSettings,
+    userDetails = {},
+    userSettings = {},
     ...user
   } = useSelector(state => state.auth.user);
   const history = useHistory();
   const dispatch = useDispatch();
-  userDetails = userDetails || {};
-  userSettings = userSettings || {};
   const {
     cities
   } = useCityList(VN_COUNTRY_CODE);
@@ -3456,13 +3531,34 @@ const UserAccountTab = () => {
   const {
     banks
   } = useBankList();
+  const [avatar, setAvatar] = useState({
+    url: userSettings.avatar,
+    file: null
+  });
   useEffect(() => {
     loadDitrictsByCity(userDetails.city);
     loadWardsByDistrict(userDetails.district);
   }, []);
 
+  const onChangeAvatar = e => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+
+    reader.onloadend = () => {
+      setAvatar({
+        url: reader.result,
+        file
+      });
+    };
+  };
+
   const onSubmit = async values => {
-    dispatch(updateUserInfo(trimObjectValues$1(values)));
+    dispatch(updateUserInfo(trimObjectValues$1(values), avatar.file));
+  };
+
+  const onClickBackHome = () => {
+    dispatch(goBackHomePage());
   };
 
   return /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
@@ -3476,7 +3572,7 @@ const UserAccountTab = () => {
   }, /*#__PURE__*/React.createElement(Media, {
     className: "users-avatar-shadow rounded",
     object: true,
-    src: userSettings ? userSettings.avatar : '',
+    src: avatar.url,
     alt: "user profile image",
     height: "84",
     width: "84"
@@ -3487,17 +3583,25 @@ const UserAccountTab = () => {
     className: "font-medium-1 text-bold-600",
     tag: "p",
     heading: true
-  }, user.fullName), /*#__PURE__*/React.createElement("div", null, "M\xE3 t\xE0i kho\u1EA3n : ", user.userCode), /*#__PURE__*/React.createElement("div", {
+  }, user.fullName), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "setting.accountCode"
+  }), " : ", user.userCode), /*#__PURE__*/React.createElement("div", {
     className: "d-flex flex-wrap"
   }, /*#__PURE__*/React.createElement(Button.Ripple, {
+    tag: "label",
     className: "mr-1 mt-2",
     color: "primary",
     outline: true
-  }, "Change"), /*#__PURE__*/React.createElement(Button.Ripple, {
-    className: "mt-2",
-    color: "danger",
-    outline: true
-  }, "Remove Avatar"))))), /*#__PURE__*/React.createElement(Col, {
+  }, /*#__PURE__*/React.createElement(Input, {
+    type: "file",
+    name: "file",
+    id: "uploadImg",
+    onChange: onChangeAvatar,
+    hidden: true,
+    accept: "image/*"
+  }), /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "setting.change"
+  })))))), /*#__PURE__*/React.createElement(Col, {
     sm: "12"
   }, /*#__PURE__*/React.createElement(Formik, {
     enableReinitialize: true,
@@ -3630,7 +3734,7 @@ const UserAccountTab = () => {
     sm: "4"
   }, /*#__PURE__*/React.createElement(BaseFormGroup, {
     messageId: "completeInformation.accountNbr",
-    fieldName: "userDetails.bankNumber",
+    fieldName: "userDetails.bankAccount",
     errors: errors,
     touched: touched
   }))) : '', /*#__PURE__*/React.createElement(Col, {
@@ -3639,7 +3743,7 @@ const UserAccountTab = () => {
   }, /*#__PURE__*/React.createElement(Button.Ripple, {
     type: "button",
     color: "secondary",
-    onClick: () => history.push('/')
+    onClick: onClickBackHome
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: `common.home`
   })), /*#__PURE__*/React.createElement(Button.Ripple, {
@@ -3651,302 +3755,87 @@ const UserAccountTab = () => {
   }))))), /*#__PURE__*/React.createElement(Row, null)));
 };
 
-class CheckBox extends React.Component {
-  render() {
-    return /*#__PURE__*/React.createElement("div", {
-      className: `vx-checkbox-con ${this.props.className ? this.props.className : ''} vx-checkbox-${this.props.color}`
-    }, /*#__PURE__*/React.createElement("input", {
-      type: "checkbox",
-      defaultChecked: this.props.defaultChecked,
-      checked: this.props.checked,
-      value: this.props.value,
-      disabled: this.props.disabled,
-      onClick: this.props.onClick ? this.props.onClick : null,
-      onChange: this.props.onChange ? this.props.onChange : null
-    }), /*#__PURE__*/React.createElement("span", {
-      className: `vx-checkbox vx-checkbox-${this.props.size ? this.props.size : 'md'}`
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "vx-checkbox--check"
-    }, this.props.icon)), /*#__PURE__*/React.createElement("span", null, this.props.label));
-  }
+const formSchema = object().shape({
+  oldPassword: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.password.required"
+  })).matches(PASSWORD_REGEX, () => /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.password.invalid"
+  })),
+  newPassword: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.password.required"
+  })).matches(PASSWORD_REGEX, () => /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.password.invalid"
+  })),
+  passwordConfirmation: string().oneOf([ref('newPassword'), null], /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.passwordMustMatch"
+  })).required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.password.required"
+  }))
+});
 
-}
+const ChangePassword = () => {
+  const history = useHistory();
+  const dispatch = useDispatch();
+  useEffect(() => {}, []);
 
-class Radio extends React.Component {
-  render() {
-    return /*#__PURE__*/React.createElement("div", {
-      className: classnames(`vx-radio-con ${this.props.className} vx-radio-${this.props.color}`)
-    }, /*#__PURE__*/React.createElement("input", {
-      type: "radio",
-      defaultChecked: this.props.defaultChecked,
-      value: this.props.value,
-      disabled: this.props.disabled,
-      name: this.props.name,
-      onClick: this.props.onClick,
-      onChange: this.props.onChange,
-      ref: this.props.ref,
-      checked: this.props.checked
-    }), /*#__PURE__*/React.createElement("span", {
-      className: classnames("vx-radio", {
-        "vx-radio-sm": this.props.size === "sm",
-        "vx-radio-lg": this.props.size === "lg"
-      })
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "vx-radio--border"
-    }), /*#__PURE__*/React.createElement("span", {
-      className: "vx-radio--circle"
-    })), /*#__PURE__*/React.createElement("span", null, this.props.label));
-  }
+  const onClickSubmit = values => {};
 
-}
+  const onClickBackHome = () => {
+    dispatch(goBackHomePage$1());
+  };
 
-const languages = [{
-  value: 'english',
-  label: 'English',
-  color: '#7367f0'
-}, {
-  value: 'french',
-  label: 'French',
-  color: '#7367f0'
-}, {
-  value: 'spanish',
-  label: 'Spanish',
-  color: '#7367f0'
-}, {
-  value: 'russian',
-  label: 'Russian',
-  color: '#7367f0'
-}, {
-  value: 'italian',
-  label: 'Italian',
-  color: '#7367f0'
-}];
-const colourStyles = {
-  control: styles => ({ ...styles,
-    backgroundColor: 'white'
-  }),
-  option: (styles, {
-    data,
-    isDisabled,
-    isFocused,
-    isSelected
-  }) => {
-    const color = data.color ? chroma(data.color) : '#7367f0';
-    return { ...styles,
-      backgroundColor: isDisabled ? null : isSelected ? data.color : isFocused ? color.alpha(0.1).css() : null,
-      color: isDisabled ? '#ccc' : isSelected ? chroma.contrast(color, 'white') > 2 ? 'white' : 'black' : data.color,
-      cursor: isDisabled ? 'not-allowed' : 'default',
-      ':active': { ...styles[':active'],
-        backgroundColor: !isDisabled && (isSelected ? data.color : '#7367f0')
-      }
-    };
-  },
-  multiValue: (styles, {
-    data
-  }) => {
-    const color = data.color ? chroma(data.color) : '#7367f0';
-    return { ...styles,
-      backgroundColor: color.alpha(0.1).css()
-    };
-  },
-  multiValueLabel: (styles, {
-    data
-  }) => ({ ...styles,
-    color: data.color ? data.color : '#7367f0'
-  }),
-  multiValueRemove: (styles, {
-    data
-  }) => ({ ...styles,
-    color: data.color,
-    ':hover': {
-      backgroundColor: data.color ? data.color : '#7367f0',
-      color: 'white'
-    }
-  })
+  return /*#__PURE__*/React.createElement(Formik, {
+    initialValues: {
+      oldPassword: '',
+      newPassword: '',
+      passwordConfirmation: ''
+    },
+    onSubmit: onClickSubmit,
+    validationSchema: formSchema
+  }, ({
+    errors,
+    touched
+  }) => /*#__PURE__*/React.createElement(Form, {
+    className: "mt-3"
+  }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+    type: "password",
+    messageId: "changePassword.oldPassword",
+    fieldName: "oldPassword",
+    errors: errors,
+    touched: touched
+  }), /*#__PURE__*/React.createElement(BaseFormGroup, {
+    type: "password",
+    messageId: "changePassword.newPassword",
+    fieldName: "newPassword",
+    errors: errors,
+    touched: touched
+  }), /*#__PURE__*/React.createElement(BaseFormGroup, {
+    type: "password",
+    messageId: "createPassword.enterThePassword",
+    fieldName: "passwordConfirmation",
+    errors: errors,
+    touched: touched
+  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.condition.1"
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.condition.2"
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.condition.3"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "d-flex justify-content-center mt-2"
+  }, /*#__PURE__*/React.createElement(Button.Ripple, {
+    type: "button",
+    color: "secondary",
+    onClick: onClickBackHome
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: `common.home`
+  })), /*#__PURE__*/React.createElement(Button, {
+    color: "primary",
+    type: "submit"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "setting.saveChanges"
+  })))));
 };
-
-class UserInfoTab extends React.Component {
-  constructor(...args) {
-    super(...args);
-    this.state = {
-      dob: new Date('1995-05-22')
-    };
-
-    this.handledob = date => {
-      this.setState({
-        dob: date
-      });
-    };
-  }
-
-  render() {
-    return /*#__PURE__*/React.createElement(Form$1, {
-      onSubmit: e => e.preventDefault()
-    }, /*#__PURE__*/React.createElement(Row, {
-      className: "mt-1"
-    }, /*#__PURE__*/React.createElement(Col, {
-      className: "mt-1",
-      md: "6",
-      sm: "12"
-    }, /*#__PURE__*/React.createElement("h5", {
-      className: "mb-1"
-    }, /*#__PURE__*/React.createElement(User, {
-      className: "mr-50",
-      size: 16
-    }), /*#__PURE__*/React.createElement("span", {
-      className: "align-middle"
-    }, "Personal Info")), /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
-      className: "d-block",
-      for: "dob"
-    }, "Date of birth"), /*#__PURE__*/React.createElement(Flatpickr, {
-      id: "dob",
-      className: "form-control",
-      options: {
-        dateFormat: 'Y-m-d'
-      },
-      value: this.state.dob,
-      onChange: date => this.handledob(date)
-    })), /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
-      for: "contactnumber"
-    }, "Contact Number"), /*#__PURE__*/React.createElement(Input, {
-      type: "number",
-      id: "contactnumber",
-      placeholder: "Contact Number"
-    })), /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
-      for: "website"
-    }, "Website"), /*#__PURE__*/React.createElement(Input, {
-      type: "url",
-      id: "website",
-      placeholder: "Web Address"
-    })), /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
-      for: "languages"
-    }, "Languages"), /*#__PURE__*/React.createElement(Select$1, {
-      isMulti: true,
-      defaultValue: [languages[0], languages[1], languages[2]],
-      isClearable: true,
-      styles: colourStyles,
-      options: languages,
-      className: "React",
-      classNamePrefix: "select",
-      id: "languages"
-    })), /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
-      className: "d-block mb-50"
-    }, "Gender"), /*#__PURE__*/React.createElement("div", {
-      className: "d-inline-block mr-1"
-    }, /*#__PURE__*/React.createElement(Radio, {
-      label: "Male",
-      color: "primary",
-      defaultChecked: false,
-      name: "gender"
-    })), /*#__PURE__*/React.createElement("div", {
-      className: "d-inline-block mr-1"
-    }, /*#__PURE__*/React.createElement(Radio, {
-      label: "Female",
-      color: "primary",
-      defaultChecked: true,
-      name: "gender"
-    })), /*#__PURE__*/React.createElement("div", {
-      className: "d-inline-block"
-    }, /*#__PURE__*/React.createElement(Radio, {
-      label: "Others",
-      color: "primary",
-      defaultChecked: false,
-      name: "gender"
-    }))), /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
-      className: "d-block mb-50",
-      for: "communication"
-    }, "Communication"), /*#__PURE__*/React.createElement("div", {
-      className: "d-inline-block mr-1"
-    }, /*#__PURE__*/React.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React.createElement(Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "Email",
-      defaultChecked: false
-    })), /*#__PURE__*/React.createElement("div", {
-      className: "d-inline-block mr-1"
-    }, /*#__PURE__*/React.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React.createElement(Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "SMS",
-      defaultChecked: false
-    })), /*#__PURE__*/React.createElement("div", {
-      className: "d-inline-block"
-    }, /*#__PURE__*/React.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React.createElement(Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "Phone",
-      defaultChecked: false
-    })))), /*#__PURE__*/React.createElement(Col, {
-      className: "mt-1",
-      md: "6",
-      sm: "12"
-    }, /*#__PURE__*/React.createElement("h5", {
-      className: "mb-1"
-    }, /*#__PURE__*/React.createElement(MapPin, {
-      className: "mr-50",
-      size: 16
-    }), /*#__PURE__*/React.createElement("span", {
-      className: "align-middle"
-    }, "Address")), /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
-      for: "address1"
-    }, "Address Line 1"), /*#__PURE__*/React.createElement(Input, {
-      type: "text",
-      id: "address1",
-      placeholder: "Last Name Here"
-    })), /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
-      for: "address1"
-    }, "Address Line 2"), /*#__PURE__*/React.createElement(Input, {
-      type: "text",
-      id: "address1",
-      placeholder: "Address Line 2"
-    })), /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
-      for: "pincode"
-    }, "Pincode"), /*#__PURE__*/React.createElement(Input, {
-      type: "text",
-      id: "pincode",
-      placeholder: "Pincode"
-    })), /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
-      for: "city"
-    }, "City"), /*#__PURE__*/React.createElement(Input, {
-      type: "text",
-      defaultValue: "Camden Town",
-      id: "city",
-      placeholder: "City"
-    })), /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
-      for: "State"
-    }, "State"), /*#__PURE__*/React.createElement(Input, {
-      type: "text",
-      defaultValue: "London",
-      id: "State",
-      placeholder: "State"
-    })), /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
-      for: "Country"
-    }, "Country"), /*#__PURE__*/React.createElement(Input, {
-      type: "text",
-      defaultValue: "UK",
-      id: "Country",
-      placeholder: "Country"
-    }))), /*#__PURE__*/React.createElement(Col, {
-      className: "d-flex justify-content-end flex-wrap",
-      sm: "12"
-    }, /*#__PURE__*/React.createElement(Button.Ripple, {
-      className: "mr-1",
-      color: "primary"
-    }, "Save Changes"), /*#__PURE__*/React.createElement(Button.Ripple, {
-      color: "flat-warning"
-    }, "Reset"))));
-  }
-
-}
 
 const AccountSettings = props => {
   const [activeTab, setActiveTab] = useState('account-info');
@@ -3992,8 +3881,33 @@ const AccountSettings = props => {
     tabId: "account-info"
   }, /*#__PURE__*/React.createElement(UserAccountTab, null)), /*#__PURE__*/React.createElement(TabPane, {
     tabId: "change-password"
-  }, /*#__PURE__*/React.createElement(UserInfoTab, null)))))));
+  }, /*#__PURE__*/React.createElement(Col, {
+    md: "6",
+    sm: "11",
+    className: "mx-auto"
+  }, /*#__PURE__*/React.createElement(ChangePassword, null))))))));
 };
+
+class CheckBox extends React.Component {
+  render() {
+    return /*#__PURE__*/React.createElement("div", {
+      className: `vx-checkbox-con ${this.props.className ? this.props.className : ''} vx-checkbox-${this.props.color}`
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "checkbox",
+      defaultChecked: this.props.defaultChecked,
+      checked: this.props.checked,
+      value: this.props.value,
+      disabled: this.props.disabled,
+      onClick: this.props.onClick ? this.props.onClick : null,
+      onChange: this.props.onChange ? this.props.onChange : null
+    }), /*#__PURE__*/React.createElement("span", {
+      className: `vx-checkbox vx-checkbox-${this.props.size ? this.props.size : 'md'}`
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "vx-checkbox--check"
+    }, this.props.icon)), /*#__PURE__*/React.createElement("span", null, this.props.label));
+  }
+
+}
 
 class UserAccountTab$1 extends React.Component {
   render() {
@@ -4211,7 +4125,35 @@ class UserAccountTab$1 extends React.Component {
 
 }
 
-const languages$1 = [{
+class Radio extends React.Component {
+  render() {
+    return /*#__PURE__*/React.createElement("div", {
+      className: classnames(`vx-radio-con ${this.props.className} vx-radio-${this.props.color}`)
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "radio",
+      defaultChecked: this.props.defaultChecked,
+      value: this.props.value,
+      disabled: this.props.disabled,
+      name: this.props.name,
+      onClick: this.props.onClick,
+      onChange: this.props.onChange,
+      ref: this.props.ref,
+      checked: this.props.checked
+    }), /*#__PURE__*/React.createElement("span", {
+      className: classnames("vx-radio", {
+        "vx-radio-sm": this.props.size === "sm",
+        "vx-radio-lg": this.props.size === "lg"
+      })
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "vx-radio--border"
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "vx-radio--circle"
+    })), /*#__PURE__*/React.createElement("span", null, this.props.label));
+  }
+
+}
+
+const languages = [{
   value: 'english',
   label: 'English',
   color: '#7367f0'
@@ -4232,7 +4174,7 @@ const languages$1 = [{
   label: 'Italian',
   color: '#7367f0'
 }];
-const colourStyles$1 = {
+const colourStyles = {
   control: styles => ({ ...styles,
     backgroundColor: 'white'
   }),
@@ -4276,7 +4218,7 @@ const colourStyles$1 = {
   })
 };
 
-class UserInfoTab$1 extends React.Component {
+class UserInfoTab extends React.Component {
   constructor(...args) {
     super(...args);
     this.state = {
@@ -4331,12 +4273,12 @@ class UserInfoTab$1 extends React.Component {
       placeholder: "Web Address"
     })), /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Label, {
       for: "languages"
-    }, "Languages"), /*#__PURE__*/React.createElement(Select$1, {
+    }, "Languages"), /*#__PURE__*/React.createElement(ReactSelect, {
       isMulti: true,
-      defaultValue: [languages$1[0], languages$1[1], languages$1[2]],
+      defaultValue: [languages[0], languages[1], languages[2]],
       isClearable: true,
-      styles: colourStyles$1,
-      options: languages$1,
+      styles: colourStyles,
+      options: languages,
       className: "React",
       classNamePrefix: "select",
       id: "languages"
@@ -4528,14 +4470,14 @@ const GeneralInfo = props => {
     tabId: "terms-and-condition"
   }, /*#__PURE__*/React.createElement(UserAccountTab$1, null)), /*#__PURE__*/React.createElement(TabPane, {
     tabId: "privacy-policy"
-  }, /*#__PURE__*/React.createElement(UserInfoTab$1, null)), /*#__PURE__*/React.createElement(TabPane, {
+  }, /*#__PURE__*/React.createElement(UserInfoTab, null)), /*#__PURE__*/React.createElement(TabPane, {
     tabId: "language"
   }, /*#__PURE__*/React.createElement(UserAccountTab$1, null)), /*#__PURE__*/React.createElement(TabPane, {
     tabId: "contact"
-  }, /*#__PURE__*/React.createElement(UserInfoTab$1, null)))))));
+  }, /*#__PURE__*/React.createElement(UserInfoTab, null)))))));
 };
 
-const formSchema = object().shape({
+const formSchema$1 = object().shape({
   username: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "login.username.required"
   })),
@@ -4580,7 +4522,7 @@ const Login = () => {
       password: ''
     },
     onSubmit: onSubmit,
-    validationSchema: formSchema
+    validationSchema: formSchema$1
   }, ({
     errors,
     touched
@@ -4656,7 +4598,7 @@ const Login = () => {
   })))));
 };
 
-const formSchema$1 = object().shape({
+const formSchema$2 = object().shape({
   fullName: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "register.fullname.required"
   })).matches(NOT_ALLOW_SPECIAL_CHAR_REGEX, () => /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -4706,7 +4648,7 @@ const Register = () => {
       refCode: ''
     },
     onSubmit: onSubmit,
-    validationSchema: formSchema$1
+    validationSchema: formSchema$2
   }, ({
     errors,
     touched
@@ -4765,7 +4707,7 @@ const Register = () => {
   }))))));
 };
 
-const formSchema$2 = object().shape({
+const formSchema$3 = object().shape({
   username: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "forgotPassword.username.required"
   })),
@@ -4804,7 +4746,7 @@ const ForgotPassword = () => {
       email: ''
     },
     onSubmit: onSubmit,
-    validationSchema: formSchema$2
+    validationSchema: formSchema$3
   }, ({
     errors,
     touched,
@@ -4871,7 +4813,7 @@ const ForgotPassword = () => {
   }, "OK"), ' ')))));
 };
 
-const formSchema$3 = object().shape({
+const formSchema$4 = object().shape({
   password: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "createPassword.password.required"
   })).matches(PASSWORD_REGEX, () => /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -4925,14 +4867,14 @@ const CreatePassword = ({
       passwordConfirmation: ''
     },
     onSubmit: onClickContinue,
-    validationSchema: formSchema$3
+    validationSchema: formSchema$4
   }, ({
     errors,
     touched
   }) => /*#__PURE__*/React.createElement(Form, null, /*#__PURE__*/React.createElement("div", {
     className: "text-center mb-3"
   }, /*#__PURE__*/React.createElement("h4", {
-    className: isLanding2 ? 'font-weight-boild' : 'font-weight-boild text-white'
+    className: isLanding2 ? 'font-weight-bold' : 'font-weight-bold text-white'
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "createPassword.title"
   }))), /*#__PURE__*/React.createElement(BaseFormGroup, {
@@ -5458,10 +5400,12 @@ const AppRouter = props => {
   } = props;
   useEffect(() => {
     setAppId(appId);
-    const code = new URLSearchParams(document.location.search).get('code') || authToken;
+    const urlParams = new URLSearchParams(document.location.search);
+    const code = urlParams.get('code') || authToken;
+    const isRedirect = urlParams.get('isRedirect');
 
     if (code && loginStatus !== LOGIN_STATUS.SUCCESS) {
-      checkLoginStatus(code);
+      checkLoginStatus(code, isRedirect);
     }
 
     if (authToken) {
