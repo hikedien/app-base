@@ -182,20 +182,19 @@ var IC_TYPES_OPTIONS = [{
     id: "common.icType.citizenIdentify"
   })
 }];
-var APP_URL = 'https://sit2.inon.vn';
 var getExternalAppUrl$1 = function getExternalAppUrl(appId, url) {
   switch (appId) {
     case AppId.APP_NO1:
-      return APP_URL + "/app/" + url + "?isRedirect=true";
+      return window.location.origin + "/app" + url + "?redirectUrl=" + url;
 
     case AppId.INSURANCE_APP:
-      return APP_URL + "/insurance/" + url + "?isRedirect=true";
+      return window.location.origin + "/insurance" + url + "?redirectUrl=" + url;
 
     case AppId.SUPPLEMENT_APP:
-      return APP_URL + "/supplement/" + url + "?isRedirect=true";
+      return window.location.origin + "/supplement" + url + "?redirectUrl=" + url;
 
     case AppId.ELITE_APP:
-      return APP_URL + "/elite/" + url + "?isRedirect=true";
+      return window.location.origin + "/elite" + url + "?redirectUrl=" + url;
   }
 };
 var getPropObject = function getPropObject(obj, prop) {
@@ -278,7 +277,6 @@ var appConfigs = {
   USER_TYPE: USER_TYPE,
   GENDER_OPTIONS: GENDER_OPTIONS,
   IC_TYPES_OPTIONS: IC_TYPES_OPTIONS,
-  APP_URL: APP_URL,
   getExternalAppUrl: getExternalAppUrl$1,
   getPropObject: getPropObject,
   USER_ROLE: USER_ROLE,
@@ -617,7 +615,7 @@ var LOGOUT_ACTION = 'LOGOUT_ACTION';
 var SAVE_REGISTER_TOKEN = 'SAVE_REGISTER_TOKEN';
 var SAVE_RESET_PASSWORD_TOKEN = 'SAVE_RESET_PASSWORD_TOKEN';
 var UPDATE_USER_INFO = 'UPDATE_USER_INFO';
-var checkLoginStatus = function checkLoginStatus(authToken, isRedirect) {
+var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
   return function (dispatch, getState) {
     try {
       var _temp3 = _catch(function () {
@@ -635,7 +633,7 @@ var checkLoginStatus = function checkLoginStatus(authToken, isRedirect) {
                     user: response.data || {}
                   }
                 });
-                history$1.push(isRedirect ? '/' : window.location.pathname);
+                history$1.push(redirectUrl || window.location.pathname);
               });
             } else {
               dispatch({
@@ -684,7 +682,6 @@ var loginAction = function loginAction(user) {
                     user: response.data || []
                   }
                 });
-                var appId = getState().customizer.appId;
                 history$1.push('/');
               });
             } else {
@@ -858,7 +855,7 @@ var logoutAction = function logoutAction() {
       });
 
       if (getState().customizer.appId !== AppId.APP_NO1) {
-        window.location.href = getExternalAppUrl$1(item.appId, '/login');
+        window.location.href = getExternalAppUrl$1(AppId.APP_NO1, '/login');
       }
 
       return Promise.resolve();
@@ -3430,9 +3427,8 @@ var messages_vi = {
 	"setting.gender.F": "Nữ",
 	"setting.gender.O": "Khác",
 	"setting.updateInfo.success": "Thay đổi thông tin thành công !",
-	"setting.saveChanges": "Save Changes",
-	"changePassword.newPassword": "New Password",
-	"changePassword.oldPassword": "Old Password",
+	"changePassword.newPassword": "Mật khẩu mới",
+	"changePassword.oldPassword": "Mật khẩu cũ",
 	"changePassword.passwordMustMatch": "Mật khẩu không trùng khớp",
 	"createPassword.title": "TẠO MẬT KHẨU *",
 	"createPassword.password.required": "Bạn phải nhập mật khẩu",
@@ -4271,9 +4267,10 @@ var ChangePassword = function ChangePassword() {
       id: "common.home"
     })), /*#__PURE__*/React__default.createElement(reactstrap.Button, {
       color: "primary",
+      className: "ml-2",
       type: "submit"
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "setting.saveChanges"
+      id: "common.saveChanges"
     }))));
   });
 };
@@ -5990,10 +5987,10 @@ var AppRouter = function AppRouter(props) {
     setAppId(appId);
     var urlParams = new URLSearchParams(document.location.search);
     var code = urlParams.get('code') || authToken;
-    var isRedirect = urlParams.get('isRedirect');
+    var redirectUrl = urlParams.get('redirectUrl');
 
     if (code && loginStatus !== LOGIN_STATUS.SUCCESS) {
-      checkLoginStatus(code, isRedirect);
+      checkLoginStatus(code, redirectUrl);
     }
 
     if (authToken) {

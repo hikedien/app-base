@@ -179,20 +179,19 @@ const IC_TYPES_OPTIONS = [{
     id: "common.icType.citizenIdentify"
   })
 }];
-const APP_URL = 'https://sit2.inon.vn';
 const getExternalAppUrl$1 = (appId, url) => {
   switch (appId) {
     case AppId.APP_NO1:
-      return `${APP_URL}/app/${url}?isRedirect=true`;
+      return `${window.location.origin}/app${url}?redirectUrl=${url}`;
 
     case AppId.INSURANCE_APP:
-      return `${APP_URL}/insurance/${url}?isRedirect=true`;
+      return `${window.location.origin}/insurance${url}?redirectUrl=${url}`;
 
     case AppId.SUPPLEMENT_APP:
-      return `${APP_URL}/supplement/${url}?isRedirect=true`;
+      return `${window.location.origin}/supplement${url}?redirectUrl=${url}`;
 
     case AppId.ELITE_APP:
-      return `${APP_URL}/elite/${url}?isRedirect=true`;
+      return `${window.location.origin}/elite${url}?redirectUrl=${url}`;
   }
 };
 const getPropObject = (obj, prop) => {
@@ -275,7 +274,6 @@ var appConfigs = {
   USER_TYPE: USER_TYPE,
   GENDER_OPTIONS: GENDER_OPTIONS,
   IC_TYPES_OPTIONS: IC_TYPES_OPTIONS,
-  APP_URL: APP_URL,
   getExternalAppUrl: getExternalAppUrl$1,
   getPropObject: getPropObject,
   USER_ROLE: USER_ROLE,
@@ -528,7 +526,7 @@ const LOGOUT_ACTION = 'LOGOUT_ACTION';
 const SAVE_REGISTER_TOKEN = 'SAVE_REGISTER_TOKEN';
 const SAVE_RESET_PASSWORD_TOKEN = 'SAVE_RESET_PASSWORD_TOKEN';
 const UPDATE_USER_INFO = 'UPDATE_USER_INFO';
-const checkLoginStatus = (authToken, isRedirect) => {
+const checkLoginStatus = (authToken, redirectUrl) => {
   return async (dispatch, getState) => {
     try {
       let response = await AuthService.checkLoginByToken();
@@ -545,7 +543,7 @@ const checkLoginStatus = (authToken, isRedirect) => {
             user: response.data || {}
           }
         });
-        history$1.push(isRedirect ? '/' : window.location.pathname);
+        history$1.push(redirectUrl || window.location.pathname);
       } else {
         dispatch({
           type: LOGOUT_ACTION
@@ -582,9 +580,6 @@ const loginAction = user => {
             user: response.data || []
           }
         });
-        const {
-          appId
-        } = getState().customizer;
         history$1.push('/');
       } else {
         const token = {
@@ -714,7 +709,7 @@ const logoutAction = () => {
     });
 
     if (getState().customizer.appId !== AppId.APP_NO1) {
-      window.location.href = getExternalAppUrl$1(item.appId, '/login');
+      window.location.href = getExternalAppUrl$1(AppId.APP_NO1, '/login');
     }
   };
 };
@@ -3074,9 +3069,8 @@ var messages_vi = {
 	"setting.gender.F": "Nữ",
 	"setting.gender.O": "Khác",
 	"setting.updateInfo.success": "Thay đổi thông tin thành công !",
-	"setting.saveChanges": "Save Changes",
-	"changePassword.newPassword": "New Password",
-	"changePassword.oldPassword": "Old Password",
+	"changePassword.newPassword": "Mật khẩu mới",
+	"changePassword.oldPassword": "Mật khẩu cũ",
 	"changePassword.passwordMustMatch": "Mật khẩu không trùng khớp",
 	"createPassword.title": "TẠO MẬT KHẨU *",
 	"createPassword.password.required": "Bạn phải nhập mật khẩu",
@@ -3831,9 +3825,10 @@ const ChangePassword = () => {
     id: `common.home`
   })), /*#__PURE__*/React.createElement(Button, {
     color: "primary",
+    className: "ml-2",
     type: "submit"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "setting.saveChanges"
+    id: "common.saveChanges"
   })))));
 };
 
@@ -5402,10 +5397,10 @@ const AppRouter = props => {
     setAppId(appId);
     const urlParams = new URLSearchParams(document.location.search);
     const code = urlParams.get('code') || authToken;
-    const isRedirect = urlParams.get('isRedirect');
+    const redirectUrl = urlParams.get('redirectUrl');
 
     if (code && loginStatus !== LOGIN_STATUS.SUCCESS) {
-      checkLoginStatus(code, isRedirect);
+      checkLoginStatus(code, redirectUrl);
     }
 
     if (authToken) {
