@@ -725,7 +725,7 @@ var loginAction = function loginAction(user) {
               });
 
               if (getState().customizer.appId !== AppId.APP_NO1) {
-                window.location.href = getExternalAppUrl$1(AppId.APP_NO1, '/home');
+                window.location.href = getExternalAppUrl$1(AppId.APP_NO1, '/');
               } else {
                 history$1.push('/');
               }
