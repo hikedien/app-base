@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Component, PureComponent } from 'react';
-import { connect, useSelector, useDispatch, Provider } from 'react-redux';
+import { useDispatch, connect, useSelector, Provider } from 'react-redux';
 import { combineReducers, createStore, applyMiddleware, compose } from 'redux';
 import createDebounce from 'redux-debounced';
 import thunk from 'redux-thunk';
@@ -8,7 +8,7 @@ import { persistReducer, persistStore } from 'redux-persist';
 import Axios from 'axios';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
 import * as Icon from 'react-feather';
-import { AlertTriangle, Check, User, Lock, Power, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, MessageSquare, ArrowUp, Disc, Circle, ChevronRight, Info, MapPin, Sun } from 'react-feather';
+import { AlertTriangle, Check, User, Lock, Power, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, MessageSquare, ArrowUp, Disc, Circle, ChevronRight, MapPin, Info, Sun } from 'react-feather';
 import { toast, ToastContainer } from 'react-toastify';
 export { toast } from 'react-toastify';
 import { FormattedMessage, injectIntl, IntlProvider, useIntl } from 'react-intl';
@@ -138,7 +138,7 @@ const PHONE_REGEX = /(03|07|08|09|01[2|6|8|9])+([0-9]{8})\b/;
 const PERSONAL_ID_REGEX = /^(\d{9}|\d{12})$/;
 const CITIZEN_INDENTIFY_REGEX = /^(\d{12})$/;
 const PASSPORT_REGEX = /^(?!^0+$)[a-zA-Z0-9]{3,20}$/;
-const NOT_ALLOW_SPECIAL_CHAR_REGEX = /^[A-Za-z0-9 ]+$/;
+const NAME_REGEX = /^([aàảãáạăằẳẵắặâầẩẫấậbcdđeèẻẽéẹêềểễếệfghiìỉĩíịjklmnoòỏõóọôồổỗốộơờởỡớợpqrstuùủũúụưừửữứựvwxyỳỷỹýỵz0-9A-Za-z_ ])+$/g;
 const LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
   FAIL: 'FAIL'
@@ -192,6 +192,21 @@ const getExternalAppUrl$1 = (appId, url) => {
 
     case AppId.ELITE_APP:
       return `${window.location.origin}/elite${url}?redirectUrl=${url}`;
+  }
+};
+const getContextPath = appId => {
+  switch (appId) {
+    case AppId.APP_NO1:
+      return 'app';
+
+    case AppId.INSURANCE_APP:
+      return 'insurance';
+
+    case AppId.SUPPLEMENT_APP:
+      return 'supplement';
+
+    case AppId.ELITE_APP:
+      return 'elite';
   }
 };
 const getPropObject = (obj, prop) => {
@@ -269,12 +284,13 @@ var appConfigs = {
   PERSONAL_ID_REGEX: PERSONAL_ID_REGEX,
   CITIZEN_INDENTIFY_REGEX: CITIZEN_INDENTIFY_REGEX,
   PASSPORT_REGEX: PASSPORT_REGEX,
-  NOT_ALLOW_SPECIAL_CHAR_REGEX: NOT_ALLOW_SPECIAL_CHAR_REGEX,
+  NAME_REGEX: NAME_REGEX,
   LOGIN_STATUS: LOGIN_STATUS,
   USER_TYPE: USER_TYPE,
   GENDER_OPTIONS: GENDER_OPTIONS,
   IC_TYPES_OPTIONS: IC_TYPES_OPTIONS,
   getExternalAppUrl: getExternalAppUrl$1,
+  getContextPath: getContextPath,
   getPropObject: getPropObject,
   USER_ROLE: USER_ROLE,
   IMAGE: IMAGE
@@ -284,6 +300,17 @@ const SHOW_LOADING_BAR = 'SHOW_LOADING_BAR';
 const HIDE_LOADING_BAR = 'HIDE_LOADING_BAR';
 const SHOW_CONFIRM_ALERT = 'SHOW_CONFIRM_ALERT';
 const HIDE_CONFIRM_ALERT = 'HIDE_CONFIRM_ALERT';
+const showConfirmAlert = configs => {
+  return dispatch => dispatch({
+    type: SHOW_CONFIRM_ALERT,
+    payload: configs
+  });
+};
+const hideConfirmAlert = () => {
+  return dispatch => dispatch({
+    type: HIDE_CONFIRM_ALERT
+  });
+};
 
 const HttpClient = Axios.create({
   timeout: 10000,
@@ -320,7 +347,7 @@ const setUpHttpClient = (store, apiBaseUrl) => {
     }
 
     config.headers.deviceId = deviceId;
-    config.headers.language = language;
+    config.headers['Accept-Language'] = language;
 
     if (!config.isBackgroundRequest) {
       store.dispatch({
@@ -498,6 +525,10 @@ AuthService.updateUserInfo = user => {
   return HttpClient.put(API_UPDATE_USER_INFO, user);
 };
 
+AuthService.changePassword = value => {
+  return HttpClient.post(API_CHANGE_PASSWORD, value);
+};
+
 AuthService.updateAvatar = async (user, file) => {
   const formData = new FormData();
   formData.append('fileInfo', new Blob([JSON.stringify({
@@ -543,7 +574,10 @@ const checkLoginStatus = (authToken, redirectUrl) => {
             user: response.data || {}
           }
         });
-        history$1.push(redirectUrl || window.location.pathname);
+        const {
+          appId
+        } = getState().customizer;
+        history$1.push(redirectUrl || window.location.pathname.replace(`/${getContextPath(appId)}`, ''));
       } else {
         dispatch({
           type: LOGOUT_ACTION
@@ -558,43 +592,45 @@ const checkLoginStatus = (authToken, redirectUrl) => {
 };
 const loginAction = user => {
   return async (dispatch, getState) => {
-    try {
-      user.rememberMe = user.isRemeberMe;
-      let response = await AuthService.login(user);
+    user.rememberMe = user.isRemeberMe;
+    let response = await AuthService.login(user);
 
-      if (response.status === API_R_200) {
-        const authToken = response.data.id_token;
-        response = await AuthService.getUserInfo(user.username, authToken);
+    if (response.status === API_R_200) {
+      const authToken = response.data.id_token;
+      response = await AuthService.getUserInfo(user.username, authToken);
 
-        if (user.isRemeberMe) {
-          localStorage.setItem(REMEMBER_ME_TOKEN, JSON.stringify({
-            username: user.username,
-            name: response.data.fullName
-          }));
-        }
-
-        dispatch({
-          type: LOGIN_ACTION,
-          payload: {
-            authToken,
-            user: response.data || []
-          }
-        });
-        history$1.push('/');
-      } else {
-        const token = {
-          authToken: 'authToken',
-          user: {}
-        };
-        dispatch({
-          type: LOGOUT_ACTION
-        });
-        toastError( /*#__PURE__*/React.createElement(FormattedMessage, {
-          id: "login.fail"
+      if (user.isRemeberMe) {
+        localStorage.setItem(REMEMBER_ME_TOKEN, JSON.stringify({
+          username: user.username,
+          name: response.data.fullName
         }));
       }
-    } catch (error) {
-      console.log(error);
+
+      const {
+        userSettings
+      } = response.data;
+
+      if (userSettings) {
+        localStorage.setItem('language', userSettings.language.toLowerCase());
+      }
+
+      dispatch({
+        type: LOGIN_ACTION,
+        payload: {
+          authToken,
+          user: response.data || []
+        }
+      });
+
+      if (getState().customizer.appId !== AppId.APP_NO1) {
+        window.location.href = getExternalAppUrl$1(AppId.APP_NO1, '/home');
+      } else {
+        history$1.push('/');
+      }
+    } else {
+      dispatch({
+        type: LOGOUT_ACTION
+      });
     }
   };
 };
@@ -703,14 +739,10 @@ const resetPassword = password => {
   };
 };
 const logoutAction = () => {
-  return async (dispatch, getState) => {
+  return async dispatch => {
     dispatch({
       type: LOGOUT_ACTION
     });
-
-    if (getState().customizer.appId !== AppId.APP_NO1) {
-      window.location.href = getExternalAppUrl$1(AppId.APP_NO1, '/login');
-    }
   };
 };
 const updateUserInfo = (user, avatarImage) => {
@@ -729,6 +761,24 @@ const updateUserInfo = (user, avatarImage) => {
       });
       toastSuccess( /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.updateInfo.success"
+      }));
+      history$1.push('/');
+    }
+  };
+};
+const changePassword = ({
+  oldPassword,
+  newPassword
+}) => {
+  return async dispatch => {
+    const res = await AuthService.changePassword({
+      oldPassword,
+      newPassword
+    });
+
+    if (res.status === 200) {
+      toastSuccess( /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "changePassword.success"
       }));
       history$1.push('/');
     }
@@ -909,9 +959,7 @@ const DEFAULT_CONFIRM_ALERT = {
   isShow: false,
   content: '',
   onConfirm: () => {},
-  onCancel: () => {},
-  confirmBtnText: 'OK',
-  cancelBtnText: 'Cancel'
+  onCancel: () => {}
 };
 const initialState$1 = {
   loading: new Set(),
@@ -1119,7 +1167,7 @@ class Autocomplete extends React.Component {
         }
       }).slice(0, suggestionLimit);
       this.filteredData.push(...sortSingleData);
-      return sortSingleData.map((suggestion, index) => {
+      return sortSingleData.length ? sortSingleData.map((suggestion, index) => {
         if (!customRender) {
           return /*#__PURE__*/React.createElement("li", {
             className: classnames('suggestion-item', {
@@ -1134,7 +1182,15 @@ class Autocomplete extends React.Component {
         } else {
           return null;
         }
-      });
+      }) : /*#__PURE__*/React.createElement("li", {
+        className: "suggestion-item no-result"
+      }, /*#__PURE__*/React.createElement(AlertTriangle, {
+        size: 15
+      }), ' ', /*#__PURE__*/React.createElement("span", {
+        className: "align-middle ml-50"
+      }, /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: 'common.noResults'
+      })));
     };
 
     this.renderSuggestions = () => {
@@ -1343,15 +1399,28 @@ Autocomplete.propTypes = {
   onSuggestionItemClick: PropTypes.func
 };
 
-const UserDropdown = props => {
-  const {
-    logoutAction
-  } = props;
+const UserDropdown = () => {
   const history = useHistory();
+  const dispatch = useDispatch();
 
   const handleNavigation = (e, path) => {
     e.preventDefault();
     history.push(path);
+  };
+
+  const onClickLogout = () => {
+    dispatch(showConfirmAlert({
+      title: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "navbar.logout"
+      }),
+      isShow: true,
+      content: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "navbar.logout.confirmMessage"
+      }),
+      onConfirm: () => {
+        dispatch(logoutAction());
+      }
+    }));
   };
 
   return /*#__PURE__*/React.createElement(DropdownMenu, {
@@ -1428,7 +1497,7 @@ const UserDropdown = props => {
     divider: true
   }), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
-    onClick: logoutAction
+    onClick: onClickLogout
   }, /*#__PURE__*/React.createElement(Power, {
     size: 14,
     className: "mr-50"
@@ -1500,7 +1569,7 @@ class NavbarUser extends React.PureComponent {
       className: "nav-search",
       onClick: this.handleNavbarSearch
     }, /*#__PURE__*/React.createElement(NavLink, {
-      className: "nav-link-search"
+      className: "nav-link-search pt-2"
     }, /*#__PURE__*/React.createElement(Search, {
       size: 21,
       "data-tour": "search"
@@ -1593,7 +1662,7 @@ class NavbarUser extends React.PureComponent {
       height: "40",
       width: "40",
       alt: "avatar"
-    }))), /*#__PURE__*/React.createElement(UserDropdown, this.props)));
+    }))), /*#__PURE__*/React.createElement(UserDropdown, null)));
   }
 
 }
@@ -1858,86 +1927,86 @@ const hideScrollToTop = value => {
   });
 };
 
-class SidebarHeader extends Component {
-  render() {
-    let {
-      toggleSidebarMenu,
-      activeTheme,
-      collapsed,
-      toggle,
-      sidebarVisibility,
-      menuShadow
-    } = this.props;
+const SidebarHeader = props => {
+  const {
+    toggleSidebarMenu,
+    activeTheme,
+    collapsed,
+    toggle,
+    sidebarVisibility,
+    menuShadow
+  } = props;
+  const dispatch = useDispatch();
 
-    const onClickHome = () => {};
+  const onClickHome = () => {
+    dispatch(goBackHomePage$1());
+  };
 
-    return /*#__PURE__*/React.createElement("div", {
-      className: "navbar-header"
-    }, /*#__PURE__*/React.createElement("ul", {
-      className: "nav navbar-nav flex-row"
-    }, /*#__PURE__*/React.createElement("li", {
-      className: "nav-item my-auto mr-auto",
-      onClick: onClickHome
-    }, /*#__PURE__*/React.createElement("img", {
-      className: "img-fluid logo-img",
-      src: IMAGE.LOGO_NO_TEXT,
-      alt: "logo"
-    }), /*#__PURE__*/React.createElement("img", {
-      className: "img-fluid logo-text",
-      src: IMAGE.LOGO_TEXT,
-      alt: "logo"
-    })), /*#__PURE__*/React.createElement("li", {
-      className: "nav-item nav-toggle"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "nav-link modern-nav-toggle"
-    }, collapsed === false ? /*#__PURE__*/React.createElement(Disc, {
-      onClick: () => {
-        toggleSidebarMenu(true);
-        toggle();
-      },
-      className: classnames('toggle-icon icon-x d-none d-xl-block font-medium-4', {
-        'text-primary': activeTheme === 'primary',
-        'text-success': activeTheme === 'success',
-        'text-danger': activeTheme === 'danger',
-        'text-info': activeTheme === 'info',
-        'text-warning': activeTheme === 'warning',
-        'text-dark': activeTheme === 'dark'
-      }),
-      size: 20,
-      "data-tour": "toggle-icon"
-    }) : /*#__PURE__*/React.createElement(Circle, {
-      onClick: () => {
-        toggleSidebarMenu(false);
-        toggle();
-      },
-      className: classnames('toggle-icon icon-x d-none d-xl-block font-medium-4', {
-        'text-primary': activeTheme === 'primary',
-        'text-success': activeTheme === 'success',
-        'text-danger': activeTheme === 'danger',
-        'text-info': activeTheme === 'info',
-        'text-warning': activeTheme === 'warning',
-        'text-dark': activeTheme === 'dark'
-      }),
-      size: 20
-    }), /*#__PURE__*/React.createElement(X, {
-      onClick: sidebarVisibility,
-      className: classnames('toggle-icon icon-x d-block d-xl-none font-medium-4', {
-        'text-primary': activeTheme === 'primary',
-        'text-success': activeTheme === 'success',
-        'text-danger': activeTheme === 'danger',
-        'text-info': activeTheme === 'info',
-        'text-warning': activeTheme === 'warning',
-        'text-dark': activeTheme === 'dark'
-      }),
-      size: 20
-    })))), /*#__PURE__*/React.createElement("div", {
-      className: classnames('shadow-bottom', {
-        'd-none': menuShadow === false
-      })
-    }));
-  }
-
-}
+  return /*#__PURE__*/React.createElement("div", {
+    className: "navbar-header"
+  }, /*#__PURE__*/React.createElement("ul", {
+    className: "nav navbar-nav flex-row"
+  }, /*#__PURE__*/React.createElement("li", {
+    className: "nav-item my-auto mr-auto cursor-pointer",
+    onClick: onClickHome
+  }, /*#__PURE__*/React.createElement("img", {
+    className: "img-fluid logo-img",
+    src: IMAGE.LOGO_NO_TEXT,
+    alt: "logo"
+  }), /*#__PURE__*/React.createElement("img", {
+    className: "img-fluid logo-text",
+    src: IMAGE.LOGO_TEXT,
+    alt: "logo"
+  })), /*#__PURE__*/React.createElement("li", {
+    className: "nav-item nav-toggle"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "nav-link modern-nav-toggle"
+  }, collapsed === false ? /*#__PURE__*/React.createElement(Disc, {
+    onClick: () => {
+      toggleSidebarMenu(true);
+      toggle();
+    },
+    className: classnames('toggle-icon icon-x d-none d-xl-block font-medium-4', {
+      'text-primary': activeTheme === 'primary',
+      'text-success': activeTheme === 'success',
+      'text-danger': activeTheme === 'danger',
+      'text-info': activeTheme === 'info',
+      'text-warning': activeTheme === 'warning',
+      'text-dark': activeTheme === 'dark'
+    }),
+    size: 20,
+    "data-tour": "toggle-icon"
+  }) : /*#__PURE__*/React.createElement(Circle, {
+    onClick: () => {
+      toggleSidebarMenu(false);
+      toggle();
+    },
+    className: classnames('toggle-icon icon-x d-none d-xl-block font-medium-4', {
+      'text-primary': activeTheme === 'primary',
+      'text-success': activeTheme === 'success',
+      'text-danger': activeTheme === 'danger',
+      'text-info': activeTheme === 'info',
+      'text-warning': activeTheme === 'warning',
+      'text-dark': activeTheme === 'dark'
+    }),
+    size: 20
+  }), /*#__PURE__*/React.createElement(X, {
+    onClick: sidebarVisibility,
+    className: classnames('toggle-icon icon-x d-block d-xl-none font-medium-4', {
+      'text-primary': activeTheme === 'primary',
+      'text-success': activeTheme === 'success',
+      'text-danger': activeTheme === 'danger',
+      'text-info': activeTheme === 'info',
+      'text-warning': activeTheme === 'warning',
+      'text-dark': activeTheme === 'dark'
+    }),
+    size: 20
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: classnames('shadow-bottom', {
+      'd-none': menuShadow === false
+    })
+  }));
+};
 
 class SideMenuGroup extends React.Component {
   constructor(props) {
@@ -2759,8 +2828,8 @@ class IntlProviderWrapper extends React.Component {
   constructor(...args) {
     super(...args);
     this.state = {
-      locale: localStorage.getItem('language'),
-      messages: this.props.appMessage[localStorage.getItem('language')]
+      locale: this.props.locale,
+      messages: this.props.appMessage[this.props.locale]
     };
   }
 
@@ -2807,8 +2876,11 @@ var messages_en = {
 	"common.icType.passport": "Passport",
 	"common.home": "Home",
 	"common.saveChanges": "Save Changes",
+	"common.cancel": "Cancel",
+	"common.ok": "Ok",
+	"common.noResults": "No results",
 	login: login,
-	"login.firstWelcome": "Welcome you to InOn X!",
+	"login.firstWelcome": "Welcome to InOn X!",
 	"login.logedWelcome": "Hi,",
 	"login.username": "Username *",
 	"login.username.required": "You must enter your username",
@@ -2824,14 +2896,14 @@ var messages_en = {
 	"register.email": "Email",
 	"register.email.required": "You must enter your email address",
 	"register.email.invalid": "You must enter your valid email address",
-	"register.phoneNumber": "Phone mumber *",
+	"register.phoneNumber": "Phone number *",
 	"register.phoneNumber.invalid": "You must enter your valid phone number",
 	"register.phoneNumber.required": "You must enter your phone number",
 	"register.refCode": "Referal code",
 	"register.refCode.invalid": "Referal code is invalid",
 	"register.mustAppcepted": "Your must accept our terms and conditions",
 	"register.registerSuccess": "Partner registration request is being processed. Please check email to complete.Thank you!",
-	"register.agreeWith": "I agree with",
+	"register.agreeWith": "I agree to",
 	"register.policyAndCondition": "Terms and Condition",
 	"register.useService": "use service",
 	forgotPassword: forgotPassword$1,
@@ -2881,7 +2953,8 @@ var messages_en = {
 	"navbar.language.vi": "Vietnamese",
 	"navbar.language.en": "English",
 	"navbar.logout": "Logout",
-	"footer.copyRight": "© 2020 InOn-All rights reserved",
+	"navbar.logout.confirmMessage": "Are you want to logout ?",
+	"footer.copyRight": "© 2020 InOn - All rights reserved",
 	"footer.companySlogan": "Leading insurance provider in Vietnam",
 	setting: setting,
 	"setting.accountInformation": "Account Information",
@@ -2907,11 +2980,13 @@ var messages_en = {
 	"setting.gender.M": "Male",
 	"setting.gender.F": "FeMale",
 	"setting.gender.O": "Others",
-	"setting.updateInfo.success": "Update account infomation successfull !",
-	"setting.saveChanges": "Save Changes",
+	"setting.updateInfo.success": "Update account infomation successfully !",
+	"setting.updateInfo.confirmMessage": "Are you want to change account infomation ?",
 	"changePassword.newPassword": "New Password",
 	"changePassword.oldPassword": "Old Password",
 	"changePassword.passwordMustMatch": "Password must match",
+	"changePassword.confirmMessage": "Are you want to change your password ?",
+	"changePassword.success": "Change password successfully !",
 	"createPassword.title": "CREATE PASSWORD *",
 	"createPassword.password.required": "You must enter your password",
 	"createPassword.password.invalid": "You password is invalid",
@@ -2935,7 +3010,7 @@ var messages_en = {
 	"completeInformation.dateOfBirth.required": "You must enter date of birth",
 	"completeInformation.address": "Address*",
 	"completeInformation.address.required": "You must enter address",
-	"completeInformation.gif": "Referral code",
+	"completeInformation.gif": "Referal code",
 	"completeInformation.branch": "Branch*",
 	"completeInformation.branch.required": "You must enter branch",
 	"completeInformation.accountNbr": "Account number*",
@@ -2968,6 +3043,9 @@ var messages_vi = {
 	"common.icType.passport": "Hộ chiếu",
 	"common.home": "Trang chủ",
 	"common.saveChanges": "Lưu thay đổi",
+	"common.cancel": "Hủy",
+	"common.ok": "Đồng ý",
+	"common.noResults": "Không có kết quả",
 	login: login$1,
 	"login.firstWelcome": "Chào mừng bạn đến với InOn X!",
 	"login.logedWelcome": "Xin chào,",
@@ -3042,7 +3120,8 @@ var messages_vi = {
 	"navbar.language.vi": "Tiếng Việt",
 	"navbar.language.en": "Tiếng Anh",
 	"navbar.logout": "Đăng xuất",
-	"footer.copyRight": "©2020 InOn-Đã đăng ký bản quyền",
+	"navbar.logout.confirmMessage": "Bạn có muốn đăng xuất tài khoản ?",
+	"footer.copyRight": "©2020 InOn - Đã đăng ký bản quyền",
 	"footer.companySlogan": "Nhà cung cấp bảo hiểm hàng đầu Việt Nam",
 	setting: setting$1,
 	"setting.accountInformation": "Thông tin tài khoản",
@@ -3069,9 +3148,12 @@ var messages_vi = {
 	"setting.gender.F": "Nữ",
 	"setting.gender.O": "Khác",
 	"setting.updateInfo.success": "Thay đổi thông tin thành công !",
+	"setting.updateInfo.confirmMessage": "Bạn có muốn thay đổi thông tin tài khoản ?",
 	"changePassword.newPassword": "Mật khẩu mới",
 	"changePassword.oldPassword": "Mật khẩu cũ",
 	"changePassword.passwordMustMatch": "Mật khẩu không trùng khớp",
+	"changePassword.confirmMessage": "Bạn có muốn thay đổi mật khẩu ?",
+	"changePassword.success": "Thay đổi mật khẩu thành công !",
 	"createPassword.title": "TẠO MẬT KHẨU *",
 	"createPassword.password.required": "Bạn phải nhập mật khẩu",
 	"createPassword.password.invalid": "Mật khẩu của bạn không hợp lệ",
@@ -3186,8 +3268,11 @@ const BaseFormDatePicker = ({
 var BaseFormDatePicker$1 = injectIntl(BaseFormDatePicker);
 
 const Select = props => {
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState();
   const [isFocused, setIsFocused] = useState(false);
+  useEffect(() => {
+    setInputValue(props.value);
+  }, [props.value]);
 
   const onChange = (e, actions) => {
     if (props.onChange) {
@@ -3358,7 +3443,7 @@ const mapDataToSelectOptions = (data, lang) => {
   return data.map(item => ({
     value: item.id + '',
     id: item.id,
-    label: item[lang === 'vi' ? 'vn' : 'en']
+    label: item[lang === 'vi' ? 'vn' : 'en'] || item.vn
   }));
 };
 
@@ -3548,7 +3633,18 @@ const UserAccountTab = () => {
   };
 
   const onSubmit = async values => {
-    dispatch(updateUserInfo(trimObjectValues$1(values), avatar.file));
+    dispatch(showConfirmAlert({
+      title: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "setting.accountInformation"
+      }),
+      isShow: true,
+      content: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "setting.updateInfo.confirmMessage"
+      }),
+      onConfirm: () => {
+        dispatch(updateUserInfo(trimObjectValues$1(values), avatar.file));
+      }
+    }));
   };
 
   const onClickBackHome = () => {
@@ -3768,11 +3864,22 @@ const formSchema = object().shape({
 });
 
 const ChangePassword = () => {
-  const history = useHistory();
   const dispatch = useDispatch();
-  useEffect(() => {}, []);
 
-  const onClickSubmit = values => {};
+  const onClickSubmit = values => {
+    dispatch(showConfirmAlert({
+      title: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "setting.changePassword"
+      }),
+      isShow: true,
+      content: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "changePassword.confirmMessage"
+      }),
+      onConfirm: () => {
+        dispatch(changePassword(values));
+      }
+    }));
+  };
 
   const onClickBackHome = () => {
     dispatch(goBackHomePage$1());
@@ -3864,7 +3971,7 @@ const AccountSettings = props => {
     onClick: () => {
       history.push('/change-password');
     }
-  }, /*#__PURE__*/React.createElement(Info, {
+  }, /*#__PURE__*/React.createElement(Lock, {
     size: 16
   }), /*#__PURE__*/React.createElement("span", {
     className: "align-middle ml-50"
@@ -4596,7 +4703,7 @@ const Login = () => {
 const formSchema$2 = object().shape({
   fullName: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "register.fullname.required"
-  })).matches(NOT_ALLOW_SPECIAL_CHAR_REGEX, () => /*#__PURE__*/React.createElement(FormattedMessage, {
+  })).matches(NAME_REGEX, () => /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "register.fullname.invalid"
   })),
   email: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -4620,6 +4727,7 @@ const Register = () => {
   const [isAppcepted, setIsAppcepted] = useState(false);
   const [isNotApccepted, setIsNotAccepted] = useState(false);
   const dispatch = useDispatch();
+  const intl = useIntl();
 
   const onSubmit = async values => {
     if (!isAppcepted) {
@@ -4910,7 +5018,10 @@ const LandingHeader = ({
       src: isLanding2 ? IMAGE.LOGO : IMAGE.LOGO_WHITE,
       alt: "logo"
     })), /*#__PURE__*/React.createElement("div", {
-      className: "languages d-flex align-items-center "
+      className: "languages d-flex align-items-center ",
+      style: {
+        paddingTop: '20px'
+      }
     }, /*#__PURE__*/React.createElement("div", {
       onClick: () => context.switchLanguage('vi'),
       className: classnames('mr-1 cursor-pointer font-weight-bold', {
@@ -4932,7 +5043,7 @@ const LandingHeader = ({
 
 const LandingFooter = () => {
   return /*#__PURE__*/React.createElement("div", {
-    className: "ld-footer px-1 px-md-3 px-lg-5 mt-2"
+    className: "ld-footer pt-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "d-none d-lg-flex justify-content-between"
   }, /*#__PURE__*/React.createElement("div", {
@@ -5341,7 +5452,7 @@ const LandingPage2 = props => {
       backgroundImage: `url('${IMAGE.LANDING_PAGE_2_BG}')`
     }
   }, /*#__PURE__*/React.createElement("div", {
-    className: "col-11 mx-auto mb-5"
+    className: "col-10 mx-auto mb-5"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ld-main2"
   }, /*#__PURE__*/React.createElement("div", {
@@ -5366,6 +5477,25 @@ const ConfirmAlert = () => {
     cancelBtnText,
     ...otherConfigs
   } = useSelector(state => state.ui.confirmAlert);
+  const dispatch = useDispatch();
+  const intl = useIntl();
+
+  const onClickConfirm = () => {
+    if (onConfirm) {
+      onConfirm();
+    }
+
+    dispatch(hideConfirmAlert());
+  };
+
+  const onClickCancel = () => {
+    if (onCancel) {
+      onCancel();
+    }
+
+    dispatch(hideConfirmAlert());
+  };
+
   return /*#__PURE__*/React.createElement(SweetAlert, Object.assign({
     title: title,
     show: isShow,
@@ -5373,10 +5503,14 @@ const ConfirmAlert = () => {
     reverseButtons: true,
     btnSize: "md",
     cancelBtnBsStyle: "secondary",
-    confirmBtnText: confirmBtnText || 'OK',
-    cancelBtnText: cancelBtnText || 'Cancel',
-    onConfirm: onConfirm,
-    onCancel: onCancel
+    confirmBtnText: confirmBtnText || intl.formatMessage({
+      id: 'common.ok'
+    }),
+    cancelBtnText: cancelBtnText || intl.formatMessage({
+      id: 'common.cancel'
+    }),
+    onConfirm: onClickConfirm,
+    onCancel: onClickCancel
   }, otherConfigs), content);
 };
 
@@ -5384,6 +5518,7 @@ const AppRouter = props => {
   const {
     checkLoginStatus,
     appId,
+    user,
     loginStatus,
     isAuthentication,
     authToken,
@@ -5460,6 +5595,7 @@ const AppRouter = props => {
     path: 'complete-information'
   }];
   return /*#__PURE__*/React.createElement(IntlProviderWrapper, {
+    locale: user && user.userSettings ? user.userSettings.language.toLowerCase() : localStorage.getItem('language'),
     appMessage: appMessage
   }, /*#__PURE__*/React.createElement(Router, {
     history: history
@@ -5511,7 +5647,8 @@ const mapStateToProps$3 = state => {
   return {
     isAuthentication: !!state.auth.authToken,
     authToken: state.auth.authToken,
-    loginStatus: state.auth.loginStatus
+    loginStatus: state.auth.loginStatus,
+    user: state.auth.user
   };
 };
 
@@ -5613,13 +5750,13 @@ class FallbackSpinner extends React.Component {
 
 const SHOW_CONFIRM_ALERT$1 = 'SHOW_CONFIRM_ALERT';
 const HIDE_CONFIRM_ALERT$1 = 'HIDE_CONFIRM_ALERT';
-const showConfirmAlert = configs => {
+const showConfirmAlert$1 = configs => {
   return dispatch => dispatch({
     type: SHOW_CONFIRM_ALERT$1,
     payload: configs
   });
 };
-const hideConfirmAlert = () => {
+const hideConfirmAlert$1 = () => {
   return dispatch => dispatch({
     type: HIDE_CONFIRM_ALERT$1
   });
@@ -5637,5 +5774,5 @@ function useDeviceDetect() {
   };
 }
 
-export { AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, HttpClient, Radio, Select, hideConfirmAlert, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, useWardList, useWindowDimensions };
+export { AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, HttpClient, Radio, Select, hideConfirmAlert$1 as hideConfirmAlert, showConfirmAlert$1 as showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, useWardList, useWindowDimensions };
 //# sourceMappingURL=index.modern.js.map

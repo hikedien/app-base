@@ -894,8 +894,10 @@ span.flatpickr-day.selected {
         .landing-page .ld-main .lg-content-header .tab-control.active {
           color: #51912d;
           border-bottom: 3px solid #51912d; }
-  .landing-page .lg-header .languages .active {
-    color: #77c64d; }
+  .landing-page .lg-header .languages {
+    padding-top: 20px; }
+    .landing-page .lg-header .languages .active {
+      color: #77c64d; }
   .landing-page .lg-content {
     background: linear-gradient(187.45deg, rgba(0, 0, 0, 0.13) 5.78%, rgba(17, 57, 52, 0) 72.97%);
     padding: 6rem; }
@@ -924,6 +926,8 @@ span.flatpickr-day.selected {
     .landing-page .lg-content button {
       background: linear-gradient(86.55deg, #51912d 18.03%, #0e6856 104.15%);
       border-radius: 31px; }
+  .landing-page .ld-footer {
+    margin: 0 10rem; }
   .landing-page .ld-main2 {
     padding-top: 5rem; }
     .landing-page .ld-main2 .lg-content-header {
@@ -986,6 +990,7 @@ span.flatpickr-day.selected {
         padding: 2rem; }
     .landing-page .ld-footer {
       position: relative;
+      margin: auto;
       width: 100%; }
     .landing-page .mobile-icon-blur {
       position: absolute;
