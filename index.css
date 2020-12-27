@@ -9049,7 +9049,7 @@ html {
       -webkit-backface-visibility: hidden;
               backface-visibility: hidden;
       min-height: calc(100% - 4rem);
-      margin-left: 260px; }
+      margin-left: 280px; }
       html body .content.app-content {
         overflow: hidden; }
         html body .content.app-content.show-overlay .content-overlay {
@@ -9179,27 +9179,27 @@ html {
 */
 @media (min-width: 992px) {
   body .content-right {
-    width: calc(100% - 260px);
+    width: calc(100% - 280px);
     float: right; }
   body .content-left {
-    width: calc(100% - 260px);
+    width: calc(100% - 280px);
     float: left; }
   body .content-detached {
     width: 100%; }
     body .content-detached.content-right {
       float: right;
-      margin-left: -260px; }
+      margin-left: -280px; }
       body .content-detached.content-right .content-body {
-        margin-left: calc(260px + 2.2rem); }
+        margin-left: calc(280px + 2.2rem); }
     body .content-detached.content-left {
       float: left;
-      margin-right: -260px; }
+      margin-right: -280px; }
       body .content-detached.content-left .content-body {
-        margin-right: calc(260px + 2.2rem); }
+        margin-right: calc(280px + 2.2rem); }
   .sidebar-right.sidebar-sticky {
     float: right !important;
-    margin-left: -260px;
-    width: 260px !important;
+    margin-left: -280px;
+    width: 280px !important;
     margin-top: 6rem; }
   [data-col="content-left-sidebar"] .sticky-wrapper {
     float: left; } }
@@ -9385,7 +9385,7 @@ footer.navbar-border {
   display: table-cell;
   height: 100%;
   overflow: hidden;
-  width: 260px;
+  width: 280px;
   transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); }
   .main-menu.menu-light {
     color: #626262;
@@ -9409,12 +9409,13 @@ footer.navbar-border {
         .main-menu.menu-light .navigation .navigation-header span {
           font-weight: 500; }
       .main-menu.menu-light .navigation li .menu-text {
-        width: 170px;
+        width: 210px;
         overflow: hidden;
         text-overflow: ellipsis;
+        font-weight: bold;
         white-space: nowrap; }
         .main-menu.menu-light .navigation li .menu-text:last-child {
-          width: 180px; }
+          width: 200px; }
       .main-menu.menu-light .navigation li.has-sub ul.menu-content {
         padding: 7px;
         margin: -7px -7px 0 -7px;
@@ -9545,12 +9546,13 @@ footer.navbar-border {
         .main-menu.menu-dark .navigation .navigation-header span {
           font-weight: 500; }
       .main-menu.menu-dark .navigation li .menu-text {
-        width: 170px;
+        width: 210px;
         overflow: hidden;
         text-overflow: ellipsis;
+        font-weight: bold;
         white-space: nowrap; }
         .main-menu.menu-dark .navigation li .menu-text:last-child {
-          width: 180px; }
+          width: 200px; }
       .main-menu.menu-dark .navigation li.has-sub ul.menu-content {
         padding: 7px;
         margin: -7px -7px 0 -7px;
@@ -9687,7 +9689,7 @@ footer.navbar-border {
     overflow-y: scroll; }
   .main-menu .navbar-header {
     height: 100%;
-    width: 260px;
+    width: 280px;
     height: 5rem;
     position: relative;
     padding: 0.35rem 1rem 0.3rem 1.64rem;
@@ -14767,7 +14769,7 @@ html [type="button"],
   z-index: 1000;
   /* For sm screen*/ }
   .header-navbar.fixed-top {
-    left: 260px; }
+    left: 280px; }
   .header-navbar[class*="bg-"] .navbar-nav .nav-item a {
     color: #fff !important; }
     .header-navbar[class*="bg-"] .navbar-nav .nav-item a.dropdown-item span,
@@ -14783,7 +14785,7 @@ html [type="button"],
     margin: 1.3rem 2.2rem 0;
     border-radius: 0.5rem;
     position: fixed;
-    width: calc(100% - calc(2.2rem * 2) - 260px);
+    width: calc(100% - calc(2.2rem * 2) - 280px);
     z-index: 11;
     right: 0; }
   .header-navbar.navbar-static-top {
@@ -15131,7 +15133,7 @@ body[data-col="1-column"] .header-navbar.floating-nav {
 
 @media (min-width: 1200px) and (-ms-high-contrast: active), (-ms-high-contrast: none) {
   body:not([data-col="1-columns"]) .header-navbar.floating-nav {
-    width: calc(100% - 60px - 260px); } }
+    width: calc(100% - 60px - 280px); } }
 
 @media (max-width: 1199.98px) {
   .header-navbar .navbar-container ul.nav li.dropdown-language > a.nav-link {

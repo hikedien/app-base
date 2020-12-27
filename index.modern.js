@@ -932,7 +932,7 @@ const goBackHomePage$1 = () => {
     if (appId === AppId.APP_NO1) {
       history.push('/');
     } else {
-      window.location.href = getExternalAppUrl$1(AppId.APP_NO1, '/home');
+      window.location.href = getExternalAppUrl$1(AppId.APP_NO1, '/');
     }
   };
 };

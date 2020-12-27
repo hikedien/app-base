@@ -1102,7 +1102,7 @@ var goBackHomePage$1 = function goBackHomePage() {
       if (appId === AppId.APP_NO1) {
         history.push('/');
       } else {
-        window.location.href = getExternalAppUrl$1(AppId.APP_NO1, '/home');
+        window.location.href = getExternalAppUrl$1(AppId.APP_NO1, '/');
       }
 
       return Promise.resolve();
