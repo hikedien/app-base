@@ -6450,7 +6450,7 @@ var usePageAuthorities = function usePageAuthorities() {
       authorities = _useState[0],
       setAuthorities = _useState[1];
 
-  var _useSelector = useSelector(function (state) {
+  var _useSelector = reactRedux.useSelector(function (state) {
     return state.navbar;
   }),
       userRoles = _useSelector.userRoles,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Component, PureComponent } from 'react';
-import { useDispatch, connect, useSelector as useSelector$1, Provider } from 'react-redux';
+import { useDispatch, connect, useSelector, Provider } from 'react-redux';
 import { combineReducers, createStore, applyMiddleware, compose } from 'redux';
 import createDebounce from 'redux-debounced';
 import thunk from 'redux-thunk';
@@ -1801,7 +1801,7 @@ const Footer = props => {
     width
   } = useWindowDimensions();
   const history = useHistory();
-  const navConfigs = useSelector$1(state => [...state.navbar.navConfigs]);
+  const navConfigs = useSelector(state => [...state.navbar.navConfigs]);
 
   const goToPage = (e, name) => {
     e.preventDefault();
@@ -3641,7 +3641,7 @@ const UserAccountTab = () => {
     userDetails = {},
     userSettings = {},
     ...user
-  } = useSelector$1(state => state.auth.user);
+  } = useSelector(state => state.auth.user);
   const history = useHistory();
   const dispatch = useDispatch();
   const {
@@ -4642,7 +4642,7 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(null);
   const [isRemeberMe, setIsRemeberMe] = useState(false);
   const dispatch = useDispatch();
-  const loginStatus = useSelector$1(state => state.auth.loginStatus);
+  const loginStatus = useSelector(state => state.auth.loginStatus);
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem(REMEMBER_ME_TOKEN));
 
@@ -5278,7 +5278,7 @@ const CompleteInforValidate = object().shape({
 
 const CompleteInformation = () => {
   const intl = useIntl();
-  const user = useSelector$1(state => state.auth.register.user);
+  const user = useSelector(state => state.auth.register.user);
   const {
     cities
   } = useCityList(VN_COUNTRY_CODE);
@@ -5524,7 +5524,7 @@ const ConfirmAlert = () => {
     confirmBtnText,
     cancelBtnText,
     ...otherConfigs
-  } = useSelector$1(state => state.ui.confirmAlert);
+  } = useSelector(state => state.ui.confirmAlert);
   const dispatch = useDispatch();
   const intl = useIntl();
 
@@ -5718,7 +5718,7 @@ TopBarProgress.config({
 const LoadingSpinner = () => {
   const {
     isLoading
-  } = useSelector$1(state => state.ui);
+  } = useSelector(state => state.ui);
   return isLoading ? /*#__PURE__*/React.createElement(TopBarProgress, null) : null;
 };
 
