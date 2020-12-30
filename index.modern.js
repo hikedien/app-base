@@ -5843,7 +5843,7 @@ const usePageAuthorities = () => {
     const userRoleList = userRoles.filter(item => item.roleId === lastRole.id);
     const authList = userRoleList.map(item => item.authority);
     setAuthorities(authList);
-  }, [history.location.pathname]);
+  }, [userRoles]);
   return authorities;
 };
 

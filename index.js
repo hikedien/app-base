@@ -6474,7 +6474,7 @@ var usePageAuthorities = function usePageAuthorities() {
       return item.authority;
     });
     setAuthorities(authList);
-  }, [history.location.pathname]);
+  }, [userRoles]);
   return authorities;
 };
 
