@@ -119,6 +119,7 @@ var API_REGISTER = '/nth/onboarding/api/authenticate/register';
 var API_GET_USER = '/nth/user/api/users';
 var API_UPDATE_USER_INFO = '/nth/user/api/update-user-info';
 var API_GET_NAV_CONFIGS = '/nth/accesscontrol/api/roles';
+var API_GET_USER_ROLES = '/nth/accesscontrol/api/user-group-roles';
 var API_CREATE_PASSWORD = '/nth/onboarding/api/authenticate/create-new-password';
 var API_GET_USER_BY_REGISTER_TOKEN = '/nth/onboarding/api/authenticate/get-partner';
 var API_COMPLETE_INFO = '/nth/onboarding/api/authenticate/complete-info';
@@ -142,6 +143,13 @@ var PERSONAL_ID_REGEX = /^(\d{9}|\d{12})$/;
 var CITIZEN_INDENTIFY_REGEX = /^(\d{12})$/;
 var PASSPORT_REGEX = /^(?!^0+$)[a-zA-Z0-9]{3,20}$/;
 var NAME_REGEX = /^([aàảãáạăằẳẵắặâầẩẫấậbcdđeèẻẽéẹêềểễếệfghiìỉĩíịjklmnoòỏõóọôồổỗốộơờởỡớợpqrstuùủũúụưừửữứựvwxyỳỷỹýỵz0-9A-Za-z_ ])+$/g;
+var AUTHORITIES = {
+  VIEW: 'view',
+  EDIT: 'edit',
+  APPROVE: 'approve',
+  CREATE: 'create'
+};
+var API_TIME_OUT = 70000;
 var LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
   FAIL: 'FAIL'
@@ -182,7 +190,7 @@ var IC_TYPES_OPTIONS = [{
     id: "common.icType.citizenIdentify"
   })
 }];
-var getExternalAppUrl$1 = function getExternalAppUrl(appId, url) {
+var getExternalAppUrl = function getExternalAppUrl(appId, url) {
   switch (appId) {
     case AppId.APP_NO1:
       return window.location.origin + "/app" + url + "?redirectUrl=" + url;
@@ -265,6 +273,7 @@ var appConfigs = {
   API_GET_USER: API_GET_USER,
   API_UPDATE_USER_INFO: API_UPDATE_USER_INFO,
   API_GET_NAV_CONFIGS: API_GET_NAV_CONFIGS,
+  API_GET_USER_ROLES: API_GET_USER_ROLES,
   API_CREATE_PASSWORD: API_CREATE_PASSWORD,
   API_GET_USER_BY_REGISTER_TOKEN: API_GET_USER_BY_REGISTER_TOKEN,
   API_COMPLETE_INFO: API_COMPLETE_INFO,
@@ -288,11 +297,13 @@ var appConfigs = {
   CITIZEN_INDENTIFY_REGEX: CITIZEN_INDENTIFY_REGEX,
   PASSPORT_REGEX: PASSPORT_REGEX,
   NAME_REGEX: NAME_REGEX,
+  AUTHORITIES: AUTHORITIES,
+  API_TIME_OUT: API_TIME_OUT,
   LOGIN_STATUS: LOGIN_STATUS,
   USER_TYPE: USER_TYPE,
   GENDER_OPTIONS: GENDER_OPTIONS,
   IC_TYPES_OPTIONS: IC_TYPES_OPTIONS,
-  getExternalAppUrl: getExternalAppUrl$1,
+  getExternalAppUrl: getExternalAppUrl,
   getContextPath: getContextPath,
   getPropObject: getPropObject,
   USER_ROLE: USER_ROLE,
@@ -320,7 +331,7 @@ var hideConfirmAlert = function hideConfirmAlert() {
 };
 
 var HttpClient = Axios.create({
-  timeout: 10000,
+  timeout: API_TIME_OUT,
   adapter: axiosExtensions.throttleAdapterEnhancer(axiosExtensions.cacheAdapterEnhancer(Axios.defaults.adapter, {
     threshold: 15 * 60 * 1000
   })),
@@ -725,7 +736,7 @@ var loginAction = function loginAction(user) {
               });
 
               if (getState().customizer.appId !== AppId.APP_NO1) {
-                window.location.href = getExternalAppUrl$1(AppId.APP_NO1, '/');
+                window.location.href = getExternalAppUrl(AppId.APP_NO1, '/');
               } else {
                 history$1.push('/');
               }
@@ -1087,13 +1098,23 @@ var NavBarService = function NavBarService() {};
 NavBarService.getNativagtion = function () {
   return HttpClient.get(API_GET_NAV_CONFIGS, {
     params: {
-      date: new Date().getMilliseconds()
+      uuid: generateUUID()
+    },
+    isBackgroundRequest: true
+  });
+};
+
+NavBarService.getUserGroupRole = function (groupId) {
+  return HttpClient.get(API_GET_USER_ROLES + "/" + groupId, {
+    params: {
+      uuid: generateUUID()
     },
     isBackgroundRequest: true
   });
 };
 
 var LOAD_NATIVGATION = 'LOAD_NATIVGATION';
+var LOAD_USER_ROLE = 'LOAD_USER_ROLE';
 var goBackHomePage$1 = function goBackHomePage() {
   return function (dispatch, getState) {
     try {
@@ -1102,7 +1123,7 @@ var goBackHomePage$1 = function goBackHomePage() {
       if (appId === AppId.APP_NO1) {
         history.push('/');
       } else {
-        window.location.href = getExternalAppUrl$1(AppId.APP_NO1, '/');
+        window.location.href = getExternalAppUrl(AppId.APP_NO1, '/');
       }
 
       return Promise.resolve();
@@ -1114,7 +1135,8 @@ var goBackHomePage$1 = function goBackHomePage() {
 
 var initialState = {
   navConfigs: [],
-  roles: []
+  roles: [],
+  userRoles: []
 };
 
 var navbarReducer = function navbarReducer(state, action) {
@@ -1124,7 +1146,16 @@ var navbarReducer = function navbarReducer(state, action) {
 
   switch (action.type) {
     case LOAD_NATIVGATION:
-      return _extends({}, state, action.payload);
+      return _extends({}, state, {
+        navConfigs: action.payload.navConfigs,
+        roles: action.payload.roles
+      });
+
+    case LOAD_USER_ROLE:
+      return _extends({}, state, {
+        navConfigs: action.payload.navConfigs,
+        userRoles: action.payload
+      });
 
     default:
       return state;
@@ -1768,7 +1799,7 @@ var NavbarUser = /*#__PURE__*/function (_React$PureComponent) {
           id: "menu." + item.keyLang
         });
         item.isExternalApp = item.appId !== _this2.props.appId;
-        item.navLinkExternal = getExternalAppUrl$1(item.appId, item.menuPath);
+        item.navLinkExternal = getExternalAppUrl(item.appId, item.menuPath);
         return item;
       });
       this.setState({
@@ -2011,9 +2042,6 @@ var Footer = function Footer(props) {
   var history = reactRouterDom.useHistory();
   var navConfigs = reactRedux.useSelector(function (state) {
     return [].concat(state.navbar.navConfigs);
-  });
-  var authToken = reactRedux.useSelector(function (state) {
-    return state.auth.authToken;
   });
 
   var goToPage = function goToPage(e, name) {
@@ -2511,7 +2539,7 @@ var SideMenuContent = /*#__PURE__*/function (_React$Component) {
     };
 
     _this.getItemLink = function (item) {
-      return item.isExternalApp ? getExternalAppUrl$1(item.appId, item.navLink) : '';
+      return item.isExternalApp ? getExternalAppUrl(item.appId, item.navLink) : '';
     };
 
     _this.parentArr = [];
@@ -3136,24 +3164,43 @@ var Layout$1 = reactRedux.connect(mapStateToProps$2, {
 })(Layout);
 
 var LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
+var LOAD_USER_ROLE$1 = 'LOAD_USER_ROLE';
 var loadNavtigation = function loadNavtigation(appId) {
   return function (dispatch) {
     try {
-      var _temp2 = _catch(function () {
-        return Promise.resolve(NavBarService.getNativagtion()).then(function (res) {
-          var roles = res.data || [];
-          var navConfigs = getNativgationConfig(appId, roles);
-          dispatch({
-            type: LOAD_NATIVGATION$1,
-            payload: {
-              navConfigs: navConfigs,
-              roles: roles
-            }
-          });
+      return Promise.resolve(NavBarService.getNativagtion()).then(function (res) {
+        var roles = res.data || [];
+        var navConfigs = getNativgationConfig(appId, roles);
+        dispatch({
+          type: LOAD_NATIVGATION$1,
+          payload: {
+            navConfigs: navConfigs,
+            roles: roles
+          }
         });
-      }, function () {});
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+};
+var loadUserRoles = function loadUserRoles() {
+  return function (dispatch, getState) {
+    try {
+      var groupId = getState().auth.user.groupId;
 
-      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
+      if (!groupId) {
+        return Promise.resolve();
+      }
+
+      return Promise.resolve(NavBarService.getUserGroupRole(groupId)).then(function (res) {
+        if (res.status === 200) {
+          dispatch({
+            type: LOAD_USER_ROLE$1,
+            payload: res.data
+          });
+        }
+      });
     } catch (e) {
       return Promise.reject(e);
     }
@@ -3553,6 +3600,7 @@ var BaseFormGroup = function BaseFormGroup(_ref) {
       touched = _ref.touched,
       messageId = _ref.messageId,
       type = _ref.type,
+      disabled = _ref.disabled,
       _ref$isRequired = _ref.isRequired,
       isRequired = _ref$isRequired === void 0 ? true : _ref$isRequired;
   return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
@@ -3562,12 +3610,13 @@ var BaseFormGroup = function BaseFormGroup(_ref) {
   }, function (msg) {
     return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.Field, {
       type: type,
+      disabled: disabled,
       name: fieldName,
-      className: "form-control " + (isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'),
+      className: "form-control " + (isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'),
       placeholder: msg
-    }), isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) ? /*#__PURE__*/React__default.createElement("div", {
+    }), isRequired && errors[fieldName] && touched[fieldName] ? /*#__PURE__*/React__default.createElement("div", {
       className: "text-danger"
-    }, getPropObject(errors, fieldName)) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
+    }, errors[fieldName]) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
   }));
 };
 
@@ -6108,6 +6157,7 @@ var AppRouter = function AppRouter(props) {
       authToken = props.authToken,
       children = props.children,
       loadNavtigation = props.loadNavtigation,
+      loadUserRoles = props.loadUserRoles,
       setAppId = props.setAppId,
       history = props.history,
       message = props.message;
@@ -6123,6 +6173,7 @@ var AppRouter = function AppRouter(props) {
 
     if (authToken) {
       loadNavtigation(appId);
+      loadUserRoles();
     }
   }, [authToken]);
 
@@ -6256,6 +6307,7 @@ var mapStateToProps$3 = function mapStateToProps(state) {
 var AppRouter$1 = reactRedux.connect(mapStateToProps$3, {
   checkLoginStatus: checkLoginStatus,
   loadNavtigation: loadNavtigation,
+  loadUserRoles: loadUserRoles,
   loginAction: loginAction,
   setAppId: setAppId
 })(AppRouter);
@@ -6394,6 +6446,39 @@ function useDeviceDetect() {
   };
 }
 
+var usePageAuthorities = function usePageAuthorities() {
+  var _useState = React.useState([]),
+      authorities = _useState[0],
+      setAuthorities = _useState[1];
+
+  var _useSelector = useSelector(function (state) {
+    return state.navbar;
+  }),
+      userRoles = _useSelector.userRoles,
+      roles = _useSelector.roles;
+
+  var history = reactRouterDom.useHistory();
+  React.useEffect(function () {
+    var roleList = roles.filter(function (item) {
+      return history.location.pathname.includes(item.menuPath);
+    });
+
+    if (!roleList.length) {
+      return;
+    }
+
+    var lastRole = roleList[roleList.length - 1];
+    var userRoleList = userRoles.filter(function (item) {
+      return item.roleId === lastRole.id;
+    });
+    var authList = userRoleList.map(function (item) {
+      return item.authority;
+    });
+    setAuthorities(authList);
+  }, [history.location.pathname]);
+  return authorities;
+};
+
 Object.defineProperty(exports, 'toast', {
   enumerable: true,
   get: function () {
@@ -6432,6 +6517,7 @@ exports.useBankList = useBankList;
 exports.useCityList = useCityList;
 exports.useDeviceDetect = useDeviceDetect;
 exports.useDistrictList = useDistrictList;
+exports.usePageAuthorities = usePageAuthorities;
 exports.useWardList = useWardList;
 exports.useWindowDimensions = useWindowDimensions;
 //# sourceMappingURL=index.js.map

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Component, PureComponent } from 'react';
-import { useDispatch, connect, useSelector, Provider } from 'react-redux';
+import { useDispatch, connect, useSelector as useSelector$1, Provider } from 'react-redux';
 import { combineReducers, createStore, applyMiddleware, compose } from 'redux';
 import createDebounce from 'redux-debounced';
 import thunk from 'redux-thunk';
@@ -116,6 +116,7 @@ const API_REGISTER = '/nth/onboarding/api/authenticate/register';
 const API_GET_USER = '/nth/user/api/users';
 const API_UPDATE_USER_INFO = '/nth/user/api/update-user-info';
 const API_GET_NAV_CONFIGS = '/nth/accesscontrol/api/roles';
+const API_GET_USER_ROLES = '/nth/accesscontrol/api/user-group-roles';
 const API_CREATE_PASSWORD = '/nth/onboarding/api/authenticate/create-new-password';
 const API_GET_USER_BY_REGISTER_TOKEN = '/nth/onboarding/api/authenticate/get-partner';
 const API_COMPLETE_INFO = '/nth/onboarding/api/authenticate/complete-info';
@@ -139,6 +140,13 @@ const PERSONAL_ID_REGEX = /^(\d{9}|\d{12})$/;
 const CITIZEN_INDENTIFY_REGEX = /^(\d{12})$/;
 const PASSPORT_REGEX = /^(?!^0+$)[a-zA-Z0-9]{3,20}$/;
 const NAME_REGEX = /^([aàảãáạăằẳẵắặâầẩẫấậbcdđeèẻẽéẹêềểễếệfghiìỉĩíịjklmnoòỏõóọôồổỗốộơờởỡớợpqrstuùủũúụưừửữứựvwxyỳỷỹýỵz0-9A-Za-z_ ])+$/g;
+const AUTHORITIES = {
+  VIEW: 'view',
+  EDIT: 'edit',
+  APPROVE: 'approve',
+  CREATE: 'create'
+};
+const API_TIME_OUT = 70000;
 const LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
   FAIL: 'FAIL'
@@ -179,7 +187,7 @@ const IC_TYPES_OPTIONS = [{
     id: "common.icType.citizenIdentify"
   })
 }];
-const getExternalAppUrl$1 = (appId, url) => {
+const getExternalAppUrl = (appId, url) => {
   switch (appId) {
     case AppId.APP_NO1:
       return `${window.location.origin}/app${url}?redirectUrl=${url}`;
@@ -262,6 +270,7 @@ var appConfigs = {
   API_GET_USER: API_GET_USER,
   API_UPDATE_USER_INFO: API_UPDATE_USER_INFO,
   API_GET_NAV_CONFIGS: API_GET_NAV_CONFIGS,
+  API_GET_USER_ROLES: API_GET_USER_ROLES,
   API_CREATE_PASSWORD: API_CREATE_PASSWORD,
   API_GET_USER_BY_REGISTER_TOKEN: API_GET_USER_BY_REGISTER_TOKEN,
   API_COMPLETE_INFO: API_COMPLETE_INFO,
@@ -285,11 +294,13 @@ var appConfigs = {
   CITIZEN_INDENTIFY_REGEX: CITIZEN_INDENTIFY_REGEX,
   PASSPORT_REGEX: PASSPORT_REGEX,
   NAME_REGEX: NAME_REGEX,
+  AUTHORITIES: AUTHORITIES,
+  API_TIME_OUT: API_TIME_OUT,
   LOGIN_STATUS: LOGIN_STATUS,
   USER_TYPE: USER_TYPE,
   GENDER_OPTIONS: GENDER_OPTIONS,
   IC_TYPES_OPTIONS: IC_TYPES_OPTIONS,
-  getExternalAppUrl: getExternalAppUrl$1,
+  getExternalAppUrl: getExternalAppUrl,
   getContextPath: getContextPath,
   getPropObject: getPropObject,
   USER_ROLE: USER_ROLE,
@@ -313,7 +324,7 @@ const hideConfirmAlert = () => {
 };
 
 const HttpClient = Axios.create({
-  timeout: 10000,
+  timeout: API_TIME_OUT,
   adapter: throttleAdapterEnhancer(cacheAdapterEnhancer(Axios.defaults.adapter, {
     threshold: 15 * 60 * 1000
   })),
@@ -623,7 +634,7 @@ const loginAction = user => {
       });
 
       if (getState().customizer.appId !== AppId.APP_NO1) {
-        window.location.href = getExternalAppUrl$1(AppId.APP_NO1, '/');
+        window.location.href = getExternalAppUrl(AppId.APP_NO1, '/');
       } else {
         history$1.push('/');
       }
@@ -916,13 +927,23 @@ class NavBarService {}
 NavBarService.getNativagtion = () => {
   return HttpClient.get(API_GET_NAV_CONFIGS, {
     params: {
-      date: new Date().getMilliseconds()
+      uuid: generateUUID()
+    },
+    isBackgroundRequest: true
+  });
+};
+
+NavBarService.getUserGroupRole = groupId => {
+  return HttpClient.get(`${API_GET_USER_ROLES}/${groupId}`, {
+    params: {
+      uuid: generateUUID()
     },
     isBackgroundRequest: true
   });
 };
 
 const LOAD_NATIVGATION = 'LOAD_NATIVGATION';
+const LOAD_USER_ROLE = 'LOAD_USER_ROLE';
 const goBackHomePage$1 = () => {
   return async (dispatch, getState) => {
     const {
@@ -932,21 +953,29 @@ const goBackHomePage$1 = () => {
     if (appId === AppId.APP_NO1) {
       history.push('/');
     } else {
-      window.location.href = getExternalAppUrl$1(AppId.APP_NO1, '/');
+      window.location.href = getExternalAppUrl(AppId.APP_NO1, '/');
     }
   };
 };
 
 const initialState = {
   navConfigs: [],
-  roles: []
+  roles: [],
+  userRoles: []
 };
 
 const navbarReducer = (state = initialState, action) => {
   switch (action.type) {
     case LOAD_NATIVGATION:
       return { ...state,
-        ...action.payload
+        navConfigs: action.payload.navConfigs,
+        roles: action.payload.roles
+      };
+
+    case LOAD_USER_ROLE:
+      return { ...state,
+        navConfigs: action.payload.navConfigs,
+        userRoles: action.payload
       };
 
     default:
@@ -1546,7 +1575,7 @@ class NavbarUser extends React.PureComponent {
           id: `menu.${item.keyLang}`
         });
         item.isExternalApp = item.appId !== this.props.appId;
-        item.navLinkExternal = getExternalAppUrl$1(item.appId, item.menuPath);
+        item.navLinkExternal = getExternalAppUrl(item.appId, item.menuPath);
         return item;
       });
       this.setState({
@@ -1773,8 +1802,7 @@ const Footer = props => {
     width
   } = useWindowDimensions();
   const history = useHistory();
-  const navConfigs = useSelector(state => [...state.navbar.navConfigs]);
-  const authToken = useSelector(state => state.auth.authToken);
+  const navConfigs = useSelector$1(state => [...state.navbar.navConfigs]);
 
   const goToPage = (e, name) => {
     e.preventDefault();
@@ -2221,7 +2249,7 @@ class SideMenuContent extends React.Component {
     };
 
     this.getItemLink = item => {
-      return item.isExternalApp ? getExternalAppUrl$1(item.appId, item.navLink) : '';
+      return item.isExternalApp ? getExternalAppUrl(item.appId, item.navLink) : '';
     };
 
     this.parentArr = [];
@@ -2805,20 +2833,39 @@ var Layout$1 = connect(mapStateToProps$2, {
 })(Layout);
 
 const LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
+const LOAD_USER_ROLE$1 = 'LOAD_USER_ROLE';
 const loadNavtigation = appId => {
   return async dispatch => {
-    try {
-      const res = await NavBarService.getNativagtion();
-      const roles = res.data || [];
-      const navConfigs = getNativgationConfig(appId, roles);
+    const res = await NavBarService.getNativagtion();
+    const roles = res.data || [];
+    const navConfigs = getNativgationConfig(appId, roles);
+    dispatch({
+      type: LOAD_NATIVGATION$1,
+      payload: {
+        navConfigs,
+        roles
+      }
+    });
+  };
+};
+const loadUserRoles = () => {
+  return async (dispatch, getState) => {
+    const {
+      groupId
+    } = getState().auth.user;
+
+    if (!groupId) {
+      return;
+    }
+
+    const res = await NavBarService.getUserGroupRole(groupId);
+
+    if (res.status === 200) {
       dispatch({
-        type: LOAD_NATIVGATION$1,
-        payload: {
-          navConfigs,
-          roles
-        }
+        type: LOAD_USER_ROLE$1,
+        payload: res.data
       });
-    } catch (error) {}
+    }
   };
 };
 
@@ -3203,6 +3250,7 @@ const BaseFormGroup = ({
   touched,
   messageId,
   type,
+  disabled,
   isRequired: _isRequired = true
 }) => {
   return /*#__PURE__*/React.createElement(FormGroup, {
@@ -3211,12 +3259,13 @@ const BaseFormGroup = ({
     id: messageId
   }, msg => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Field, {
     type: type,
+    disabled: disabled,
     name: fieldName,
-    className: `form-control ${_isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'}`,
+    className: `form-control ${_isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'}`,
     placeholder: msg
-  }), _isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) ? /*#__PURE__*/React.createElement("div", {
+  }), _isRequired && errors[fieldName] && touched[fieldName] ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
-  }, getPropObject(errors, fieldName)) : null, /*#__PURE__*/React.createElement(Label, null, msg))));
+  }, errors[fieldName]) : null, /*#__PURE__*/React.createElement(Label, null, msg))));
 };
 
 const DatePicker = props => /*#__PURE__*/React.createElement(FormGroup, {
@@ -3593,7 +3642,7 @@ const UserAccountTab = () => {
     userDetails = {},
     userSettings = {},
     ...user
-  } = useSelector(state => state.auth.user);
+  } = useSelector$1(state => state.auth.user);
   const history = useHistory();
   const dispatch = useDispatch();
   const {
@@ -4594,7 +4643,7 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(null);
   const [isRemeberMe, setIsRemeberMe] = useState(false);
   const dispatch = useDispatch();
-  const loginStatus = useSelector(state => state.auth.loginStatus);
+  const loginStatus = useSelector$1(state => state.auth.loginStatus);
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem(REMEMBER_ME_TOKEN));
 
@@ -5230,7 +5279,7 @@ const CompleteInforValidate = object().shape({
 
 const CompleteInformation = () => {
   const intl = useIntl();
-  const user = useSelector(state => state.auth.register.user);
+  const user = useSelector$1(state => state.auth.register.user);
   const {
     cities
   } = useCityList(VN_COUNTRY_CODE);
@@ -5476,7 +5525,7 @@ const ConfirmAlert = () => {
     confirmBtnText,
     cancelBtnText,
     ...otherConfigs
-  } = useSelector(state => state.ui.confirmAlert);
+  } = useSelector$1(state => state.ui.confirmAlert);
   const dispatch = useDispatch();
   const intl = useIntl();
 
@@ -5524,6 +5573,7 @@ const AppRouter = props => {
     authToken,
     children,
     loadNavtigation,
+    loadUserRoles,
     setAppId,
     history,
     message
@@ -5540,6 +5590,7 @@ const AppRouter = props => {
 
     if (authToken) {
       loadNavtigation(appId);
+      loadUserRoles();
     }
   }, [authToken]);
 
@@ -5655,6 +5706,7 @@ const mapStateToProps$3 = state => {
 var AppRouter$1 = connect(mapStateToProps$3, {
   checkLoginStatus,
   loadNavtigation,
+  loadUserRoles,
   loginAction,
   setAppId
 })(AppRouter);
@@ -5667,7 +5719,7 @@ TopBarProgress.config({
 const LoadingSpinner = () => {
   const {
     isLoading
-  } = useSelector(state => state.ui);
+  } = useSelector$1(state => state.ui);
   return isLoading ? /*#__PURE__*/React.createElement(TopBarProgress, null) : null;
 };
 
@@ -5774,5 +5826,27 @@ function useDeviceDetect() {
   };
 }
 
-export { AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, HttpClient, Radio, Select, hideConfirmAlert$1 as hideConfirmAlert, showConfirmAlert$1 as showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, useWardList, useWindowDimensions };
+const usePageAuthorities = () => {
+  const [authorities, setAuthorities] = useState([]);
+  const {
+    userRoles,
+    roles
+  } = useSelector(state => state.navbar);
+  const history = useHistory();
+  useEffect(() => {
+    const roleList = roles.filter(item => history.location.pathname.includes(item.menuPath));
+
+    if (!roleList.length) {
+      return;
+    }
+
+    const lastRole = roleList[roleList.length - 1];
+    const userRoleList = userRoles.filter(item => item.roleId === lastRole.id);
+    const authList = userRoleList.map(item => item.authority);
+    setAuthorities(authList);
+  }, [history.location.pathname]);
+  return authorities;
+};
+
+export { AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, HttpClient, Radio, Select, hideConfirmAlert$1 as hideConfirmAlert, showConfirmAlert$1 as showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
 //# sourceMappingURL=index.modern.js.map
