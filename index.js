@@ -1153,7 +1153,6 @@ var navbarReducer = function navbarReducer(state, action) {
 
     case LOAD_USER_ROLE:
       return _extends({}, state, {
-        navConfigs: action.payload.navConfigs,
         userRoles: action.payload
       });
 

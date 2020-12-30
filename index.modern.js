@@ -974,7 +974,6 @@ const navbarReducer = (state = initialState, action) => {
 
     case LOAD_USER_ROLE:
       return { ...state,
-        navConfigs: action.payload.navConfigs,
         userRoles: action.payload
       };
 
