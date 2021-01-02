@@ -13,7 +13,7 @@ var axiosExtensions = require('axios-extensions');
 var Icon = require('react-feather');
 var reactToastify = require('react-toastify');
 var reactIntl = require('react-intl');
-var history$2 = require('history');
+var history$1 = require('history');
 var sessionStorage = _interopDefault(require('redux-persist/es/storage/session'));
 var reactRouterDom = require('react-router-dom');
 var classnames = _interopDefault(require('classnames'));
@@ -28,7 +28,6 @@ var formik = require('formik');
 var Flatpickr = _interopDefault(require('react-flatpickr'));
 var ReactSelect = _interopDefault(require('react-select'));
 var AsyncSelect = _interopDefault(require('react-select/async'));
-var chroma = _interopDefault(require('chroma-js'));
 var styled = _interopDefault(require('styled-components'));
 var SweetAlert = _interopDefault(require('react-bootstrap-sweetalert'));
 var TopBarProgress = _interopDefault(require('react-topbar-progress-indicator'));
@@ -79,8 +78,8 @@ var toastError = function toastError(message) {
     className: "col-1 p-0"
   }, /*#__PURE__*/React__default.createElement(Icon.AlertTriangle, {
     size: 24
-  })), /*#__PURE__*/React__default.createElement("span", {
-    className: "ml-1"
+  })), /*#__PURE__*/React__default.createElement("p", {
+    className: "mx-1 my-0"
   }, message)));
 };
 var toastSuccess = function toastSuccess(message) {
@@ -90,8 +89,8 @@ var toastSuccess = function toastSuccess(message) {
     className: "col-1 p-0"
   }, /*#__PURE__*/React__default.createElement(Icon.Check, {
     size: 24
-  })), /*#__PURE__*/React__default.createElement("span", {
-    className: "ml-1"
+  })), /*#__PURE__*/React__default.createElement("p", {
+    className: "mx-1 my-0"
   }, message)));
 };
 
@@ -117,6 +116,7 @@ var API_LOGOUT_URL = '/api/authenticate';
 var API_CHANGE_PASSWORD = '/api/change-password';
 var API_REGISTER = '/nth/onboarding/api/authenticate/register';
 var API_GET_USER = '/nth/user/api/users';
+var API_USER_SETTINGS = '/nth/user/api/user-settings';
 var API_UPDATE_USER_INFO = '/nth/user/api/update-user-info';
 var API_GET_NAV_CONFIGS = '/nth/accesscontrol/api/roles';
 var API_GET_USER_ROLES = '/nth/accesscontrol/api/user-group-roles';
@@ -208,7 +208,7 @@ var getExternalAppUrl = function getExternalAppUrl(appId, url) {
 var getContextPath = function getContextPath(appId) {
   switch (appId) {
     case AppId.APP_NO1:
-      return 'app';
+      return '';
 
     case AppId.INSURANCE_APP:
       return 'insurance';
@@ -271,6 +271,7 @@ var appConfigs = {
   API_CHANGE_PASSWORD: API_CHANGE_PASSWORD,
   API_REGISTER: API_REGISTER,
   API_GET_USER: API_GET_USER,
+  API_USER_SETTINGS: API_USER_SETTINGS,
   API_UPDATE_USER_INFO: API_UPDATE_USER_INFO,
   API_GET_NAV_CONFIGS: API_GET_NAV_CONFIGS,
   API_GET_USER_ROLES: API_GET_USER_ROLES,
@@ -558,11 +559,11 @@ function _catch(body, recover) {
 	return result;
 }
 
-var history$1 = history$2.createBrowserHistory({
+var history = history$1.createBrowserHistory({
   basename: ''
 });
 var setBaseHistory = function setBaseHistory(appHistory) {
-  history$1 = appHistory;
+  history = appHistory;
 };
 
 var AuthService = function AuthService() {};
@@ -633,6 +634,10 @@ AuthService.changePassword = function (value) {
   return HttpClient.post(API_CHANGE_PASSWORD, value);
 };
 
+AuthService.changeUserSetting = function (value) {
+  return HttpClient.put(API_USER_SETTINGS, value);
+};
+
 AuthService.updateAvatar = function (user, file) {
   try {
     var formData = new FormData();
@@ -680,7 +685,7 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
                   }
                 });
                 var appId = getState().customizer.appId;
-                history$1.push(redirectUrl || window.location.pathname.replace("/" + getContextPath(appId), ''));
+                history.push(redirectUrl || window.location.pathname.replace("/" + getContextPath(appId) + "/", '/'));
               });
             } else {
               dispatch({
@@ -738,7 +743,7 @@ var loginAction = function loginAction(user) {
               if (getState().customizer.appId !== AppId.APP_NO1) {
                 window.location.href = getExternalAppUrl(AppId.APP_NO1, '/');
               } else {
-                history$1.push('/');
+                history.push('/');
               }
             });
           } else {
@@ -761,7 +766,7 @@ var createPassword = function createPassword(password) {
       var _temp6 = _catch(function () {
         return Promise.resolve(AuthService.createPassword(password, getState().auth.register.token)).then(function (response) {
           if (response.status === 200 && response.data) {
-            history$1.push('/complete-information');
+            history.push('/complete-information');
           }
         });
       }, function () {});
@@ -781,7 +786,7 @@ var register = function register(values) {
             toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
               id: "register.registerSuccess"
             }));
-            history$1.push('/login');
+            history.push('/login');
           }
         });
       }, function () {});
@@ -800,7 +805,7 @@ var compeleteInfo = function compeleteInfo(user) {
         return Promise.resolve(AuthService.compeleteInfo(user)).then(function (response) {
           if (response.status === 200 && response.data) {
             toastSuccess('Hoàn tất đăng ký thành công');
-            history$1.push('/');
+            history.push('/');
           }
         });
       }, function (error) {
@@ -826,7 +831,7 @@ var saveRegisterToken = function saveRegisterToken(registerToken) {
             }
           });
         } else {
-          history$1.push('/');
+          history.push('/');
         }
       });
     } catch (e) {
@@ -857,7 +862,7 @@ var forgotPassword = function forgotPassword(_ref) {
               type: SAVE_RESET_PASSWORD_TOKEN,
               payload: ''
             });
-            history$1.push('/');
+            history.push('/');
           }
         });
       }, function () {});
@@ -881,7 +886,7 @@ var resetPassword = function resetPassword(password) {
               type: SAVE_RESET_PASSWORD_TOKEN,
               payload: ''
             });
-            history$1.push('/');
+            history.push('/');
           }
         });
       }, function () {});
@@ -917,7 +922,7 @@ var updateUserInfo = function updateUserInfo(user, avatarImage) {
             toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
               id: "setting.updateInfo.success"
             }));
-            history$1.push('/');
+            history.push('/');
           }
         });
       };
@@ -949,7 +954,31 @@ var changePassword = function changePassword(_ref2) {
           toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
             id: "changePassword.success"
           }));
-          history$1.push('/');
+          history.push('/');
+        }
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+};
+var changeLanguageSetting = function changeLanguageSetting(lang, callBack) {
+  return function (dispatch, getState) {
+    try {
+      var _getState$auth$user$u = getState().auth.user.userSettings,
+          userSettings = _getState$auth$user$u === void 0 ? {} : _getState$auth$user$u;
+
+      var value = _extends({}, userSettings, {
+        language: lang.toUpperCase()
+      });
+
+      return Promise.resolve(AuthService.changeUserSetting(value)).then(function (res) {
+        if (res.status === 200) {
+          callBack();
+          toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+            id: "generalInfo.changeLanguage.success"
+          }));
+          history.push('/');
         }
       });
     } catch (e) {
@@ -1685,7 +1714,7 @@ var UserDropdown = function UserDropdown() {
     onClick: function onClick(e) {
       return handleNavigation(e, '/terms-and-condition');
     }
-  }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
+  }, /*#__PURE__*/React__default.createElement(Icon.FileText, {
     size: 14,
     className: "mr-50"
   }), /*#__PURE__*/React__default.createElement("span", {
@@ -1698,7 +1727,7 @@ var UserDropdown = function UserDropdown() {
     onClick: function onClick(e) {
       return handleNavigation(e, '/privacy-policy');
     }
-  }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
+  }, /*#__PURE__*/React__default.createElement(Icon.Shield, {
     size: 14,
     className: "mr-50"
   }), /*#__PURE__*/React__default.createElement("span", {
@@ -1711,7 +1740,7 @@ var UserDropdown = function UserDropdown() {
     onClick: function onClick(e) {
       return handleNavigation(e, '/language');
     }
-  }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
+  }, /*#__PURE__*/React__default.createElement(Icon.Globe, {
     size: 14,
     className: "mr-50"
   }), /*#__PURE__*/React__default.createElement("span", {
@@ -1724,7 +1753,7 @@ var UserDropdown = function UserDropdown() {
     onClick: function onClick(e) {
       return handleNavigation(e, '/contact');
     }
-  }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
+  }, /*#__PURE__*/React__default.createElement(Icon.MessageSquare, {
     size: 14,
     className: "mr-50"
   }), /*#__PURE__*/React__default.createElement("span", {
@@ -1778,7 +1807,7 @@ var NavbarUser = /*#__PURE__*/function (_React$PureComponent) {
 
     _this.onSuggestionItemClick = function (item) {
       if (!item.isExternalApp) {
-        history$1.push("" + item.menuPath);
+        history.push("" + item.menuPath);
       } else {
         window.location.href = item.navLinkExternal;
       }
@@ -2039,28 +2068,24 @@ var Footer = function Footer(props) {
       width = _useWindowDimensions.width;
 
   var history = reactRouterDom.useHistory();
-  var navConfigs = reactRedux.useSelector(function (state) {
-    return [].concat(state.navbar.navConfigs);
+  var dispatch = reactRedux.useDispatch();
+  var appId = reactRedux.useSelector(function (state) {
+    return state.customizer.appId;
   });
 
-  var goToPage = function goToPage(e, name) {
+  var goToPage = function goToPage(e, navLink) {
     e.preventDefault();
-    var currentRoute = navConfigs.find(function (item) {
-      return item.code === name;
-    });
 
-    if (!currentRoute) {
-      currentRoute = {
-        isExternalApp: AppId.APP_NO1 === props.AppId,
-        navLink: ''
-      };
-    }
-
-    if (!currentRoute.isExternalApp) {
-      history.push("" + currentRoute.navLink);
+    if (appId === AppId.INSURANCE_APP) {
+      history.push(navLink);
     } else {
-      window.location.href = getExternalAppUrl(currentRoute.appId, currentRoute.navLink);
+      window.location.href = getExternalAppUrl(AppId.INSURANCE_APP, navLink);
     }
+  };
+
+  var onClickBackHome = function onClickBackHome(e) {
+    e.preventDefault();
+    dispatch(goBackHomePage$1());
   };
 
   return /*#__PURE__*/React__default.createElement("footer", null, /*#__PURE__*/React__default.createElement("div", {
@@ -2098,26 +2123,28 @@ var Footer = function Footer(props) {
     className: "w-25"
   }, /*#__PURE__*/React__default.createElement("a", {
     href: "#",
-    onClick: function onClick(e) {
-      return goToPage(e, 'home');
-    }
+    onClick: onClickBackHome
   }, /*#__PURE__*/React__default.createElement(Icon.Home, null), /*#__PURE__*/React__default.createElement("div", {
     className: "mt-1"
-  }, "Trang ch\u1EE7"))), /*#__PURE__*/React__default.createElement("div", {
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "menu.home"
+  })))), /*#__PURE__*/React__default.createElement("div", {
     className: "w-25"
   }, /*#__PURE__*/React__default.createElement("a", {
     href: "#",
     onClick: function onClick(e) {
-      return goToPage(e, 'contract/management');
+      return goToPage(e, '/contracts');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.List, null), /*#__PURE__*/React__default.createElement("div", {
     className: "mt-1"
-  }, "H\u1EE3p \u0111\u1ED3ng"))), /*#__PURE__*/React__default.createElement("div", {
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "menu.contract"
+  })))), /*#__PURE__*/React__default.createElement("div", {
     className: "position-relative w-25"
   }, /*#__PURE__*/React__default.createElement("a", {
     href: "#",
     onClick: function onClick(e) {
-      return goToPage(e, 'buy-insurance');
+      return goToPage(e, '/buy-insurance');
     }
   }, /*#__PURE__*/React__default.createElement("img", {
     src: IMAGE.BUY_INSURANCE,
@@ -2129,25 +2156,29 @@ var Footer = function Footer(props) {
     }
   }), /*#__PURE__*/React__default.createElement("div", {
     className: "mt-1"
-  }, "Mua b\u1EA3o hi\u1EC3m"))), /*#__PURE__*/React__default.createElement("div", {
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "menu.buyInsurance"
+  })))), /*#__PURE__*/React__default.createElement("div", {
     className: "w-25"
   }, /*#__PURE__*/React__default.createElement("a", {
     href: "#",
-    onClick: function onClick(e) {
-      return goToPage(e, 'home');
-    }
+    onClick: onClickBackHome
   }, /*#__PURE__*/React__default.createElement(Icon.Gift, null), /*#__PURE__*/React__default.createElement("div", {
     className: "mt-1"
-  }, "Khuy\u1EBFn m\u1EA1i"))), /*#__PURE__*/React__default.createElement("div", {
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "menu.promotion"
+  })))), /*#__PURE__*/React__default.createElement("div", {
     className: "w-25"
   }, /*#__PURE__*/React__default.createElement("a", {
     href: "#",
     onClick: function onClick(e) {
-      return goToPage(e, 'contact');
+      return history.push('/contact');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.MessageSquare, null), /*#__PURE__*/React__default.createElement("div", {
     className: "mt-1"
-  }, "Li\xEAn h\u1EC7")))), props.hideScrollToTop === false ? /*#__PURE__*/React__default.createElement(ScrollToTop, {
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "setting.contact"
+  }))))), props.hideScrollToTop === false ? /*#__PURE__*/React__default.createElement(ScrollToTop, {
     showUnder: 160
   }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
     color: "primary",
@@ -3283,6 +3314,7 @@ var messages_en = {
 	"login.password": "Password *",
 	"login.password.required": "You must enter your password",
 	"login.rememberMe": "Remember me",
+	"login.notMe": "Not me",
 	"login.fail": "Username or password was incorrect",
 	"login.sayHi": "Hi, {name}",
 	register: register$1,
@@ -3314,6 +3346,7 @@ var messages_en = {
 	"forgotPassword.yourEmailIs": "Your email is",
 	"menu.home": "Home",
 	"menu.user": "User Management",
+	"menu.contract": "Contract",
 	"menu.buyInsurance": "Buy Insurance",
 	"menu.contractManagement": "Contract Management",
 	"menu.personalContracts": "Personal Contracts",
@@ -3337,15 +3370,16 @@ var messages_en = {
 	"menu.insuranceCertificate.newExport": "New Export",
 	"menu.insuranceCertificate.wrongImport": "Wrong Import",
 	"menu.insuranceCertificate.wrongExport": "Wrong Export",
-	"menu.insuranceMotobike": "Insurance Motibike",
-	"menu.insuranceCar": "Insurance Car",
-	"menu.approveOpenAccount": "Approve Open Account",
 	"menu.debt": "Debt",
 	"menu.createDebt": "Create Debt",
 	"menu.debtManagement": "Debt Management",
 	"menu.permissionGoup": "Permission Group",
 	"menu.creatPermissionGoup": "Create Permision Group",
 	"menu.permissionGoupManagement": "Permission Group Management",
+	"menu.insuranceMotobike": "Motobike Insurance",
+	"menu.insuranceCar": "Car Insurance",
+	"menu.approveOpenAccount": "Account Approval",
+	"menu.promotion": "Promotion",
 	"navbar.language.vi": "Vietnamese",
 	"navbar.language.en": "English",
 	"navbar.logout": "Logout",
@@ -3368,7 +3402,7 @@ var messages_en = {
 	"setting.general": "General",
 	"setting.privacyPolicy": "Privacy Policy",
 	"setting.frequentlyAsked": "Frequently Asked",
-	"setting.contact": "Contact InOn",
+	"setting.contact": "Contact",
 	"setting.feedback": "Feedback",
 	"setting.share": "Share",
 	"setting.status.COMPLETE": "Your account had completed information",
@@ -3378,11 +3412,141 @@ var messages_en = {
 	"setting.gender.O": "Others",
 	"setting.updateInfo.success": "Update account infomation successfully !",
 	"setting.updateInfo.confirmMessage": "Are you want to change account infomation ?",
+	"setting.updateInfo.imageTypeInvalid": "You only able upload image file !",
 	"changePassword.newPassword": "New Password",
 	"changePassword.oldPassword": "Old Password",
 	"changePassword.passwordMustMatch": "Password must match",
 	"changePassword.confirmMessage": "Are you want to change your password ?",
 	"changePassword.success": "Change password successfully !",
+	"generalInfo.changeLanguage.confirmMessage": "Are you want to change language ?",
+	"generalInfo.changeLanguage.success": "Change language successfully !",
+	"generalInfo.policy.1": "1. CÁC LOẠI DỮ LIỆU CÁ NHÂN CHÚNG TÔI SẼ THU THẬP VÀ XỬ LÝ",
+	"generalInfo.policy.1.1": "1.1  Thông tin cá nhân và thông tin liên lạc chi tiết, ví dụ chức vụ, họ tên, thông tin liên lạc chi tiết và lịch sử liên lạc chi tiết; thông tin tài liệu du lịch; ngày sinh, giới tính và/hoặc tuổi của bạn; quốc tịch, bản sao giấy tờ nhận dạng bạn (nếu có liên quan đến sản phẩm hoặc dịch vụ);",
+	"generalInfo.policy.1.2": "1.2  Thông tin chi tiết về người thụ hưởng, ví dụ chủ hợp đồng bảo hiểm và người thụ hưởng của các sản phẩm hoặc dịch vụ của chúng tôi;",
+	"generalInfo.policy.1.3": "1.3  Các thành viên trong gia đình (nếu có liên quan đến sản phẩm hoặc dịch vụ);",
+	"generalInfo.policy.1.4": "1.4  Hồ sơ liên lạc của bạn với chúng tôi, chẳng hạn như lịch sử các cuộc gọi của bạn đến số điện thoại của trung tâm dịch vụ khách hàng của chúng tôi và, nếu bạn liên lạc với chúng tôi bằng các dịch vụ trực tuyến hoặc qua ứng dụng điện thoại thông minh của chúng tôi, các chi tiết như dữ liệu vị trí điện thoại di động, địa chỉ IP và địa chỉ MAC;",
+	"generalInfo.policy.1.5": "1.5  Sản phẩm và dịch vụ, bạn đã mua từ chúng tôi, cũng như những sản phẩm bạn quan tâm và đã nắm giữ và các phương thức thanh toán liên quan được bạn sử dụng;",
+	"generalInfo.policy.1.6": "1.6  Việc sử dụng các sản phẩm và dịch vụ của chúng tôi, các yêu cầu bồi thường bảo hiểm và tình trạng thanh toán các yêu cầu bồi thường này (và các chi tiết khác liên quan đến vấn đề này);",
+	"generalInfo.policy.1.7": "1.7  Phân tích dữ liệu tiếp thị sản phẩm hoặc dịch vụ được thực hiện riêng cho bạn, bao gồm lịch sử liên lạc và thông tin về việc bạn có mở các tài liệu này hay nhấp vào đường link liên kết;",
+	"generalInfo.policy.2": "2. CÁCH THỨC CHÚNG TÔI THU THẬP DỮ LIỆU CÁ NHÂN CỦA BẠN",
+	"generalInfo.policy.2.1": "2.1  Trực tiếp từ bạn và bất kỳ thông tin nào từ các thành viên gia đình, cộng sự hoặc người thụ hưởng sản phẩm và dịch vụ;",
+	"generalInfo.policy.2.2": "2.2  Thông tin về bạn được tạo ra khi bạn sử dụng các sản phẩm và dịch vụ của chúng tôi;",
+	"generalInfo.policy.2.3": "2.3  Từ một nhà môi giới hoặc một bên trung gian khác (ví dụ: đại lý, nhà phân phối, đối tác kinh doanh), các bên mà chúng tôi có hợp tác để cung cấp sản phẩm hoặc dịch vụ hoặc cung cấp báo giá cho bạn;",
+	"generalInfo.policy.2.4": "2.4  Các công ty đối tác liên kết với InOn, nếu bạn đã từng đăng ký mua hoặc đã mua sản phẩm từ các công ty này;",
+	"generalInfo.policy.2.5": "2.5  Cookie, dịch vụ định vị, địa chỉ IP khi bạn truy cập trang mạng hoặc ứng dụng di động của chúng tôi hoặc khi bạn điền vào biểu mẫu Liên hệ với chúng tôi trong trang mạng hoặc ứng dụng của chúng tôi;",
+	"generalInfo.policy.2.6": "2.6  Các bên thứ ba như công ty bảo hiểm, đại lý, nhà cung cấp, tổ chức tài chính, cá nhân y tế, tòa án hoặc hồ sơ thông tin đã được công bố công khai;",
+	"generalInfo.policy.2.7": "2.7  Bảng câu hỏi và thông tin liên lạc chi tiết khi bạn tham gia khảo sát, hội nghị nhà đầu tư, các buổi hội thảo hoặc khi bạn cập nhật thông tin liên lạc của bạn với chúng tôi trên trang mạng của chúng tôi;",
+	"generalInfo.policy.2.8": "2.8  Từ các nguồn khác như Cơ quan phòng chống gian lận, tổ chức tham chiếu tín dụng, người cho vay khác và các thông tin đã được công bố công khai (ví dụ: danh bạ điện thoại, phương tiện truyền thông xã hội, các trang mạng, các bài báo), các tổ chức thu hồi nợ, các tổ chức khác để hỗ trợ phòng ngừa và phát hiện tội phạm, cảnh sát và các cơ quan thực thi pháp luật;",
+	"generalInfo.policy.2.9": "2.9  Chúng tôi mua thông tin về bạn hoặc khách hàng nói chung từ các bên thứ ba bao gồm thông tin nhân khẩu học, chi tiết các phương tiện đi lại, lịch sử yêu cầu bồi thường, thông tin về gian lận, danh sách quảng cáo tiếp thị, thông tin đã được công bố công khai và thông tin khác để giúp cải thiện sản phẩm và dịch vụ của chúng tôi.",
+	"generalInfo.policy.3": "3. CHÍNH SÁCH COOKIE",
+	"generalInfo.policy.3.1": "3.1   Trang mạng của chúng tôi sử dụng cookie để phân biệt bạn với những người dùng khác. Điều này giúp chúng tôi cung cấp cho bạn trải nghiệm tốt khi bạn sử dụng trang mạng và cũng cho phép chúng tôi cải thiện trang mạng của mình. Cookie là một tệp nhỏ gồm các chữ cái và số mà chúng tôi lưu trữ trên trình duyệt hoặc ổ cứng máy tính của bạn. Cookie chứa thông tin được lưu trữ trên ổ cứng máy tính của bạn. Bạn có khả năng chấp nhận hoặc từ chối cookie bằng cách sửa đổi cài đặt trong trình duyệt của bạn. Nếu bạn muốn làm điều này, xin vui lòng xem mục trợ giúp trong trình duyệt của bạn.",
+	"generalInfo.policy.3.2": "3.2   Chúng tôi sử dụng các loại cookie sau:",
+	"generalInfo.policy.3.2.1": "3.2.1    Cookie cần thiết cho trang mạng, đây là các cookie cần phải có để phục vụ hoạt động của trang  mạng của chúng tôi. Ví dụ, các cookie cho phép bạn đăng nhập vào trang mạng của chúng tôi một cách an toàn;",
+	"generalInfo.policy.3.2.2": "3.2.2    Cookie phân tích/quản lý hoạt động: các cookie này cho phép chúng tôi nhận ra và đếm số lượng người dùng truy cập vào trang mạng của chúng tôi và theo dõi cách người dùng truy cập di huyển xung quanh trang mạng của chúng tôi khi họ đang sử dụng nó. Điều này giúp chúng tôi cải thiện cách thức hoạt động của trang mạng, ví dụ, cải tiến để giúp người dùng tìm kiếm những thứ họ cần một cách dễ dàng;",
+	"generalInfo.policy.3.2.3": "3.2.3    Cookie chức năng: chúng được sử dụng để nhận ra bạn khi bạn quay lại trang mạng của chúng tôi. Điều này cho phép chúng tôi cá nhân hóa nội dung của chúng tôi cho bạn, chào bạn bằng tên và ghi nhớ sở thích của bạn (ví dụ: lựa chọn ngôn ngữ hoặc khu vực của bạn).",
+	"generalInfo.policy.3.3": "3.3   Bằng cách tiếp tục sử dụng trang mạng của chúng tôi, bạn chấp nhận chúng tôi sử dụng các loại cookie như đã nêu ở trên.",
+	"generalInfo.policy.4": "4. CÁCH THỨC VÀ LÝ DO CHÚNG TÔI SỬ DỤNG DỮ LIỆU CÁ NHÂN CỦA BẠN",
+	"generalInfo.policy.4.1": "4.1  Chúng tôi, InOn và các đối tác kinh doanh sẽ sử dụng dữ liệu cá nhân bạn cung cấp cho chúng tôi, cùng với các thông tin khác, cho các mục đích sau:",
+	"generalInfo.policy.4.1.1": "<table class='table table-bordered info-item-table'><thead><tr><td>Mục đích</td><td>Cơ sở pháp lý</td></tr></thead><tbody><tr><td>Quản lý các sản phẩm và dịch vụ của chúng tôi, bao gồm cho phép chúng tôi thực hiện nghĩa vụ của chúng tôi với bạn và cung cấp mọi dịch vụ liên quan như đã thảo luận với bạn trước khi bạn mua sản phẩm hoặc dịch vụ.</td><td rowspan='2'>Cần thiết cho việc thực hiện hợp đồng của chúng tôi với bạn hoặc để thực hiện các bước trước khi ký hợp đồng với bạn.&nbsp;</td></tr><tr><td>Thực hiện kiểm tra bằng cách thông qua các tổ chức như tổ chức tín dụng, công ty hỗ trợ tìm kiếm hoặc thông tin đã được công bố công khai (xem thêm nội dung trình bày trong Phần “Kiểm tra tham khảo”).</td></tr><tr><td>Cung cấp dịch vụ khách hàng – như trả lời thắc mắc của bạn hoặc thông báo cho bạn biết các thay đổi.</td><td rowspan='3'>Cần thiết cho việc thực hiện hợp đồng của chúng tôi với bạn. Sau khi hợp đồng chúng tôi ký với bạn hoàn tất, đây là lợi ích hợp pháp của chúng tôi trong việc duy trì và phát triển mối quan hệ của chúng tôi với bạn.</td></tr><tr><td>Tự động ra quyết định hoặc tạo hồ sơ cá nhân của bạn (xem thêm nội dung trình bày trong Phần “Chúng tôi có thể sử dụng dữ liệu cá nhân của bạn để đưa ra quyết định tự động hoặc tạo hồ sơ cá nhân của bạn”).</td></tr><tr><td>Lưu giữ thông tin của bạn và thực hiện các công việc quản lý nội bộ khác.</td></tr><tr><td>Tuân thủ với các yêu cầu pháp quy hoặc pháp lý khác.</td><td>Tuân thủ với các nghĩa vụ pháp lý của chúng tôi.</td></tr><tr><td>Thiết kế và cung cấp cho bạn các sản phẩm và dịch vụ bảo hiểm và tài chính liên quan.</td><td rowspan='2'>Lợi ích chính đáng của chúng tôi trong việc thiết kế và cải tiến sản phẩm, cung cấp dịch vụ giá trị gia tăng, phát triển kinh doanh và hiểu rõ hơn về cách sử dụng sản phẩm của chúng tôi.&nbsp;</td></tr><tr><td>Tiến hành nghiên cứu và phân tích thống kê (bao gồm cả việc sử dụng các công nghệ mới).</td></tr></tbody></table>",
+	"generalInfo.policy.4.2": "4.2  Ngoài ra, chúng tôi, <b>InOn</b> và các đối tác kinh doanh của chúng tôi, sẽ sử dụng dữ liệu cá nhân bạn cung cấp cho chúng tôi, cùng với các thông tin khác, để gửi cho bạn các ưu đãi tiếp thị trực tiếp bằng phương tiện điện tử và phi điện tử bao gồm qua đường bưu điện, cũng như gửi cho bạn thông tin giới thiệu các sản phẩm và dịch vụ từ các bên thứ ba đã được chọn lọc kỹ lưỡng. Cơ sở pháp lý chúng tôi trình bày bên trên được xây dựng dựa trên sự đồng thuận với bạn.",
+	"generalInfo.policy.4.3": "4.3  Chúng tôi chia sẽ dữ liệu cá nhân của bạn với ai và tại sao:",
+	"generalInfo.policy.4.3.1": "4.3.1  Chúng tôi sẽ chia sẻ thông tin cá nhân và sức khỏe của bạn trong nội bộ <b>InOn</b> và với các đối tác kinh doanh tài chính/sức khỏe và các bên thứ ba cung cấp dịch vụ cho chúng tôi (bao gồm nhưng không giới hạn các công ty bảo hiểm, luật sư, ngân hàng, kế toán, tổ chức tài chính, bên ủy thác và các nhà cung cấp dịch vụ là bên thứ ba khác cung cấp dịch vụ quản lý, viễn thông, máy tính, thanh toán, in ấn, mua lại hoặc các dịch vụ khác để cho phép chúng tôi thực hiện hoạt động kinh doanh), các công ty thẩm định hóa đơn y tế, các công ty thẩm định yêu cầu bồi thường, hiệp hội và hiệp đoàn trong cùng ngành, các bên đồng sở hữu hợp đồng bảo hiểm hoặc khoản đầu tư, cố vấn chuyên nghiệp, nhà nghiên cứu, tổ chức tham chiếu tín dụng, tổ chức thu hồi nợ, tổ chức tài chính/y tế và các bên đối tác để thực hiện các mục đích được nêu trong Phần “Cách thức và lý do chúng tôi sử dụng dữ liệu cá nhân của ban”. Nếu bạn có chung hợp đồng bảo hiểm với người khác, thì người đó cũng có thể nhận được dữ liệu cá nhân của bạn. Nếu được yêu cầu, chúng tôi cũng có thể chuyển dữ liệu cá nhân của bạn cho các cơ quan phòng chống tội phạm tài chính, bất kỳ cơ quan lập pháp, tư pháp hoặc hành pháp nào khác.",
+	"generalInfo.policy.4.3.2": "4.3.2  Chúng tôi có thể xử lý dữ liệu cá nhân của bạn ở một quốc gia khác ngoài quốc gia mà bạn cư trú. Trong phạm vi chúng tôi chuyển dữ liệu cá nhân của bạn, chúng tôi sẽ sử dụng các biện pháp bảo vệ phù hợp và tuân thủ luật pháp của quốc gia nơi dữ liệu cá nhân của bạn được chuyển đến. Khi bạn yêu cầu, chúng tôi sẽ cung cấp cho bạn chi tiết các biện pháp bảo vệ dữ liệu mà chúng tôi đang sử dụng.",
+	"generalInfo.policy.4.4": "4.4  Chúng tôi lưu trữ dữ liệu cá nhân của bạn trong một khoảng thời gian nhất định",
+	"generalInfo.policy.4.4.1": "4.4.1   Dữ liệu cá nhân của bạn sẽ được lưu trữ khi bạn (hoặc đồng sở hữu hợp đồng bảo hiểm với bạn) là khách hàng của chúng tôi và trong khoảng thời gian sáu năm sau khi kết thúc mối quan hệ khách hàng hoặc lâu hơn nếu pháp luật yêu cầu. Có thể có những trường hợp cụ thể khi chúng tôi cần lưu giữ dữ liệu cá nhân của bạn lâu hơn (chẳng hạn như khi có tranh chấp xảy ra).",
+	"generalInfo.policy.5": "5. KIỂM TRA THAM KHẢO",
+	"generalInfo.policy.5.1": "5.1  Đối với một số sản phẩm nhất định, chúng tôi có thể sử dụng các tổ chức tham chiếu tín dụng, công ty  hỗ trợ tìm kiếm, cơ quan phòng chống tội phạm tài chính hoặc thông tin có sẵn công khai để giúp chúng tôi kiểm tra danh tính của bạn, cũng như để tránh gian lận và rửa tiền; điều này có thể bao gồm kiểm tra các địa chỉ hiện tại hoặc trước đây của bạn. Những kết quả này có thể được ghi lại để tham khảo trong tương lai.",
+	"generalInfo.policy.5.2": "5.1  Những kết quả kiểm tra này cũng có thể được sử dụng cho một nhà đầu tư, chủ sở hữu hợp đồng chung hoặc người mà bạn đồng ý cung cấp dữ liệu cá nhân của mình. Nếu chúng tôi mất liên lạc với bạn, chúng tôi có thể sử dụng các tổ chức này để xác minh địa chỉ của bạn nhằm giúp chúng tôi liên lạc với bạn.",
+	"generalInfo.policy.5.3": "5.3  Mọi việc chuyển dữ liệu cá nhân của bạn sẽ luôn được thực hiện an toàn.",
+	"generalInfo.policy.6": "6. CHÚNG TÔI CÓ THỂ SỬ DỤNG DỮ LIỆU CÁ NHÂN CỦA BẠN ĐỂ ĐƯA RA QUYẾT ĐỊNH TỰ ĐỘNG HOẶC TẠO HỒ SƠ CÁ NHÂN CỦA BẠN",
+	"generalInfo.policy.6.1": "6.1  Chúng tôi, InOn, Đối tác kinh doanh và Đối tác tiếp thị của chúng tôi có thể sử dụng dữ liệu cá nhân của bạn để đưa ra quyết định tự động ảnh hưởng đến bạn hoặc tạo hồ sơ cá nhân khác cho bạn (ví dụ: hồ sơ tiếp thị).",
+	"generalInfo.policy.7": "7. SỬ DỤNG DỮ LIỆU CÁ NHÂN NHẠY CẢM CỦA BẠN",
+	"generalInfo.policy.7.1": "7.1  Đối với một số sản phẩm hoặc dịch vụ nhất định, chúng tôi sẽ cần xử lý dữ liệu cá nhân nhạy cảm của bạn, chẳng hạn như thông tin liên quan đến sức khỏe, di truyền, định danh sinh trắc học và khuynh hướng giới tính. Trong phạm vi chúng tôi cần sự đồng ý rõ ràng của bạn để xử lý loại dữ liệu cá nhân này theo cách được mô tả trong Phần “Cách thức và lý do chúng tôi sử dụng dữ liệu cá nhân của bạn” , “Kiểm tra tham khảo” và “Chúng tôi có thể sử dụng dữ liệu cá nhân của bạn để đưa ra quyết định tự động hoặc tạo hồ sơ cá nhân của bạn”, chúng tôi sẽ cung cấp chi tiết về điều này khi chúng tôi thu thập các thông tin này từ bạn và xin nhận được sự chấp thuận của bạn.",
+	"generalInfo.policy.8": "8. QUYỀN KIỂM SOÁT DỮ LIỆU CÁ NHÂN CỦA BẠN",
+	"generalInfo.policy.8.1": "8.1  Khi nói đến cách chúng tôi sử dụng dữ liệu cá nhân của bạn, bạn có quyền theo quy định của pháp luật Việt Nam.",
+	"generalInfo.policy.8.2": "8.2  Trong khi đó, nếu bạn hiện đang cư trú tại Châu Âu, các quyền bổ sung theo Quy định bảo vệ dữ liệu chung (GDPR) có thể được áp dụng. Như vậy, bạn có thể:",
+	"generalInfo.policy.8.2.1": "8.2.1  Yêu cầu một bản sao dữ liệu cá nhân của bạn miễn phí (chúng tôi có thể tính phí yêu cầu của bạn nếu không có cơ sở rõ ràng hoặc bị lạm dụng quá mức);",
+	"generalInfo.policy.8.2.2": "8.2.2  Trong một số trường hợp nhất định, chúng tôi sẽ chuyển dữ liệu cá nhân của bạn sang một tổ chức khác theo yêu cầu của bạn;",
+	"generalInfo.policy.8.2.3": "8.2.3  Yêu cầu chúng tôi điều chỉnh bất cứ dữ liệu cá nhân nào bị sai hoặc không đầy đủ;",
+	"generalInfo.policy.8.2.4": "8.2.4  Yêu cầu chúng tôi xóa dữ liệu cá nhân của bạn nếu không còn cần thiết cho các mục đích được nêu trong Phần “Các loại dữ liệu cá nhân chúng tôi sẽ thu thập và xử lý” hoặc nếu không có cơ sở pháp lý nào khác để xử lý dữ liệu;",
+	"generalInfo.policy.8.2.5": "8.2.5  Giới hạn cách chúng tôi sử dụng dữ liệu cá nhân của bạn hoặc rút lại sự đồng ý (bao gồm cả việc đồng ý cho phép đưa ra quyết định tự động dựa trên dữ liệu cá nhân) mà bạn đã chấp thuận cho phép chúng tôi xử lý dữ liệu cá nhân của bạn;",
+	"generalInfo.policy.8.2.6": "8.2.6  Phản đối chúng tôi sử dụng dữ liệu cá nhân của bạn để tiếp thị trực tiếp (bao gồm cả việc tạo lập hồ sơ cá nhân của bạn) hoặc xử lý dữ liệu khác dựa trên lợi ích hợp pháp;",
+	"generalInfo.policy.8.2.7": "8.2.7  Khiếu nại với cơ quan bảo vệ dữ liệu hoặc cơ quan quản lý độc lập khác về cách chúng tôi sử dụng dữ liệu cá nhân của bạn.",
+	"generalInfo.policy.8.3": "8.3  Nếu bạn muốn thực hiện các quyền của mình hoặc muốn giải thích về các quyền này, bạn có thể liên lạc với chúng tôi trong phần Liên hệ.",
+	"generalInfo.policy.8.4": "8.4  Nếu bạn cần nói chuyện với chúng tôi, chúng tôi sẽ chuyển yêu cầu của bạn cho Người Kiểm Soát Dữ Liệu (8.4.1)  cá nhân của bạn là InOn Chúng tôi có thể theo dõi hoặc ghi lại các cuộc gọi hoặc bất kỳ liên lạc nào khác mà chúng tôi có với bạn. Điều này có thể là để đào tạo, bảo mật hoặc để giúp chúng tôi kiểm tra chất lượng.",
+	"generalInfo.policy.8.4.1": "8.4.1  Người Kiểm Soát Dữ Liệu – Cá nhân, pháp nhân, cơ quan nhà nước, các cơ quan hoặc tổ chức khác, riêng rẻ hoặc cùng nhau, xác định mục đích và cách thức xử lý dữ liệu cá nhân.",
+	"generalInfo.policy.9": "9.  THAY MẶT NGƯỜI KHÁC CUNG CẤP DỮ LIỆU CÁ NHÂN CỦA HỌ",
+	"generalInfo.policy.9.1": "9.1  Khi bạn cung cấp cho chúng tôi dữ liệu cá nhân về người khác (hoặc nhiều người khác), bạn nên được chỉ định và ủy quyền bởi người đó để hành động thay họ. Điều này bao gồm cung cấp sự đồng ý để:",
+	"generalInfo.policy.9.1.1": "9.1.1  Chúng tôi xử lý dữ liệu cá nhân của họ và dữ liệu cá nhân nhạy cảm (như chúng tôi đã giải thích trong các Phần ở trên);",
+	"generalInfo.policy.9.1.2": "9.1.1  Bạn sẽ nhận được các thông báo bảo vệ thông tin thay mặt họ.",
+	"generalInfo.policy.9.2": "9.2  Nếu vì bất kỳ lý do nào bạn quan tâm đến việc liệu bạn có được phép cung cấp cho chúng tôi thông tin về người khác hay không, vui lòng liên hệ với chúng tôi theo địa chỉ thư điện tử bên dưới trước khi gửi cho chúng tôi bất cứ thông tin gì.",
+	"generalInfo.policy.10": "10. TIẾP THỊ TRỰC TIẾP",
+	"generalInfo.policy.10.1": "10.1  Chúng tôi, <b>InOn</b>, đối tác kinh doanh của chúng tôi, và đối tác tiếp thị vẫn sẽ gửi cho bạn thông tin qua hình thức các bài đăng về các sản phẩm và dịch vụ của InOn và các bên thứ ba được lựa chọn cẩn thận.",
+	"generalInfo.policy.10.2": "10.2  Ngoài ra, theo thời gian, chung tôi InOn mong muốn gởi thông tin chi tiết về sản phẩm, dịch vụ và các ưu đãi đặc biệt cho bạn qua các phương tiện điện tử. Chúng tôi sẽ chỉ làm điều này nếu bạn đồng ý cho chúng tôi liên lạc với bạn bằng phương tiện điện tử.",
+	"generalInfo.policy.10.3": "10.3  Và nếu bạn thay đổi ý định và/hoặc bạn muốn từ chối nhận tiếp thị trực tiếp phi điện tử, thì bạn cứ cho chúng tôi biết. Chỉ cần sử dụng một trong các tùy chọn trong mục Liên hệ với chúng tôi.",
+	"generalInfo.policy.11": "11. LIÊN HỆ VỚI CHÚNG TÔI",
+	"generalInfo.policy.11.1": "11.1  Nếu bạn muốn thực hiện các quyền của mình trong Phần “Quyền kiểm soát dữ liệu cá nhân của bạn” hoặc nếu bạn yêu cầu bất kỳ thông tin nào theo thông báo này, bạn có thể liên hệ với chúng tôi theo nhiều cách khác nhau.",
+	"generalInfo.policy.11.1.1": "11.1.1  Gọi cho đường dây nóng của chúng tôi: <b>0582.33.55.88</b>",
+	"generalInfo.policy.11.1.2": "11.1.2  Gửi thư điện tử cho chúng tôi theo địa chỉ: <b>lienhe@inon.vn</b>",
+	"generalInfo.policy.11.1.3": "11.1.3  Hoặc liên hệ trực tiếp với chúng tôi tại văn phòng: <b>Tầng 6 – P611, Tòa nhà MD Complex, số 68 Nguyễn Cơ Thạch, Phường Cầu Diễn, Quận Nam Từ Liêm, Thành Phố Hà Nội.</b>",
+	"generalInfo.terms.1": "1. CÁC ĐIỀU KHOẢN VÀ ĐIỀU KIỆN SỬ DỤNG",
+	"generalInfo.terms.1.1": "1.1  Trang thông tin điện tử này <b>(www.inon.vn) do Công Ty TNHH NPG NAM PHONG - Đơn vị chủ quản của Hệ thống và Thương hiệu InOn (sau đây gọi tắt là “InOn”)</b> hoàn toàn sở hữu và điều hành.",
+	"generalInfo.terms.1.2": "1.2  Việc sử dụng trang thông tin điện tử này phụ thuộc vào các điều khoản và điều kiện cụ thể sau: (A) các điều khoản và điều kiện được nêu dưới đây và (B) mọi điều khoản và điều kiện bổ sung cụ thể tùy từng thời điểm để điều chỉnh việc sử dụng, và truy cập vào một số mục của trang thông tin điện tử này (và các điều khoản bổ sung đó sẽ có hiệu lực ràng buộc khi chúng được đăng tải trên trang thông tin điện tử này) <b>(\"Điều Khoản và Điều Kiện\")</b>.",
+	"generalInfo.terms.1.3": "1.3  Khi sử dụng trang thông tin điện tử này, bạn đã đồng ý với các Điều Khoản và Điều Kiện, và sự đồng ý của bạn cùng với các Điều Khoản và Điều Kiện sẽ cấu thành một hợp đồng có giá trị ràng buộc về pháp lý giữa bạn và <b>InOn</b>. Vì thế, bạn vui lòng đọc kỹ các Điều Khoản và Điều Kiện của trang thông tin điện tử này.",
+	"generalInfo.terms.2": "2. CÁC HẠN CHẾ VÀ SỬ DỤNG CÁC THÔNG TIN TÀI LIỆU",
+	"generalInfo.terms.2.1": "2.1  Trừ khi được <b>InOn</b> đồng ý bằng văn bản một cách khác đi, bạn sẽ không sao chép, sao lại, tái bản, đưa lên mạng, công bố, chuyển, tạo liên kết đến hoặc phân phối dưới bất cứ hình thức nào các thông tin và/hoặc tài liệu đã được đăng tải trên trang thông tin điện tử này.",
+	"generalInfo.terms.2.2": "2.2  Bạn có thể tải xuống các thông tin và/hoặc tài liệu được đăng tải trên trang thông tin điện tử này để bạn sử dụng, nhưng luôn luôn với điều kiện là bạn không dỡ bỏ các thông tin về bản quyền và/hoặc các quyền khác của <b>InOn</b> gắn với các thông tin và/hoặc tài liệu đó.",
+	"generalInfo.terms.2.3": "2.3  Bạn không được phát tán, sửa đổi, chuyển đi, sử dụng lại, công bố, tạo liên kết hoặc sử dụng các nội dung của trang thông tin điện tử này, bao gồm, nhưng không giới hạn bởi, cả các thông tin bằng chữ, các hình ảnh, các tập tin âm thanh và/hoặc các đoạn phim, cho các mục đích kinh doanh và/hoặc công cộng, khi chưa có sự cho phép bằng văn bản của InOn.",
+	"generalInfo.terms.3": "3. THỜI GIAN HOẠT ĐỘNG",
+	"generalInfo.terms.3.1": "3.1 Trang thông tin điện tử này hoạt động 24 giờ mỗi ngày và 7 ngày mỗi tuần. Tuy nhiên, <b>InOn</b> bảo lưu quyền ngắt hệ thống để bảo trì khi cần thiết. <b>InOn</b> sẽ cố gắng để lên kế hoạch và thông báo về việc hệ thống không thể sử dụng được bằng cách đưa một thông báo trên mạng trực tuyến. <b>InOn</b> không chịu trách nhiệm đối với bất cứ thiệt hại và/hoặc mất mát nào do việc hệ thống bị ngắt trong trường hợp này.",
+	"generalInfo.terms.4": "4. TÀI KHOẢN NGƯỜI SỬ DỤNG",
+	"generalInfo.terms.4.1": "4.1  Bạn sẽ đăng ký và được cung cấp một Tên Truy Cập Tài Khoản và Mật khẩu để có thể mua bảo hiểm trên trang thông tin điện tử này. Bạn sẽ giữ bí mật Tên Truy Cập Tài Khoản và Mật khẩu này vào mọi thời điểm, và sẽ bảo đảm rằng Tên Truy Cập Tài Khoản và Mật khẩu này của bạn sẽ không bị tiết lộ theo bất cứ cách thức nào cho bất kỳ ai.",
+	"generalInfo.terms.4.2": "4.2  <b>InOn</b> sẽ không chịu trách nhiệm về bất cứ giao dịch không được phép nào do việc Tên Truy Cập Tài Khoản và/hoặc Mật khẩu bị sử dụng sai và/hoặc sử dụng mà không được phép. Bạn phải lập tức thông báo cho <b>InOn</b> bất cứ trường hợp nào mà Tên Truy Cập Tài Khoản và/hoặc Mật khẩu của bạn bị sử dụng sai và/hoặc sử dụng mà không được phép. Bạn chịu trách nhiệm hoàn toàn về việc bảo mật Tên Truy Cập Tài Khoản và Mật khẩu và đối với bất cứ việc truy cập nào sử dụng Tên Truy Cập Tài Khoản và/hoặc Mật khẩu của bạn.",
+	"generalInfo.terms.5": "5. BẢN QUYỀN VÀ NHÃN HIỆU",
+	"generalInfo.terms.5.1": "5.1  Mọi nhãn hiệu hàng hóa, nhãn hiệu dịch vụ, tên thương mại, lô-gô, biểu tượng và tên miền đặt trên trang thông tin điện tử này là tài sản của <b>InOn</b> và các đối tác khác (nếu có).",
+	"generalInfo.terms.5.2": "5.2  Không có điều gì trên trang thông tin điện tử này có thể được hiểu là, dù là ngầm định hay cách khác, cho phép sử dụng hoặc bất cứ quyền sử dụng nào liên quan đến bất cứ nhãn hiệu hàng hóa, nhãn hiệu dịch vụ, tên thương mại, lô-gô, biểu tượng và tên miền đặt trên trang thông tin điện tử này khi chưa có sự đồng ý bằng văn bản của <b>InOn</b> hoặc bên thứ ba sở hữu các nhãn hiệu hoặc tên thương mại đặt trên trang thông tin điện tử này.",
+	"generalInfo.terms.5.3": "5.3  Bạn hoàn toàn không được sử dụng bất cứ nhãn hiệu hàng hóa, nhãn hiệu dịch vụ, tên thương mại, lô-gô, biểu tượng và tên miền đặt trên trang thông tin điện tử này hoặc bất cứ nội dung nào khác có trên trang thông tin điện tử này, trừ các trường hợp được quy định trong các Điều Khoản và Điều Kiện.",
+	"generalInfo.terms.5.4": "5.4  Các hình ảnh đặt trên trang thông tin điện tử này là tài sản của <b>InOn</b> hoặc được <b>InOn</b> sử dụng theo sự đồng ý của chủ sở hữu.",
+	"generalInfo.terms.5.5": "5.5  Trừ khi được cho phép cụ thể, bạn không được sử dụng bất cứ hình ảnh nào đặt trên trang thông tin điện tử này, bạn cũng không được ủy quyền cho bất cứ người nào sử dụng bất cứ hình ảnh nào đặt trên trang thông tin điện tử này. Bất cứ việc sử dụng không được phép nào đối với các hình ảnh này có thể vi phạm luật tác quyền, luật nhãn hiệu, luật về quyền riêng tư và luật xuất bản, và các quy định về thông tin khác.",
+	"generalInfo.terms.6": "6. QUY ĐỊNH VỀ QUYỀN RIÊNG TƯ",
+	"generalInfo.terms.6.1": "6.1   Xin đọc kỹ CHÍNH SÁCH VỀ QUYỀN RIÊNG TƯ TRÊN INTERNET của chúng tôi. Chính sách này giải thích rõ những thông tin nào <b>InOn</b> có thể thu thập từ bạn trên trang thông tin điện tử của chúng tôi và cách thức chúng tôi sẽ sử dụng và bảo vệ các thông tin của bạn. Chúng tôi sẽ không thu thập bất cứ thông tin xác định danh tính cá nhân nào trên trang thông tin điện tử của chúng tôi trừ khi bạn cung cấp các thông tin đó cho chúng tôi.",
+	"generalInfo.terms.7": "7. LIÊN KẾT ĐẾN CÁC TRANG WEB KHÁC",
+	"generalInfo.terms.7.1": "7.1  Trang thông tin điện tử này liên kết đến các trang thông tin điện tử khác không do <b>InOn</b> quản lý hoặc điều khiển. <b>InOn</b> sẽ không chịu trách nhiệm về nội dung của các trang thông tin điện tử đó.",
+	"generalInfo.terms.7.2": "7.2  Việc liên kết đến bất cứ trang thông tin điện tử nào như thế không có nghĩa là <b>InOn</b> đã chấp thuận hoặc tán thành đối với các trang thông tin điện tử đó, hoặc với nội dung của các trang thông tin điện tử đó, hoặc các sản phẩm và dịch vụ trên các trang thông tin điện tử đó.",
+	"generalInfo.terms.8": "8. AN NINH CỦA TRANG WEB",
+	"generalInfo.terms.8.1": "8.1  Bạn sẽ không xâm phạm hoặc cố gắng xâm phạm an ninh của trang thông tin điện tử này, bao gồm, nhưng không giới hạn, các hành vi dưới đây:",
+	"generalInfo.terms.8.1.1": "8.1.1  Truy cập thông tin hoặc nối vào một máy chủ hoặc tài khoản mà bạn không được phép truy cập.",
+	"generalInfo.terms.8.1.2": "8.1.2  Cố gắng thăm dò, kiểm tra hoặc thử nghiệm điểm yếu của một hệ thống hoặc hệ thống mạng để vi phạm an ninh hoặc biện pháp nhận dạng mà không được <b>InOn</b> cho phép bằng văn bản.",
+	"generalInfo.terms.8.1.3": "8.1.3  Cố gắng can thiệp vào dịch vụ cung cấp cho bất cứ người sử dụng nào, máy chủ hoặc hệ thống mạng nào, bằng cách phát tán vi rút hoặc mã độc lên trang thông tin điện tử, làm quá tải hoặc gây ra hiện tượng thư rác (spamming) trên trang thông tin điện tử;",
+	"generalInfo.terms.8.1.4": "8.1.4  Thay đổi thông tin của phần tiêu đề (header) của bộ giao thức điều khiển truyền vận (TCP/IP) hoặc bất cứ phần thông tin nào của phần tiêu đề (header) trong bất cứ thư điện tử hay nhóm thông tin được đăng tải.",
+	"generalInfo.terms.8.2": "8.2  Bạn không sử dụng trang thông tin điện tử này cho bất cứ mục đích bất hợp pháp nào.",
+	"generalInfo.terms.8.3": "8.3  Bạn phải đảm bảo rằng tất cả các thông tin được đưa lên trang thông tin điện tử này là đầy đủ, chính xác, có thật, phù hợp và nhất quán với các tài liệu chứa đựng các thông tin này. Vi phạm điều này sẽ dẫn đến việc chậm trễ trong quy trình xử lý hoặc các thông tin điện tử được đưa lên bị loại bỏ. Bạn phải chịu trách nhiệm đối với toàn bộ chi phí phát sinh do việc đưa thông tin giả mạo hoặc sai.",
+	"generalInfo.terms.8.4": "8.4  Bạn sẽ không tấn công hoặc cố gắng tấn công hoặc làm hại trang thông tin điện tử này bằng bất cứ hình thức hay phương tiện nào như các công cụ tấn công, vi-rút và chương trình máy tính có chứa các mã có thể gây hỏng máy tính. Bất cứ cố gắng nào để thực hiện các hành vi như vậy đều khiến bạn phải chịu sự truy tố theo quy định của pháp luật hiện hành.",
+	"generalInfo.terms.9": "9. KHÔNG CHỊU TRÁCH NHIỆM",
+	"generalInfo.terms.9.1": "9.1  Mặc dù <b>InOn</b> thực hiện mọi sự cẩn trọng khi cung cấp dịch vụ tại trang thông tin điện tử, <b>InOn</b> không cam kết rằng trang thông tin điện tử này sẽ hoạt động không có lỗi hoặc hoàn toàn không có vi-rút, worms, Trojan horses hoặc các mã độc hại khác.",
+	"generalInfo.terms.9.2": "9.2  <b>InOn</b> không chấp nhận bất cứ trách nhiệm nào, và sẽ không chịu trách nhiệm về bất cứ thiệt hại nào xảy ra cho thiết bị máy tính hoặc các tài sản khác của bạn do việc bạn truy cập vào, sử dụng, hoặc xem lướt qua trang thông tin điện tử này hoặc việc bạn tải xuống bất cứ tài liệu, dữ liệu, các thông tin bằng chữ, các hình ảnh, các đoạn video, hoặc các tập tin âm thanh nào từ trang thông tin điện tử này hoặc phát sinh liên quan đến việc chậm thực hiện, lỗi, thiếu sót, bị gián đoạn, lỗi, vi-rút máy tính, chậm trễ trong hoạt động hoặc truyền dữ liệu, hoặc lỗi hệ thống hoặc đường truyền.",
+	"generalInfo.terms.9.3": "9.3  <b>InOn</b> cũng từ chối mọi trách nhiệm đối với:",
+	"generalInfo.terms.9.3.1": "9.3.1  Bất cứ tổn thất nào hoặc không có khả năng lấy lại các dữ liệu hoặc thông tin vì bất cứ lý do gì và bao gồm việc không chuyển được, việc sử dụng không đúng mục đích hoặc việc chuyển sai do kết quả của bất cứ sự gián đoạn, ngưng hoặc chấm dứt dịch vụ trên trang thông tin điện tử này; ",
+	"generalInfo.terms.9.3.2": "9.3.2  Bất cứ sự sai sót của các thông tin hoặc nguồn tài nguyên có sẵn, nhận được hoặc được chuyển thông qua trang thông tin điện tử;",
+	"generalInfo.terms.9.3.3": "9.3.3  Bất cứ trục trặc, khuyết điểm hoặc sai sót của trang thông tin điện tử này; ",
+	"generalInfo.terms.9.3.4": "9.3.4  Bất cứ sự chậm trễ hoặc không có khả năng trong việc cung cấp dịch vụ của <b>InOn</b> tại trang thông tin điện tử này theo các Điều Khoản và Điệu Kiện do bất cứ khuyết điểm hoặc hỏng hóc về điện tử, cơ khí, hệ thống, xử lý dữ liệu hoặc viễn thông, thiên tai, xáo trộn dân sự hoặc bất cứ sự kiện nào nằm ngoài sự kiểm soát của <b>InOn</b>.",
+	"generalInfo.terms.10": "10. MIỄN TRỪ TRÁCH NHIỆM",
+	"generalInfo.terms.10.1": "10.1  Trong bất cứ trường hợp nào, <b>InOn</b> cũng không chịu trách nhiệm về bất cứ thiệt hại, tổn thất hoặc chi phí, bao gồm nhưng không giới hạn, thiệt hại trực tiếp, đặc biệt hoặc do hệ quả của, hoặc tổn thất kinh tế phát sinh từ hoặc có liên quan hoặc có thể quy cho:",
+	"generalInfo.terms.10.1.1": "10.1.1  Bất cứ việc truy cập, sử dụng hoặc không thể truy cập hoặc sử dụng trang thông tin điện tử hoặc dịch vụ này, hoặc tin cậy vào những thông tin trên trang thông tin điện tử này.",
+	"generalInfo.terms.10.1.2": "10.1.2  Bất cứ sự hỏng hóc, sai sót, bỏ sót, gián đoạn hoặc chậm trễ trong việc truyền dữ liệu;",
+	"generalInfo.terms.10.1.3": "10.1.3  Bất cứ vi-rút máy tính hoặc hoặc các mã độc hại, hoặc các đoạn mã, chương trình hay một lệnh riêng lẻ bằng ngôn ngữ lập trình mà kết quả là một chuỗi lệnh bằng ngôn ngữ máy tính (macro) mang tính chất làm hỏng hoặc phá hủy khác có thể ảnh hưởng đến các thiết bị, chương trình máy tính hoặc các tài sản khác của bạn.",
+	"generalInfo.terms.11": "11. BỒI THƯỜNG",
+	"generalInfo.terms.11.1": "11.1 Bằng việc truy cập vào trang thông tin điện tử này, bạn đồng ý bồi thường cho <b>InOn</b>, giữ cho <b>InOn</b> khỏi mọi thiệt hại và bảo vệ <b>InOn</b> khỏi bất cứ khiếu nại, hành động hoặc đòi hỏi, bao gồm nhưng không giới hạn các chi phí pháp lý và kế toán hợp lý, được cho là hoặc là kết quả của việc bạn sử dụng trang thông tin điện tử này hoặc dịch vụ tại trang thông tin điện tử này, hoặc do việc bạn vi phạm các Điều Khoản và Điều Kiện.",
+	"generalInfo.terms.12": "12. CHẤM DỨT",
+	"generalInfo.terms.12.1": "12.1  <b>InOn</b> bảo lưu quyền, theo quyết định riêng của <b>InOn</b>, chấm dứt dịch vụ trên trang thông tin điện tử này vào bất cứ thời điểm nào, có hoặc không có lý do hoặc chấm dứt quyền truy cập vào trang thông tin điện tử này của bạn mà không cần báo trước và không cần lý do. Bằng việc truy cập vào trang thông tin điện tử này, bạn được coi là từ bỏ quyền được <b>InOn</b> thông báo về việc chấm dứt này, nếu có.",
+	"generalInfo.terms.12.2": "12.2  <b>InOn</b> không chịu trách nhiệm về bất cứ thiệt hại, mất mát hoặc chí phí phát sinh theo bất cứ cách thức nào, từ hoặc do việc chấm dứt dịch vụ trên trang thông tin điện tử này.",
+	"generalInfo.terms.13": "13. SỬA ĐỔI",
+	"generalInfo.terms.13.1": "13.1  <b>InOn</b> có thể thay đổi và thay thế nội dung các Điều Khoản và Điều Kiện này và/hoặc quy định thêm các điều kiện và điều khoản mới vào bất cứ thời điểm nào mà không cần báo trước cho bạn. Bằng việc sử dụng trang thông tin điện tử này, bạn được coi là từ bỏ quyền được thông báo hoặc chấp thuận bất cứ sửa đổi, thay đổi hoặc bổ sung nào với các Điều Khoản và Điều Kiện, nếu có.",
+	"generalInfo.terms.13.2": "13.2  Các thay đổi sẽ có hiệu lực vào ngày đầu tiên được đưa lên trang thông tin điện tử này. Nếu bạn tiếp tục sử dụng trang thông tin điện tử sau thời gian đó, bạn được xem là đã chấp nhận các thay đổi.",
+	"generalInfo.terms.14": "14. LUẬT ĐIỀU CHỈNH VÀ CƠ QUAN XỬ LÝ TRANH CHẤP",
+	"generalInfo.terms.14.1": "14.1  Sự thỏa thuận giữa bạn và <b>InOn</b> trong các Điều Khoản và Điều Kiện này được điều chỉnh và giải thích theo pháp luật Việt Nam.",
+	"generalInfo.terms.14.2": "14.2  Trong trường hợp có tranh chấp giữa bạn và <b>InOn</b> phát sinh từ hoặc có liên quan đến sự thỏa thuận này (“Tranh Chấp”), mỗi Bên nỗ lực tối đa để thảo luận các vấn đề với mục đích giải quyết Tranh Chấp thông qua biện pháp hòa giải.",
+	"generalInfo.terms.14.3": "14.3  Nếu Tranh Chấp không được giải quyết trong vòng ba mươi (30) ngày kể từ ngày Tranh Chấp phát sinh, Tranh Chấp đó sẽ được phân xử chung thẩm bởi Trung tâm Trọng tài Quốc tế Việt Nam (bên cạnh Phòng Thương Mại và Công Nghiệp Việt Nam) (“VIAC”) bởi một (01) trọng tài viên theo quy tắc tố tụng trọng tài của VIAC có hiệu lực tại thời điểm xảy ra Tranh Chấp và ngôn ngữ trọng tài được sử dụng là tiếng Việt.",
 	"createPassword.title": "CREATE PASSWORD *",
 	"createPassword.password.required": "You must enter your password",
 	"createPassword.password.invalid": "You password is invalid",
@@ -3450,6 +3614,7 @@ var messages_vi = {
 	"login.password": "Mật khẩu *",
 	"login.password.required": "Bạn phải nhập mật khẩu",
 	"login.rememberMe": "Ghi nhớ tôi",
+	"login.notMe": "Không phải tôi",
 	"login.fail": "Tài khoản hoặc mật khẩu của bạn không chính xác",
 	"login.sayHi": "Xin chào, {name}",
 	register: register$2,
@@ -3481,6 +3646,7 @@ var messages_vi = {
 	"forgotPassword.yourEmailIs": "Email của bạn là",
 	"menu.home": "Trang chủ",
 	"menu.user": "Tài khoản",
+	"menu.contract": "Hợp đồng",
 	"menu.buyInsurance": "Mua bảo hiểm",
 	"menu.contractManagement": "Quản lý hợp đồng",
 	"menu.personalContracts": "Hợp đồng cá nhân",
@@ -3512,7 +3678,8 @@ var messages_vi = {
 	"menu.permissionGoupManagement": "Quản lý nhóm quyền",
 	"menu.insuranceMotobike": "Bảo hiểm xe máy",
 	"menu.insuranceCar": "Bảo hiểm ô tô",
-	"menu.approveOpenAccount": "Phê duyệt mở tài khoản  ",
+	"menu.approveOpenAccount": "Phê duyệt mở tài khoản",
+	"menu.promotion": "Khuyến mại",
 	"navbar.language.vi": "Tiếng Việt",
 	"navbar.language.en": "Tiếng Anh",
 	"navbar.logout": "Đăng xuất",
@@ -3535,7 +3702,7 @@ var messages_vi = {
 	"setting.general": "Chung",
 	"setting.privacyPolicy": "Chính sách bảo mật",
 	"setting.frequentlyAsked": "Câu hỏi thường gặp",
-	"setting.contact": "Liên hệ InOn",
+	"setting.contact": "Liên hệ",
 	"setting.feedback": "Góp ý, báo lỗi",
 	"setting.share": "Chia sẻ",
 	"setting.status.COMPLETE": "Tài khoản đã hoàn thiện thông tin",
@@ -3545,11 +3712,141 @@ var messages_vi = {
 	"setting.gender.O": "Khác",
 	"setting.updateInfo.success": "Thay đổi thông tin thành công !",
 	"setting.updateInfo.confirmMessage": "Bạn có muốn thay đổi thông tin tài khoản ?",
+	"setting.updateInfo.imageTypeInvalid": "Bạn chỉ có thể tải lên tệp hình ảnh !",
 	"changePassword.newPassword": "Mật khẩu mới",
 	"changePassword.oldPassword": "Mật khẩu cũ",
 	"changePassword.passwordMustMatch": "Mật khẩu không trùng khớp",
 	"changePassword.confirmMessage": "Bạn có muốn thay đổi mật khẩu ?",
 	"changePassword.success": "Thay đổi mật khẩu thành công !",
+	"generalInfo.changeLanguage.confirmMessage": "Bạn có muốn thay đổi ngôn ngữ ?",
+	"generalInfo.changeLanguage.success": "Thay đổi ngôn ngữ thành công !",
+	"generalInfo.policy.1": "1. CÁC LOẠI DỮ LIỆU CÁ NHÂN CHÚNG TÔI SẼ THU THẬP VÀ XỬ LÝ",
+	"generalInfo.policy.1.1": "1.1  Thông tin cá nhân và thông tin liên lạc chi tiết, ví dụ chức vụ, họ tên, thông tin liên lạc chi tiết và lịch sử liên lạc chi tiết; thông tin tài liệu du lịch; ngày sinh, giới tính và/hoặc tuổi của bạn; quốc tịch, bản sao giấy tờ nhận dạng bạn (nếu có liên quan đến sản phẩm hoặc dịch vụ);",
+	"generalInfo.policy.1.2": "1.2  Thông tin chi tiết về người thụ hưởng, ví dụ chủ hợp đồng bảo hiểm và người thụ hưởng của các sản phẩm hoặc dịch vụ của chúng tôi;",
+	"generalInfo.policy.1.3": "1.3  Các thành viên trong gia đình (nếu có liên quan đến sản phẩm hoặc dịch vụ);",
+	"generalInfo.policy.1.4": "1.4  Hồ sơ liên lạc của bạn với chúng tôi, chẳng hạn như lịch sử các cuộc gọi của bạn đến số điện thoại của trung tâm dịch vụ khách hàng của chúng tôi và, nếu bạn liên lạc với chúng tôi bằng các dịch vụ trực tuyến hoặc qua ứng dụng điện thoại thông minh của chúng tôi, các chi tiết như dữ liệu vị trí điện thoại di động, địa chỉ IP và địa chỉ MAC;",
+	"generalInfo.policy.1.5": "1.5  Sản phẩm và dịch vụ, bạn đã mua từ chúng tôi, cũng như những sản phẩm bạn quan tâm và đã nắm giữ và các phương thức thanh toán liên quan được bạn sử dụng;",
+	"generalInfo.policy.1.6": "1.6  Việc sử dụng các sản phẩm và dịch vụ của chúng tôi, các yêu cầu bồi thường bảo hiểm và tình trạng thanh toán các yêu cầu bồi thường này (và các chi tiết khác liên quan đến vấn đề này);",
+	"generalInfo.policy.1.7": "1.7  Phân tích dữ liệu tiếp thị sản phẩm hoặc dịch vụ được thực hiện riêng cho bạn, bao gồm lịch sử liên lạc và thông tin về việc bạn có mở các tài liệu này hay nhấp vào đường link liên kết;",
+	"generalInfo.policy.2": "2. CÁCH THỨC CHÚNG TÔI THU THẬP DỮ LIỆU CÁ NHÂN CỦA BẠN",
+	"generalInfo.policy.2.1": "2.1  Trực tiếp từ bạn và bất kỳ thông tin nào từ các thành viên gia đình, cộng sự hoặc người thụ hưởng sản phẩm và dịch vụ;",
+	"generalInfo.policy.2.2": "2.2  Thông tin về bạn được tạo ra khi bạn sử dụng các sản phẩm và dịch vụ của chúng tôi;",
+	"generalInfo.policy.2.3": "2.3  Từ một nhà môi giới hoặc một bên trung gian khác (ví dụ: đại lý, nhà phân phối, đối tác kinh doanh), các bên mà chúng tôi có hợp tác để cung cấp sản phẩm hoặc dịch vụ hoặc cung cấp báo giá cho bạn;",
+	"generalInfo.policy.2.4": "2.4  Các công ty đối tác liên kết với InOn, nếu bạn đã từng đăng ký mua hoặc đã mua sản phẩm từ các công ty này;",
+	"generalInfo.policy.2.5": "2.5  Cookie, dịch vụ định vị, địa chỉ IP khi bạn truy cập trang mạng hoặc ứng dụng di động của chúng tôi hoặc khi bạn điền vào biểu mẫu Liên hệ với chúng tôi trong trang mạng hoặc ứng dụng của chúng tôi;",
+	"generalInfo.policy.2.6": "2.6  Các bên thứ ba như công ty bảo hiểm, đại lý, nhà cung cấp, tổ chức tài chính, cá nhân y tế, tòa án hoặc hồ sơ thông tin đã được công bố công khai;",
+	"generalInfo.policy.2.7": "2.7  Bảng câu hỏi và thông tin liên lạc chi tiết khi bạn tham gia khảo sát, hội nghị nhà đầu tư, các buổi hội thảo hoặc khi bạn cập nhật thông tin liên lạc của bạn với chúng tôi trên trang mạng của chúng tôi;",
+	"generalInfo.policy.2.8": "2.8  Từ các nguồn khác như Cơ quan phòng chống gian lận, tổ chức tham chiếu tín dụng, người cho vay khác và các thông tin đã được công bố công khai (ví dụ: danh bạ điện thoại, phương tiện truyền thông xã hội, các trang mạng, các bài báo), các tổ chức thu hồi nợ, các tổ chức khác để hỗ trợ phòng ngừa và phát hiện tội phạm, cảnh sát và các cơ quan thực thi pháp luật;",
+	"generalInfo.policy.2.9": "2.9  Chúng tôi mua thông tin về bạn hoặc khách hàng nói chung từ các bên thứ ba bao gồm thông tin nhân khẩu học, chi tiết các phương tiện đi lại, lịch sử yêu cầu bồi thường, thông tin về gian lận, danh sách quảng cáo tiếp thị, thông tin đã được công bố công khai và thông tin khác để giúp cải thiện sản phẩm và dịch vụ của chúng tôi.",
+	"generalInfo.policy.3": "3. CHÍNH SÁCH COOKIE",
+	"generalInfo.policy.3.1": "3.1   Trang mạng của chúng tôi sử dụng cookie để phân biệt bạn với những người dùng khác. Điều này giúp chúng tôi cung cấp cho bạn trải nghiệm tốt khi bạn sử dụng trang mạng và cũng cho phép chúng tôi cải thiện trang mạng của mình. Cookie là một tệp nhỏ gồm các chữ cái và số mà chúng tôi lưu trữ trên trình duyệt hoặc ổ cứng máy tính của bạn. Cookie chứa thông tin được lưu trữ trên ổ cứng máy tính của bạn. Bạn có khả năng chấp nhận hoặc từ chối cookie bằng cách sửa đổi cài đặt trong trình duyệt của bạn. Nếu bạn muốn làm điều này, xin vui lòng xem mục trợ giúp trong trình duyệt của bạn.",
+	"generalInfo.policy.3.2": "3.2   Chúng tôi sử dụng các loại cookie sau:",
+	"generalInfo.policy.3.2.1": "3.2.1    Cookie cần thiết cho trang mạng, đây là các cookie cần phải có để phục vụ hoạt động của trang  mạng của chúng tôi. Ví dụ, các cookie cho phép bạn đăng nhập vào trang mạng của chúng tôi một cách an toàn;",
+	"generalInfo.policy.3.2.2": "3.2.2    Cookie phân tích/quản lý hoạt động: các cookie này cho phép chúng tôi nhận ra và đếm số lượng người dùng truy cập vào trang mạng của chúng tôi và theo dõi cách người dùng truy cập di huyển xung quanh trang mạng của chúng tôi khi họ đang sử dụng nó. Điều này giúp chúng tôi cải thiện cách thức hoạt động của trang mạng, ví dụ, cải tiến để giúp người dùng tìm kiếm những thứ họ cần một cách dễ dàng;",
+	"generalInfo.policy.3.2.3": "3.2.3    Cookie chức năng: chúng được sử dụng để nhận ra bạn khi bạn quay lại trang mạng của chúng tôi. Điều này cho phép chúng tôi cá nhân hóa nội dung của chúng tôi cho bạn, chào bạn bằng tên và ghi nhớ sở thích của bạn (ví dụ: lựa chọn ngôn ngữ hoặc khu vực của bạn).",
+	"generalInfo.policy.3.3": "3.3   Bằng cách tiếp tục sử dụng trang mạng của chúng tôi, bạn chấp nhận chúng tôi sử dụng các loại cookie như đã nêu ở trên.",
+	"generalInfo.policy.4": "4. CÁCH THỨC VÀ LÝ DO CHÚNG TÔI SỬ DỤNG DỮ LIỆU CÁ NHÂN CỦA BẠN",
+	"generalInfo.policy.4.1": "4.1  Chúng tôi, <b>InOn</b> và các đối tác kinh doanh sẽ sử dụng dữ liệu cá nhân bạn cung cấp cho chúng tôi, cùng với các thông tin khác, cho các mục đích sau:",
+	"generalInfo.policy.4.1.1": "<table class='table table-bordered info-item-table'><thead><tr><td>Mục đích</td><td>Cơ sở pháp lý</td></tr></thead><tbody><tr><td>Quản lý các sản phẩm và dịch vụ của chúng tôi, bao gồm cho phép chúng tôi thực hiện nghĩa vụ của chúng tôi với bạn và cung cấp mọi dịch vụ liên quan như đã thảo luận với bạn trước khi bạn mua sản phẩm hoặc dịch vụ.</td><td rowspan='2'>Cần thiết cho việc thực hiện hợp đồng của chúng tôi với bạn hoặc để thực hiện các bước trước khi ký hợp đồng với bạn.&nbsp;</td></tr><tr><td>Thực hiện kiểm tra bằng cách thông qua các tổ chức như tổ chức tín dụng, công ty hỗ trợ tìm kiếm hoặc thông tin đã được công bố công khai (xem thêm nội dung trình bày trong Phần “Kiểm tra tham khảo”).</td></tr><tr><td>Cung cấp dịch vụ khách hàng – như trả lời thắc mắc của bạn hoặc thông báo cho bạn biết các thay đổi.</td><td rowspan='3'>Cần thiết cho việc thực hiện hợp đồng của chúng tôi với bạn. Sau khi hợp đồng chúng tôi ký với bạn hoàn tất, đây là lợi ích hợp pháp của chúng tôi trong việc duy trì và phát triển mối quan hệ của chúng tôi với bạn.</td></tr><tr><td>Tự động ra quyết định hoặc tạo hồ sơ cá nhân của bạn (xem thêm nội dung trình bày trong Phần “Chúng tôi có thể sử dụng dữ liệu cá nhân của bạn để đưa ra quyết định tự động hoặc tạo hồ sơ cá nhân của bạn”).</td></tr><tr><td>Lưu giữ thông tin của bạn và thực hiện các công việc quản lý nội bộ khác.</td></tr><tr><td>Tuân thủ với các yêu cầu pháp quy hoặc pháp lý khác.</td><td>Tuân thủ với các nghĩa vụ pháp lý của chúng tôi.</td></tr><tr><td>Thiết kế và cung cấp cho bạn các sản phẩm và dịch vụ bảo hiểm và tài chính liên quan.</td><td rowspan='2'>Lợi ích chính đáng của chúng tôi trong việc thiết kế và cải tiến sản phẩm, cung cấp dịch vụ giá trị gia tăng, phát triển kinh doanh và hiểu rõ hơn về cách sử dụng sản phẩm của chúng tôi.&nbsp;</td></tr><tr><td>Tiến hành nghiên cứu và phân tích thống kê (bao gồm cả việc sử dụng các công nghệ mới).</td></tr></tbody></table>",
+	"generalInfo.policy.4.2": "4.2  Ngoài ra, chúng tôi, <b>InOn</b> và các đối tác kinh doanh của chúng tôi, sẽ sử dụng dữ liệu cá nhân bạn cung cấp cho chúng tôi, cùng với các thông tin khác, để gửi cho bạn các ưu đãi tiếp thị trực tiếp bằng phương tiện điện tử và phi điện tử bao gồm qua đường bưu điện, cũng như gửi cho bạn thông tin giới thiệu các sản phẩm và dịch vụ từ các bên thứ ba đã được chọn lọc kỹ lưỡng. Cơ sở pháp lý chúng tôi trình bày bên trên được xây dựng dựa trên sự đồng thuận với bạn.",
+	"generalInfo.policy.4.3": "4.3  Chúng tôi chia sẽ dữ liệu cá nhân của bạn với ai và tại sao:",
+	"generalInfo.policy.4.3.1": "4.3.1  Chúng tôi sẽ chia sẻ thông tin cá nhân và sức khỏe của bạn trong nội bộ <b>InOn</b> và với các đối tác kinh doanh tài chính/sức khỏe và các bên thứ ba cung cấp dịch vụ cho chúng tôi (bao gồm nhưng không giới hạn các công ty bảo hiểm, luật sư, ngân hàng, kế toán, tổ chức tài chính, bên ủy thác và các nhà cung cấp dịch vụ là bên thứ ba khác cung cấp dịch vụ quản lý, viễn thông, máy tính, thanh toán, in ấn, mua lại hoặc các dịch vụ khác để cho phép chúng tôi thực hiện hoạt động kinh doanh), các công ty thẩm định hóa đơn y tế, các công ty thẩm định yêu cầu bồi thường, hiệp hội và hiệp đoàn trong cùng ngành, các bên đồng sở hữu hợp đồng bảo hiểm hoặc khoản đầu tư, cố vấn chuyên nghiệp, nhà nghiên cứu, tổ chức tham chiếu tín dụng, tổ chức thu hồi nợ, tổ chức tài chính/y tế và các bên đối tác để thực hiện các mục đích được nêu trong Phần “Cách thức và lý do chúng tôi sử dụng dữ liệu cá nhân của ban”. Nếu bạn có chung hợp đồng bảo hiểm với người khác, thì người đó cũng có thể nhận được dữ liệu cá nhân của bạn. Nếu được yêu cầu, chúng tôi cũng có thể chuyển dữ liệu cá nhân của bạn cho các cơ quan phòng chống tội phạm tài chính, bất kỳ cơ quan lập pháp, tư pháp hoặc hành pháp nào khác.",
+	"generalInfo.policy.4.3.2": "4.3.2  Chúng tôi có thể xử lý dữ liệu cá nhân của bạn ở một quốc gia khác ngoài quốc gia mà bạn cư trú. Trong phạm vi chúng tôi chuyển dữ liệu cá nhân của bạn, chúng tôi sẽ sử dụng các biện pháp bảo vệ phù hợp và tuân thủ luật pháp của quốc gia nơi dữ liệu cá nhân của bạn được chuyển đến. Khi bạn yêu cầu, chúng tôi sẽ cung cấp cho bạn chi tiết các biện pháp bảo vệ dữ liệu mà chúng tôi đang sử dụng.",
+	"generalInfo.policy.4.4": "4.4  Chúng tôi lưu trữ dữ liệu cá nhân của bạn trong một khoảng thời gian nhất định",
+	"generalInfo.policy.4.4.1": "4.4.1   Dữ liệu cá nhân của bạn sẽ được lưu trữ khi bạn (hoặc đồng sở hữu hợp đồng bảo hiểm với bạn) là khách hàng của chúng tôi và trong khoảng thời gian sáu năm sau khi kết thúc mối quan hệ khách hàng hoặc lâu hơn nếu pháp luật yêu cầu. Có thể có những trường hợp cụ thể khi chúng tôi cần lưu giữ dữ liệu cá nhân của bạn lâu hơn (chẳng hạn như khi có tranh chấp xảy ra).",
+	"generalInfo.policy.5": "5. KIỂM TRA THAM KHẢO",
+	"generalInfo.policy.5.1": "5.1  Đối với một số sản phẩm nhất định, chúng tôi có thể sử dụng các tổ chức tham chiếu tín dụng, công ty  hỗ trợ tìm kiếm, cơ quan phòng chống tội phạm tài chính hoặc thông tin có sẵn công khai để giúp chúng tôi kiểm tra danh tính của bạn, cũng như để tránh gian lận và rửa tiền; điều này có thể bao gồm kiểm tra các địa chỉ hiện tại hoặc trước đây của bạn. Những kết quả này có thể được ghi lại để tham khảo trong tương lai.",
+	"generalInfo.policy.5.2": "5.1  Những kết quả kiểm tra này cũng có thể được sử dụng cho một nhà đầu tư, chủ sở hữu hợp đồng chung hoặc người mà bạn đồng ý cung cấp dữ liệu cá nhân của mình. Nếu chúng tôi mất liên lạc với bạn, chúng tôi có thể sử dụng các tổ chức này để xác minh địa chỉ của bạn nhằm giúp chúng tôi liên lạc với bạn.",
+	"generalInfo.policy.5.3": "5.3  Mọi việc chuyển dữ liệu cá nhân của bạn sẽ luôn được thực hiện an toàn.",
+	"generalInfo.policy.6": "6. CHÚNG TÔI CÓ THỂ SỬ DỤNG DỮ LIỆU CÁ NHÂN CỦA BẠN ĐỂ ĐƯA RA QUYẾT ĐỊNH TỰ ĐỘNG HOẶC TẠO HỒ SƠ CÁ NHÂN CỦA BẠN",
+	"generalInfo.policy.6.1": "6.1  Chúng tôi, <b>InOn</b>, Đối tác kinh doanh và Đối tác tiếp thị của chúng tôi có thể sử dụng dữ liệu cá nhân của bạn để đưa ra quyết định tự động ảnh hưởng đến bạn hoặc tạo hồ sơ cá nhân khác cho bạn (ví dụ: hồ sơ tiếp thị).",
+	"generalInfo.policy.7": "7. SỬ DỤNG DỮ LIỆU CÁ NHÂN NHẠY CẢM CỦA BẠN",
+	"generalInfo.policy.7.1": "7.1  Đối với một số sản phẩm hoặc dịch vụ nhất định, chúng tôi sẽ cần xử lý dữ liệu cá nhân nhạy cảm của bạn, chẳng hạn như thông tin liên quan đến sức khỏe, di truyền, định danh sinh trắc học và khuynh hướng giới tính. Trong phạm vi chúng tôi cần sự đồng ý rõ ràng của bạn để xử lý loại dữ liệu cá nhân này theo cách được mô tả trong Phần “Cách thức và lý do chúng tôi sử dụng dữ liệu cá nhân của bạn” , “Kiểm tra tham khảo” và “Chúng tôi có thể sử dụng dữ liệu cá nhân của bạn để đưa ra quyết định tự động hoặc tạo hồ sơ cá nhân của bạn”, chúng tôi sẽ cung cấp chi tiết về điều này khi chúng tôi thu thập các thông tin này từ bạn và xin nhận được sự chấp thuận của bạn.",
+	"generalInfo.policy.8": "8. QUYỀN KIỂM SOÁT DỮ LIỆU CÁ NHÂN CỦA BẠN",
+	"generalInfo.policy.8.1": "8.1  Khi nói đến cách chúng tôi sử dụng dữ liệu cá nhân của bạn, bạn có quyền theo quy định của pháp luật Việt Nam.",
+	"generalInfo.policy.8.2": "8.2  Trong khi đó, nếu bạn hiện đang cư trú tại Châu Âu, các quyền bổ sung theo Quy định bảo vệ dữ liệu chung (GDPR) có thể được áp dụng. Như vậy, bạn có thể:",
+	"generalInfo.policy.8.2.1": "8.2.1  Yêu cầu một bản sao dữ liệu cá nhân của bạn miễn phí (chúng tôi có thể tính phí yêu cầu của bạn nếu không có cơ sở rõ ràng hoặc bị lạm dụng quá mức);",
+	"generalInfo.policy.8.2.2": "8.2.2  Trong một số trường hợp nhất định, chúng tôi sẽ chuyển dữ liệu cá nhân của bạn sang một tổ chức khác theo yêu cầu của bạn;",
+	"generalInfo.policy.8.2.3": "8.2.3  Yêu cầu chúng tôi điều chỉnh bất cứ dữ liệu cá nhân nào bị sai hoặc không đầy đủ;",
+	"generalInfo.policy.8.2.4": "8.2.4  Yêu cầu chúng tôi xóa dữ liệu cá nhân của bạn nếu không còn cần thiết cho các mục đích được nêu trong Phần “Các loại dữ liệu cá nhân chúng tôi sẽ thu thập và xử lý” hoặc nếu không có cơ sở pháp lý nào khác để xử lý dữ liệu;",
+	"generalInfo.policy.8.2.5": "8.2.5  Giới hạn cách chúng tôi sử dụng dữ liệu cá nhân của bạn hoặc rút lại sự đồng ý (bao gồm cả việc đồng ý cho phép đưa ra quyết định tự động dựa trên dữ liệu cá nhân) mà bạn đã chấp thuận cho phép chúng tôi xử lý dữ liệu cá nhân của bạn;",
+	"generalInfo.policy.8.2.6": "8.2.6  Phản đối chúng tôi sử dụng dữ liệu cá nhân của bạn để tiếp thị trực tiếp (bao gồm cả việc tạo lập hồ sơ cá nhân của bạn) hoặc xử lý dữ liệu khác dựa trên lợi ích hợp pháp;",
+	"generalInfo.policy.8.2.7": "8.2.7  Khiếu nại với cơ quan bảo vệ dữ liệu hoặc cơ quan quản lý độc lập khác về cách chúng tôi sử dụng dữ liệu cá nhân của bạn.",
+	"generalInfo.policy.8.3": "8.3  Nếu bạn muốn thực hiện các quyền của mình hoặc muốn giải thích về các quyền này, bạn có thể liên lạc với chúng tôi trong phần Liên hệ.",
+	"generalInfo.policy.8.4": "8.4  Nếu bạn cần nói chuyện với chúng tôi, chúng tôi sẽ chuyển yêu cầu của bạn cho Người Kiểm Soát Dữ Liệu (8.4.1)  cá nhân của bạn là InOn Chúng tôi có thể theo dõi hoặc ghi lại các cuộc gọi hoặc bất kỳ liên lạc nào khác mà chúng tôi có với bạn. Điều này có thể là để đào tạo, bảo mật hoặc để giúp chúng tôi kiểm tra chất lượng.",
+	"generalInfo.policy.8.4.1": "8.4.1  Người Kiểm Soát Dữ Liệu – Cá nhân, pháp nhân, cơ quan nhà nước, các cơ quan hoặc tổ chức khác, riêng rẻ hoặc cùng nhau, xác định mục đích và cách thức xử lý dữ liệu cá nhân.",
+	"generalInfo.policy.9": "9.  THAY MẶT NGƯỜI KHÁC CUNG CẤP DỮ LIỆU CÁ NHÂN CỦA HỌ",
+	"generalInfo.policy.9.1": "9.1  Khi bạn cung cấp cho chúng tôi dữ liệu cá nhân về người khác (hoặc nhiều người khác), bạn nên được chỉ định và ủy quyền bởi người đó để hành động thay họ. Điều này bao gồm cung cấp sự đồng ý để:",
+	"generalInfo.policy.9.1.1": "9.1.1  Chúng tôi xử lý dữ liệu cá nhân của họ và dữ liệu cá nhân nhạy cảm (như chúng tôi đã giải thích trong các Phần ở trên);",
+	"generalInfo.policy.9.1.2": "9.1.1  Bạn sẽ nhận được các thông báo bảo vệ thông tin thay mặt họ.",
+	"generalInfo.policy.9.2": "9.2  Nếu vì bất kỳ lý do nào bạn quan tâm đến việc liệu bạn có được phép cung cấp cho chúng tôi thông tin về người khác hay không, vui lòng liên hệ với chúng tôi theo địa chỉ thư điện tử bên dưới trước khi gửi cho chúng tôi bất cứ thông tin gì.",
+	"generalInfo.policy.10": "10. TIẾP THỊ TRỰC TIẾP",
+	"generalInfo.policy.10.1": "10.1  Chúng tôi, <b>InOn</b>, đối tác kinh doanh của chúng tôi, và đối tác tiếp thị vẫn sẽ gửi cho bạn thông tin qua hình thức các bài đăng về các sản phẩm và dịch vụ của InOn và các bên thứ ba được lựa chọn cẩn thận.",
+	"generalInfo.policy.10.2": "10.2  Ngoài ra, theo thời gian, chung tôi <b>InOn</b> mong muốn gởi thông tin chi tiết về sản phẩm, dịch vụ và các ưu đãi đặc biệt cho bạn qua các phương tiện điện tử. Chúng tôi sẽ chỉ làm điều này nếu bạn đồng ý cho chúng tôi liên lạc với bạn bằng phương tiện điện tử.",
+	"generalInfo.policy.10.3": "10.3  Và nếu bạn thay đổi ý định và/hoặc bạn muốn từ chối nhận tiếp thị trực tiếp phi điện tử, thì bạn cứ cho chúng tôi biết. Chỉ cần sử dụng một trong các tùy chọn trong mục Liên hệ với chúng tôi.",
+	"generalInfo.policy.11": "11. LIÊN HỆ VỚI CHÚNG TÔI",
+	"generalInfo.policy.11.1": "11.1  Nếu bạn muốn thực hiện các quyền của mình trong Phần “Quyền kiểm soát dữ liệu cá nhân của bạn” hoặc nếu bạn yêu cầu bất kỳ thông tin nào theo thông báo này, bạn có thể liên hệ với chúng tôi theo nhiều cách khác nhau.",
+	"generalInfo.policy.11.1.1": "11.1.1  Gọi cho đường dây nóng của chúng tôi: <b>0582.33.55.88</b>",
+	"generalInfo.policy.11.1.2": "11.1.2  Gửi thư điện tử cho chúng tôi theo địa chỉ: <b>lienhe@inon.vn</b>",
+	"generalInfo.policy.11.1.3": "11.1.3  Hoặc liên hệ trực tiếp với chúng tôi tại văn phòng: <b>Tầng 6 – P611, Tòa nhà MD Complex, số 68 Nguyễn Cơ Thạch, Phường Cầu Diễn, Quận Nam Từ Liêm, Thành Phố Hà Nội.</b>",
+	"generalInfo.terms.1": "1. CÁC ĐIỀU KHOẢN VÀ ĐIỀU KIỆN SỬ DỤNG",
+	"generalInfo.terms.1.1": "1.1  Trang thông tin điện tử này <b>(www.inon.vn) do Công Ty TNHH NPG NAM PHONG - Đơn vị chủ quản của Hệ thống và Thương hiệu InOn (sau đây gọi tắt là “InOn”)</b> hoàn toàn sở hữu và điều hành.",
+	"generalInfo.terms.1.2": "1.2  Việc sử dụng trang thông tin điện tử này phụ thuộc vào các điều khoản và điều kiện cụ thể sau: (A) các điều khoản và điều kiện được nêu dưới đây và (B) mọi điều khoản và điều kiện bổ sung cụ thể tùy từng thời điểm để điều chỉnh việc sử dụng, và truy cập vào một số mục của trang thông tin điện tử này (và các điều khoản bổ sung đó sẽ có hiệu lực ràng buộc khi chúng được đăng tải trên trang thông tin điện tử này) <b>(\"Điều Khoản và Điều Kiện\")</b>.",
+	"generalInfo.terms.1.3": "1.3  Khi sử dụng trang thông tin điện tử này, bạn đã đồng ý với các Điều Khoản và Điều Kiện, và sự đồng ý của bạn cùng với các Điều Khoản và Điều Kiện sẽ cấu thành một hợp đồng có giá trị ràng buộc về pháp lý giữa bạn và <b>InOn</b>. Vì thế, bạn vui lòng đọc kỹ các Điều Khoản và Điều Kiện của trang thông tin điện tử này.",
+	"generalInfo.terms.2": "2. CÁC HẠN CHẾ VÀ SỬ DỤNG CÁC THÔNG TIN TÀI LIỆU",
+	"generalInfo.terms.2.1": "2.1  Trừ khi được <b>InOn</b> đồng ý bằng văn bản một cách khác đi, bạn sẽ không sao chép, sao lại, tái bản, đưa lên mạng, công bố, chuyển, tạo liên kết đến hoặc phân phối dưới bất cứ hình thức nào các thông tin và/hoặc tài liệu đã được đăng tải trên trang thông tin điện tử này.",
+	"generalInfo.terms.2.2": "2.2  Bạn có thể tải xuống các thông tin và/hoặc tài liệu được đăng tải trên trang thông tin điện tử này để bạn sử dụng, nhưng luôn luôn với điều kiện là bạn không dỡ bỏ các thông tin về bản quyền và/hoặc các quyền khác của <b>InOn</b> gắn với các thông tin và/hoặc tài liệu đó.",
+	"generalInfo.terms.2.3": "2.3  Bạn không được phát tán, sửa đổi, chuyển đi, sử dụng lại, công bố, tạo liên kết hoặc sử dụng các nội dung của trang thông tin điện tử này, bao gồm, nhưng không giới hạn bởi, cả các thông tin bằng chữ, các hình ảnh, các tập tin âm thanh và/hoặc các đoạn phim, cho các mục đích kinh doanh và/hoặc công cộng, khi chưa có sự cho phép bằng văn bản của InOn.",
+	"generalInfo.terms.3": "3. THỜI GIAN HOẠT ĐỘNG",
+	"generalInfo.terms.3.1": "3.1 Trang thông tin điện tử này hoạt động 24 giờ mỗi ngày và 7 ngày mỗi tuần. Tuy nhiên, <b>InOn</b> bảo lưu quyền ngắt hệ thống để bảo trì khi cần thiết. <b>InOn</b> sẽ cố gắng để lên kế hoạch và thông báo về việc hệ thống không thể sử dụng được bằng cách đưa một thông báo trên mạng trực tuyến. <b>InOn</b> không chịu trách nhiệm đối với bất cứ thiệt hại và/hoặc mất mát nào do việc hệ thống bị ngắt trong trường hợp này.",
+	"generalInfo.terms.4": "4. TÀI KHOẢN NGƯỜI SỬ DỤNG",
+	"generalInfo.terms.4.1": "4.1  Bạn sẽ đăng ký và được cung cấp một Tên Truy Cập Tài Khoản và Mật khẩu để có thể mua bảo hiểm trên trang thông tin điện tử này. Bạn sẽ giữ bí mật Tên Truy Cập Tài Khoản và Mật khẩu này vào mọi thời điểm, và sẽ bảo đảm rằng Tên Truy Cập Tài Khoản và Mật khẩu này của bạn sẽ không bị tiết lộ theo bất cứ cách thức nào cho bất kỳ ai.",
+	"generalInfo.terms.4.2": "4.2  <b>InOn</b> sẽ không chịu trách nhiệm về bất cứ giao dịch không được phép nào do việc Tên Truy Cập Tài Khoản và/hoặc Mật khẩu bị sử dụng sai và/hoặc sử dụng mà không được phép. Bạn phải lập tức thông báo cho <b>InOn</b> bất cứ trường hợp nào mà Tên Truy Cập Tài Khoản và/hoặc Mật khẩu của bạn bị sử dụng sai và/hoặc sử dụng mà không được phép. Bạn chịu trách nhiệm hoàn toàn về việc bảo mật Tên Truy Cập Tài Khoản và Mật khẩu và đối với bất cứ việc truy cập nào sử dụng Tên Truy Cập Tài Khoản và/hoặc Mật khẩu của bạn.",
+	"generalInfo.terms.5": "5. BẢN QUYỀN VÀ NHÃN HIỆU",
+	"generalInfo.terms.5.1": "5.1  Mọi nhãn hiệu hàng hóa, nhãn hiệu dịch vụ, tên thương mại, lô-gô, biểu tượng và tên miền đặt trên trang thông tin điện tử này là tài sản của <b>InOn</b> và các đối tác khác (nếu có).",
+	"generalInfo.terms.5.2": "5.2  Không có điều gì trên trang thông tin điện tử này có thể được hiểu là, dù là ngầm định hay cách khác, cho phép sử dụng hoặc bất cứ quyền sử dụng nào liên quan đến bất cứ nhãn hiệu hàng hóa, nhãn hiệu dịch vụ, tên thương mại, lô-gô, biểu tượng và tên miền đặt trên trang thông tin điện tử này khi chưa có sự đồng ý bằng văn bản của <b>InOn</b> hoặc bên thứ ba sở hữu các nhãn hiệu hoặc tên thương mại đặt trên trang thông tin điện tử này.",
+	"generalInfo.terms.5.3": "5.3  Bạn hoàn toàn không được sử dụng bất cứ nhãn hiệu hàng hóa, nhãn hiệu dịch vụ, tên thương mại, lô-gô, biểu tượng và tên miền đặt trên trang thông tin điện tử này hoặc bất cứ nội dung nào khác có trên trang thông tin điện tử này, trừ các trường hợp được quy định trong các Điều Khoản và Điều Kiện.",
+	"generalInfo.terms.5.4": "5.4  Các hình ảnh đặt trên trang thông tin điện tử này là tài sản của <b>InOn</b> hoặc được <b>InOn</b> sử dụng theo sự đồng ý của chủ sở hữu.",
+	"generalInfo.terms.5.5": "5.5  Trừ khi được cho phép cụ thể, bạn không được sử dụng bất cứ hình ảnh nào đặt trên trang thông tin điện tử này, bạn cũng không được ủy quyền cho bất cứ người nào sử dụng bất cứ hình ảnh nào đặt trên trang thông tin điện tử này. Bất cứ việc sử dụng không được phép nào đối với các hình ảnh này có thể vi phạm luật tác quyền, luật nhãn hiệu, luật về quyền riêng tư và luật xuất bản, và các quy định về thông tin khác.",
+	"generalInfo.terms.6": "6. QUY ĐỊNH VỀ QUYỀN RIÊNG TƯ",
+	"generalInfo.terms.6.1": "6.1   Xin đọc kỹ CHÍNH SÁCH VỀ QUYỀN RIÊNG TƯ TRÊN INTERNET của chúng tôi. Chính sách này giải thích rõ những thông tin nào <b>InOn</b> có thể thu thập từ bạn trên trang thông tin điện tử của chúng tôi và cách thức chúng tôi sẽ sử dụng và bảo vệ các thông tin của bạn. Chúng tôi sẽ không thu thập bất cứ thông tin xác định danh tính cá nhân nào trên trang thông tin điện tử của chúng tôi trừ khi bạn cung cấp các thông tin đó cho chúng tôi.",
+	"generalInfo.terms.7": "7. LIÊN KẾT ĐẾN CÁC TRANG WEB KHÁC",
+	"generalInfo.terms.7.1": "7.1  Trang thông tin điện tử này liên kết đến các trang thông tin điện tử khác không do <b>InOn</b> quản lý hoặc điều khiển. <b>InOn</b> sẽ không chịu trách nhiệm về nội dung của các trang thông tin điện tử đó.",
+	"generalInfo.terms.7.2": "7.2  Việc liên kết đến bất cứ trang thông tin điện tử nào như thế không có nghĩa là <b>InOn</b> đã chấp thuận hoặc tán thành đối với các trang thông tin điện tử đó, hoặc với nội dung của các trang thông tin điện tử đó, hoặc các sản phẩm và dịch vụ trên các trang thông tin điện tử đó.",
+	"generalInfo.terms.8": "8. AN NINH CỦA TRANG WEB",
+	"generalInfo.terms.8.1": "8.1  Bạn sẽ không xâm phạm hoặc cố gắng xâm phạm an ninh của trang thông tin điện tử này, bao gồm, nhưng không giới hạn, các hành vi dưới đây:",
+	"generalInfo.terms.8.1.1": "8.1.1  Truy cập thông tin hoặc nối vào một máy chủ hoặc tài khoản mà bạn không được phép truy cập.",
+	"generalInfo.terms.8.1.2": "8.1.2  Cố gắng thăm dò, kiểm tra hoặc thử nghiệm điểm yếu của một hệ thống hoặc hệ thống mạng để vi phạm an ninh hoặc biện pháp nhận dạng mà không được <b>InOn</b> cho phép bằng văn bản.",
+	"generalInfo.terms.8.1.3": "8.1.3  Cố gắng can thiệp vào dịch vụ cung cấp cho bất cứ người sử dụng nào, máy chủ hoặc hệ thống mạng nào, bằng cách phát tán vi rút hoặc mã độc lên trang thông tin điện tử, làm quá tải hoặc gây ra hiện tượng thư rác (spamming) trên trang thông tin điện tử;",
+	"generalInfo.terms.8.1.4": "8.1.4  Thay đổi thông tin của phần tiêu đề (header) của bộ giao thức điều khiển truyền vận (TCP/IP) hoặc bất cứ phần thông tin nào của phần tiêu đề (header) trong bất cứ thư điện tử hay nhóm thông tin được đăng tải.",
+	"generalInfo.terms.8.2": "8.2  Bạn không sử dụng trang thông tin điện tử này cho bất cứ mục đích bất hợp pháp nào.",
+	"generalInfo.terms.8.3": "8.3  Bạn phải đảm bảo rằng tất cả các thông tin được đưa lên trang thông tin điện tử này là đầy đủ, chính xác, có thật, phù hợp và nhất quán với các tài liệu chứa đựng các thông tin này. Vi phạm điều này sẽ dẫn đến việc chậm trễ trong quy trình xử lý hoặc các thông tin điện tử được đưa lên bị loại bỏ. Bạn phải chịu trách nhiệm đối với toàn bộ chi phí phát sinh do việc đưa thông tin giả mạo hoặc sai.",
+	"generalInfo.terms.8.4": "8.4  Bạn sẽ không tấn công hoặc cố gắng tấn công hoặc làm hại trang thông tin điện tử này bằng bất cứ hình thức hay phương tiện nào như các công cụ tấn công, vi-rút và chương trình máy tính có chứa các mã có thể gây hỏng máy tính. Bất cứ cố gắng nào để thực hiện các hành vi như vậy đều khiến bạn phải chịu sự truy tố theo quy định của pháp luật hiện hành.",
+	"generalInfo.terms.9": "9. KHÔNG CHỊU TRÁCH NHIỆM",
+	"generalInfo.terms.9.1": "9.1  Mặc dù <b>InOn</b> thực hiện mọi sự cẩn trọng khi cung cấp dịch vụ tại trang thông tin điện tử, <b>InOn</b> không cam kết rằng trang thông tin điện tử này sẽ hoạt động không có lỗi hoặc hoàn toàn không có vi-rút, worms, Trojan horses hoặc các mã độc hại khác.",
+	"generalInfo.terms.9.2": "9.2  <b>InOn</b> không chấp nhận bất cứ trách nhiệm nào, và sẽ không chịu trách nhiệm về bất cứ thiệt hại nào xảy ra cho thiết bị máy tính hoặc các tài sản khác của bạn do việc bạn truy cập vào, sử dụng, hoặc xem lướt qua trang thông tin điện tử này hoặc việc bạn tải xuống bất cứ tài liệu, dữ liệu, các thông tin bằng chữ, các hình ảnh, các đoạn video, hoặc các tập tin âm thanh nào từ trang thông tin điện tử này hoặc phát sinh liên quan đến việc chậm thực hiện, lỗi, thiếu sót, bị gián đoạn, lỗi, vi-rút máy tính, chậm trễ trong hoạt động hoặc truyền dữ liệu, hoặc lỗi hệ thống hoặc đường truyền.",
+	"generalInfo.terms.9.3": "9.3  <b>InOn</b> cũng từ chối mọi trách nhiệm đối với:",
+	"generalInfo.terms.9.3.1": "9.3.1  Bất cứ tổn thất nào hoặc không có khả năng lấy lại các dữ liệu hoặc thông tin vì bất cứ lý do gì và bao gồm việc không chuyển được, việc sử dụng không đúng mục đích hoặc việc chuyển sai do kết quả của bất cứ sự gián đoạn, ngưng hoặc chấm dứt dịch vụ trên trang thông tin điện tử này; ",
+	"generalInfo.terms.9.3.2": "9.3.2  Bất cứ sự sai sót của các thông tin hoặc nguồn tài nguyên có sẵn, nhận được hoặc được chuyển thông qua trang thông tin điện tử;",
+	"generalInfo.terms.9.3.3": "9.3.3  Bất cứ trục trặc, khuyết điểm hoặc sai sót của trang thông tin điện tử này; ",
+	"generalInfo.terms.9.3.4": "9.3.4  Bất cứ sự chậm trễ hoặc không có khả năng trong việc cung cấp dịch vụ của <b>InOn</b> tại trang thông tin điện tử này theo các Điều Khoản và Điệu Kiện do bất cứ khuyết điểm hoặc hỏng hóc về điện tử, cơ khí, hệ thống, xử lý dữ liệu hoặc viễn thông, thiên tai, xáo trộn dân sự hoặc bất cứ sự kiện nào nằm ngoài sự kiểm soát của <b>InOn</b>.",
+	"generalInfo.terms.10": "10. MIỄN TRỪ TRÁCH NHIỆM",
+	"generalInfo.terms.10.1": "10.1  Trong bất cứ trường hợp nào, <b>InOn</b> cũng không chịu trách nhiệm về bất cứ thiệt hại, tổn thất hoặc chi phí, bao gồm nhưng không giới hạn, thiệt hại trực tiếp, đặc biệt hoặc do hệ quả của, hoặc tổn thất kinh tế phát sinh từ hoặc có liên quan hoặc có thể quy cho:",
+	"generalInfo.terms.10.1.1": "10.1.1  Bất cứ việc truy cập, sử dụng hoặc không thể truy cập hoặc sử dụng trang thông tin điện tử hoặc dịch vụ này, hoặc tin cậy vào những thông tin trên trang thông tin điện tử này.",
+	"generalInfo.terms.10.1.2": "10.1.2  Bất cứ sự hỏng hóc, sai sót, bỏ sót, gián đoạn hoặc chậm trễ trong việc truyền dữ liệu;",
+	"generalInfo.terms.10.1.3": "10.1.3  Bất cứ vi-rút máy tính hoặc hoặc các mã độc hại, hoặc các đoạn mã, chương trình hay một lệnh riêng lẻ bằng ngôn ngữ lập trình mà kết quả là một chuỗi lệnh bằng ngôn ngữ máy tính (macro) mang tính chất làm hỏng hoặc phá hủy khác có thể ảnh hưởng đến các thiết bị, chương trình máy tính hoặc các tài sản khác của bạn.",
+	"generalInfo.terms.11": "11. BỒI THƯỜNG",
+	"generalInfo.terms.11.1": "11.1 Bằng việc truy cập vào trang thông tin điện tử này, bạn đồng ý bồi thường cho <b>InOn</b>, giữ cho <b>InOn</b> khỏi mọi thiệt hại và bảo vệ <b>InOn</b> khỏi bất cứ khiếu nại, hành động hoặc đòi hỏi, bao gồm nhưng không giới hạn các chi phí pháp lý và kế toán hợp lý, được cho là hoặc là kết quả của việc bạn sử dụng trang thông tin điện tử này hoặc dịch vụ tại trang thông tin điện tử này, hoặc do việc bạn vi phạm các Điều Khoản và Điều Kiện.",
+	"generalInfo.terms.12": "12. CHẤM DỨT",
+	"generalInfo.terms.12.1": "12.1  <b>InOn</b> bảo lưu quyền, theo quyết định riêng của <b>InOn</b>, chấm dứt dịch vụ trên trang thông tin điện tử này vào bất cứ thời điểm nào, có hoặc không có lý do hoặc chấm dứt quyền truy cập vào trang thông tin điện tử này của bạn mà không cần báo trước và không cần lý do. Bằng việc truy cập vào trang thông tin điện tử này, bạn được coi là từ bỏ quyền được <b>InOn</b> thông báo về việc chấm dứt này, nếu có.",
+	"generalInfo.terms.12.2": "12.2  <b>InOn</b> không chịu trách nhiệm về bất cứ thiệt hại, mất mát hoặc chí phí phát sinh theo bất cứ cách thức nào, từ hoặc do việc chấm dứt dịch vụ trên trang thông tin điện tử này.",
+	"generalInfo.terms.13": "13. SỬA ĐỔI",
+	"generalInfo.terms.13.1": "13.1  <b>InOn</b> có thể thay đổi và thay thế nội dung các Điều Khoản và Điều Kiện này và/hoặc quy định thêm các điều kiện và điều khoản mới vào bất cứ thời điểm nào mà không cần báo trước cho bạn. Bằng việc sử dụng trang thông tin điện tử này, bạn được coi là từ bỏ quyền được thông báo hoặc chấp thuận bất cứ sửa đổi, thay đổi hoặc bổ sung nào với các Điều Khoản và Điều Kiện, nếu có.",
+	"generalInfo.terms.13.2": "13.2  Các thay đổi sẽ có hiệu lực vào ngày đầu tiên được đưa lên trang thông tin điện tử này. Nếu bạn tiếp tục sử dụng trang thông tin điện tử sau thời gian đó, bạn được xem là đã chấp nhận các thay đổi.",
+	"generalInfo.terms.14": "14. LUẬT ĐIỀU CHỈNH VÀ CƠ QUAN XỬ LÝ TRANH CHẤP",
+	"generalInfo.terms.14.1": "14.1  Sự thỏa thuận giữa bạn và <b>InOn</b> trong các Điều Khoản và Điều Kiện này được điều chỉnh và giải thích theo pháp luật Việt Nam.",
+	"generalInfo.terms.14.2": "14.2  Trong trường hợp có tranh chấp giữa bạn và <b>InOn</b> phát sinh từ hoặc có liên quan đến sự thỏa thuận này (“Tranh Chấp”), mỗi Bên nỗ lực tối đa để thảo luận các vấn đề với mục đích giải quyết Tranh Chấp thông qua biện pháp hòa giải.",
+	"generalInfo.terms.14.3": "14.3  Nếu Tranh Chấp không được giải quyết trong vòng ba mươi (30) ngày kể từ ngày Tranh Chấp phát sinh, Tranh Chấp đó sẽ được phân xử chung thẩm bởi Trung tâm Trọng tài Quốc tế Việt Nam (bên cạnh Phòng Thương Mại và Công Nghiệp Việt Nam) (“VIAC”) bởi một (01) trọng tài viên theo quy tắc tố tụng trọng tài của VIAC có hiệu lực tại thời điểm xảy ra Tranh Chấp và ngôn ngữ trọng tài được sử dụng là tiếng Việt.",
 	"createPassword.title": "TẠO MẬT KHẨU *",
 	"createPassword.password.required": "Bạn phải nhập mật khẩu",
 	"createPassword.password.invalid": "Mật khẩu của bạn không hợp lệ",
@@ -3991,6 +4288,16 @@ var useBankList = function useBankList() {
 };
 
 var validationSchema = Yup.object().shape({
+  fullName: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "register.fullname.required"
+  })).matches(NAME_REGEX, function () {
+    return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "register.fullname.invalid"
+    });
+  }),
+  icType: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "completeInformation.nbrPer.required"
+  })),
   icNumber: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "completeInformation.nbrPer.required"
   })).when('icType', {
@@ -4087,12 +4394,30 @@ var UserAccountTab = function UserAccountTab() {
       setAvatar = _useState[1];
 
   React.useEffect(function () {
-    loadDitrictsByCity(userDetails.city);
-    loadWardsByDistrict(userDetails.district);
+    if (userDetails && userDetails.city) {
+      loadDitrictsByCity(userDetails.city);
+      loadWardsByDistrict(userDetails.district);
+      userDetails.userType = user.userType;
+    }
   }, []);
 
   var onChangeAvatar = function onChangeAvatar(e) {
+    var validTypeExtension = ['jpg', 'jpeg', 'bmp', 'gif', 'png'];
     var file = e.target.files[0];
+
+    if (!file) {
+      return;
+    }
+
+    var fileType = file.type.split('/').pop().toLowerCase();
+
+    if (validTypeExtension.indexOf(fileType) < 0) {
+      toastError( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "setting.updateInfo.imageTypeInvalid"
+      }));
+      return;
+    }
+
     var reader = new FileReader();
     reader.readAsDataURL(file);
 
@@ -4479,262 +4804,266 @@ var AccountSettings = function AccountSettings(props) {
   }, /*#__PURE__*/React__default.createElement(ChangePassword, null))))))));
 };
 
-var CheckBox = /*#__PURE__*/function (_React$Component) {
-  _inheritsLoose(CheckBox, _React$Component);
+var TERMS = [{
+  id: '1',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }]
+}, {
+  id: '2',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }]
+}, {
+  id: '3',
+  items: [{
+    id: '1'
+  }]
+}, {
+  id: '4',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }]
+}, {
+  id: '5',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }, {
+    id: '4'
+  }, {
+    id: '5'
+  }]
+}, {
+  id: '6',
+  items: [{
+    id: '1'
+  }]
+}, {
+  id: '7',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }]
+}, {
+  id: '8',
+  items: [{
+    id: '1',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }, {
+      id: '3'
+    }, {
+      id: '4'
+    }]
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }, {
+    id: '4'
+  }]
+}, {
+  id: '9',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }, {
+      id: '3'
+    }, {
+      id: '4'
+    }]
+  }]
+}, {
+  id: '10',
+  items: [{
+    id: '1',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }, {
+      id: '3'
+    }]
+  }]
+}, {
+  id: '11',
+  items: [{
+    id: '1'
+  }]
+}, {
+  id: '12',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }]
+}, {
+  id: '13',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }]
+}, {
+  id: '14',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }]
+}];
 
-  function CheckBox() {
-    return _React$Component.apply(this, arguments) || this;
-  }
+var InfoItems = function InfoItems(_ref) {
+  var data = _ref.data,
+      type = _ref.type;
+  var intl = reactIntl.useIntl();
 
-  var _proto = CheckBox.prototype;
+  var _useState = React.useState({
+    collapseID: '',
+    status: 'Closed'
+  }),
+      state = _useState[0],
+      setState = _useState[1];
 
-  _proto.render = function render() {
+  var toggleCollapse = function toggleCollapse(collapseID) {
+    collapseID = state.collapseID !== collapseID ? collapseID : '';
+    setState(_extends({}, state, {
+      collapseID: collapseID
+    }));
+  };
+
+  var _onEntered = function onEntered(id) {
+    if (id === state.collapseID) setState(_extends({}, state, {
+      status: 'Opened'
+    }));
+  };
+
+  var _onEntering = function onEntering(id) {
+    if (id === state.collapseID) setState(_extends({}, state, {
+      status: 'Opening...'
+    }));
+  };
+
+  var _onExited = function onExited(id) {
+    if (id === state.collapseID) setState(_extends({}, state, {
+      status: 'Closed'
+    }));
+  };
+
+  var _onExiting = function onExiting(id) {
+    if (id === state.collapseID) setState(_extends({}, state, {
+      status: 'Closing...'
+    }));
+  };
+
+  return data.map(function (item1) {
     return /*#__PURE__*/React__default.createElement("div", {
-      className: "vx-checkbox-con " + (this.props.className ? this.props.className : '') + " vx-checkbox-" + this.props.color
-    }, /*#__PURE__*/React__default.createElement("input", {
-      type: "checkbox",
-      defaultChecked: this.props.defaultChecked,
-      checked: this.props.checked,
-      value: this.props.value,
-      disabled: this.props.disabled,
-      onClick: this.props.onClick ? this.props.onClick : null,
-      onChange: this.props.onChange ? this.props.onChange : null
-    }), /*#__PURE__*/React__default.createElement("span", {
-      className: "vx-checkbox vx-checkbox-" + (this.props.size ? this.props.size : 'md')
-    }, /*#__PURE__*/React__default.createElement("span", {
-      className: "vx-checkbox--check"
-    }, this.props.icon)), /*#__PURE__*/React__default.createElement("span", null, this.props.label));
-  };
-
-  return CheckBox;
-}(React__default.Component);
-
-var UserAccountTab$1 = /*#__PURE__*/function (_React$Component) {
-  _inheritsLoose(UserAccountTab, _React$Component);
-
-  function UserAccountTab() {
-    return _React$Component.apply(this, arguments) || this;
-  }
-
-  var _proto = UserAccountTab.prototype;
-
-  _proto.render = function render() {
-    return /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "mb-2"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "mr-2 my-25",
-      left: true,
-      href: "#"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "users-avatar-shadow rounded",
-      object: true,
-      src: 'https://storage.live.com/Users/-6155523327610065665/MyProfile/ExpressionProfile/ProfilePhoto:Win8Static,UserTileMedium,UserTileStatic',
-      alt: "user profile image",
-      height: "84",
-      width: "84"
-    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "mt-2",
-      body: true
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "font-medium-1 text-bold-600",
-      tag: "p",
-      heading: true
-    }, "Crystal Hamilton"), /*#__PURE__*/React__default.createElement("div", {
-      className: "d-flex flex-wrap"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      className: "mr-1",
-      color: "primary",
-      outline: true
-    }, "Change"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      color: "flat-danger"
-    }, "Remove Avatar"))))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Form, {
-      onSubmit: function onSubmit(e) {
-        return e.preventDefault();
+      className: "collapse-margin",
+      key: item1.id
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Card, {
+      onClick: function onClick() {
+        return toggleCollapse(item1.id);
+      },
+      className: classnames({
+        'collapse-collapsed': state.status === 'Closed' && state.collapseID === item1.id,
+        'collapse-shown': state.status === 'Opened' && state.collapseID === item1.id,
+        closing: state.status === 'Closing...' && state.collapseID === item1.id,
+        opening: state.status === 'Opening...' && state.collapseID === item1.id
+      })
+    }, /*#__PURE__*/React__default.createElement(reactstrap.CardHeader, null, /*#__PURE__*/React__default.createElement(reactstrap.CardTitle, {
+      className: "lead collapse-title collapsed"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "generalInfo." + type + "." + item1.id
+    })), /*#__PURE__*/React__default.createElement(Icon.ChevronDown, {
+      size: 15,
+      className: "collapse-icon"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Collapse, {
+      isOpen: item1.id === state.collapseID,
+      onEntering: function onEntering() {
+        return _onEntering(item1.id);
+      },
+      onEntered: function onEntered() {
+        return _onEntered(item1.id);
+      },
+      onExiting: function onExiting() {
+        return _onExiting(item1.id);
+      },
+      onExited: function onExited() {
+        return _onExited(item1.id);
       }
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      md: "6",
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "username"
-    }, "Username"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "text",
-      defaultValue: "crystal",
-      id: "username",
-      placeholder: "Username"
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      md: "6",
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "status"
-    }, "Status"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "select",
-      name: "status",
-      id: "status"
-    }, /*#__PURE__*/React__default.createElement("option", null, "Active"), /*#__PURE__*/React__default.createElement("option", null, "Banned"), /*#__PURE__*/React__default.createElement("option", null, "Closed")))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      md: "6",
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "name"
-    }, "Name"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "text",
-      defaultValue: "Crystal Hamilton",
-      id: "name",
-      placeholder: "Name"
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      md: "6",
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "role"
-    }, "Role"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "select",
-      name: "role",
-      id: "role"
-    }, /*#__PURE__*/React__default.createElement("option", null, "User"), /*#__PURE__*/React__default.createElement("option", null, "Staff")))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      md: "6",
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "email"
-    }, "Email"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "text",
-      defaultValue: "crystalhamilton@gmail.com",
-      id: "email",
-      placeholder: "Email"
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      md: "6",
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "company"
-    }, "Company"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "text",
-      id: "company",
-      defaultValue: "North Star Aviation Pvt Ltd",
-      placeholder: "company"
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement("div", {
-      className: "permissions border px-2"
-    }, /*#__PURE__*/React__default.createElement("div", {
-      className: "title pt-2 pb-0"
-    }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
-      size: 19
-    }), /*#__PURE__*/React__default.createElement("span", {
-      className: "text-bold-500 font-medium-2 ml-50"
-    }, "Permissions"), /*#__PURE__*/React__default.createElement("hr", null)), /*#__PURE__*/React__default.createElement(reactstrap.Table, {
-      borderless: true,
-      responsive: true
-    }, /*#__PURE__*/React__default.createElement("thead", null, /*#__PURE__*/React__default.createElement("tr", null, /*#__PURE__*/React__default.createElement("th", null, "Module Permission"), /*#__PURE__*/React__default.createElement("th", null, "Read"), /*#__PURE__*/React__default.createElement("th", null, "Write"), /*#__PURE__*/React__default.createElement("th", null, "Create"), /*#__PURE__*/React__default.createElement("th", null, "Delete"))), /*#__PURE__*/React__default.createElement("tbody", null, /*#__PURE__*/React__default.createElement("tr", null, /*#__PURE__*/React__default.createElement("td", null, "Users"), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: true
-    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: false
-    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: false
-    })), /*#__PURE__*/React__default.createElement("td", null, ' ', /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: true
-    }))), /*#__PURE__*/React__default.createElement("tr", null, /*#__PURE__*/React__default.createElement("td", null, "Articles"), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: false
-    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: true
-    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: false
-    })), /*#__PURE__*/React__default.createElement("td", null, ' ', /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: true
-    }))), /*#__PURE__*/React__default.createElement("tr", null, /*#__PURE__*/React__default.createElement("td", null, "Staff"), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: true
-    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: true
-    })), /*#__PURE__*/React__default.createElement("td", null, /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: false
-    })), /*#__PURE__*/React__default.createElement("td", null, ' ', /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "",
-      defaultChecked: false
-    }))))))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      className: "d-flex justify-content-end flex-wrap mt-2",
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      className: "mr-1",
-      color: "primary"
-    }, "Save Changes"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      color: "flat-warning"
-    }, "Reset"))))));
+    }, /*#__PURE__*/React__default.createElement(reactstrap.CardBody, null, item1.items.map(function (item2) {
+      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("p", {
+        className: "ml-1",
+        key: item2.id,
+        dangerouslySetInnerHTML: {
+          __html: intl.formatMessage({
+            id: "generalInfo." + type + "." + item1.id + "." + item2.id
+          })
+        }
+      }), item2.items ? item2.items.map(function (item3) {
+        return /*#__PURE__*/React__default.createElement("p", {
+          className: "ml-2",
+          key: item3.id,
+          dangerouslySetInnerHTML: {
+            __html: intl.formatMessage({
+              id: "generalInfo." + type + "." + item1.id + "." + item2.id + "." + item3.id
+            })
+          }
+        });
+      }) : '');
+    })))));
+  });
+};
+
+var Terms = function Terms() {
+  var dispatch = reactRedux.useDispatch();
+
+  var onClickBackHome = function onClickBackHome() {
+    dispatch(goBackHomePage());
   };
 
-  return UserAccountTab;
-}(React__default.Component);
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Card, null, /*#__PURE__*/React__default.createElement(reactstrap.CardBody, null, /*#__PURE__*/React__default.createElement("div", {
+    className: "vx-collapse"
+  }, /*#__PURE__*/React__default.createElement(InfoItems, {
+    data: TERMS,
+    type: "terms"
+  })), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    className: "d-flex justify-content-end flex-wrap mt-2",
+    sm: "12"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+    type: "button",
+    color: "secondary",
+    onClick: onClickBackHome
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "common.home"
+  })))))));
+};
 
 var Radio = /*#__PURE__*/function (_React$Component) {
   _inheritsLoose(Radio, _React$Component);
@@ -4773,284 +5102,347 @@ var Radio = /*#__PURE__*/function (_React$Component) {
   return Radio;
 }(React__default.Component);
 
-var languages = [{
-  value: 'english',
-  label: 'English',
-  color: '#7367f0'
-}, {
-  value: 'french',
-  label: 'French',
-  color: '#7367f0'
-}, {
-  value: 'spanish',
-  label: 'Spanish',
-  color: '#7367f0'
-}, {
-  value: 'russian',
-  label: 'Russian',
-  color: '#7367f0'
-}, {
-  value: 'italian',
-  label: 'Italian',
-  color: '#7367f0'
-}];
-var colourStyles = {
-  control: function control(styles) {
-    return _extends({}, styles, {
-      backgroundColor: 'white'
-    });
-  },
-  option: function option(styles, _ref) {
-    var data = _ref.data,
-        isDisabled = _ref.isDisabled,
-        isFocused = _ref.isFocused,
-        isSelected = _ref.isSelected;
-    var color = data.color ? chroma(data.color) : '#7367f0';
-    return _extends({}, styles, {
-      backgroundColor: isDisabled ? null : isSelected ? data.color : isFocused ? color.alpha(0.1).css() : null,
-      color: isDisabled ? '#ccc' : isSelected ? chroma.contrast(color, 'white') > 2 ? 'white' : 'black' : data.color,
-      cursor: isDisabled ? 'not-allowed' : 'default',
-      ':active': _extends({}, styles[':active'], {
-        backgroundColor: !isDisabled && (isSelected ? data.color : '#7367f0')
-      })
-    });
-  },
-  multiValue: function multiValue(styles, _ref2) {
-    var data = _ref2.data;
-    var color = data.color ? chroma(data.color) : '#7367f0';
-    return _extends({}, styles, {
-      backgroundColor: color.alpha(0.1).css()
-    });
-  },
-  multiValueLabel: function multiValueLabel(styles, _ref3) {
-    var data = _ref3.data;
-    return _extends({}, styles, {
-      color: data.color ? data.color : '#7367f0'
-    });
-  },
-  multiValueRemove: function multiValueRemove(styles, _ref4) {
-    var data = _ref4.data;
-    return _extends({}, styles, {
-      color: data.color,
-      ':hover': {
-        backgroundColor: data.color ? data.color : '#7367f0',
-        color: 'white'
-      }
-    });
-  }
-};
+var LanguageTab = function LanguageTab() {
+  var dispatch = reactRedux.useDispatch();
+  var intl = reactIntl.useIntl();
 
-var UserInfoTab = /*#__PURE__*/function (_React$Component) {
-  _inheritsLoose(UserInfoTab, _React$Component);
+  var _useState = React.useState(localStorage.getItem('language')),
+      lang = _useState[0],
+      setLang = _useState[1];
 
-  function UserInfoTab() {
-    var _this;
-
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
-    _this = _React$Component.call.apply(_React$Component, [this].concat(args)) || this;
-    _this.state = {
-      dob: new Date('1995-05-22')
-    };
-
-    _this.handledob = function (date) {
-      _this.setState({
-        dob: date
-      });
-    };
-
-    return _this;
-  }
-
-  var _proto = UserInfoTab.prototype;
-
-  _proto.render = function render() {
-    var _this2 = this;
-
-    return /*#__PURE__*/React__default.createElement(reactstrap.Form, {
-      onSubmit: function onSubmit(e) {
-        return e.preventDefault();
-      }
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Row, {
-      className: "mt-1"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      className: "mt-1",
-      md: "6",
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement("h5", {
-      className: "mb-1"
-    }, /*#__PURE__*/React__default.createElement(Icon.User, {
-      className: "mr-50",
-      size: 16
-    }), /*#__PURE__*/React__default.createElement("span", {
-      className: "align-middle"
-    }, "Personal Info")), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      className: "d-block",
-      "for": "dob"
-    }, "Date of birth"), /*#__PURE__*/React__default.createElement(Flatpickr, {
-      id: "dob",
-      className: "form-control",
-      options: {
-        dateFormat: 'Y-m-d'
-      },
-      value: this.state.dob,
-      onChange: function onChange(date) {
-        return _this2.handledob(date);
-      }
-    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "contactnumber"
-    }, "Contact Number"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "number",
-      id: "contactnumber",
-      placeholder: "Contact Number"
-    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "website"
-    }, "Website"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "url",
-      id: "website",
-      placeholder: "Web Address"
-    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "languages"
-    }, "Languages"), /*#__PURE__*/React__default.createElement(ReactSelect, {
-      isMulti: true,
-      defaultValue: [languages[0], languages[1], languages[2]],
-      isClearable: true,
-      styles: colourStyles,
-      options: languages,
-      className: "React",
-      classNamePrefix: "select",
-      id: "languages"
-    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      className: "d-block mb-50"
-    }, "Gender"), /*#__PURE__*/React__default.createElement("div", {
-      className: "d-inline-block mr-1"
-    }, /*#__PURE__*/React__default.createElement(Radio, {
-      label: "Male",
-      color: "primary",
-      defaultChecked: false,
-      name: "gender"
-    })), /*#__PURE__*/React__default.createElement("div", {
-      className: "d-inline-block mr-1"
-    }, /*#__PURE__*/React__default.createElement(Radio, {
-      label: "Female",
-      color: "primary",
-      defaultChecked: true,
-      name: "gender"
-    })), /*#__PURE__*/React__default.createElement("div", {
-      className: "d-inline-block"
-    }, /*#__PURE__*/React__default.createElement(Radio, {
-      label: "Others",
-      color: "primary",
-      defaultChecked: false,
-      name: "gender"
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      className: "d-block mb-50",
-      "for": "communication"
-    }, "Communication"), /*#__PURE__*/React__default.createElement("div", {
-      className: "d-inline-block mr-1"
-    }, /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "Email",
-      defaultChecked: false
-    })), /*#__PURE__*/React__default.createElement("div", {
-      className: "d-inline-block mr-1"
-    }, /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "SMS",
-      defaultChecked: false
-    })), /*#__PURE__*/React__default.createElement("div", {
-      className: "d-inline-block"
-    }, /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: "Phone",
-      defaultChecked: false
-    })))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      className: "mt-1",
-      md: "6",
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement("h5", {
-      className: "mb-1"
-    }, /*#__PURE__*/React__default.createElement(Icon.MapPin, {
-      className: "mr-50",
-      size: 16
-    }), /*#__PURE__*/React__default.createElement("span", {
-      className: "align-middle"
-    }, "Address")), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "address1"
-    }, "Address Line 1"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "text",
-      id: "address1",
-      placeholder: "Last Name Here"
-    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "address1"
-    }, "Address Line 2"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "text",
-      id: "address1",
-      placeholder: "Address Line 2"
-    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "pincode"
-    }, "Pincode"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "text",
-      id: "pincode",
-      placeholder: "Pincode"
-    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "city"
-    }, "City"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "text",
-      defaultValue: "Camden Town",
-      id: "city",
-      placeholder: "City"
-    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "State"
-    }, "State"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "text",
-      defaultValue: "London",
-      id: "State",
-      placeholder: "State"
-    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(reactstrap.Label, {
-      "for": "Country"
-    }, "Country"), /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-      type: "text",
-      defaultValue: "UK",
-      id: "Country",
-      placeholder: "Country"
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      className: "d-flex justify-content-end flex-wrap",
-      sm: "12"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      className: "mr-1",
-      color: "primary"
-    }, "Save Changes"), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      color: "flat-warning"
-    }, "Reset"))));
+  var onClickBackHome = function onClickBackHome() {
+    dispatch(goBackHomePage$1());
   };
 
-  return UserInfoTab;
-}(React__default.Component);
+  var onClickSaveChange = function onClickSaveChange(context) {
+    dispatch(showConfirmAlert({
+      title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "setting.language"
+      }),
+      isShow: true,
+      content: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "generalInfo.changeLanguage.confirmMessage"
+      }),
+      onConfirm: function onConfirm() {
+        dispatch(changeLanguageSetting(lang, function () {
+          return context.switchLanguage(lang);
+        }));
+      }
+    }));
+  };
+
+  return /*#__PURE__*/React__default.createElement(Context.Consumer, null, function (context) {
+    return /*#__PURE__*/React__default.createElement(reactstrap.Row, {
+      className: "mt-3"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      className: "mx-auto col-6"
+    }, /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(Radio, {
+      label: intl.formatMessage({
+        id: 'navbar.language.vi'
+      }),
+      color: "primary",
+      onChange: function onChange() {
+        return setLang('vi');
+      },
+      defaultChecked: context.state.locale === 'vi',
+      name: "lang"
+    })), /*#__PURE__*/React__default.createElement("div", {
+      className: "mt-2"
+    }, /*#__PURE__*/React__default.createElement(Radio, {
+      label: intl.formatMessage({
+        id: 'navbar.language.en'
+      }),
+      color: "primary",
+      onChange: function onChange() {
+        return setLang('en');
+      },
+      defaultChecked: context.state.locale === 'en',
+      name: "lang"
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      className: "d-flex justify-content-end flex-wrap mt-3",
+      sm: "12"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      type: "button",
+      color: "secondary",
+      onClick: onClickBackHome
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "common.home"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      className: "ml-3",
+      onClick: function onClick() {
+        return onClickSaveChange(context);
+      },
+      color: "primary"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "common.saveChanges"
+    }))));
+  });
+};
+
+var POLICIES = [{
+  id: '1',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }, {
+    id: '4'
+  }, {
+    id: '5'
+  }, {
+    id: '6'
+  }, {
+    id: '7'
+  }]
+}, {
+  id: '2',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }, {
+    id: '4'
+  }, {
+    id: '5'
+  }, {
+    id: '6'
+  }, {
+    id: '7'
+  }, {
+    id: '8'
+  }, {
+    id: '9'
+  }]
+}, {
+  id: '3',
+  items: [{
+    id: '1'
+  }, {
+    id: '2',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }]
+  }, {
+    id: '3'
+  }, {
+    id: '4'
+  }]
+}, {
+  id: '4',
+  items: [{
+    id: '1',
+    items: [{
+      id: '1'
+    }]
+  }, {
+    id: '2'
+  }, {
+    id: '3',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }]
+  }, {
+    id: '4',
+    items: [{
+      id: '1'
+    }]
+  }]
+}, {
+  id: '5',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }]
+}, {
+  id: '6',
+  items: [{
+    id: '1'
+  }]
+}, {
+  id: '7',
+  items: [{
+    id: '1'
+  }]
+}, {
+  id: '8',
+  items: [{
+    id: '1'
+  }, {
+    id: '2',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }, {
+      id: '3'
+    }, {
+      id: '4'
+    }, {
+      id: '5'
+    }, {
+      id: '6'
+    }, {
+      id: '7'
+    }]
+  }, {
+    id: '3'
+  }, {
+    id: '4'
+  }]
+}, {
+  id: '9',
+  items: [{
+    id: '1',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }]
+  }, {
+    id: '2'
+  }]
+}, {
+  id: '10',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }]
+}, {
+  id: '11',
+  items: [{
+    id: '1',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }, {
+      id: '3'
+    }]
+  }]
+}];
+
+var Policies = function Policies() {
+  var dispatch = reactRedux.useDispatch();
+
+  var onClickBackHome = function onClickBackHome() {
+    dispatch(goBackHomePage$1());
+  };
+
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Card, null, /*#__PURE__*/React__default.createElement(reactstrap.CardBody, null, /*#__PURE__*/React__default.createElement("div", {
+    className: "vx-collapse"
+  }, /*#__PURE__*/React__default.createElement(InfoItems, {
+    data: POLICIES,
+    type: "policy"
+  })), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    className: "d-flex justify-content-end flex-wrap mt-2",
+    sm: "12"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+    type: "button",
+    color: "secondary",
+    onClick: onClickBackHome
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "common.home"
+  })))))));
+};
+
+function useDeviceDetect() {
+  var _React$useState = React__default.useState(false),
+      isMobile = _React$useState[0],
+      setMobile = _React$useState[1];
+
+  React__default.useEffect(function () {
+    var userAgent = typeof window.navigator === 'undefined' ? '' : navigator.userAgent;
+    var mobile = Boolean(userAgent.match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i));
+    setMobile(mobile);
+  }, []);
+  return {
+    isMobile: isMobile
+  };
+}
+
+var ContactTab = function ContactTab() {
+  var _useDeviceDetect = useDeviceDetect(),
+      isMobile = _useDeviceDetect.isMobile;
+
+  var dispatch = reactRedux.useDispatch();
+
+  var onClickBackHome = function onClickBackHome() {
+    dispatch(goBackHomePage$1());
+  };
+
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Row, {
+    className: "d-flex justify-content-center"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    lg: "4",
+    md: "6",
+    sm: "12"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Card, null, /*#__PURE__*/React__default.createElement(reactstrap.CardBody, {
+    className: "w-300px mx-auto"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "box-content"
+  }, /*#__PURE__*/React__default.createElement("a", {
+    href: "mailto:lienhe@inon.vn",
+    target: "_blank"
+  }, "lienhe@inon.vn")), /*#__PURE__*/React__default.createElement("div", {
+    className: "card-btns d-flex justify-content-center mt-2"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+    className: "gradient-light-primary text-white"
+  }, /*#__PURE__*/React__default.createElement("a", {
+    className: "text-white",
+    href: "mailto:lienhe@inon.vn",
+    target: "_blank"
+  }, "G\u1EEDi mail")))))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    lg: "4",
+    md: "6",
+    sm: "12"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Card, null, /*#__PURE__*/React__default.createElement(reactstrap.CardBody, {
+    className: "w-300px mx-auto"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "box-content"
+  }, /*#__PURE__*/React__default.createElement("h5", null, "0979 87 85 82")), /*#__PURE__*/React__default.createElement("div", {
+    className: "card-btns d-flex justify-content-center mt-2"
+  }, isMobile ? /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+    className: "gradient-light-primary text-white"
+  }, /*#__PURE__*/React__default.createElement("tel", {
+    href: "0979878582"
+  }, "G\u1ECDi \u0111i\u1EC7n")) : ''))))), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    className: "d-flex justify-content-end flex-wrap mt-2",
+    sm: "12"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+    type: "button",
+    color: "secondary",
+    onClick: onClickBackHome
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "common.home"
+  })))));
+};
 
 var GeneralInfo = function GeneralInfo(props) {
   var _useState = React.useState('terms-and-condition'),
       activeTab = _useState[0],
       setActiveTab = _useState[1];
 
+  var history = reactRouterDom.useHistory();
   React.useEffect(function () {
     return setActiveTab(props.activeTab);
   }, [props.activeTab]);
-  return /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+  return /*#__PURE__*/React__default.createElement(reactstrap.Row, {
+    className: "general-info"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
     sm: "12"
   }, /*#__PURE__*/React__default.createElement(reactstrap.Card, null, /*#__PURE__*/React__default.createElement(reactstrap.CardHeader, null, /*#__PURE__*/React__default.createElement(reactstrap.CardTitle, null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: 'setting.generalInformation'
@@ -5063,65 +5455,95 @@ var GeneralInfo = function GeneralInfo(props) {
       active: activeTab === 'terms-and-condition'
     }),
     onClick: function onClick() {
-      setActiveTab('terms-and-condition');
+      history.push('/terms-and-condition');
     }
-  }, /*#__PURE__*/React__default.createElement(Icon.User, {
+  }, /*#__PURE__*/React__default.createElement(Icon.FileText, {
     size: 16
   }), /*#__PURE__*/React__default.createElement("span", {
     className: "align-middle ml-50"
   }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "setting.accountInformation"
+    id: "setting.termAndCondition"
   })))), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
     className: classnames({
       active: activeTab === 'privacy-policy'
     }),
     onClick: function onClick() {
-      setActiveTab('privacy-policy');
+      history.push('/privacy-policy');
     }
-  }, /*#__PURE__*/React__default.createElement(Icon.Info, {
+  }, /*#__PURE__*/React__default.createElement(Icon.Shield, {
     size: 16
   }), /*#__PURE__*/React__default.createElement("span", {
     className: "align-middle ml-50"
   }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "setting.changePassword"
+    id: "setting.privacyPolicy"
   })))), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
     className: classnames({
       active: activeTab === 'language'
     }),
     onClick: function onClick() {
-      setActiveTab('language');
+      history.push('/language');
     }
-  }, /*#__PURE__*/React__default.createElement(Icon.User, {
+  }, /*#__PURE__*/React__default.createElement(Icon.Globe, {
     size: 16
   }), /*#__PURE__*/React__default.createElement("span", {
     className: "align-middle ml-50"
   }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "setting.accountInformation"
+    id: "setting.language"
   })))), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
     className: classnames({
       active: activeTab === 'contact'
     }),
     onClick: function onClick() {
-      setActiveTab('contact');
+      history.push('/contact');
     }
-  }, /*#__PURE__*/React__default.createElement(Icon.Info, {
+  }, /*#__PURE__*/React__default.createElement(Icon.MessageSquare, {
     size: 16
   }), /*#__PURE__*/React__default.createElement("span", {
     className: "align-middle ml-50"
   }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "setting.changePassword"
+    id: "setting.contact"
   }))))), /*#__PURE__*/React__default.createElement(reactstrap.TabContent, {
     activeTab: activeTab
   }, /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
     tabId: "terms-and-condition"
-  }, /*#__PURE__*/React__default.createElement(UserAccountTab$1, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
+  }, /*#__PURE__*/React__default.createElement(Terms, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
     tabId: "privacy-policy"
-  }, /*#__PURE__*/React__default.createElement(UserInfoTab, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
+  }, /*#__PURE__*/React__default.createElement(Policies, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
     tabId: "language"
-  }, /*#__PURE__*/React__default.createElement(UserAccountTab$1, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
+  }, /*#__PURE__*/React__default.createElement(LanguageTab, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
     tabId: "contact"
-  }, /*#__PURE__*/React__default.createElement(UserInfoTab, null)))))));
+  }, /*#__PURE__*/React__default.createElement(ContactTab, null)))))));
 };
+
+var CheckBox = /*#__PURE__*/function (_React$Component) {
+  _inheritsLoose(CheckBox, _React$Component);
+
+  function CheckBox() {
+    return _React$Component.apply(this, arguments) || this;
+  }
+
+  var _proto = CheckBox.prototype;
+
+  _proto.render = function render() {
+    return /*#__PURE__*/React__default.createElement("div", {
+      className: "vx-checkbox-con " + (this.props.className ? this.props.className : '') + " vx-checkbox-" + this.props.color
+    }, /*#__PURE__*/React__default.createElement("input", {
+      type: "checkbox",
+      defaultChecked: this.props.defaultChecked,
+      checked: this.props.checked,
+      value: this.props.value,
+      disabled: this.props.disabled,
+      onClick: this.props.onClick ? this.props.onClick : null,
+      onChange: this.props.onChange ? this.props.onChange : null
+    }), /*#__PURE__*/React__default.createElement("span", {
+      className: "vx-checkbox vx-checkbox-" + (this.props.size ? this.props.size : 'md')
+    }, /*#__PURE__*/React__default.createElement("span", {
+      className: "vx-checkbox--check"
+    }, this.props.icon)), /*#__PURE__*/React__default.createElement("span", null, this.props.label));
+  };
+
+  return CheckBox;
+}(React__default.Component);
 
 var formSchema$1 = Yup.object().shape({
   username: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -5226,7 +5648,9 @@ var Login = function Login() {
       className: "d-flex justify-content-between align-items-center"
     }, rememberMe ? /*#__PURE__*/React__default.createElement("a", {
       onClick: onClickNotMe
-    }, "Kh\xF4ng ph\u1EA3i t\xF4i") : /*#__PURE__*/React__default.createElement(CheckBox, {
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "login.notMe"
+    })) : /*#__PURE__*/React__default.createElement(CheckBox, {
       color: "primary",
       icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
         className: "vx-icon",
@@ -5284,11 +5708,11 @@ var formSchema$2 = Yup.object().shape({
   })),
   refCode: Yup.string().length(10, function () {
     return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "register.referalCode.invalid"
+      id: "register.refCode.invalid"
     });
   }).matches(PHONE_REGEX, function () {
     return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "register.referalCode.invalid"
+      id: "register.refCode.invalid"
     });
   })
 });
@@ -6345,13 +6769,77 @@ RippleButton.propTypes = _extends({}, reactstrap.Button.propTypes, {
 reactstrap.Button.Ripple = RippleButton;
 
 var isLocalhost = Boolean(window.location.hostname === 'localhost' || window.location.hostname === '[::1]' || window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/));
+function register$3(config) {
+  if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
+    var publicUrl = new URL(process.env.PUBLIC_URL, window.location.href);
 
-function unregister() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.ready.then(function (registration) {
-      registration.unregister();
+    if (publicUrl.origin !== window.location.origin) {
+      return;
+    }
+
+    window.addEventListener('load', function () {
+      var swUrl = process.env.PUBLIC_URL + "/service-worker.js";
+
+      if (isLocalhost) {
+        checkValidServiceWorker(swUrl, config);
+        navigator.serviceWorker.ready.then(function () {
+          console.log('This web app is being served cache-first by a service ' + 'worker. To learn more, visit https://bit.ly/CRA-PWA');
+        });
+      } else {
+        registerValidSW(swUrl, config);
+      }
     });
   }
+}
+
+function registerValidSW(swUrl, config) {
+  navigator.serviceWorker.register(swUrl).then(function (registration) {
+    registration.onupdatefound = function () {
+      var installingWorker = registration.installing;
+
+      if (installingWorker == null) {
+        return;
+      }
+
+      installingWorker.onstatechange = function () {
+        if (installingWorker.state === 'installed') {
+          if (navigator.serviceWorker.controller) {
+            console.log('New content is available and will be used when all ' + 'tabs for this page are closed. See https://bit.ly/CRA-PWA.');
+
+            if (config && config.onUpdate) {
+              config.onUpdate(registration);
+            }
+          } else {
+            console.log('Content is cached for offline use.');
+
+            if (config && config.onSuccess) {
+              config.onSuccess(registration);
+            }
+          }
+        }
+      };
+    };
+  })["catch"](function (error) {
+    console.error('Error during service worker registration:', error);
+  });
+}
+
+function checkValidServiceWorker(swUrl, config) {
+  fetch(swUrl).then(function (response) {
+    var contentType = response.headers.get('content-type');
+
+    if (response.status === 404 || contentType != null && contentType.indexOf('javascript') === -1) {
+      navigator.serviceWorker.ready.then(function (registration) {
+        registration.unregister().then(function () {
+          window.location.reload();
+        });
+      });
+    } else {
+      registerValidSW(swUrl, config);
+    }
+  })["catch"](function () {
+    console.log('No internet connection found. App is running in offline mode.');
+  });
 }
 
 var App = function App(_ref) {
@@ -6380,7 +6868,7 @@ var App = function App(_ref) {
   })));
 };
 
-unregister();
+register$3();
 
 var FallbackSpinner = /*#__PURE__*/function (_React$Component) {
   _inheritsLoose(FallbackSpinner, _React$Component);
@@ -6429,21 +6917,6 @@ var hideConfirmAlert$1 = function hideConfirmAlert() {
     });
   };
 };
-
-function useDeviceDetect() {
-  var _React$useState = React__default.useState(false),
-      isMobile = _React$useState[0],
-      setMobile = _React$useState[1];
-
-  React__default.useEffect(function () {
-    var userAgent = typeof window.navigator === 'undefined' ? '' : navigator.userAgent;
-    var mobile = Boolean(userAgent.match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i));
-    setMobile(mobile);
-  }, []);
-  return {
-    isMobile: isMobile
-  };
-}
 
 var usePageAuthorities = function usePageAuthorities() {
   var _useState = React.useState([]),

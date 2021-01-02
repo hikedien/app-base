@@ -996,6 +996,21 @@ span.flatpickr-day.selected {
       position: absolute;
       bottom: 0; } }
 
+/*** Account Settings ***/
+.general-info .box-content {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  background: #e6e2e2;
+  justify-content: center; }
+
+.general-info .info-item-table thead {
+  background: #e6e2e2;
+  text-align: center; }
+
+.general-info .w-300px {
+  width: 300px; }
+
 .completeInfor .text-gray {
   color: #999999; }
 
