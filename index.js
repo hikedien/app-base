@@ -28,6 +28,7 @@ var formik = require('formik');
 var Flatpickr = _interopDefault(require('react-flatpickr'));
 var ReactSelect = _interopDefault(require('react-select'));
 var AsyncSelect = _interopDefault(require('react-select/async'));
+var CreatableSelect = _interopDefault(require('react-select/creatable'));
 var styled = _interopDefault(require('styled-components'));
 var SweetAlert = _interopDefault(require('react-bootstrap-sweetalert'));
 var TopBarProgress = _interopDefault(require('react-topbar-progress-indicator'));
@@ -3167,7 +3168,7 @@ var Layout = /*#__PURE__*/function (_PureComponent) {
       }),
       onClick: this.handleAppOverlayClick
     }, /*#__PURE__*/React__default.createElement(Navbar, navbarProps), /*#__PURE__*/React__default.createElement("div", {
-      className: "content-wrapper"
+      className: "content-wrapper pb-4 pb-md-0"
     }, this.props.children)), /*#__PURE__*/React__default.createElement(Footer, footerProps), /*#__PURE__*/React__default.createElement("div", {
       className: "sidenav-overlay",
       onClick: this.handleSidebarVisibility
@@ -3908,20 +3909,20 @@ var BaseFormGroup = function BaseFormGroup(_ref) {
       type: type,
       disabled: disabled,
       name: fieldName,
-      className: "form-control " + (isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'),
+      className: "form-control " + (isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'),
       placeholder: msg
-    }), isRequired && errors[fieldName] && touched[fieldName] ? /*#__PURE__*/React__default.createElement("div", {
+    }), isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) ? /*#__PURE__*/React__default.createElement("div", {
       className: "text-danger"
-    }, errors[fieldName]) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
+    }, getPropObject(errors, fieldName)) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
   }));
 };
 
 var DatePicker = function DatePicker(props) {
   return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
     className: "form-label-group position-relative"
-  }, /*#__PURE__*/React__default.createElement(Flatpickr, props), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, props.placeholder), props.errors && props.touched && props.errors[props.fieldName] && props.touched[props.fieldName] ? /*#__PURE__*/React__default.createElement("div", {
+  }, /*#__PURE__*/React__default.createElement(Flatpickr, props), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, props.placeholder), props.errors && props.touched && getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React__default.createElement("div", {
     className: "text-danger"
-  }, props.errors[props.fieldName]) : null);
+  }, getPropObject(props.errors, props.fieldName)) : null);
 };
 
 var BaseFormDatePicker = function BaseFormDatePicker(_ref) {
@@ -4009,9 +4010,22 @@ var Select = function Select(props) {
     setIsFocused(false);
   };
 
+  var SelectComponent = function SelectComponent(componentProps) {
+    switch (props.type) {
+      case 'creatable':
+        return /*#__PURE__*/React__default.createElement(CreatableSelect, componentProps);
+
+      case 'async':
+        return /*#__PURE__*/React__default.createElement(AsyncSelect, componentProps);
+
+      default:
+        return /*#__PURE__*/React__default.createElement(ReactSelect, componentProps);
+    }
+  };
+
   return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
     className: "form-label-group position-relative"
-  }, props.isAsync ? /*#__PURE__*/React__default.createElement(AsyncSelect, _extends({}, props, {
+  }, /*#__PURE__*/React__default.createElement(SelectComponent, _extends({}, props, {
     onChange: onChange,
     onBlur: onBlur,
     onFocus: onFocus,
@@ -4022,20 +4036,9 @@ var Select = function Select(props) {
         })
       });
     }
-  })) : /*#__PURE__*/React__default.createElement(ReactSelect, _extends({}, props, {
-    onChange: onChange,
-    onBlur: onBlur,
-    onFocus: onFocus,
-    theme: function theme(_theme2) {
-      return _extends({}, _theme2, {
-        colors: _extends({}, _theme2.colors, {
-          primary: '#338955'
-        })
-      });
-    }
-  })), props.required ? props.errors[props.fieldName] && props.touched[props.fieldName] ? /*#__PURE__*/React__default.createElement("div", {
+  })), props.required ? getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React__default.createElement("div", {
     className: "text-danger"
-  }, props.errors[props.fieldName]) : null : '', /*#__PURE__*/React__default.createElement("input", {
+  }, getPropObject(props.errors, props.fieldName)) : null : '', /*#__PURE__*/React__default.createElement("input", {
     className: "d-none",
     placeholder: props.placeholder,
     value: inputValue
@@ -4325,6 +4328,11 @@ var validationSchema = Yup.object().shape({
   dateOfBirth: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "completeInformation.dateOfBirth.required"
   })),
+  email: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "register.email.required"
+  })).email( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "register.email.invalid"
+  })),
   userDetails: Yup.object().shape({
     address: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "completeInformation.address.required"
@@ -4369,7 +4377,6 @@ var UserAccountTab = function UserAccountTab() {
       userSettings = _useSelector$userSett === void 0 ? {} : _useSelector$userSett,
       user = _objectWithoutPropertiesLoose(_useSelector, ["userDetails", "userSettings"]);
 
-  var history = reactRouterDom.useHistory();
   var dispatch = reactRedux.useDispatch();
 
   var _useCityList = useCityList(VN_COUNTRY_CODE),
@@ -4499,10 +4506,10 @@ var UserAccountTab = function UserAccountTab() {
     enableReinitialize: true,
     validationSchema: validationSchema,
     onSubmit: onSubmit,
-    initialValues: _extends({
+    initialValues: _extends({}, user, {
       userDetails: userDetails,
       userSettings: userSettings
-    }, user)
+    })
   }, function (_ref) {
     var errors = _ref.errors,
         touched = _ref.touched,
@@ -4630,8 +4637,8 @@ var UserAccountTab = function UserAccountTab() {
       fieldName: "userDetails.bankAccount",
       errors: errors,
       touched: touched
-    }))) : '', /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      className: "d-flex justify-content-end flex-wrap mt-2",
+    }))) : '', /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      className: "d-flex justify-content-end  mt-2",
       sm: "12"
     }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
       type: "button",
@@ -4640,12 +4647,12 @@ var UserAccountTab = function UserAccountTab() {
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "common.home"
     })), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      className: "ml-3",
+      className: "ml-2",
       type: "submit",
       color: "primary"
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "common.saveChanges"
-    }))));
+    })))));
   }), /*#__PURE__*/React__default.createElement(reactstrap.Row, null)));
 };
 
@@ -4730,7 +4737,8 @@ var ChangePassword = function ChangePassword() {
       id: "createPassword.condition.2"
     })), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "createPassword.condition.3"
-    })), /*#__PURE__*/React__default.createElement("div", {
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12",
       className: "d-flex justify-content-center mt-2"
     }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
       type: "button",
@@ -4744,7 +4752,7 @@ var ChangePassword = function ChangePassword() {
       type: "submit"
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "common.saveChanges"
-    }))));
+    })))));
   });
 };
 
@@ -4996,8 +5004,10 @@ var InfoItems = function InfoItems(_ref) {
         closing: state.status === 'Closing...' && state.collapseID === item1.id,
         opening: state.status === 'Opening...' && state.collapseID === item1.id
       })
-    }, /*#__PURE__*/React__default.createElement(reactstrap.CardHeader, null, /*#__PURE__*/React__default.createElement(reactstrap.CardTitle, {
-      className: "lead collapse-title collapsed"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.CardHeader, {
+      className: "p-1"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.CardTitle, {
+      className: "lead collapse-title collapsed col-11 p-0\""
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "generalInfo." + type + "." + item1.id
     })), /*#__PURE__*/React__default.createElement(Icon.ChevronDown, {
@@ -5159,7 +5169,7 @@ var LanguageTab = function LanguageTab() {
       defaultChecked: context.state.locale === 'en',
       name: "lang"
     }))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      className: "d-flex justify-content-end flex-wrap mt-3",
+      className: "d-flex justify-content-end mt-3",
       sm: "12"
     }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
       type: "button",
@@ -5168,7 +5178,7 @@ var LanguageTab = function LanguageTab() {
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "common.home"
     })), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-      className: "ml-3",
+      className: "ml-2",
       onClick: function onClick() {
         return onClickSaveChange(context);
       },
@@ -5417,8 +5427,10 @@ var ContactTab = function ContactTab() {
     className: "card-btns d-flex justify-content-center mt-2"
   }, isMobile ? /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
     className: "gradient-light-primary text-white"
-  }, /*#__PURE__*/React__default.createElement("tel", {
-    href: "0979878582"
+  }, /*#__PURE__*/React__default.createElement("a", {
+    className: "text-white",
+    href: "tel:0979878582",
+    target: "_blank"
   }, "G\u1ECDi \u0111i\u1EC7n")) : ''))))), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
     className: "d-flex justify-content-end flex-wrap mt-2",
     sm: "12"

@@ -29,6 +29,7 @@ import { Field, Formik, Form, FastField } from 'formik';
 import Flatpickr from 'react-flatpickr';
 import ReactSelect from 'react-select';
 import AsyncSelect from 'react-select/async';
+import CreatableSelect from 'react-select/creatable';
 import styled from 'styled-components';
 import SweetAlert from 'react-bootstrap-sweetalert';
 import TopBarProgress from 'react-topbar-progress-indicator';
@@ -2838,7 +2839,7 @@ class Layout extends PureComponent {
       }),
       onClick: this.handleAppOverlayClick
     }, /*#__PURE__*/React.createElement(Navbar, navbarProps), /*#__PURE__*/React.createElement("div", {
-      className: "content-wrapper"
+      className: "content-wrapper pb-4 pb-md-0"
     }, this.props.children)), /*#__PURE__*/React.createElement(Footer, footerProps), /*#__PURE__*/React.createElement("div", {
       className: "sidenav-overlay",
       onClick: this.handleSidebarVisibility
@@ -3558,18 +3559,18 @@ const BaseFormGroup = ({
     type: type,
     disabled: disabled,
     name: fieldName,
-    className: `form-control ${_isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'}`,
+    className: `form-control ${_isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'}`,
     placeholder: msg
-  }), _isRequired && errors[fieldName] && touched[fieldName] ? /*#__PURE__*/React.createElement("div", {
+  }), _isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
-  }, errors[fieldName]) : null, /*#__PURE__*/React.createElement(Label, null, msg))));
+  }, getPropObject(errors, fieldName)) : null, /*#__PURE__*/React.createElement(Label, null, msg))));
 };
 
 const DatePicker = props => /*#__PURE__*/React.createElement(FormGroup, {
   className: "form-label-group position-relative"
-}, /*#__PURE__*/React.createElement(Flatpickr, props), /*#__PURE__*/React.createElement(Label, null, props.placeholder), props.errors && props.touched && props.errors[props.fieldName] && props.touched[props.fieldName] ? /*#__PURE__*/React.createElement("div", {
+}, /*#__PURE__*/React.createElement(Flatpickr, props), /*#__PURE__*/React.createElement(Label, null, props.placeholder), props.errors && props.touched && getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React.createElement("div", {
   className: "text-danger"
-}, props.errors[props.fieldName]) : null);
+}, getPropObject(props.errors, props.fieldName)) : null);
 
 const BaseFormDatePicker = ({
   fieldName,
@@ -3648,9 +3649,22 @@ const Select = props => {
     setIsFocused(false);
   };
 
+  const SelectComponent = componentProps => {
+    switch (props.type) {
+      case 'creatable':
+        return /*#__PURE__*/React.createElement(CreatableSelect, componentProps);
+
+      case 'async':
+        return /*#__PURE__*/React.createElement(AsyncSelect, componentProps);
+
+      default:
+        return /*#__PURE__*/React.createElement(ReactSelect, componentProps);
+    }
+  };
+
   return /*#__PURE__*/React.createElement(FormGroup, {
     className: "form-label-group position-relative"
-  }, props.isAsync ? /*#__PURE__*/React.createElement(AsyncSelect, Object.assign({}, props, {
+  }, /*#__PURE__*/React.createElement(SelectComponent, Object.assign({}, props, {
     onChange: onChange,
     onBlur: onBlur,
     onFocus: onFocus,
@@ -3659,18 +3673,9 @@ const Select = props => {
         primary: '#338955'
       }
     })
-  })) : /*#__PURE__*/React.createElement(ReactSelect, Object.assign({}, props, {
-    onChange: onChange,
-    onBlur: onBlur,
-    onFocus: onFocus,
-    theme: theme => ({ ...theme,
-      colors: { ...theme.colors,
-        primary: '#338955'
-      }
-    })
-  })), props.required ? props.errors[props.fieldName] && props.touched[props.fieldName] ? /*#__PURE__*/React.createElement("div", {
+  })), props.required ? getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
-  }, props.errors[props.fieldName]) : null : '', /*#__PURE__*/React.createElement("input", {
+  }, getPropObject(props.errors, props.fieldName)) : null : '', /*#__PURE__*/React.createElement("input", {
     className: "d-none",
     placeholder: props.placeholder,
     value: inputValue
@@ -3908,6 +3913,11 @@ const validationSchema = object().shape({
   dateOfBirth: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "completeInformation.dateOfBirth.required"
   })),
+  email: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "register.email.required"
+  })).email( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "register.email.invalid"
+  })),
   userDetails: object().shape({
     address: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
       id: "completeInformation.address.required"
@@ -3948,7 +3958,6 @@ const UserAccountTab = () => {
     userSettings = {},
     ...user
   } = useSelector(state => state.auth.user);
-  const history = useHistory();
   const dispatch = useDispatch();
   const {
     cities
@@ -4069,10 +4078,9 @@ const UserAccountTab = () => {
     enableReinitialize: true,
     validationSchema: validationSchema,
     onSubmit: onSubmit,
-    initialValues: {
+    initialValues: { ...user,
       userDetails,
-      userSettings,
-      ...user
+      userSettings
     }
   }, ({
     errors,
@@ -4199,8 +4207,8 @@ const UserAccountTab = () => {
     fieldName: "userDetails.bankAccount",
     errors: errors,
     touched: touched
-  }))) : '', /*#__PURE__*/React.createElement(Col, {
-    className: "d-flex justify-content-end flex-wrap mt-2",
+  }))) : '', /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
+    className: "d-flex justify-content-end  mt-2",
     sm: "12"
   }, /*#__PURE__*/React.createElement(Button.Ripple, {
     type: "button",
@@ -4209,12 +4217,12 @@ const UserAccountTab = () => {
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: `common.home`
   })), /*#__PURE__*/React.createElement(Button.Ripple, {
-    className: "ml-3",
+    className: "ml-2",
     type: "submit",
     color: "primary"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: `common.saveChanges`
-  }))))), /*#__PURE__*/React.createElement(Row, null)));
+  })))))), /*#__PURE__*/React.createElement(Row, null)));
 };
 
 const formSchema = object().shape({
@@ -4294,7 +4302,8 @@ const ChangePassword = () => {
     id: "createPassword.condition.2"
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "createPassword.condition.3"
-  })), /*#__PURE__*/React.createElement("div", {
+  })), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
+    sm: "12",
     className: "d-flex justify-content-center mt-2"
   }, /*#__PURE__*/React.createElement(Button.Ripple, {
     type: "button",
@@ -4308,7 +4317,7 @@ const ChangePassword = () => {
     type: "submit"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "common.saveChanges"
-  })))));
+  }))))));
 };
 
 const AccountSettings = props => {
@@ -4549,8 +4558,10 @@ const InfoItems = ({
       closing: state.status === 'Closing...' && state.collapseID === item1.id,
       opening: state.status === 'Opening...' && state.collapseID === item1.id
     })
-  }, /*#__PURE__*/React.createElement(CardHeader, null, /*#__PURE__*/React.createElement(CardTitle, {
-    className: "lead collapse-title collapsed"
+  }, /*#__PURE__*/React.createElement(CardHeader, {
+    className: "p-1"
+  }, /*#__PURE__*/React.createElement(CardTitle, {
+    className: "lead collapse-title collapsed col-11 p-0\""
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: `generalInfo.${type}.${item1.id}`
   })), /*#__PURE__*/React.createElement(ChevronDown, {
@@ -4680,7 +4691,7 @@ const LanguageTab = () => {
     defaultChecked: context.state.locale === 'en',
     name: "lang"
   }))), /*#__PURE__*/React.createElement(Col, {
-    className: "d-flex justify-content-end flex-wrap mt-3",
+    className: "d-flex justify-content-end mt-3",
     sm: "12"
   }, /*#__PURE__*/React.createElement(Button.Ripple, {
     type: "button",
@@ -4689,7 +4700,7 @@ const LanguageTab = () => {
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: `common.home`
   })), /*#__PURE__*/React.createElement(Button.Ripple, {
-    className: "ml-3",
+    className: "ml-2",
     onClick: () => onClickSaveChange(context),
     color: "primary"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -4932,8 +4943,10 @@ const ContactTab = () => {
     className: "card-btns d-flex justify-content-center mt-2"
   }, isMobile ? /*#__PURE__*/React.createElement(Button.Ripple, {
     className: "gradient-light-primary text-white"
-  }, /*#__PURE__*/React.createElement("tel", {
-    href: "0979878582"
+  }, /*#__PURE__*/React.createElement("a", {
+    className: "text-white",
+    href: "tel:0979878582",
+    target: "_blank"
   }, "G\u1ECDi \u0111i\u1EC7n")) : ''))))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
     className: "d-flex justify-content-end flex-wrap mt-2",
     sm: "12"
