@@ -4950,12 +4950,9 @@ const ContactTab = () => {
   }, /*#__PURE__*/React.createElement("h5", null, "0979 87 85 82")), /*#__PURE__*/React.createElement("div", {
     className: "card-btns d-flex justify-content-center mt-2"
   }, isMobile ? /*#__PURE__*/React.createElement(Button.Ripple, {
-    className: "gradient-light-primary text-white"
-  }, /*#__PURE__*/React.createElement("a", {
-    className: "text-white",
-    href: "tel:0979878582",
-    target: "_blank"
-  }, "G\u1ECDi \u0111i\u1EC7n")) : ''))))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
+    className: "gradient-light-primary text-white",
+    onClick: window.open('tel:0979878582', '_blank')
+  }, "G\u1ECDi \u0111i\u1EC7n") : ''))))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
     className: "d-flex justify-content-end flex-wrap mt-2",
     sm: "12"
   }, /*#__PURE__*/React.createElement(Button.Ripple, {

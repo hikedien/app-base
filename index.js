@@ -5434,12 +5434,9 @@ var ContactTab = function ContactTab() {
   }, /*#__PURE__*/React__default.createElement("h5", null, "0979 87 85 82")), /*#__PURE__*/React__default.createElement("div", {
     className: "card-btns d-flex justify-content-center mt-2"
   }, isMobile ? /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-    className: "gradient-light-primary text-white"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    className: "text-white",
-    href: "tel:0979878582",
-    target: "_blank"
-  }, "G\u1ECDi \u0111i\u1EC7n")) : ''))))), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    className: "gradient-light-primary text-white",
+    onClick: window.open('tel:0979878582', '_blank')
+  }, "G\u1ECDi \u0111i\u1EC7n") : ''))))), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
     className: "d-flex justify-content-end flex-wrap mt-2",
     sm: "12"
   }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
