@@ -191,7 +191,7 @@ const IC_TYPES_OPTIONS = [{
 const getExternalAppUrl = (appId, url) => {
   switch (appId) {
     case AppId.APP_NO1:
-      return `${window.location.origin}/app${url}?redirectUrl=${url}`;
+      return `${window.location.origin}/${url}?redirectUrl=${url}`;
 
     case AppId.INSURANCE_APP:
       return `${window.location.origin}/insurance${url}?redirectUrl=${url}`;
