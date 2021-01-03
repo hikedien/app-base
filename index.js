@@ -1054,6 +1054,10 @@ var mapRoleListToNavConfigs = function mapRoleListToNavConfigs(roleList) {
     roleList = [];
   }
 
+  if (!roleList.length) {
+    return [];
+  }
+
   roleList = roleList.filter(function (item) {
     return item.order < 1000;
   });
@@ -3359,12 +3363,14 @@ var messages_en = {
 	"menu.insuranceFeeManagement": "Insurance Fee",
 	"menu.systemFee": "System Fee",
 	"menu.personalFee": "Personal Fee",
+	"menu.lxPartnerFee": "LX Partner Fee",
 	"menu.partnerFee": "Partner Fee",
 	"menu.allFee": "All Fee",
 	"menu.bonusManagement": "Bonus Mangement",
 	"menu.systemBonus": "System Bonus",
 	"menu.personalBonus": "Personal Bonus",
 	"menu.partnerBonus": "Partner Bonus",
+	"menu.lxPartnerBonus": "LX Partner Bonus",
 	"menu.allBonus": "All Bonus",
 	"menu.insuranceCertificate": "Insurance Certification",
 	"menu.insuranceCertificate.newImport": "New Import",
@@ -3384,7 +3390,7 @@ var messages_en = {
 	"navbar.language.vi": "Vietnamese",
 	"navbar.language.en": "English",
 	"navbar.logout": "Logout",
-	"navbar.logout.confirmMessage": "Are you want to logout ?",
+	"navbar.logout.confirmMessage": "Do you want to logout ?",
 	"footer.copyRight": "© 2020 InOn - All rights reserved",
 	"footer.companySlogan": "Leading insurance provider in Vietnam",
 	setting: setting,
@@ -3412,14 +3418,14 @@ var messages_en = {
 	"setting.gender.F": "FeMale",
 	"setting.gender.O": "Others",
 	"setting.updateInfo.success": "Update account infomation successfully !",
-	"setting.updateInfo.confirmMessage": "Are you want to change account infomation ?",
+	"setting.updateInfo.confirmMessage": "Do you want to change account infomation ?",
 	"setting.updateInfo.imageTypeInvalid": "You only able upload image file !",
 	"changePassword.newPassword": "New Password",
 	"changePassword.oldPassword": "Old Password",
 	"changePassword.passwordMustMatch": "Password must match",
-	"changePassword.confirmMessage": "Are you want to change your password ?",
+	"changePassword.confirmMessage": "Do you want to change your password ?",
 	"changePassword.success": "Change password successfully !",
-	"generalInfo.changeLanguage.confirmMessage": "Are you want to change language ?",
+	"generalInfo.changeLanguage.confirmMessage": "Do you want to change language ?",
 	"generalInfo.changeLanguage.success": "Change language successfully !",
 	"generalInfo.policy.1": "1. CÁC LOẠI DỮ LIỆU CÁ NHÂN CHÚNG TÔI SẼ THU THẬP VÀ XỬ LÝ",
 	"generalInfo.policy.1.1": "1.1  Thông tin cá nhân và thông tin liên lạc chi tiết, ví dụ chức vụ, họ tên, thông tin liên lạc chi tiết và lịch sử liên lạc chi tiết; thông tin tài liệu du lịch; ngày sinh, giới tính và/hoặc tuổi của bạn; quốc tịch, bản sao giấy tờ nhận dạng bạn (nếu có liên quan đến sản phẩm hoặc dịch vụ);",
@@ -3659,12 +3665,14 @@ var messages_vi = {
 	"menu.insuranceFeeManagement": "Quản lý Tỷ lệ phí",
 	"menu.systemFee": "Phí của hệ thống",
 	"menu.personalFee": "Phí của cá nhân",
+	"menu.lxPartnerFee": "Phí của vãng lai",
 	"menu.partnerFee": "Phí của đối tác",
 	"menu.allFee": "Phí của tất cả",
 	"menu.bonusManagement": "Quản lý điểm thưởng",
 	"menu.systemBonus": "Điểm thưởng hệ thống",
 	"menu.personalBonus": "Điểm thưởng cá nhân",
 	"menu.partnerBonus": "Điểm thưởng đối tác",
+	"menu.lxPartnerBonus": "Điểm thưởng vãng lai",
 	"menu.allBonus": "Điểm thưởng tất cả",
 	"menu.insuranceCertificate": "Giấy chứng nhân BH",
 	"menu.insuranceCertificate.newImport": "Nhập mới",
