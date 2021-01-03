@@ -47,7 +47,7 @@ var generateUUID = function generateUUID() {
 var trimValue = function trimValue(value) {
   return value ? value.trim() : '';
 };
-var trimObjectValues$1 = function trimObjectValues(object, excludeKeys) {
+var trimObjectValues = function trimObjectValues(object, excludeKeys) {
   if (excludeKeys === void 0) {
     excludeKeys = [];
   }
@@ -99,7 +99,7 @@ var index = {
   __proto__: null,
   generateUUID: generateUUID,
   trimValue: trimValue,
-  trimObjectValues: trimObjectValues$1,
+  trimObjectValues: trimObjectValues,
   toastError: toastError,
   toastSuccess: toastSuccess
 };
@@ -782,7 +782,7 @@ var register = function register(values) {
   return function () {
     try {
       var _temp8 = _catch(function () {
-        return Promise.resolve(AuthService.register(trimObjectValues$1(values))).then(function (res) {
+        return Promise.resolve(AuthService.register(trimObjectValues(values))).then(function (res) {
           if (res.status === 200 && res.data) {
             toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
               id: "register.registerSuccess"
@@ -4455,7 +4455,7 @@ var UserAccountTab = function UserAccountTab() {
           id: "setting.updateInfo.confirmMessage"
         }),
         onConfirm: function onConfirm() {
-          dispatch(updateUserInfo(trimObjectValues$1(values), avatar.file));
+          dispatch(updateUserInfo(trimObjectValues(values), avatar.file));
         }
       }));
       return Promise.resolve();

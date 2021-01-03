@@ -48,7 +48,7 @@ const generateUUID = () => {
 const trimValue = value => {
   return value ? value.trim() : '';
 };
-const trimObjectValues$1 = (object, excludeKeys = []) => {
+const trimObjectValues = (object, excludeKeys = []) => {
   if (!object) {
     return;
   }
@@ -64,7 +64,7 @@ const trimObjectValues$1 = (object, excludeKeys = []) => {
         break;
 
       case 'object':
-        trimObjectValues$1(object[key]);
+        trimObjectValues(object[key]);
     }
   });
   return object;
@@ -96,7 +96,7 @@ var index = {
   __proto__: null,
   generateUUID: generateUUID,
   trimValue: trimValue,
-  trimObjectValues: trimObjectValues$1,
+  trimObjectValues: trimObjectValues,
   toastError: toastError,
   toastSuccess: toastSuccess
 };
@@ -665,7 +665,7 @@ const createPassword = password => {
 const register = values => {
   return async () => {
     try {
-      const res = await AuthService.register(trimObjectValues$1(values));
+      const res = await AuthService.register(trimObjectValues(values));
 
       if (res.status === 200 && res.data) {
         toastSuccess( /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -4031,7 +4031,7 @@ const UserAccountTab = () => {
         id: "setting.updateInfo.confirmMessage"
       }),
       onConfirm: () => {
-        dispatch(updateUserInfo(trimObjectValues$1(values), avatar.file));
+        dispatch(updateUserInfo(trimObjectValues(values), avatar.file));
       }
     }));
   };
