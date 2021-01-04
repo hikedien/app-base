@@ -3068,6 +3068,8 @@ var messages_en = {
 	"setting.gender.M": "Male",
 	"setting.gender.F": "FeMale",
 	"setting.gender.O": "Others",
+	"setting.call": "Call",
+	"setting.sendEmail": "Send mail",
 	"setting.updateInfo.success": "Update account infomation successfully !",
 	"setting.updateInfo.confirmMessage": "Do you want to change account infomation ?",
 	"setting.updateInfo.imageTypeInvalid": "You only able upload image file !",
@@ -3370,6 +3372,8 @@ var messages_vi = {
 	"setting.gender.M": "Name",
 	"setting.gender.F": "Nữ",
 	"setting.gender.O": "Khác",
+	"setting.call": "Gọi điện",
+	"setting.sendEmail": "Gửi mail",
 	"setting.updateInfo.success": "Thay đổi thông tin thành công !",
 	"setting.updateInfo.confirmMessage": "Bạn có muốn thay đổi thông tin tài khoản ?",
 	"setting.updateInfo.imageTypeInvalid": "Bạn chỉ có thể tải lên tệp hình ảnh !",
@@ -4939,7 +4943,9 @@ const ContactTab = () => {
     className: "text-white",
     href: "mailto:lienhe@inon.vn",
     target: "_blank"
-  }, "G\u1EEDi mail")))))), /*#__PURE__*/React.createElement(Col, {
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: `setting.sendEmail`
+  }))))))), /*#__PURE__*/React.createElement(Col, {
     lg: "4",
     md: "6",
     sm: "12"
@@ -4951,8 +4957,10 @@ const ContactTab = () => {
     className: "card-btns d-flex justify-content-center mt-2"
   }, isMobile ? /*#__PURE__*/React.createElement(Button.Ripple, {
     className: "gradient-light-primary text-white",
-    onClick: window.open('tel:0979878582', '_blank')
-  }, "G\u1ECDi \u0111i\u1EC7n") : ''))))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
+    onClick: () => window.open('tel:0979878582', '_blank')
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: `setting.call`
+  })) : ''))))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
     className: "d-flex justify-content-end flex-wrap mt-2",
     sm: "12"
   }, /*#__PURE__*/React.createElement(Button.Ripple, {
