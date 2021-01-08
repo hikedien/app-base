@@ -3390,7 +3390,7 @@ var messages_en = {
 	"navbar.language.vi": "Vietnamese",
 	"navbar.language.en": "English",
 	"navbar.logout": "Logout",
-	"navbar.logout.confirmMessage": "Do you want to logout ?",
+	"navbar.logout.confirmMessage": "Do you want to logout?",
 	"footer.copyRight": "© 2020 InOn - All rights reserved",
 	"footer.companySlogan": "Leading insurance provider in Vietnam",
 	setting: setting,
@@ -3419,16 +3419,16 @@ var messages_en = {
 	"setting.gender.O": "Others",
 	"setting.call": "Call",
 	"setting.sendEmail": "Send mail",
-	"setting.updateInfo.success": "Update account infomation successfully !",
-	"setting.updateInfo.confirmMessage": "Do you want to change account infomation ?",
-	"setting.updateInfo.imageTypeInvalid": "You only able upload image file !",
+	"setting.updateInfo.success": "Update account infomation successfully!",
+	"setting.updateInfo.confirmMessage": "Do you want to change account infomation?",
+	"setting.updateInfo.imageTypeInvalid": "You only able upload image file!",
 	"changePassword.newPassword": "New Password",
 	"changePassword.oldPassword": "Old Password",
 	"changePassword.passwordMustMatch": "Password must match",
-	"changePassword.confirmMessage": "Do you want to change your password ?",
-	"changePassword.success": "Change password successfully !",
-	"generalInfo.changeLanguage.confirmMessage": "Do you want to change language ?",
-	"generalInfo.changeLanguage.success": "Change language successfully !",
+	"changePassword.confirmMessage": "Do you want to change your password?",
+	"changePassword.success": "Change password successfully!",
+	"generalInfo.changeLanguage.confirmMessage": "Do you want to change language?",
+	"generalInfo.changeLanguage.success": "Change language successfully!",
 	"generalInfo.policy.1": "1. CÁC LOẠI DỮ LIỆU CÁ NHÂN CHÚNG TÔI SẼ THU THẬP VÀ XỬ LÝ",
 	"generalInfo.policy.1.1": "1.1  Thông tin cá nhân và thông tin liên lạc chi tiết, ví dụ chức vụ, họ tên, thông tin liên lạc chi tiết và lịch sử liên lạc chi tiết; thông tin tài liệu du lịch; ngày sinh, giới tính và/hoặc tuổi của bạn; quốc tịch, bản sao giấy tờ nhận dạng bạn (nếu có liên quan đến sản phẩm hoặc dịch vụ);",
 	"generalInfo.policy.1.2": "1.2  Thông tin chi tiết về người thụ hưởng, ví dụ chủ hợp đồng bảo hiểm và người thụ hưởng của các sản phẩm hoặc dịch vụ của chúng tôi;",
@@ -3566,7 +3566,7 @@ var messages_en = {
 	"createPassword.condition.3": "- Include numeric or special characters",
 	"createPassword.continutes": "CONTINUTE",
 	"createPassword.done": "DONE",
-	"createPassword.resetSuccessFul": "Change password successful",
+	"createPassword.resetSuccessFul": "Change password successful!",
 	"provideNewPassword.title": "PROVIDE A NEW PASSWORD",
 	"provideNewPassword.continutes": "DONE",
 	"provideNewPassword.password": "Enter your new password *",
@@ -3649,7 +3649,7 @@ var messages_vi = {
 	"forgotPassword.username.required": "Bạn phải nhập tên tài khoản",
 	"forgotPassword.email": "Email đăng ký *",
 	"forgotPassword.email.required": "Bạn phải nhập email đăng ký",
-	"forgotPassword.successfull": "Link thay đổi password đã được gửi đến email của bạn",
+	"forgotPassword.successfull": "Link thay đổi password đã được gửi đến email của bạn!",
 	"forgotPassword.fail": "Số điện thoại hoặc Email của bạn không chính xác",
 	"forgotPassword.notFoundEmailSuggestion": "Không tìm thấy email với tên đăng nhập của bạn",
 	"forgotPassword.yourEmailIs": "Email của bạn là",
@@ -3694,7 +3694,7 @@ var messages_vi = {
 	"navbar.language.vi": "Tiếng Việt",
 	"navbar.language.en": "Tiếng Anh",
 	"navbar.logout": "Đăng xuất",
-	"navbar.logout.confirmMessage": "Bạn có muốn đăng xuất tài khoản ?",
+	"navbar.logout.confirmMessage": "Bạn có muốn đăng xuất tài khoản?",
 	"footer.copyRight": "©2020 InOn - Đã đăng ký bản quyền",
 	"footer.companySlogan": "Nhà cung cấp bảo hiểm hàng đầu Việt Nam",
 	setting: setting$1,
@@ -3723,16 +3723,16 @@ var messages_vi = {
 	"setting.gender.O": "Khác",
 	"setting.call": "Gọi điện",
 	"setting.sendEmail": "Gửi mail",
-	"setting.updateInfo.success": "Thay đổi thông tin thành công !",
-	"setting.updateInfo.confirmMessage": "Bạn có muốn thay đổi thông tin tài khoản ?",
-	"setting.updateInfo.imageTypeInvalid": "Bạn chỉ có thể tải lên tệp hình ảnh !",
+	"setting.updateInfo.success": "Thay đổi thông tin thành công!",
+	"setting.updateInfo.confirmMessage": "Bạn có muốn thay đổi thông tin tài khoản?",
+	"setting.updateInfo.imageTypeInvalid": "Bạn chỉ có thể tải lên tệp hình ảnh!",
 	"changePassword.newPassword": "Mật khẩu mới",
 	"changePassword.oldPassword": "Mật khẩu cũ",
 	"changePassword.passwordMustMatch": "Mật khẩu không trùng khớp",
-	"changePassword.confirmMessage": "Bạn có muốn thay đổi mật khẩu ?",
-	"changePassword.success": "Thay đổi mật khẩu thành công !",
-	"generalInfo.changeLanguage.confirmMessage": "Bạn có muốn thay đổi ngôn ngữ ?",
-	"generalInfo.changeLanguage.success": "Thay đổi ngôn ngữ thành công !",
+	"changePassword.confirmMessage": "Bạn có muốn thay đổi mật khẩu?",
+	"changePassword.success": "Thay đổi mật khẩu thành công!",
+	"generalInfo.changeLanguage.confirmMessage": "Bạn có muốn thay đổi ngôn ngữ?",
+	"generalInfo.changeLanguage.success": "Thay đổi ngôn ngữ thành công!",
 	"generalInfo.policy.1": "1. CÁC LOẠI DỮ LIỆU CÁ NHÂN CHÚNG TÔI SẼ THU THẬP VÀ XỬ LÝ",
 	"generalInfo.policy.1.1": "1.1  Thông tin cá nhân và thông tin liên lạc chi tiết, ví dụ chức vụ, họ tên, thông tin liên lạc chi tiết và lịch sử liên lạc chi tiết; thông tin tài liệu du lịch; ngày sinh, giới tính và/hoặc tuổi của bạn; quốc tịch, bản sao giấy tờ nhận dạng bạn (nếu có liên quan đến sản phẩm hoặc dịch vụ);",
 	"generalInfo.policy.1.2": "1.2  Thông tin chi tiết về người thụ hưởng, ví dụ chủ hợp đồng bảo hiểm và người thụ hưởng của các sản phẩm hoặc dịch vụ của chúng tôi;",
@@ -3870,7 +3870,7 @@ var messages_vi = {
 	"createPassword.condition.3": "- Bao gồm ký tự số hoặc ký tự đặc biệt",
 	"createPassword.continutes": "TIẾP TỤC",
 	"createPassword.done": "HOÀN THÀNH",
-	"createPassword.resetSuccessFul": "Thay đổi mật khẩu thành công",
+	"createPassword.resetSuccessFul": "Thay đổi mật khẩu thành công!",
 	"provideNewPassword.title": "CẤP MẬT KHẨU MỚI",
 	"provideNewPassword.continutes": "THỰC HIỆN",
 	"provideNewPassword.password": "Nhập mật khẩu mới *",
@@ -6796,77 +6796,13 @@ RippleButton.propTypes = _extends({}, reactstrap.Button.propTypes, {
 reactstrap.Button.Ripple = RippleButton;
 
 var isLocalhost = Boolean(window.location.hostname === 'localhost' || window.location.hostname === '[::1]' || window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/));
-function register$3(config) {
-  if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
-    var publicUrl = new URL(process.env.PUBLIC_URL, window.location.href);
 
-    if (publicUrl.origin !== window.location.origin) {
-      return;
-    }
-
-    window.addEventListener('load', function () {
-      var swUrl = process.env.PUBLIC_URL + "/service-worker.js";
-
-      if (isLocalhost) {
-        checkValidServiceWorker(swUrl, config);
-        navigator.serviceWorker.ready.then(function () {
-          console.log('This web app is being served cache-first by a service ' + 'worker. To learn more, visit https://bit.ly/CRA-PWA');
-        });
-      } else {
-        registerValidSW(swUrl, config);
-      }
+function unregister() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(function (registration) {
+      registration.unregister();
     });
   }
-}
-
-function registerValidSW(swUrl, config) {
-  navigator.serviceWorker.register(swUrl).then(function (registration) {
-    registration.onupdatefound = function () {
-      var installingWorker = registration.installing;
-
-      if (installingWorker == null) {
-        return;
-      }
-
-      installingWorker.onstatechange = function () {
-        if (installingWorker.state === 'installed') {
-          if (navigator.serviceWorker.controller) {
-            console.log('New content is available and will be used when all ' + 'tabs for this page are closed. See https://bit.ly/CRA-PWA.');
-
-            if (config && config.onUpdate) {
-              config.onUpdate(registration);
-            }
-          } else {
-            console.log('Content is cached for offline use.');
-
-            if (config && config.onSuccess) {
-              config.onSuccess(registration);
-            }
-          }
-        }
-      };
-    };
-  })["catch"](function (error) {
-    console.error('Error during service worker registration:', error);
-  });
-}
-
-function checkValidServiceWorker(swUrl, config) {
-  fetch(swUrl).then(function (response) {
-    var contentType = response.headers.get('content-type');
-
-    if (response.status === 404 || contentType != null && contentType.indexOf('javascript') === -1) {
-      navigator.serviceWorker.ready.then(function (registration) {
-        registration.unregister().then(function () {
-          window.location.reload();
-        });
-      });
-    } else {
-      registerValidSW(swUrl, config);
-    }
-  })["catch"](function () {
-    console.log('No internet connection found. App is running in offline mode.');
-  });
 }
 
 var App = function App(_ref) {
@@ -6895,7 +6831,7 @@ var App = function App(_ref) {
   })));
 };
 
-register$3();
+unregister();
 
 var FallbackSpinner = /*#__PURE__*/function (_React$Component) {
   _inheritsLoose(FallbackSpinner, _React$Component);
