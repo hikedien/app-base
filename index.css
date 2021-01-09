@@ -23616,6 +23616,9 @@ html[dir="rtl"] body .ps__rail-y {
 .Select__menu-list {
   max-height: 120px !important; }
 
+.Select__placeholder {
+  color: #D4D5D6 !important; }
+
 .loading {
   position: absolute;
   left: calc(50% - 35px);

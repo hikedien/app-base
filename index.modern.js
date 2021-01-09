@@ -48,6 +48,9 @@ const generateUUID = () => {
 const trimValue = value => {
   return value ? value.trim() : '';
 };
+const bytesToMb = bytes => {
+  return Math.round(bytes / Math.pow(1024, 2), 2);
+};
 const trimObjectValues = (object, excludeKeys = []) => {
   if (!object) {
     return;
@@ -96,6 +99,7 @@ var index = {
   __proto__: null,
   generateUUID: generateUUID,
   trimValue: trimValue,
+  bytesToMb: bytesToMb,
   trimObjectValues: trimObjectValues,
   toastError: toastError,
   toastSuccess: toastSuccess
@@ -148,6 +152,7 @@ const AUTHORITIES = {
   CREATE: 'create'
 };
 const API_TIME_OUT = 70000;
+const MAX_FILE_SIZE = 5;
 const LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
   FAIL: 'FAIL'
@@ -227,6 +232,8 @@ const getPropObject = (obj, prop) => {
     return r ? r[e] : null;
   }, obj);
 };
+const CONTACT_PHONE = '0899300800';
+const SESSION_TIMEOUT = 15;
 const USER_ROLE = {
   ADMIN: 'AD.IO',
   KD: 'KD.IO',
@@ -298,6 +305,7 @@ var appConfigs = {
   NAME_REGEX: NAME_REGEX,
   AUTHORITIES: AUTHORITIES,
   API_TIME_OUT: API_TIME_OUT,
+  MAX_FILE_SIZE: MAX_FILE_SIZE,
   LOGIN_STATUS: LOGIN_STATUS,
   USER_TYPE: USER_TYPE,
   GENDER_OPTIONS: GENDER_OPTIONS,
@@ -305,166 +313,10 @@ var appConfigs = {
   getExternalAppUrl: getExternalAppUrl,
   getContextPath: getContextPath,
   getPropObject: getPropObject,
+  CONTACT_PHONE: CONTACT_PHONE,
+  SESSION_TIMEOUT: SESSION_TIMEOUT,
   USER_ROLE: USER_ROLE,
   IMAGE: IMAGE
-};
-
-const SHOW_LOADING_BAR = 'SHOW_LOADING_BAR';
-const HIDE_LOADING_BAR = 'HIDE_LOADING_BAR';
-const SHOW_CONFIRM_ALERT = 'SHOW_CONFIRM_ALERT';
-const HIDE_CONFIRM_ALERT = 'HIDE_CONFIRM_ALERT';
-const showConfirmAlert = configs => {
-  return dispatch => dispatch({
-    type: SHOW_CONFIRM_ALERT,
-    payload: configs
-  });
-};
-const hideConfirmAlert = () => {
-  return dispatch => dispatch({
-    type: HIDE_CONFIRM_ALERT
-  });
-};
-
-const HttpClient = Axios.create({
-  timeout: API_TIME_OUT,
-  adapter: throttleAdapterEnhancer(cacheAdapterEnhancer(Axios.defaults.adapter, {
-    threshold: 15 * 60 * 1000
-  })),
-  invalidate: async (config, request) => {
-    if (request.clearCacheEntry) {
-      await config.store.removeItem(config.uuid);
-    }
-  }
-});
-HttpClient.defaults.headers['Content-Type'] = 'application/json';
-const setUpHttpClient = (store, apiBaseUrl) => {
-  let deviceId = localStorage.getItem('deviceId');
-  let language = localStorage.getItem('language');
-
-  if (!deviceId) {
-    deviceId = generateUUID();
-    localStorage.setItem('deviceId', deviceId);
-  }
-
-  if (!language) {
-    localStorage.setItem('language', 'vi');
-  }
-
-  HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
-  HttpClient.interceptors.request.use(config => {
-    const token = store.getState().auth.authToken;
-    language = localStorage.getItem('language');
-
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    config.headers.deviceId = deviceId;
-    config.headers['Accept-Language'] = language;
-
-    if (!config.isBackgroundRequest) {
-      store.dispatch({
-        type: SHOW_LOADING_BAR,
-        payload: ''
-      });
-    }
-
-    return config;
-  });
-  HttpClient.interceptors.response.use(response => {
-    store.dispatch({
-      type: HIDE_LOADING_BAR,
-      payload: ''
-    });
-    return response;
-  }, e => {
-    store.dispatch({
-      type: HIDE_LOADING_BAR,
-      payload: ''
-    });
-
-    if (!e.response) {
-      return e;
-    }
-
-    switch (e.response.status) {
-      case 403:
-        toastError(errorMessage(e.response.data.message));
-        store.dispatch({
-          type: 'LOGOUT_ACTION'
-        });
-
-      case 400:
-      case 500:
-        toastError(e.response.data.message);
-    }
-
-    return e.response;
-  });
-};
-
-const themeConfig = {
-  appId: '',
-  layout: "vertical",
-  theme: "light",
-  sidebarCollapsed: false,
-  navbarColor: "default",
-  navbarType: "floating",
-  footerType: "static",
-  disableCustomizer: true,
-  hideScrollToTop: false,
-  disableThemeTour: false,
-  menuTheme: "primary",
-  direction: "ltr",
-  showLoading: false
-};
-
-const customizerReducer = (state = { ...themeConfig
-}, action) => {
-  switch (action.type) {
-    case 'CHANGE_THEME':
-      return { ...state,
-        theme: action.theme
-      };
-
-    case 'SET_APP_ID':
-      return { ...state,
-        appId: action.appId
-      };
-
-    case 'COLLAPSE_SIDEBAR':
-      return { ...state,
-        sidebarCollapsed: action.value
-      };
-
-    case 'CHANGE_NAVBAR_COLOR':
-      return { ...state,
-        navbarColor: action.color
-      };
-
-    case 'CHANGE_NAVBAR_TYPE':
-      return { ...state,
-        navbarType: action.style
-      };
-
-    case 'CHANGE_FOOTER_TYPE':
-      return { ...state,
-        footerType: action.style
-      };
-
-    case 'CHANGE_MENU_COLOR':
-      return { ...state,
-        menuTheme: action.style
-      };
-
-    case 'HIDE_SCROLL_TO_TOP':
-      return { ...state,
-        hideScrollToTop: action.value
-      };
-
-    default:
-      return state;
-  }
 };
 
 let history = createBrowserHistory({
@@ -574,6 +426,7 @@ const LOGOUT_ACTION = 'LOGOUT_ACTION';
 const SAVE_REGISTER_TOKEN = 'SAVE_REGISTER_TOKEN';
 const SAVE_RESET_PASSWORD_TOKEN = 'SAVE_RESET_PASSWORD_TOKEN';
 const UPDATE_USER_INFO = 'UPDATE_USER_INFO';
+let sessionTimeOut = null;
 const checkLoginStatus = (authToken, redirectUrl) => {
   return async (dispatch, getState) => {
     try {
@@ -594,7 +447,8 @@ const checkLoginStatus = (authToken, redirectUrl) => {
         const {
           appId
         } = getState().customizer;
-        history.push(redirectUrl || window.location.pathname.replace(`/${getContextPath(appId)}/`, '/'));
+        history.push(redirectUrl || window.location.pathname.replace(`/${getContextPath(appId)}/`, '/') + window.location.search);
+        setSessionTimeout();
       } else {
         dispatch({
           type: LOGOUT_ACTION
@@ -650,6 +504,20 @@ const loginAction = user => {
       });
     }
   };
+};
+const setSessionTimeout = () => {
+  return dispatch => {
+    clearTimeout(sessionTimeOut);
+    sessionTimeOut = setTimeout(() => {
+      toastError( /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "common.sesionExpired"
+      }));
+      dispatch(logoutAction());
+    }, SESSION_TIMEOUT * 60 * 1000);
+  };
+};
+const clearSessionTimeOut = () => {
+  clearTimeout(sessionTimeOut);
 };
 const createPassword = password => {
   return async (dispatch, getState) => {
@@ -760,6 +628,7 @@ const logoutAction = () => {
     dispatch({
       type: LOGOUT_ACTION
     });
+    clearSessionTimeOut();
   };
 };
 const updateUserInfo = (user, avatarImage) => {
@@ -819,6 +688,165 @@ const changeLanguageSetting = (lang, callBack) => {
       history.push('/');
     }
   };
+};
+
+const SHOW_LOADING_BAR = 'SHOW_LOADING_BAR';
+const HIDE_LOADING_BAR = 'HIDE_LOADING_BAR';
+const SHOW_CONFIRM_ALERT = 'SHOW_CONFIRM_ALERT';
+const HIDE_CONFIRM_ALERT = 'HIDE_CONFIRM_ALERT';
+const showConfirmAlert$1 = configs => {
+  return dispatch => dispatch({
+    type: SHOW_CONFIRM_ALERT,
+    payload: configs
+  });
+};
+const hideConfirmAlert = () => {
+  return dispatch => dispatch({
+    type: HIDE_CONFIRM_ALERT
+  });
+};
+
+const HttpClient = Axios.create({
+  timeout: API_TIME_OUT,
+  adapter: throttleAdapterEnhancer(cacheAdapterEnhancer(Axios.defaults.adapter, {
+    threshold: 15 * 60 * 1000
+  })),
+  invalidate: async (config, request) => {
+    if (request.clearCacheEntry) {
+      await config.store.removeItem(config.uuid);
+    }
+  }
+});
+HttpClient.defaults.headers['Content-Type'] = 'application/json';
+const setUpHttpClient = (store, apiBaseUrl) => {
+  let deviceId = localStorage.getItem('deviceId');
+  let language = localStorage.getItem('language');
+
+  if (!deviceId) {
+    deviceId = generateUUID();
+    localStorage.setItem('deviceId', deviceId);
+  }
+
+  if (!language) {
+    localStorage.setItem('language', 'vi');
+  }
+
+  HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
+  HttpClient.interceptors.request.use(config => {
+    const token = store.getState().auth.authToken;
+    language = localStorage.getItem('language');
+
+    if (token) {
+      store.dispatch(setSessionTimeout());
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    config.headers.deviceId = deviceId;
+    config.headers['Accept-Language'] = language;
+
+    if (!config.isBackgroundRequest) {
+      store.dispatch({
+        type: SHOW_LOADING_BAR,
+        payload: ''
+      });
+    }
+
+    return config;
+  });
+  HttpClient.interceptors.response.use(response => {
+    store.dispatch({
+      type: HIDE_LOADING_BAR,
+      payload: ''
+    });
+    return response;
+  }, e => {
+    store.dispatch({
+      type: HIDE_LOADING_BAR,
+      payload: ''
+    });
+
+    if (!e.response) {
+      return e;
+    }
+
+    switch (e.response.status) {
+      case 403:
+        toastError(e.response.data.message);
+        store.dispatch({
+          type: 'LOGOUT_ACTION'
+        });
+
+      case 400:
+      case 500:
+        toastError(e.response.data.message);
+    }
+
+    return e.response;
+  });
+};
+
+const themeConfig = {
+  appId: '',
+  layout: "vertical",
+  theme: "light",
+  sidebarCollapsed: false,
+  navbarColor: "default",
+  navbarType: "floating",
+  footerType: "static",
+  disableCustomizer: true,
+  hideScrollToTop: false,
+  disableThemeTour: false,
+  menuTheme: "primary",
+  direction: "ltr",
+  showLoading: false
+};
+
+const customizerReducer = (state = { ...themeConfig
+}, action) => {
+  switch (action.type) {
+    case 'CHANGE_THEME':
+      return { ...state,
+        theme: action.theme
+      };
+
+    case 'SET_APP_ID':
+      return { ...state,
+        appId: action.appId
+      };
+
+    case 'COLLAPSE_SIDEBAR':
+      return { ...state,
+        sidebarCollapsed: action.value
+      };
+
+    case 'CHANGE_NAVBAR_COLOR':
+      return { ...state,
+        navbarColor: action.color
+      };
+
+    case 'CHANGE_NAVBAR_TYPE':
+      return { ...state,
+        navbarType: action.style
+      };
+
+    case 'CHANGE_FOOTER_TYPE':
+      return { ...state,
+        footerType: action.style
+      };
+
+    case 'CHANGE_MENU_COLOR':
+      return { ...state,
+        menuTheme: action.style
+      };
+
+    case 'HIDE_SCROLL_TO_TOP':
+      return { ...state,
+        hideScrollToTop: action.value
+      };
+
+    default:
+      return state;
+  }
 };
 
 const authInitialState = {
@@ -973,7 +1001,7 @@ NavBarService.getUserGroupRole = groupId => {
 
 const LOAD_NATIVGATION = 'LOAD_NATIVGATION';
 const LOAD_USER_ROLE = 'LOAD_USER_ROLE';
-const goBackHomePage$1 = () => {
+const goBackHomePage = () => {
   return async (dispatch, getState) => {
     const {
       appId
@@ -1466,7 +1494,7 @@ const UserDropdown = () => {
   };
 
   const onClickLogout = () => {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "navbar.logout"
       }),
@@ -1845,7 +1873,7 @@ const Footer = props => {
 
   const onClickBackHome = e => {
     e.preventDefault();
-    dispatch(goBackHomePage$1());
+    dispatch(goBackHomePage());
   };
 
   return /*#__PURE__*/React.createElement("footer", null, /*#__PURE__*/React.createElement("div", {
@@ -2003,7 +2031,7 @@ const SidebarHeader = props => {
   const dispatch = useDispatch();
 
   const onClickHome = () => {
-    dispatch(goBackHomePage$1());
+    dispatch(goBackHomePage());
   };
 
   return /*#__PURE__*/React.createElement("div", {
@@ -2957,11 +2985,16 @@ var messages_en = {
 	"common.icType.personalID": "Identity Card",
 	"common.icType.citizenIdentify": "Identification",
 	"common.icType.passport": "Passport",
+	"common.icType.CMND": "Identity Card",
+	"common.icType.CCCD": "Identification",
+	"common.icType.HC": "Passport",
 	"common.home": "Home",
+	"common.backHome.confirmMessage": "Do you want to go back to home page?",
 	"common.saveChanges": "Save Changes",
 	"common.cancel": "Cancel",
 	"common.ok": "Ok",
 	"common.noResults": "No results",
+	"common.sesionExpired": "Your session has expired, please relogin!",
 	login: login,
 	"login.firstWelcome": "Welcome to InOn X!",
 	"login.logedWelcome": "Hi,",
@@ -3031,7 +3064,7 @@ var messages_en = {
 	"menu.debt": "Debt",
 	"menu.createDebt": "Create Debt",
 	"menu.debtManagement": "Debt Management",
-	"menu.permissionGoup": "Permission Group",
+	"menu.permissionGoup": "Permission Group*",
 	"menu.creatPermissionGoup": "Create Permision Group",
 	"menu.permissionGoupManagement": "Permission Group Management",
 	"menu.insuranceMotobike": "Motobike Insurance",
@@ -3069,12 +3102,19 @@ var messages_en = {
 	"setting.gender.F": "FeMale",
 	"setting.gender.O": "Others",
 	"setting.call": "Call",
+	"setting.call.confirmMessage": "Would you like to call {phoneNumber}?",
 	"setting.sendEmail": "Send mail",
 	"setting.updateInfo.success": "Update account infomation successfully!",
 	"setting.updateInfo.confirmMessage": "Do you want to change account infomation?",
-	"setting.updateInfo.imageTypeInvalid": "You only able upload image file!",
+	"setting.updateInfo.imageTypeInvalid": "Invalid file upload!",
+	"setting.updateInfo.imageExceedSize": "Uploaded file exceed the allowed size ({size}MB)!",
 	"changePassword.newPassword": "New Password",
-	"changePassword.oldPassword": "Old Password",
+	"changePassword.newPassword.required": "You must enter new password",
+	"changePassword.newPassword.invalid": "New password is invalid",
+	"changePassword.oldPassword": "Old password",
+	"changePassword.oldPassword.required": "You must enter old password",
+	"changePassword.oldPassword.invalid": "Old password is invalid",
+	"changePassword.confirmPassword.required": "You must re-enter your new password",
 	"changePassword.passwordMustMatch": "Password must match",
 	"changePassword.confirmMessage": "Do you want to change your password?",
 	"changePassword.success": "Change password successfully!",
@@ -3214,7 +3254,7 @@ var messages_en = {
 	"createPassword.passwordMustMatch": "Password must match",
 	"createPassword.condition.1": "- At least 8 characters long",
 	"createPassword.condition.2": "- Include upper and lower case characters",
-	"createPassword.condition.3": "- Include numeric or special characters",
+	"createPassword.condition.3": "- Include numeric and special characters",
 	"createPassword.continutes": "CONTINUTE",
 	"createPassword.done": "DONE",
 	"createPassword.resetSuccessFul": "Change password successful!",
@@ -3261,11 +3301,16 @@ var messages_vi = {
 	"common.icType.personalID": "Chứng minh nhân dân",
 	"common.icType.citizenIdentify": "Căn cước công dân",
 	"common.icType.passport": "Hộ chiếu",
+	"common.icType.CMND": "Chứng minh nhân dân",
+	"common.icType.CCCD": "Căn cước công dân",
+	"common.icType.HC": "Hộ chiếu",
 	"common.home": "Trang chủ",
+	"common.backHome.confirmMessage": "Bạn có muốn quay lại trang chủ không?",
 	"common.saveChanges": "Lưu thay đổi",
 	"common.cancel": "Hủy",
 	"common.ok": "Đồng ý",
 	"common.noResults": "Không có kết quả",
+	"common.sesionExpired": "Phiên làm việc của bạn đã hết hạn, bạn vui lòng đăng nhập lại!",
 	login: login$1,
 	"login.firstWelcome": "Chào mừng bạn đến với InOn X!",
 	"login.logedWelcome": "Xin chào,",
@@ -3335,7 +3380,7 @@ var messages_vi = {
 	"menu.debt": "Công nợ",
 	"menu.createDebt": "Tạo mới công nợ",
 	"menu.debtManagement": "Quản lý công nợ",
-	"menu.permissionGoup": "Nhóm quyền",
+	"menu.permissionGoup": "Nhóm quyền*",
 	"menu.creatPermissionGoup": "Tạo mới nhóm quyền",
 	"menu.permissionGoupManagement": "Quản lý nhóm quyền",
 	"menu.insuranceMotobike": "Bảo hiểm xe máy",
@@ -3373,12 +3418,19 @@ var messages_vi = {
 	"setting.gender.F": "Nữ",
 	"setting.gender.O": "Khác",
 	"setting.call": "Gọi điện",
+	"setting.call.confirmMessage": "Bạn có muốn gọi đến số {phoneNumber}?",
 	"setting.sendEmail": "Gửi mail",
 	"setting.updateInfo.success": "Thay đổi thông tin thành công!",
 	"setting.updateInfo.confirmMessage": "Bạn có muốn thay đổi thông tin tài khoản?",
-	"setting.updateInfo.imageTypeInvalid": "Bạn chỉ có thể tải lên tệp hình ảnh!",
+	"setting.updateInfo.imageTypeInvalid": "File tải lên không hợp lệ!",
+	"setting.updateInfo.imageExceedSize": "File tải lên vượt quá dung lượng cho phép ({size}MB)!",
 	"changePassword.newPassword": "Mật khẩu mới",
+	"changePassword.newPassword.required": "Bạn phải nhập mật khẩu mới",
+	"changePassword.newPassword.invalid": "Mật khẩu mới không hợp lệ",
 	"changePassword.oldPassword": "Mật khẩu cũ",
+	"changePassword.oldPassword.required": "Bạn phải nhập mật khẩu cũ",
+	"changePassword.oldPassword.invalid": "Mật khẩu cũ không hợp lệ",
+	"changePassword.confirmPassword.required": "Bạn phải nhập lại mật khẩu mới",
 	"changePassword.passwordMustMatch": "Mật khẩu không trùng khớp",
 	"changePassword.confirmMessage": "Bạn có muốn thay đổi mật khẩu?",
 	"changePassword.success": "Thay đổi mật khẩu thành công!",
@@ -3518,7 +3570,7 @@ var messages_vi = {
 	"createPassword.passwordMustMatch": "Mật khẩu phải trùng khớp",
 	"createPassword.condition.1": "- Dài ít nhất 8 ký tự",
 	"createPassword.condition.2": "- Bao gồm ký tự viết hoa và viết thường",
-	"createPassword.condition.3": "- Bao gồm ký tự số hoặc ký tự đặc biệt",
+	"createPassword.condition.3": "- Bao gồm ký tự số và ký tự đặc biệt",
 	"createPassword.continutes": "TIẾP TỤC",
 	"createPassword.done": "HOÀN THÀNH",
 	"createPassword.resetSuccessFul": "Thay đổi mật khẩu thành công!",
@@ -3547,7 +3599,7 @@ var messages_vi = {
 	"completeInformation.district": "Quận/Huyện*",
 	"completeInformation.district.required": "Bạn phải chọn Quận/Huyện",
 	"completeInformation.ward": "Phường/Xã*",
-	"completeInformation.wards.required": "Bạn phải chọnPhường/Xã",
+	"completeInformation.ward.required": "Bạn phải chọn Phường/Xã",
 	"completeInformation.bank": "Ngân hàng*",
 	"completeInformation.bank.required": "Bạn phải chọn Ngân hàng*",
 	"completeInformation.back": "Quay lại",
@@ -3593,6 +3645,7 @@ const BaseFormDatePicker = ({
   options,
   intl,
   onChange,
+  disabled,
   isRequired: _isRequired = true
 }) => {
   const defaultOptions = {
@@ -3604,13 +3657,14 @@ const BaseFormDatePicker = ({
     field,
     form
   }) => /*#__PURE__*/React.createElement(DatePicker, {
-    className: `bg-white form-control position-relative ${_isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'}`,
+    className: `form-control position-relative ${!disabled ? 'bg-white' : ''} ${_isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'}`,
     placeholder: intl.formatMessage({
       id: messageId
     }),
     fieldName: fieldName,
     notRequired: !_isRequired,
     errors: errors,
+    disabled: disabled,
     touched: touched,
     value: field.value,
     options: options || defaultOptions,
@@ -3647,7 +3701,7 @@ const Select = props => {
 
   const onFocus = e => {
     if (props.onFocus) {
-      props.onChange(e);
+      props.onFocus(e);
     }
 
     setIsFocused(true);
@@ -3677,6 +3731,7 @@ const Select = props => {
   return /*#__PURE__*/React.createElement(FormGroup, {
     className: "form-label-group position-relative"
   }, /*#__PURE__*/React.createElement(SelectComponent, Object.assign({}, props, {
+    isDisabled: props.disabled,
     onChange: onChange,
     onBlur: onBlur,
     onFocus: onFocus,
@@ -3707,6 +3762,7 @@ const BaseFormGroupSelect = ({
   defaultValue,
   isRequired: _isRequired = true,
   isAsync,
+  disabled,
   onChange,
   loadOptions,
   defaultOptions
@@ -3727,6 +3783,7 @@ const BaseFormGroupSelect = ({
     required: _isRequired,
     value: options.find(item => item.value === field.value),
     defaultValue: defaultValue,
+    disabled: disabled,
     errors: errors,
     isAsync: isAsync,
     loadOptions: loadOptions,
@@ -3824,7 +3881,9 @@ const useCityList = countryCode => {
   }, [countryCode]);
 
   const loadCitiesByCountry = async code => {
-    setCities(await DataColetionService.getCitiesByCountry(code, locale));
+    const data = await DataColetionService.getCitiesByCountry(code, locale);
+    setCities(data);
+    return data;
   };
 
   return {
@@ -3846,7 +3905,9 @@ const useDistrictList = cityCode => {
   }, [cityCode]);
 
   const loadDitrictsByCity = async code => {
-    setDistricts(await DataColetionService.getDistrictByCity(code, locale));
+    const data = await DataColetionService.getDistrictByCity(code, locale);
+    setDistricts(data);
+    return data;
   };
 
   return {
@@ -3868,7 +3929,9 @@ const useWardList = districtCode => {
   }, [districtCode]);
 
   const loadWardsByDistrict = async code => {
-    setWards(await DataColetionService.getWardsByDistrict(code, locale));
+    const data = await DataColetionService.getWardsByDistrict(code, locale);
+    setWards(data);
+    return data;
   };
 
   return {
@@ -3934,24 +3997,6 @@ const validationSchema = object().shape({
     address: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
       id: "completeInformation.address.required"
     })),
-    bankAccount: string().when('userType', {
-      is: USER_TYPE.KD,
-      then: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
-        id: "completeInformation.accountNbr.required"
-      }))
-    }),
-    bankName: string().when('userType', {
-      is: USER_TYPE.KD,
-      then: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
-        id: "completeInformation.bank.required"
-      }))
-    }),
-    bankBranch: string().when('userType', {
-      is: USER_TYPE.KD,
-      then: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
-        id: "completeInformation.branch.required"
-      }))
-    }),
     city: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
       id: "completeInformation.province.required"
     })),
@@ -3993,12 +4038,11 @@ const UserAccountTab = () => {
     if (userDetails && userDetails.city) {
       loadDitrictsByCity(userDetails.city);
       loadWardsByDistrict(userDetails.district);
-      userDetails.userType = user.userType;
     }
   }, []);
 
   const onChangeAvatar = e => {
-    const validTypeExtension = ['jpg', 'jpeg', 'bmp', 'gif', 'png'];
+    const validTypeExtension = ['jpg', 'jpeg', 'bmp', 'gif', 'png', 'HEIF', 'HEVC', 'heic'];
     const file = e.target.files[0];
 
     if (!file) {
@@ -4010,6 +4054,16 @@ const UserAccountTab = () => {
     if (validTypeExtension.indexOf(fileType) < 0) {
       toastError( /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.updateInfo.imageTypeInvalid"
+      }));
+      return;
+    }
+
+    if (bytesToMb(file.size) >= MAX_FILE_SIZE) {
+      toastError( /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "setting.updateInfo.imageExceedSize",
+        values: {
+          size: MAX_FILE_SIZE
+        }
       }));
       return;
     }
@@ -4026,7 +4080,7 @@ const UserAccountTab = () => {
   };
 
   const onSubmit = async values => {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.accountInformation"
       }),
@@ -4041,7 +4095,28 @@ const UserAccountTab = () => {
   };
 
   const onClickBackHome = () => {
-    dispatch(goBackHomePage());
+    dispatch(showConfirmAlert$1({
+      title: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "common.home"
+      }),
+      isShow: true,
+      content: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "common.backHome.confirmMessage"
+      }),
+      onConfirm: () => {
+        dispatch(goBackHomePage());
+      }
+    }));
+  };
+
+  const onChangeCity = async (id, setFieldValue) => {
+    loadDitrictsByCity(id);
+    setFieldValue('userDetails.district', '');
+  };
+
+  const onChangeDistrict = async (id, setFieldValue) => {
+    loadWardsByDistrict(id);
+    setFieldValue('userDetails.ward', '');
   };
 
   return /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
@@ -4064,6 +4139,9 @@ const UserAccountTab = () => {
     body: true
   }, /*#__PURE__*/React.createElement(Media, {
     className: "font-medium-1 text-bold-600",
+    style: {
+      textTransform: 'uppercase'
+    },
     tag: "p",
     heading: true
   }, user.fullName), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -4097,20 +4175,32 @@ const UserAccountTab = () => {
   }, ({
     errors,
     touched,
-    values
+    values,
+    setFieldValue
   }) => /*#__PURE__*/React.createElement(Form, null, /*#__PURE__*/React.createElement(Row, {
     className: "mt-2"
   }, /*#__PURE__*/React.createElement(Col, {
     sm: "12",
     md: "6"
   }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+    disabled: true,
     messageId: "register.fullname",
     fieldName: "fullName",
     errors: errors,
     touched: touched
   })), /*#__PURE__*/React.createElement(Col, {
     sm: "12",
-    md: "6"
+    md: "3"
+  }, /*#__PURE__*/React.createElement(BaseFormGroupSelect, {
+    messageId: "completeInformation.idType",
+    fieldName: "icType",
+    disabled: true,
+    options: IC_TYPES_OPTIONS,
+    errors: errors,
+    touched: touched
+  })), /*#__PURE__*/React.createElement(Col, {
+    sm: "12",
+    md: "3"
   }, /*#__PURE__*/React.createElement(BaseFormGroup, {
     messageId: "completeInformation.nbrPer",
     fieldName: "icNumber",
@@ -4122,6 +4212,7 @@ const UserAccountTab = () => {
     sm: "12",
     md: "6"
   }, /*#__PURE__*/React.createElement(BaseFormDatePicker$1, {
+    disabled: true,
     messageId: "completeInformation.dateOfBirth",
     fieldName: "dateOfBirth",
     errors: errors,
@@ -4132,7 +4223,7 @@ const UserAccountTab = () => {
   }, /*#__PURE__*/React.createElement(BaseFormGroupSelect, {
     messageId: "completeInformation.gender",
     fieldName: "gender",
-    defaultValue: GENDER_OPTIONS[0],
+    disabled: true,
     options: GENDER_OPTIONS,
     errors: errors,
     touched: touched
@@ -4142,6 +4233,7 @@ const UserAccountTab = () => {
     sm: "12",
     md: "6"
   }, /*#__PURE__*/React.createElement(BaseFormGroup, {
+    disabled: true,
     messageId: "register.phoneNumber",
     fieldName: "phoneNumber",
     errors: errors,
@@ -4173,7 +4265,7 @@ const UserAccountTab = () => {
     options: cities,
     onChange: ({
       id
-    }) => loadDitrictsByCity(id),
+    }) => onChangeCity(id, setFieldValue),
     errors: errors,
     touched: touched
   })), /*#__PURE__*/React.createElement(Col, {
@@ -4184,7 +4276,7 @@ const UserAccountTab = () => {
     options: districts,
     onChange: ({
       id
-    }) => loadWardsByDistrict(id),
+    }) => onChangeDistrict(id, setFieldValue),
     errors: errors,
     touched: touched
   })), /*#__PURE__*/React.createElement(Col, {
@@ -4239,19 +4331,19 @@ const UserAccountTab = () => {
 
 const formSchema = object().shape({
   oldPassword: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "createPassword.password.required"
+    id: "changePassword.oldPassword.required"
   })).matches(PASSWORD_REGEX, () => /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "createPassword.password.invalid"
+    id: "changePassword.oldPassword.invalid"
   })),
   newPassword: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "createPassword.password.required"
+    id: "changePassword.newPassword.required"
   })).matches(PASSWORD_REGEX, () => /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "createPassword.password.invalid"
+    id: "changePassword.newPassword.invalid"
   })),
   passwordConfirmation: string().oneOf([ref('newPassword'), null], /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "createPassword.passwordMustMatch"
   })).required( /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "createPassword.password.required"
+    id: "changePassword.confirmPassword.required"
   }))
 });
 
@@ -4259,7 +4351,7 @@ const ChangePassword = () => {
   const dispatch = useDispatch();
 
   const onClickSubmit = values => {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.changePassword"
       }),
@@ -4274,7 +4366,18 @@ const ChangePassword = () => {
   };
 
   const onClickBackHome = () => {
-    dispatch(goBackHomePage$1());
+    dispatch(showConfirmAlert$1({
+      title: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "common.home"
+      }),
+      isShow: true,
+      content: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "common.backHome.confirmMessage"
+      }),
+      onConfirm: () => {
+        dispatch(goBackHomePage());
+      }
+    }));
   };
 
   return /*#__PURE__*/React.createElement(Formik, {
@@ -4315,8 +4418,8 @@ const ChangePassword = () => {
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "createPassword.condition.3"
   })), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
-    sm: "12",
-    className: "d-flex justify-content-center mt-2"
+    className: "d-flex justify-content-end  mt-2",
+    sm: "12"
   }, /*#__PURE__*/React.createElement(Button.Ripple, {
     type: "button",
     color: "secondary",
@@ -4338,7 +4441,9 @@ const AccountSettings = props => {
   useEffect(() => setActiveTab(props.activeTab), [props.activeTab]);
   return /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
     sm: "12"
-  }, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardHeader, null, /*#__PURE__*/React.createElement(CardTitle, null, /*#__PURE__*/React.createElement(FormattedMessage, {
+  }, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardHeader, null, /*#__PURE__*/React.createElement(CardTitle, {
+    className: "text-uppercase"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: 'setting.personalSetting'
   }))), /*#__PURE__*/React.createElement(CardBody, {
     className: "pt-2"
@@ -4608,7 +4713,18 @@ const Terms = () => {
   const dispatch = useDispatch();
 
   const onClickBackHome = () => {
-    dispatch(goBackHomePage());
+    dispatch(showConfirmAlert({
+      title: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "common.home"
+      }),
+      isShow: true,
+      content: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "common.backHome.confirmMessage"
+      }),
+      onConfirm: () => {
+        dispatch(goBackHomePage());
+      }
+    }));
   };
 
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardBody, null, /*#__PURE__*/React.createElement("div", {
@@ -4662,11 +4778,22 @@ const LanguageTab = () => {
   const [lang, setLang] = useState(localStorage.getItem('language'));
 
   const onClickBackHome = () => {
-    dispatch(goBackHomePage$1());
+    dispatch(showConfirmAlert$1({
+      title: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "common.home"
+      }),
+      isShow: true,
+      content: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "common.backHome.confirmMessage"
+      }),
+      onConfirm: () => {
+        dispatch(goBackHomePage());
+      }
+    }));
   };
 
   const onClickSaveChange = context => {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.language"
       }),
@@ -4880,7 +5007,18 @@ const Policies = () => {
   const dispatch = useDispatch();
 
   const onClickBackHome = () => {
-    dispatch(goBackHomePage$1());
+    dispatch(showConfirmAlert$1({
+      title: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "common.home"
+      }),
+      isShow: true,
+      content: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "common.backHome.confirmMessage"
+      }),
+      onConfirm: () => {
+        dispatch(goBackHomePage());
+      }
+    }));
   };
 
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardBody, null, /*#__PURE__*/React.createElement("div", {
@@ -4919,7 +5057,36 @@ const ContactTab = () => {
   const dispatch = useDispatch();
 
   const onClickBackHome = () => {
-    dispatch(goBackHomePage$1());
+    dispatch(showConfirmAlert$1({
+      title: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "common.home"
+      }),
+      isShow: true,
+      content: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "common.backHome.confirmMessage"
+      }),
+      onConfirm: () => {
+        dispatch(goBackHomePage());
+      }
+    }));
+  };
+
+  const onClickCall = () => {
+    dispatch(showConfirmAlert$1({
+      title: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "setting.call"
+      }),
+      isShow: true,
+      content: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "setting.call.confirmMessage",
+        values: {
+          phoneNumber: CONTACT_PHONE
+        }
+      }),
+      onConfirm: () => {
+        window.open(`tel:${CONTACT_PHONE}`, '_blank');
+      }
+    }));
   };
 
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Row, {
@@ -4953,11 +5120,11 @@ const ContactTab = () => {
     className: "w-300px mx-auto"
   }, /*#__PURE__*/React.createElement("div", {
     className: "box-content"
-  }, /*#__PURE__*/React.createElement("h5", null, "0979 87 85 82")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h5", null, CONTACT_PHONE)), /*#__PURE__*/React.createElement("div", {
     className: "card-btns d-flex justify-content-center mt-2"
   }, isMobile ? /*#__PURE__*/React.createElement(Button.Ripple, {
     className: "gradient-light-primary text-white",
-    onClick: () => window.open('tel:0979878582', '_blank')
+    onClick: onClickCall
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: `setting.call`
   })) : ''))))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
@@ -4980,7 +5147,9 @@ const GeneralInfo = props => {
     className: "general-info"
   }, /*#__PURE__*/React.createElement(Col, {
     sm: "12"
-  }, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardHeader, null, /*#__PURE__*/React.createElement(CardTitle, null, /*#__PURE__*/React.createElement(FormattedMessage, {
+  }, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardHeader, null, /*#__PURE__*/React.createElement(CardTitle, {
+    className: "text-uppercase"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: 'setting.generalInformation'
   }))), /*#__PURE__*/React.createElement(CardBody, {
     className: "pt-2"
@@ -6248,7 +6417,7 @@ class FallbackSpinner extends React.Component {
 
 const SHOW_CONFIRM_ALERT$1 = 'SHOW_CONFIRM_ALERT';
 const HIDE_CONFIRM_ALERT$1 = 'HIDE_CONFIRM_ALERT';
-const showConfirmAlert$1 = configs => {
+const showConfirmAlert$2 = configs => {
   return dispatch => dispatch({
     type: SHOW_CONFIRM_ALERT$1,
     payload: configs
@@ -6282,5 +6451,5 @@ const usePageAuthorities = () => {
   return authorities;
 };
 
-export { AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, HttpClient, Radio, Select, hideConfirmAlert$1 as hideConfirmAlert, showConfirmAlert$1 as showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
+export { AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, HttpClient, Radio, Select, hideConfirmAlert$1 as hideConfirmAlert, showConfirmAlert$2 as showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
 //# sourceMappingURL=index.modern.js.map

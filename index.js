@@ -47,6 +47,9 @@ var generateUUID = function generateUUID() {
 var trimValue = function trimValue(value) {
   return value ? value.trim() : '';
 };
+var bytesToMb = function bytesToMb(bytes) {
+  return Math.round(bytes / Math.pow(1024, 2), 2);
+};
 var trimObjectValues = function trimObjectValues(object, excludeKeys) {
   if (excludeKeys === void 0) {
     excludeKeys = [];
@@ -99,6 +102,7 @@ var index = {
   __proto__: null,
   generateUUID: generateUUID,
   trimValue: trimValue,
+  bytesToMb: bytesToMb,
   trimObjectValues: trimObjectValues,
   toastError: toastError,
   toastSuccess: toastSuccess
@@ -151,6 +155,7 @@ var AUTHORITIES = {
   CREATE: 'create'
 };
 var API_TIME_OUT = 70000;
+var MAX_FILE_SIZE = 5;
 var LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
   FAIL: 'FAIL'
@@ -230,6 +235,8 @@ var getPropObject = function getPropObject(obj, prop) {
     return r ? r[e] : null;
   }, obj);
 };
+var CONTACT_PHONE = '0899300800';
+var SESSION_TIMEOUT = 15;
 var USER_ROLE = {
   ADMIN: 'AD.IO',
   KD: 'KD.IO',
@@ -301,6 +308,7 @@ var appConfigs = {
   NAME_REGEX: NAME_REGEX,
   AUTHORITIES: AUTHORITIES,
   API_TIME_OUT: API_TIME_OUT,
+  MAX_FILE_SIZE: MAX_FILE_SIZE,
   LOGIN_STATUS: LOGIN_STATUS,
   USER_TYPE: USER_TYPE,
   GENDER_OPTIONS: GENDER_OPTIONS,
@@ -308,114 +316,10 @@ var appConfigs = {
   getExternalAppUrl: getExternalAppUrl,
   getContextPath: getContextPath,
   getPropObject: getPropObject,
+  CONTACT_PHONE: CONTACT_PHONE,
+  SESSION_TIMEOUT: SESSION_TIMEOUT,
   USER_ROLE: USER_ROLE,
   IMAGE: IMAGE
-};
-
-var SHOW_LOADING_BAR = 'SHOW_LOADING_BAR';
-var HIDE_LOADING_BAR = 'HIDE_LOADING_BAR';
-var SHOW_CONFIRM_ALERT = 'SHOW_CONFIRM_ALERT';
-var HIDE_CONFIRM_ALERT = 'HIDE_CONFIRM_ALERT';
-var showConfirmAlert = function showConfirmAlert(configs) {
-  return function (dispatch) {
-    return dispatch({
-      type: SHOW_CONFIRM_ALERT,
-      payload: configs
-    });
-  };
-};
-var hideConfirmAlert = function hideConfirmAlert() {
-  return function (dispatch) {
-    return dispatch({
-      type: HIDE_CONFIRM_ALERT
-    });
-  };
-};
-
-var HttpClient = Axios.create({
-  timeout: API_TIME_OUT,
-  adapter: axiosExtensions.throttleAdapterEnhancer(axiosExtensions.cacheAdapterEnhancer(Axios.defaults.adapter, {
-    threshold: 15 * 60 * 1000
-  })),
-  invalidate: function (config, request) {
-    try {
-      var _temp2 = function () {
-        if (request.clearCacheEntry) {
-          return Promise.resolve(config.store.removeItem(config.uuid)).then(function () {});
-        }
-      }();
-
-      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  }
-});
-HttpClient.defaults.headers['Content-Type'] = 'application/json';
-var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
-  var deviceId = localStorage.getItem('deviceId');
-  var language = localStorage.getItem('language');
-
-  if (!deviceId) {
-    deviceId = generateUUID();
-    localStorage.setItem('deviceId', deviceId);
-  }
-
-  if (!language) {
-    localStorage.setItem('language', 'vi');
-  }
-
-  HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
-  HttpClient.interceptors.request.use(function (config) {
-    var token = store.getState().auth.authToken;
-    language = localStorage.getItem('language');
-
-    if (token) {
-      config.headers.Authorization = "Bearer " + token;
-    }
-
-    config.headers.deviceId = deviceId;
-    config.headers['Accept-Language'] = language;
-
-    if (!config.isBackgroundRequest) {
-      store.dispatch({
-        type: SHOW_LOADING_BAR,
-        payload: ''
-      });
-    }
-
-    return config;
-  });
-  HttpClient.interceptors.response.use(function (response) {
-    store.dispatch({
-      type: HIDE_LOADING_BAR,
-      payload: ''
-    });
-    return response;
-  }, function (e) {
-    store.dispatch({
-      type: HIDE_LOADING_BAR,
-      payload: ''
-    });
-
-    if (!e.response) {
-      return e;
-    }
-
-    switch (e.response.status) {
-      case 403:
-        toastError(errorMessage(e.response.data.message));
-        store.dispatch({
-          type: 'LOGOUT_ACTION'
-        });
-
-      case 400:
-      case 500:
-        toastError(e.response.data.message);
-    }
-
-    return e.response;
-  });
 };
 
 function _extends() {
@@ -473,73 +377,6 @@ function _taggedTemplateLiteralLoose(strings, raw) {
   strings.raw = raw;
   return strings;
 }
-
-var themeConfig = {
-  appId: '',
-  layout: "vertical",
-  theme: "light",
-  sidebarCollapsed: false,
-  navbarColor: "default",
-  navbarType: "floating",
-  footerType: "static",
-  disableCustomizer: true,
-  hideScrollToTop: false,
-  disableThemeTour: false,
-  menuTheme: "primary",
-  direction: "ltr",
-  showLoading: false
-};
-
-var customizerReducer = function customizerReducer(state, action) {
-  if (state === void 0) {
-    state = _extends({}, themeConfig);
-  }
-
-  switch (action.type) {
-    case 'CHANGE_THEME':
-      return _extends({}, state, {
-        theme: action.theme
-      });
-
-    case 'SET_APP_ID':
-      return _extends({}, state, {
-        appId: action.appId
-      });
-
-    case 'COLLAPSE_SIDEBAR':
-      return _extends({}, state, {
-        sidebarCollapsed: action.value
-      });
-
-    case 'CHANGE_NAVBAR_COLOR':
-      return _extends({}, state, {
-        navbarColor: action.color
-      });
-
-    case 'CHANGE_NAVBAR_TYPE':
-      return _extends({}, state, {
-        navbarType: action.style
-      });
-
-    case 'CHANGE_FOOTER_TYPE':
-      return _extends({}, state, {
-        footerType: action.style
-      });
-
-    case 'CHANGE_MENU_COLOR':
-      return _extends({}, state, {
-        menuTheme: action.style
-      });
-
-    case 'HIDE_SCROLL_TO_TOP':
-      return _extends({}, state, {
-        hideScrollToTop: action.value
-      });
-
-    default:
-      return state;
-  }
-};
 
 // A type of promise-like that resolves synchronously and supports only one observer
 
@@ -667,6 +504,7 @@ var LOGOUT_ACTION = 'LOGOUT_ACTION';
 var SAVE_REGISTER_TOKEN = 'SAVE_REGISTER_TOKEN';
 var SAVE_RESET_PASSWORD_TOKEN = 'SAVE_RESET_PASSWORD_TOKEN';
 var UPDATE_USER_INFO = 'UPDATE_USER_INFO';
+var sessionTimeOut = null;
 var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
   return function (dispatch, getState) {
     try {
@@ -686,7 +524,8 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
                   }
                 });
                 var appId = getState().customizer.appId;
-                history.push(redirectUrl || window.location.pathname.replace("/" + getContextPath(appId) + "/", '/'));
+                history.push(redirectUrl || window.location.pathname.replace("/" + getContextPath(appId) + "/", '/') + window.location.search);
+                setSessionTimeout();
               });
             } else {
               dispatch({
@@ -746,6 +585,8 @@ var loginAction = function loginAction(user) {
               } else {
                 history.push('/');
               }
+
+              setSessionTimeout();
             });
           } else {
             dispatch({
@@ -760,6 +601,20 @@ var loginAction = function loginAction(user) {
       return Promise.reject(e);
     }
   };
+};
+var setSessionTimeout = function setSessionTimeout() {
+  return function (dispatch) {
+    clearTimeout(sessionTimeOut);
+    sessionTimeOut = setTimeout(function () {
+      toastError( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "common.sesionExpired"
+      }));
+      dispatch(logoutAction());
+    }, SESSION_TIMEOUT * 60 * 1000);
+  };
+};
+var clearSessionTimeOut = function clearSessionTimeOut() {
+  clearTimeout(sessionTimeOut);
 };
 var createPassword = function createPassword(password) {
   return function (dispatch, getState) {
@@ -904,6 +759,7 @@ var logoutAction = function logoutAction() {
       dispatch({
         type: LOGOUT_ACTION
       });
+      clearSessionTimeOut();
       return Promise.resolve();
     } catch (e) {
       return Promise.reject(e);
@@ -986,6 +842,180 @@ var changeLanguageSetting = function changeLanguageSetting(lang, callBack) {
       return Promise.reject(e);
     }
   };
+};
+
+var SHOW_LOADING_BAR = 'SHOW_LOADING_BAR';
+var HIDE_LOADING_BAR = 'HIDE_LOADING_BAR';
+var SHOW_CONFIRM_ALERT = 'SHOW_CONFIRM_ALERT';
+var HIDE_CONFIRM_ALERT = 'HIDE_CONFIRM_ALERT';
+var showConfirmAlert$1 = function showConfirmAlert(configs) {
+  return function (dispatch) {
+    return dispatch({
+      type: SHOW_CONFIRM_ALERT,
+      payload: configs
+    });
+  };
+};
+var hideConfirmAlert = function hideConfirmAlert() {
+  return function (dispatch) {
+    return dispatch({
+      type: HIDE_CONFIRM_ALERT
+    });
+  };
+};
+
+var HttpClient = Axios.create({
+  timeout: API_TIME_OUT,
+  adapter: axiosExtensions.throttleAdapterEnhancer(axiosExtensions.cacheAdapterEnhancer(Axios.defaults.adapter, {
+    threshold: 15 * 60 * 1000
+  })),
+  invalidate: function (config, request) {
+    try {
+      var _temp2 = function () {
+        if (request.clearCacheEntry) {
+          return Promise.resolve(config.store.removeItem(config.uuid)).then(function () {});
+        }
+      }();
+
+      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }
+});
+HttpClient.defaults.headers['Content-Type'] = 'application/json';
+var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
+  var deviceId = localStorage.getItem('deviceId');
+  var language = localStorage.getItem('language');
+
+  if (!deviceId) {
+    deviceId = generateUUID();
+    localStorage.setItem('deviceId', deviceId);
+  }
+
+  if (!language) {
+    localStorage.setItem('language', 'vi');
+  }
+
+  HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
+  HttpClient.interceptors.request.use(function (config) {
+    var token = store.getState().auth.authToken;
+    language = localStorage.getItem('language');
+
+    if (token) {
+      store.dispatch(setSessionTimeout());
+      config.headers.Authorization = "Bearer " + token;
+    }
+
+    config.headers.deviceId = deviceId;
+    config.headers['Accept-Language'] = language;
+
+    if (!config.isBackgroundRequest) {
+      store.dispatch({
+        type: SHOW_LOADING_BAR,
+        payload: ''
+      });
+    }
+
+    return config;
+  });
+  HttpClient.interceptors.response.use(function (response) {
+    store.dispatch({
+      type: HIDE_LOADING_BAR,
+      payload: ''
+    });
+    return response;
+  }, function (e) {
+    store.dispatch({
+      type: HIDE_LOADING_BAR,
+      payload: ''
+    });
+
+    if (!e.response) {
+      return e;
+    }
+
+    switch (e.response.status) {
+      case 403:
+        toastError(e.response.data.message);
+        store.dispatch({
+          type: 'LOGOUT_ACTION'
+        });
+
+      case 400:
+      case 500:
+        toastError(e.response.data.message);
+    }
+
+    return e.response;
+  });
+};
+
+var themeConfig = {
+  appId: '',
+  layout: "vertical",
+  theme: "light",
+  sidebarCollapsed: false,
+  navbarColor: "default",
+  navbarType: "floating",
+  footerType: "static",
+  disableCustomizer: true,
+  hideScrollToTop: false,
+  disableThemeTour: false,
+  menuTheme: "primary",
+  direction: "ltr",
+  showLoading: false
+};
+
+var customizerReducer = function customizerReducer(state, action) {
+  if (state === void 0) {
+    state = _extends({}, themeConfig);
+  }
+
+  switch (action.type) {
+    case 'CHANGE_THEME':
+      return _extends({}, state, {
+        theme: action.theme
+      });
+
+    case 'SET_APP_ID':
+      return _extends({}, state, {
+        appId: action.appId
+      });
+
+    case 'COLLAPSE_SIDEBAR':
+      return _extends({}, state, {
+        sidebarCollapsed: action.value
+      });
+
+    case 'CHANGE_NAVBAR_COLOR':
+      return _extends({}, state, {
+        navbarColor: action.color
+      });
+
+    case 'CHANGE_NAVBAR_TYPE':
+      return _extends({}, state, {
+        navbarType: action.style
+      });
+
+    case 'CHANGE_FOOTER_TYPE':
+      return _extends({}, state, {
+        footerType: action.style
+      });
+
+    case 'CHANGE_MENU_COLOR':
+      return _extends({}, state, {
+        menuTheme: action.style
+      });
+
+    case 'HIDE_SCROLL_TO_TOP':
+      return _extends({}, state, {
+        hideScrollToTop: action.value
+      });
+
+    default:
+      return state;
+  }
 };
 
 var authInitialState = {
@@ -1149,7 +1179,7 @@ NavBarService.getUserGroupRole = function (groupId) {
 
 var LOAD_NATIVGATION = 'LOAD_NATIVGATION';
 var LOAD_USER_ROLE = 'LOAD_USER_ROLE';
-var goBackHomePage$1 = function goBackHomePage() {
+var goBackHomePage = function goBackHomePage() {
   return function (dispatch, getState) {
     try {
       var appId = getState().customizer.appId;
@@ -1669,7 +1699,7 @@ var UserDropdown = function UserDropdown() {
   };
 
   var onClickLogout = function onClickLogout() {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "navbar.logout"
       }),
@@ -2090,7 +2120,7 @@ var Footer = function Footer(props) {
 
   var onClickBackHome = function onClickBackHome(e) {
     e.preventDefault();
-    dispatch(goBackHomePage$1());
+    dispatch(goBackHomePage());
   };
 
   return /*#__PURE__*/React__default.createElement("footer", null, /*#__PURE__*/React__default.createElement("div", {
@@ -2268,7 +2298,7 @@ var SidebarHeader = function SidebarHeader(props) {
   var dispatch = reactRedux.useDispatch();
 
   var onClickHome = function onClickHome() {
-    dispatch(goBackHomePage$1());
+    dispatch(goBackHomePage());
   };
 
   return /*#__PURE__*/React__default.createElement("div", {
@@ -3306,11 +3336,16 @@ var messages_en = {
 	"common.icType.personalID": "Identity Card",
 	"common.icType.citizenIdentify": "Identification",
 	"common.icType.passport": "Passport",
+	"common.icType.CMND": "Identity Card",
+	"common.icType.CCCD": "Identification",
+	"common.icType.HC": "Passport",
 	"common.home": "Home",
+	"common.backHome.confirmMessage": "Do you want to go back to home page?",
 	"common.saveChanges": "Save Changes",
 	"common.cancel": "Cancel",
 	"common.ok": "Ok",
 	"common.noResults": "No results",
+	"common.sesionExpired": "Your session has expired, please relogin!",
 	login: login,
 	"login.firstWelcome": "Welcome to InOn X!",
 	"login.logedWelcome": "Hi,",
@@ -3380,7 +3415,7 @@ var messages_en = {
 	"menu.debt": "Debt",
 	"menu.createDebt": "Create Debt",
 	"menu.debtManagement": "Debt Management",
-	"menu.permissionGoup": "Permission Group",
+	"menu.permissionGoup": "Permission Group*",
 	"menu.creatPermissionGoup": "Create Permision Group",
 	"menu.permissionGoupManagement": "Permission Group Management",
 	"menu.insuranceMotobike": "Motobike Insurance",
@@ -3418,12 +3453,19 @@ var messages_en = {
 	"setting.gender.F": "FeMale",
 	"setting.gender.O": "Others",
 	"setting.call": "Call",
+	"setting.call.confirmMessage": "Would you like to call {phoneNumber}?",
 	"setting.sendEmail": "Send mail",
 	"setting.updateInfo.success": "Update account infomation successfully!",
 	"setting.updateInfo.confirmMessage": "Do you want to change account infomation?",
-	"setting.updateInfo.imageTypeInvalid": "You only able upload image file!",
+	"setting.updateInfo.imageTypeInvalid": "Invalid file upload!",
+	"setting.updateInfo.imageExceedSize": "Uploaded file exceed the allowed size ({size}MB)!",
 	"changePassword.newPassword": "New Password",
-	"changePassword.oldPassword": "Old Password",
+	"changePassword.newPassword.required": "You must enter new password",
+	"changePassword.newPassword.invalid": "New password is invalid",
+	"changePassword.oldPassword": "Old password",
+	"changePassword.oldPassword.required": "You must enter old password",
+	"changePassword.oldPassword.invalid": "Old password is invalid",
+	"changePassword.confirmPassword.required": "You must re-enter your new password",
 	"changePassword.passwordMustMatch": "Password must match",
 	"changePassword.confirmMessage": "Do you want to change your password?",
 	"changePassword.success": "Change password successfully!",
@@ -3563,7 +3605,7 @@ var messages_en = {
 	"createPassword.passwordMustMatch": "Password must match",
 	"createPassword.condition.1": "- At least 8 characters long",
 	"createPassword.condition.2": "- Include upper and lower case characters",
-	"createPassword.condition.3": "- Include numeric or special characters",
+	"createPassword.condition.3": "- Include numeric and special characters",
 	"createPassword.continutes": "CONTINUTE",
 	"createPassword.done": "DONE",
 	"createPassword.resetSuccessFul": "Change password successful!",
@@ -3610,11 +3652,16 @@ var messages_vi = {
 	"common.icType.personalID": "Chứng minh nhân dân",
 	"common.icType.citizenIdentify": "Căn cước công dân",
 	"common.icType.passport": "Hộ chiếu",
+	"common.icType.CMND": "Chứng minh nhân dân",
+	"common.icType.CCCD": "Căn cước công dân",
+	"common.icType.HC": "Hộ chiếu",
 	"common.home": "Trang chủ",
+	"common.backHome.confirmMessage": "Bạn có muốn quay lại trang chủ không?",
 	"common.saveChanges": "Lưu thay đổi",
 	"common.cancel": "Hủy",
 	"common.ok": "Đồng ý",
 	"common.noResults": "Không có kết quả",
+	"common.sesionExpired": "Phiên làm việc của bạn đã hết hạn, bạn vui lòng đăng nhập lại!",
 	login: login$1,
 	"login.firstWelcome": "Chào mừng bạn đến với InOn X!",
 	"login.logedWelcome": "Xin chào,",
@@ -3684,7 +3731,7 @@ var messages_vi = {
 	"menu.debt": "Công nợ",
 	"menu.createDebt": "Tạo mới công nợ",
 	"menu.debtManagement": "Quản lý công nợ",
-	"menu.permissionGoup": "Nhóm quyền",
+	"menu.permissionGoup": "Nhóm quyền*",
 	"menu.creatPermissionGoup": "Tạo mới nhóm quyền",
 	"menu.permissionGoupManagement": "Quản lý nhóm quyền",
 	"menu.insuranceMotobike": "Bảo hiểm xe máy",
@@ -3722,12 +3769,19 @@ var messages_vi = {
 	"setting.gender.F": "Nữ",
 	"setting.gender.O": "Khác",
 	"setting.call": "Gọi điện",
+	"setting.call.confirmMessage": "Bạn có muốn gọi đến số {phoneNumber}?",
 	"setting.sendEmail": "Gửi mail",
 	"setting.updateInfo.success": "Thay đổi thông tin thành công!",
 	"setting.updateInfo.confirmMessage": "Bạn có muốn thay đổi thông tin tài khoản?",
-	"setting.updateInfo.imageTypeInvalid": "Bạn chỉ có thể tải lên tệp hình ảnh!",
+	"setting.updateInfo.imageTypeInvalid": "File tải lên không hợp lệ!",
+	"setting.updateInfo.imageExceedSize": "File tải lên vượt quá dung lượng cho phép ({size}MB)!",
 	"changePassword.newPassword": "Mật khẩu mới",
+	"changePassword.newPassword.required": "Bạn phải nhập mật khẩu mới",
+	"changePassword.newPassword.invalid": "Mật khẩu mới không hợp lệ",
 	"changePassword.oldPassword": "Mật khẩu cũ",
+	"changePassword.oldPassword.required": "Bạn phải nhập mật khẩu cũ",
+	"changePassword.oldPassword.invalid": "Mật khẩu cũ không hợp lệ",
+	"changePassword.confirmPassword.required": "Bạn phải nhập lại mật khẩu mới",
 	"changePassword.passwordMustMatch": "Mật khẩu không trùng khớp",
 	"changePassword.confirmMessage": "Bạn có muốn thay đổi mật khẩu?",
 	"changePassword.success": "Thay đổi mật khẩu thành công!",
@@ -3867,7 +3921,7 @@ var messages_vi = {
 	"createPassword.passwordMustMatch": "Mật khẩu phải trùng khớp",
 	"createPassword.condition.1": "- Dài ít nhất 8 ký tự",
 	"createPassword.condition.2": "- Bao gồm ký tự viết hoa và viết thường",
-	"createPassword.condition.3": "- Bao gồm ký tự số hoặc ký tự đặc biệt",
+	"createPassword.condition.3": "- Bao gồm ký tự số và ký tự đặc biệt",
 	"createPassword.continutes": "TIẾP TỤC",
 	"createPassword.done": "HOÀN THÀNH",
 	"createPassword.resetSuccessFul": "Thay đổi mật khẩu thành công!",
@@ -3896,7 +3950,7 @@ var messages_vi = {
 	"completeInformation.district": "Quận/Huyện*",
 	"completeInformation.district.required": "Bạn phải chọn Quận/Huyện",
 	"completeInformation.ward": "Phường/Xã*",
-	"completeInformation.wards.required": "Bạn phải chọnPhường/Xã",
+	"completeInformation.ward.required": "Bạn phải chọn Phường/Xã",
 	"completeInformation.bank": "Ngân hàng*",
 	"completeInformation.bank.required": "Bạn phải chọn Ngân hàng*",
 	"completeInformation.back": "Quay lại",
@@ -3945,6 +3999,7 @@ var BaseFormDatePicker = function BaseFormDatePicker(_ref) {
       options = _ref.options,
       intl = _ref.intl,
       _onChange = _ref.onChange,
+      disabled = _ref.disabled,
       _ref$isRequired = _ref.isRequired,
       isRequired = _ref$isRequired === void 0 ? true : _ref$isRequired;
   var defaultOptions = {
@@ -3956,13 +4011,14 @@ var BaseFormDatePicker = function BaseFormDatePicker(_ref) {
     var field = _ref2.field,
         form = _ref2.form;
     return /*#__PURE__*/React__default.createElement(DatePicker, {
-      className: "bg-white form-control position-relative " + (isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'),
+      className: "form-control position-relative " + (!disabled ? 'bg-white' : '') + " " + (isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'),
       placeholder: intl.formatMessage({
         id: messageId
       }),
       fieldName: fieldName,
       notRequired: !isRequired,
       errors: errors,
+      disabled: disabled,
       touched: touched,
       value: field.value,
       options: options || defaultOptions,
@@ -4008,7 +4064,7 @@ var Select = function Select(props) {
 
   var onFocus = function onFocus(e) {
     if (props.onFocus) {
-      props.onChange(e);
+      props.onFocus(e);
     }
 
     setIsFocused(true);
@@ -4038,6 +4094,7 @@ var Select = function Select(props) {
   return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
     className: "form-label-group position-relative"
   }, /*#__PURE__*/React__default.createElement(SelectComponent, _extends({}, props, {
+    isDisabled: props.disabled,
     onChange: onChange,
     onBlur: onBlur,
     onFocus: onFocus,
@@ -4071,6 +4128,7 @@ var BaseFormGroupSelect = function BaseFormGroupSelect(_ref) {
       _ref$isRequired = _ref.isRequired,
       isRequired = _ref$isRequired === void 0 ? true : _ref$isRequired,
       isAsync = _ref.isAsync,
+      disabled = _ref.disabled,
       _onChange = _ref.onChange,
       loadOptions = _ref.loadOptions,
       defaultOptions = _ref.defaultOptions;
@@ -4092,6 +4150,7 @@ var BaseFormGroupSelect = function BaseFormGroupSelect(_ref) {
         return item.value === field.value;
       }),
       defaultValue: defaultValue,
+      disabled: disabled,
       errors: errors,
       isAsync: isAsync,
       loadOptions: loadOptions,
@@ -4199,8 +4258,9 @@ var useCityList = function useCityList(countryCode) {
 
   var loadCitiesByCountry = function loadCitiesByCountry(code) {
     try {
-      return Promise.resolve(DataColetionService.getCitiesByCountry(code, locale)).then(function (_DataColetionService$) {
-        setCities(_DataColetionService$);
+      return Promise.resolve(DataColetionService.getCitiesByCountry(code, locale)).then(function (data) {
+        setCities(data);
+        return data;
       });
     } catch (e) {
       return Promise.reject(e);
@@ -4230,8 +4290,9 @@ var useDistrictList = function useDistrictList(cityCode) {
 
   var loadDitrictsByCity = function loadDitrictsByCity(code) {
     try {
-      return Promise.resolve(DataColetionService.getDistrictByCity(code, locale)).then(function (_DataColetionService$2) {
-        setDistricts(_DataColetionService$2);
+      return Promise.resolve(DataColetionService.getDistrictByCity(code, locale)).then(function (data) {
+        setDistricts(data);
+        return data;
       });
     } catch (e) {
       return Promise.reject(e);
@@ -4261,8 +4322,9 @@ var useWardList = function useWardList(districtCode) {
 
   var loadWardsByDistrict = function loadWardsByDistrict(code) {
     try {
-      return Promise.resolve(DataColetionService.getWardsByDistrict(code, locale)).then(function (_DataColetionService$3) {
-        setWards(_DataColetionService$3);
+      return Promise.resolve(DataColetionService.getWardsByDistrict(code, locale)).then(function (data) {
+        setWards(data);
+        return data;
       });
     } catch (e) {
       return Promise.reject(e);
@@ -4288,8 +4350,8 @@ var useBankList = function useBankList() {
 
   var loadBanks = function loadBanks() {
     try {
-      return Promise.resolve(DataColetionService.getAllBanks(locale)).then(function (_DataColetionService$4) {
-        setBanks(_DataColetionService$4);
+      return Promise.resolve(DataColetionService.getAllBanks(locale)).then(function (_DataColetionService$) {
+        setBanks(_DataColetionService$);
       });
     } catch (e) {
       return Promise.reject(e);
@@ -4349,24 +4411,6 @@ var validationSchema = Yup.object().shape({
     address: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "completeInformation.address.required"
     })),
-    bankAccount: Yup.string().when('userType', {
-      is: USER_TYPE.KD,
-      then: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-        id: "completeInformation.accountNbr.required"
-      }))
-    }),
-    bankName: Yup.string().when('userType', {
-      is: USER_TYPE.KD,
-      then: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-        id: "completeInformation.bank.required"
-      }))
-    }),
-    bankBranch: Yup.string().when('userType', {
-      is: USER_TYPE.KD,
-      then: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-        id: "completeInformation.branch.required"
-      }))
-    }),
     city: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "completeInformation.province.required"
     })),
@@ -4416,12 +4460,11 @@ var UserAccountTab = function UserAccountTab() {
     if (userDetails && userDetails.city) {
       loadDitrictsByCity(userDetails.city);
       loadWardsByDistrict(userDetails.district);
-      userDetails.userType = user.userType;
     }
   }, []);
 
   var onChangeAvatar = function onChangeAvatar(e) {
-    var validTypeExtension = ['jpg', 'jpeg', 'bmp', 'gif', 'png'];
+    var validTypeExtension = ['jpg', 'jpeg', 'bmp', 'gif', 'png', 'HEIF', 'HEVC', 'heic'];
     var file = e.target.files[0];
 
     if (!file) {
@@ -4433,6 +4476,16 @@ var UserAccountTab = function UserAccountTab() {
     if (validTypeExtension.indexOf(fileType) < 0) {
       toastError( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "setting.updateInfo.imageTypeInvalid"
+      }));
+      return;
+    }
+
+    if (bytesToMb(file.size) >= MAX_FILE_SIZE) {
+      toastError( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "setting.updateInfo.imageExceedSize",
+        values: {
+          size: MAX_FILE_SIZE
+        }
       }));
       return;
     }
@@ -4450,7 +4503,7 @@ var UserAccountTab = function UserAccountTab() {
 
   var onSubmit = function onSubmit(values) {
     try {
-      dispatch(showConfirmAlert({
+      dispatch(showConfirmAlert$1({
         title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
           id: "setting.accountInformation"
         }),
@@ -4469,7 +4522,38 @@ var UserAccountTab = function UserAccountTab() {
   };
 
   var onClickBackHome = function onClickBackHome() {
-    dispatch(goBackHomePage());
+    dispatch(showConfirmAlert$1({
+      title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "common.home"
+      }),
+      isShow: true,
+      content: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "common.backHome.confirmMessage"
+      }),
+      onConfirm: function onConfirm() {
+        dispatch(goBackHomePage());
+      }
+    }));
+  };
+
+  var onChangeCity = function onChangeCity(id, setFieldValue) {
+    try {
+      loadDitrictsByCity(id);
+      setFieldValue('userDetails.district', '');
+      return Promise.resolve();
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
+  var onChangeDistrict = function onChangeDistrict(id, setFieldValue) {
+    try {
+      loadWardsByDistrict(id);
+      setFieldValue('userDetails.ward', '');
+      return Promise.resolve();
+    } catch (e) {
+      return Promise.reject(e);
+    }
   };
 
   return /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
@@ -4492,6 +4576,9 @@ var UserAccountTab = function UserAccountTab() {
     body: true
   }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
     className: "font-medium-1 text-bold-600",
+    style: {
+      textTransform: 'uppercase'
+    },
     tag: "p",
     heading: true
   }, user.fullName), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -4525,20 +4612,32 @@ var UserAccountTab = function UserAccountTab() {
   }, function (_ref) {
     var errors = _ref.errors,
         touched = _ref.touched,
-        values = _ref.values;
+        values = _ref.values,
+        setFieldValue = _ref.setFieldValue;
     return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement(reactstrap.Row, {
       className: "mt-2"
     }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "12",
       md: "6"
     }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      disabled: true,
       messageId: "register.fullname",
       fieldName: "fullName",
       errors: errors,
       touched: touched
     })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "12",
-      md: "6"
+      md: "3"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect, {
+      messageId: "completeInformation.idType",
+      fieldName: "icType",
+      disabled: true,
+      options: IC_TYPES_OPTIONS,
+      errors: errors,
+      touched: touched
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "12",
+      md: "3"
     }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
       messageId: "completeInformation.nbrPer",
       fieldName: "icNumber",
@@ -4550,6 +4649,7 @@ var UserAccountTab = function UserAccountTab() {
       sm: "12",
       md: "6"
     }, /*#__PURE__*/React__default.createElement(BaseFormDatePicker$1, {
+      disabled: true,
       messageId: "completeInformation.dateOfBirth",
       fieldName: "dateOfBirth",
       errors: errors,
@@ -4560,7 +4660,7 @@ var UserAccountTab = function UserAccountTab() {
     }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect, {
       messageId: "completeInformation.gender",
       fieldName: "gender",
-      defaultValue: GENDER_OPTIONS[0],
+      disabled: true,
       options: GENDER_OPTIONS,
       errors: errors,
       touched: touched
@@ -4570,6 +4670,7 @@ var UserAccountTab = function UserAccountTab() {
       sm: "12",
       md: "6"
     }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      disabled: true,
       messageId: "register.phoneNumber",
       fieldName: "phoneNumber",
       errors: errors,
@@ -4601,7 +4702,7 @@ var UserAccountTab = function UserAccountTab() {
       options: cities,
       onChange: function onChange(_ref2) {
         var id = _ref2.id;
-        return loadDitrictsByCity(id);
+        return onChangeCity(id, setFieldValue);
       },
       errors: errors,
       touched: touched
@@ -4613,7 +4714,7 @@ var UserAccountTab = function UserAccountTab() {
       options: districts,
       onChange: function onChange(_ref3) {
         var id = _ref3.id;
-        return loadWardsByDistrict(id);
+        return onChangeDistrict(id, setFieldValue);
       },
       errors: errors,
       touched: touched
@@ -4670,23 +4771,23 @@ var UserAccountTab = function UserAccountTab() {
 
 var formSchema = Yup.object().shape({
   oldPassword: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "createPassword.password.required"
+    id: "changePassword.oldPassword.required"
   })).matches(PASSWORD_REGEX, function () {
     return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "createPassword.password.invalid"
+      id: "changePassword.oldPassword.invalid"
     });
   }),
   newPassword: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "createPassword.password.required"
+    id: "changePassword.newPassword.required"
   })).matches(PASSWORD_REGEX, function () {
     return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "createPassword.password.invalid"
+      id: "changePassword.newPassword.invalid"
     });
   }),
   passwordConfirmation: Yup.string().oneOf([Yup.ref('newPassword'), null], /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "createPassword.passwordMustMatch"
   })).required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "createPassword.password.required"
+    id: "changePassword.confirmPassword.required"
   }))
 });
 
@@ -4694,7 +4795,7 @@ var ChangePassword = function ChangePassword() {
   var dispatch = reactRedux.useDispatch();
 
   var onClickSubmit = function onClickSubmit(values) {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "setting.changePassword"
       }),
@@ -4709,7 +4810,18 @@ var ChangePassword = function ChangePassword() {
   };
 
   var onClickBackHome = function onClickBackHome() {
-    dispatch(goBackHomePage$1());
+    dispatch(showConfirmAlert$1({
+      title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "common.home"
+      }),
+      isShow: true,
+      content: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "common.backHome.confirmMessage"
+      }),
+      onConfirm: function onConfirm() {
+        dispatch(goBackHomePage());
+      }
+    }));
   };
 
   return /*#__PURE__*/React__default.createElement(formik.Formik, {
@@ -4750,8 +4862,8 @@ var ChangePassword = function ChangePassword() {
     })), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "createPassword.condition.3"
     })), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-      sm: "12",
-      className: "d-flex justify-content-center mt-2"
+      className: "d-flex justify-content-end  mt-2",
+      sm: "12"
     }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
       type: "button",
       color: "secondary",
@@ -4779,7 +4891,9 @@ var AccountSettings = function AccountSettings(props) {
   }, [props.activeTab]);
   return /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
     sm: "12"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Card, null, /*#__PURE__*/React__default.createElement(reactstrap.CardHeader, null, /*#__PURE__*/React__default.createElement(reactstrap.CardTitle, null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Card, null, /*#__PURE__*/React__default.createElement(reactstrap.CardHeader, null, /*#__PURE__*/React__default.createElement(reactstrap.CardTitle, {
+    className: "text-uppercase"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: 'setting.personalSetting'
   }))), /*#__PURE__*/React__default.createElement(reactstrap.CardBody, {
     className: "pt-2"
@@ -5067,7 +5181,18 @@ var Terms = function Terms() {
   var dispatch = reactRedux.useDispatch();
 
   var onClickBackHome = function onClickBackHome() {
-    dispatch(goBackHomePage());
+    dispatch(showConfirmAlert({
+      title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "common.home"
+      }),
+      isShow: true,
+      content: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "common.backHome.confirmMessage"
+      }),
+      onConfirm: function onConfirm() {
+        dispatch(goBackHomePage());
+      }
+    }));
   };
 
   return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Card, null, /*#__PURE__*/React__default.createElement(reactstrap.CardBody, null, /*#__PURE__*/React__default.createElement("div", {
@@ -5133,11 +5258,22 @@ var LanguageTab = function LanguageTab() {
       setLang = _useState[1];
 
   var onClickBackHome = function onClickBackHome() {
-    dispatch(goBackHomePage$1());
+    dispatch(showConfirmAlert$1({
+      title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "common.home"
+      }),
+      isShow: true,
+      content: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "common.backHome.confirmMessage"
+      }),
+      onConfirm: function onConfirm() {
+        dispatch(goBackHomePage());
+      }
+    }));
   };
 
   var onClickSaveChange = function onClickSaveChange(context) {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "setting.language"
       }),
@@ -5361,7 +5497,18 @@ var Policies = function Policies() {
   var dispatch = reactRedux.useDispatch();
 
   var onClickBackHome = function onClickBackHome() {
-    dispatch(goBackHomePage$1());
+    dispatch(showConfirmAlert$1({
+      title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "common.home"
+      }),
+      isShow: true,
+      content: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "common.backHome.confirmMessage"
+      }),
+      onConfirm: function onConfirm() {
+        dispatch(goBackHomePage());
+      }
+    }));
   };
 
   return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Card, null, /*#__PURE__*/React__default.createElement(reactstrap.CardBody, null, /*#__PURE__*/React__default.createElement("div", {
@@ -5403,7 +5550,36 @@ var ContactTab = function ContactTab() {
   var dispatch = reactRedux.useDispatch();
 
   var onClickBackHome = function onClickBackHome() {
-    dispatch(goBackHomePage$1());
+    dispatch(showConfirmAlert$1({
+      title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "common.home"
+      }),
+      isShow: true,
+      content: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "common.backHome.confirmMessage"
+      }),
+      onConfirm: function onConfirm() {
+        dispatch(goBackHomePage());
+      }
+    }));
+  };
+
+  var onClickCall = function onClickCall() {
+    dispatch(showConfirmAlert$1({
+      title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "setting.call"
+      }),
+      isShow: true,
+      content: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "setting.call.confirmMessage",
+        values: {
+          phoneNumber: CONTACT_PHONE
+        }
+      }),
+      onConfirm: function onConfirm() {
+        window.open("tel:" + CONTACT_PHONE, '_blank');
+      }
+    }));
   };
 
   return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Row, {
@@ -5437,13 +5613,11 @@ var ContactTab = function ContactTab() {
     className: "w-300px mx-auto"
   }, /*#__PURE__*/React__default.createElement("div", {
     className: "box-content"
-  }, /*#__PURE__*/React__default.createElement("h5", null, "0979 87 85 82")), /*#__PURE__*/React__default.createElement("div", {
+  }, /*#__PURE__*/React__default.createElement("h5", null, CONTACT_PHONE)), /*#__PURE__*/React__default.createElement("div", {
     className: "card-btns d-flex justify-content-center mt-2"
   }, isMobile ? /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
     className: "gradient-light-primary text-white",
-    onClick: function onClick() {
-      return window.open('tel:0979878582', '_blank');
-    }
+    onClick: onClickCall
   }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "setting.call"
   })) : ''))))), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
@@ -5471,7 +5645,9 @@ var GeneralInfo = function GeneralInfo(props) {
     className: "general-info"
   }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
     sm: "12"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Card, null, /*#__PURE__*/React__default.createElement(reactstrap.CardHeader, null, /*#__PURE__*/React__default.createElement(reactstrap.CardTitle, null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Card, null, /*#__PURE__*/React__default.createElement(reactstrap.CardHeader, null, /*#__PURE__*/React__default.createElement(reactstrap.CardTitle, {
+    className: "text-uppercase"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: 'setting.generalInformation'
   }))), /*#__PURE__*/React__default.createElement(reactstrap.CardBody, {
     className: "pt-2"
@@ -6865,7 +7041,7 @@ var FallbackSpinner = /*#__PURE__*/function (_React$Component) {
 
 var SHOW_CONFIRM_ALERT$1 = 'SHOW_CONFIRM_ALERT';
 var HIDE_CONFIRM_ALERT$1 = 'HIDE_CONFIRM_ALERT';
-var showConfirmAlert$1 = function showConfirmAlert(configs) {
+var showConfirmAlert$2 = function showConfirmAlert(configs) {
   return function (dispatch) {
     return dispatch({
       type: SHOW_CONFIRM_ALERT$1,
@@ -6947,7 +7123,7 @@ exports.HttpClient = HttpClient;
 exports.Radio = Radio;
 exports.Select = Select;
 exports.hideConfirmAlert = hideConfirmAlert$1;
-exports.showConfirmAlert = showConfirmAlert$1;
+exports.showConfirmAlert = showConfirmAlert$2;
 exports.useBankList = useBankList;
 exports.useCityList = useCityList;
 exports.useDeviceDetect = useDeviceDetect;
