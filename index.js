@@ -147,7 +147,7 @@ var PHONE_REGEX = /(03|07|08|09|01[2|6|8|9])+([0-9]{8})\b/;
 var PERSONAL_ID_REGEX = /^(\d{9}|\d{12})$/;
 var CITIZEN_INDENTIFY_REGEX = /^(\d{12})$/;
 var PASSPORT_REGEX = /^(?!^0+$)[a-zA-Z0-9]{3,20}$/;
-var NAME_REGEX = /^([aàảãáạăằẳẵắặâầẩẫấậbcdđeèẻẽéẹêềểễếệfghiìỉĩíịjklmnoòỏõóọôồổỗốộơờởỡớợpqrstuùủũúụưừửữứựvwxyỳỷỹýỵz0-9A-Za-z_ ])+$/g;
+var NAME_REGEX = /^([ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ0-9A-Za-z_ ])+$/g;
 var AUTHORITIES = {
   VIEW: 'view',
   EDIT: 'edit',
@@ -524,7 +524,7 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
                   }
                 });
                 var appId = getState().customizer.appId;
-                history.push(redirectUrl || window.location.pathname.replace("/" + getContextPath(appId) + "/", '/') + window.location.search);
+                history.push(redirectUrl || window.location.pathname.replace("/" + getContextPath(appId) + "/", '/'));
                 setSessionTimeout();
               });
             } else {

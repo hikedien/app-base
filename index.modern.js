@@ -144,7 +144,7 @@ const PHONE_REGEX = /(03|07|08|09|01[2|6|8|9])+([0-9]{8})\b/;
 const PERSONAL_ID_REGEX = /^(\d{9}|\d{12})$/;
 const CITIZEN_INDENTIFY_REGEX = /^(\d{12})$/;
 const PASSPORT_REGEX = /^(?!^0+$)[a-zA-Z0-9]{3,20}$/;
-const NAME_REGEX = /^([aàảãáạăằẳẵắặâầẩẫấậbcdđeèẻẽéẹêềểễếệfghiìỉĩíịjklmnoòỏõóọôồổỗốộơờởỡớợpqrstuùủũúụưừửữứựvwxyỳỷỹýỵz0-9A-Za-z_ ])+$/g;
+const NAME_REGEX = /^([ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ0-9A-Za-z_ ])+$/g;
 const AUTHORITIES = {
   VIEW: 'view',
   EDIT: 'edit',
@@ -447,7 +447,7 @@ const checkLoginStatus = (authToken, redirectUrl) => {
         const {
           appId
         } = getState().customizer;
-        history.push(redirectUrl || window.location.pathname.replace(`/${getContextPath(appId)}/`, '/') + window.location.search);
+        history.push(redirectUrl || window.location.pathname.replace(`/${getContextPath(appId)}/`, '/'));
         setSessionTimeout();
       } else {
         dispatch({

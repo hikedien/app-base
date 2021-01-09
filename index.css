@@ -23617,7 +23617,8 @@ html[dir="rtl"] body .ps__rail-y {
   max-height: 120px !important; }
 
 .Select__placeholder {
-  color: #D4D5D6 !important; }
+  color: #D4D5D6 !important;
+  font-size: 0.85rem; }
 
 .loading {
   position: absolute;
