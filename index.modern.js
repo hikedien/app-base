@@ -3632,8 +3632,7 @@ const BaseFormGroup = ({
     name: fieldName
   }, ({
     field,
-    form,
-    setFieldTouched
+    form
   }) => /*#__PURE__*/React.createElement(Input, Object.assign({
     className: `form-control ${_isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'}`
   }, field, {
@@ -3781,6 +3780,7 @@ const BaseFormGroupSelect = ({
   disabled,
   onChange,
   loadOptions,
+  type,
   defaultOptions
 }) => {
   const intl = useIntl();
@@ -3794,6 +3794,7 @@ const BaseFormGroupSelect = ({
       id: messageId
     }),
     className: `${_isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'}`,
+    type: type,
     classNamePrefix: "Select",
     fieldName: fieldName,
     required: _isRequired,

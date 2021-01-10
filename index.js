@@ -4148,6 +4148,7 @@ var BaseFormGroupSelect = function BaseFormGroupSelect(_ref) {
       disabled = _ref.disabled,
       _onChange = _ref.onChange,
       loadOptions = _ref.loadOptions,
+      type = _ref.type,
       defaultOptions = _ref.defaultOptions;
   var intl = reactIntl.useIntl();
   return /*#__PURE__*/React__default.createElement(formik.Field, {
@@ -4160,6 +4161,7 @@ var BaseFormGroupSelect = function BaseFormGroupSelect(_ref) {
         id: messageId
       }),
       className: "" + (isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'),
+      type: type,
       classNamePrefix: "Select",
       fieldName: fieldName,
       required: isRequired,
