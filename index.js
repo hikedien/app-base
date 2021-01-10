@@ -4054,7 +4054,7 @@ var BaseFormDatePicker = function BaseFormDatePicker(_ref) {
 var BaseFormDatePicker$1 = reactIntl.injectIntl(BaseFormDatePicker);
 
 var Select = function Select(props) {
-  var _useState = React.useState(),
+  var _useState = React.useState(''),
       inputValue = _useState[0],
       setInputValue = _useState[1];
 
