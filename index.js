@@ -3968,6 +3968,7 @@ var BaseFormGroup = function BaseFormGroup(_ref) {
       isRequired = _ref$isRequired === void 0 ? true : _ref$isRequired;
 
   var onChangeValue = function onChangeValue(e, form) {
+    e.stopPropagation();
     var value = e.target.value;
     value = value.trim();
     form.setFieldValue(fieldName, value);
@@ -3983,8 +3984,9 @@ var BaseFormGroup = function BaseFormGroup(_ref) {
     }, function (_ref2) {
       var field = _ref2.field,
           form = _ref2.form;
-      return /*#__PURE__*/React__default.createElement(reactstrap.Input, {
-        className: "form-control " + (isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'),
+      return /*#__PURE__*/React__default.createElement(reactstrap.Input, _extends({
+        className: "form-control " + (isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid')
+      }, field, {
         type: type,
         disabled: disabled,
         value: field.value,
@@ -3992,7 +3994,7 @@ var BaseFormGroup = function BaseFormGroup(_ref) {
         onChange: function onChange(e) {
           return onChangeValue(e, form);
         }
-      });
+      }));
     }), isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) ? /*#__PURE__*/React__default.createElement("div", {
       className: "text-danger"
     }, getPropObject(errors, fieldName)) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));

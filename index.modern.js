@@ -3616,6 +3616,7 @@ const BaseFormGroup = ({
   isRequired: _isRequired = true
 }) => {
   const onChangeValue = (e, form) => {
+    e.stopPropagation();
     let {
       value
     } = e.target;
@@ -3631,15 +3632,17 @@ const BaseFormGroup = ({
     name: fieldName
   }, ({
     field,
-    form
-  }) => /*#__PURE__*/React.createElement(Input, {
-    className: `form-control ${_isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'}`,
+    form,
+    setFieldTouched
+  }) => /*#__PURE__*/React.createElement(Input, Object.assign({
+    className: `form-control ${_isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'}`
+  }, field, {
     type: type,
     disabled: disabled,
     value: field.value,
     placeholder: msg,
     onChange: e => onChangeValue(e, form)
-  })), _isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) ? /*#__PURE__*/React.createElement("div", {
+  }))), _isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
   }, getPropObject(errors, fieldName)) : null, /*#__PURE__*/React.createElement(Label, null, msg))));
 };
