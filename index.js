@@ -143,7 +143,7 @@ var MAX_TABLET_WIDTH = 1024;
 var REMEMBER_ME_TOKEN = 'rememberMe';
 var VN_COUNTRY_CODE = 192;
 var PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])((?=.*[0-9])|(?=.*[!@#$%^&*])).{8,}$/gm;
-var PHONE_REGEX = /(03|07|08|09|01[2|6|8|9])+([0-9]{8})\b/;
+var PHONE_REGEX = /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
 var PERSONAL_ID_REGEX = /^(\d{9}|\d{12})$/;
 var CITIZEN_INDENTIFY_REGEX = /^(\d{12})$/;
 var PASSPORT_REGEX = /^(?!^0+$)[a-zA-Z0-9]{3,20}$/;
@@ -156,6 +156,8 @@ var AUTHORITIES = {
 };
 var API_TIME_OUT = 70000;
 var MAX_FILE_SIZE = 5;
+var CONTACT_PHONE = '0899300800';
+var SESSION_TIMEOUT = 15;
 var LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
   FAIL: 'FAIL'
@@ -235,8 +237,6 @@ var getPropObject = function getPropObject(obj, prop) {
     return r ? r[e] : null;
   }, obj);
 };
-var CONTACT_PHONE = '0899300800';
-var SESSION_TIMEOUT = 15;
 var USER_ROLE = {
   ADMIN: 'AD.IO',
   KD: 'KD.IO',
@@ -309,6 +309,8 @@ var appConfigs = {
   AUTHORITIES: AUTHORITIES,
   API_TIME_OUT: API_TIME_OUT,
   MAX_FILE_SIZE: MAX_FILE_SIZE,
+  CONTACT_PHONE: CONTACT_PHONE,
+  SESSION_TIMEOUT: SESSION_TIMEOUT,
   LOGIN_STATUS: LOGIN_STATUS,
   USER_TYPE: USER_TYPE,
   GENDER_OPTIONS: GENDER_OPTIONS,
@@ -316,8 +318,6 @@ var appConfigs = {
   getExternalAppUrl: getExternalAppUrl,
   getContextPath: getContextPath,
   getPropObject: getPropObject,
-  CONTACT_PHONE: CONTACT_PHONE,
-  SESSION_TIMEOUT: SESSION_TIMEOUT,
   USER_ROLE: USER_ROLE,
   IMAGE: IMAGE
 };
@@ -3361,7 +3361,7 @@ var messages_en = {
 	"register.fullname": "Full name *",
 	"register.fullname.required": "You must enter your full name",
 	"register.fullname.invalid": "Your full name can not enter special charater",
-	"register.email": "Email",
+	"register.email": "Email*",
 	"register.email.required": "You must enter your email address",
 	"register.email.invalid": "You must enter your valid email address",
 	"register.phoneNumber": "Phone number *",
@@ -3376,9 +3376,9 @@ var messages_en = {
 	"register.useService": "use service",
 	forgotPassword: forgotPassword$1,
 	"forgotPassword.verify": "Verify",
-	"forgotPassword.username": "Username *",
+	"forgotPassword.username": "Username*",
 	"forgotPassword.username.required": "You must enter username",
-	"forgotPassword.email": "Email registration *",
+	"forgotPassword.email": "Email registration*",
 	"forgotPassword.email.required": "You must enter email registration",
 	"forgotPassword.successfull": "Your reset password link has sent to your email",
 	"forgotPassword.fail": "Your phone number or email is incorrect",
@@ -3415,7 +3415,7 @@ var messages_en = {
 	"menu.debt": "Debt",
 	"menu.createDebt": "Create Debt",
 	"menu.debtManagement": "Debt Management",
-	"menu.permissionGoup": "Permission Group*",
+	"menu.permissionGoup": "Permission Group",
 	"menu.creatPermissionGoup": "Create Permision Group",
 	"menu.permissionGoupManagement": "Permission Group Management",
 	"menu.insuranceMotobike": "Motobike Insurance",
@@ -3675,7 +3675,7 @@ var messages_vi = {
 	"login.sayHi": "Xin chào, {name}",
 	register: register$2,
 	"register.fullname": "Họ và tên *",
-	"register.email": "Email",
+	"register.email": "Email*",
 	"register.fullname.invalid": "Tên của bạn không thể chứa ký tự đặc biệt",
 	"register.fullname.required": "Bạn phải nhập họ và tên",
 	"register.email.required": "Bạn phải nhập địa chỉ email",
@@ -3731,7 +3731,7 @@ var messages_vi = {
 	"menu.debt": "Công nợ",
 	"menu.createDebt": "Tạo mới công nợ",
 	"menu.debtManagement": "Quản lý công nợ",
-	"menu.permissionGoup": "Nhóm quyền*",
+	"menu.permissionGoup": "Nhóm quyền",
 	"menu.creatPermissionGoup": "Tạo mới nhóm quyền",
 	"menu.permissionGoupManagement": "Quản lý nhóm quyền",
 	"menu.insuranceMotobike": "Bảo hiểm xe máy",
@@ -3937,7 +3937,7 @@ var messages_vi = {
 	"completeInformation.dateOfBirth": "Ngày sinh",
 	"completeInformation.dateOfBirth.required": "Bạn phải nhập ngày sinh",
 	"completeInformation.address": "Địa chỉ*",
-	"completeInformation.address.required": "Bạn phải nhập địa chỉ*",
+	"completeInformation.address.required": "Bạn phải nhập địa chỉ",
 	"completeInformation.gif": "Mã giới thiệu",
 	"completeInformation.branch": "Chi nhánh*",
 	"completeInformation.branch.required": "Bạn phải nhập chi nhánh",
@@ -3952,7 +3952,7 @@ var messages_vi = {
 	"completeInformation.ward": "Phường/Xã*",
 	"completeInformation.ward.required": "Bạn phải chọn Phường/Xã",
 	"completeInformation.bank": "Ngân hàng*",
-	"completeInformation.bank.required": "Bạn phải chọn Ngân hàng*",
+	"completeInformation.bank.required": "Bạn phải chọn Ngân hàng",
 	"completeInformation.back": "Quay lại",
 	"completeInformation.done": "Hoàn thành"
 };
@@ -3966,6 +3966,13 @@ var BaseFormGroup = function BaseFormGroup(_ref) {
       disabled = _ref.disabled,
       _ref$isRequired = _ref.isRequired,
       isRequired = _ref$isRequired === void 0 ? true : _ref$isRequired;
+
+  var onChangeValue = function onChangeValue(e, form) {
+    var value = e.target.value;
+    value = value.trim();
+    form.setFieldValue(fieldName, value);
+  };
+
   return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
     className: "form-label-group position-relative"
   }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -3974,9 +3981,18 @@ var BaseFormGroup = function BaseFormGroup(_ref) {
     return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.Field, {
       type: type,
       disabled: disabled,
-      name: fieldName,
-      className: "form-control " + (isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'),
-      placeholder: msg
+      name: fieldName
+    }, function (_ref2) {
+      var field = _ref2.field,
+          form = _ref2.form;
+      return /*#__PURE__*/React__default.createElement(reactstrap.Input, {
+        className: "form-control " + (isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'),
+        value: field.value,
+        placeholder: msg,
+        onChange: function onChange(e) {
+          return onChangeValue(e, form);
+        }
+      });
     }), isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) ? /*#__PURE__*/React__default.createElement("div", {
       className: "text-danger"
     }, getPropObject(errors, fieldName)) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
@@ -4078,7 +4094,7 @@ var Select = function Select(props) {
     setIsFocused(false);
   };
 
-  var SelectComponent = function SelectComponent(componentProps) {
+  var SelectComponent = React.useCallback(function (componentProps) {
     switch (props.type) {
       case 'creatable':
         return /*#__PURE__*/React__default.createElement(CreatableSelect, componentProps);
@@ -4089,8 +4105,7 @@ var Select = function Select(props) {
       default:
         return /*#__PURE__*/React__default.createElement(ReactSelect, componentProps);
     }
-  };
-
+  }, [props]);
   return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
     className: "form-label-group position-relative"
   }, /*#__PURE__*/React__default.createElement(SelectComponent, _extends({}, props, {
@@ -4111,11 +4126,11 @@ var Select = function Select(props) {
     className: "d-none",
     placeholder: props.placeholder,
     value: inputValue
-  }), /*#__PURE__*/React__default.createElement(reactstrap.Label, {
+  }), inputValue ? /*#__PURE__*/React__default.createElement(reactstrap.Label, {
     className: classnames({
       'text-primary': isFocused
     })
-  }, props.placeholder));
+  }, props.placeholder) : '');
 };
 
 var BaseFormGroupSelect = function BaseFormGroupSelect(_ref) {
@@ -4561,9 +4576,7 @@ var UserAccountTab = function UserAccountTab() {
   }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
     className: "mb-2"
   }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    className: "mr-2 my-25",
-    left: true,
-    href: "#"
+    className: "mr-2 my-25"
   }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
     className: "users-avatar-shadow rounded",
     object: true,
@@ -5968,15 +5981,12 @@ var Register = function Register() {
       errors: errors,
       touched: touched,
       messageId: "register.fullname"
-    }), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
-      className: "form-label-group position-relative"
-    }, /*#__PURE__*/React__default.createElement(formik.Field, {
-      name: "email",
-      className: "form-control " + (errors.email && touched.email && 'is-invalid'),
-      placeholder: "Email *"
-    }), errors.email && touched.email ? /*#__PURE__*/React__default.createElement("div", {
-      className: "text-danger"
-    }, errors.email) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, "Email *")), /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+    }), /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      fieldName: "email",
+      errors: errors,
+      touched: touched,
+      messageId: "register.email"
+    }), /*#__PURE__*/React__default.createElement(BaseFormGroup, {
       fieldName: "phoneNumber",
       errors: errors,
       touched: touched,
@@ -6424,9 +6434,6 @@ var LandingPage = function LandingPage(props) {
 };
 
 var CompleteInforValidate = Yup.object().shape({
-  icType: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "completeInformation.nbrPer.required"
-  })),
   icNumber: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "completeInformation.nbrPer.required"
   })).when('icType', {
@@ -6467,7 +6474,7 @@ var CompleteInforValidate = Yup.object().shape({
     id: "completeInformation.accountNbr.required"
   })),
   city: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "completeInformation.city.required"
+    id: "completeInformation.province.required"
   })),
   ward: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "completeInformation.ward.required"
@@ -6478,7 +6485,6 @@ var CompleteInforValidate = Yup.object().shape({
 });
 
 var CompleteInformation = function CompleteInformation() {
-  var intl = reactIntl.useIntl();
   var user = reactRedux.useSelector(function (state) {
     return state.auth.register.user;
   });
@@ -6507,7 +6513,7 @@ var CompleteInformation = function CompleteInformation() {
     className: "completeInfor"
   }, /*#__PURE__*/React__default.createElement(formik.Formik, {
     initialValues: {
-      icType: '',
+      icType: 'CMND',
       icNumber: '',
       dateOfBirth: '',
       gender: 'MALE',
