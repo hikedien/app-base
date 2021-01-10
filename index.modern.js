@@ -3628,14 +3628,14 @@ const BaseFormGroup = ({
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: messageId
   }, msg => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Field, {
-    type: type,
-    disabled: disabled,
     name: fieldName
   }, ({
     field,
     form
   }) => /*#__PURE__*/React.createElement(Input, {
     className: `form-control ${_isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'}`,
+    type: type,
+    disabled: disabled,
     value: field.value,
     placeholder: msg,
     onChange: e => onChangeValue(e, form)

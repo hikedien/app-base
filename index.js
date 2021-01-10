@@ -3979,14 +3979,14 @@ var BaseFormGroup = function BaseFormGroup(_ref) {
     id: messageId
   }, function (msg) {
     return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.Field, {
-      type: type,
-      disabled: disabled,
       name: fieldName
     }, function (_ref2) {
       var field = _ref2.field,
           form = _ref2.form;
       return /*#__PURE__*/React__default.createElement(reactstrap.Input, {
         className: "form-control " + (isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'),
+        type: type,
+        disabled: disabled,
         value: field.value,
         placeholder: msg,
         onChange: function onChange(e) {
