@@ -156,7 +156,7 @@ var AUTHORITIES = {
 };
 var API_TIME_OUT = 70000;
 var MAX_FILE_SIZE = 5;
-var CONTACT_PHONE = '0899300800';
+var CONTACT_PHONE = '0899.300.800';
 var SESSION_TIMEOUT = 15;
 var LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
@@ -5594,7 +5594,7 @@ var ContactTab = function ContactTab() {
         }
       }),
       onConfirm: function onConfirm() {
-        window.open("tel:" + CONTACT_PHONE, '_blank');
+        window.open("tel:0899300800", '_blank');
       }
     }));
   };

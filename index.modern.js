@@ -153,7 +153,7 @@ const AUTHORITIES = {
 };
 const API_TIME_OUT = 70000;
 const MAX_FILE_SIZE = 5;
-const CONTACT_PHONE = '0899300800';
+const CONTACT_PHONE = '0899.300.800';
 const SESSION_TIMEOUT = 15;
 const LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
@@ -5099,7 +5099,7 @@ const ContactTab = () => {
         }
       }),
       onConfirm: () => {
-        window.open(`tel:${CONTACT_PHONE}`, '_blank');
+        window.open(`tel:0899300800`, '_blank');
       }
     }));
   };
