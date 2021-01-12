@@ -143,11 +143,11 @@ var MAX_TABLET_WIDTH = 1024;
 var REMEMBER_ME_TOKEN = 'rememberMe';
 var VN_COUNTRY_CODE = 192;
 var PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])((?=.*[0-9])|(?=.*[!@#$%^&*])).{8,}$/gm;
-var PHONE_REGEX = /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
+var PHONE_REGEX = /\b(84|0[3|5|7|8|9])+([0-9]{8})\b/g;
 var PERSONAL_ID_REGEX = /^(\d{9}|\d{12})$/;
 var CITIZEN_INDENTIFY_REGEX = /^(\d{12})$/;
 var PASSPORT_REGEX = /^(?!^0+$)[a-zA-Z0-9]{3,20}$/;
-var NAME_REGEX = /^([ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ0-9A-Za-z_ ])+$/g;
+var NAME_REGEX = /^([ÀÁÂÃÈÉÊẾÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêếềìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹý0-9A-Za-z_ ])+$/g;
 var AUTHORITIES = {
   VIEW: 'view',
   EDIT: 'edit',
@@ -3351,6 +3351,7 @@ var messages_en = {
 	"login.logedWelcome": "Hi,",
 	"login.username": "Username *",
 	"login.username.required": "You must enter your username",
+	"login.username.invalid": "Username is invalid",
 	"login.password": "Password *",
 	"login.password.required": "You must enter your password",
 	"login.rememberMe": "Remember me",
@@ -3614,6 +3615,7 @@ var messages_en = {
 	"provideNewPassword.password": "Enter your new password *",
 	"provideNewPassword.enterThePassword": "Enter a new password *",
 	"completeInformation.idType": "Type of identification*",
+	"completeInformation.idType.required": "You must choose type of indentification",
 	"completeInformation.nbrPer": "Identification number*",
 	"completeInformation.nbrPer.required": "You must enter infor number",
 	"completeInformation.nbrPer.invalid": "You Indenetication number is invalid",
@@ -3667,6 +3669,7 @@ var messages_vi = {
 	"login.logedWelcome": "Xin chào,",
 	"login.username": "Tên tài khoản *",
 	"login.username.required": "Bạn phải nhập tên tài khoản",
+	"login.username.invalid": "Tên tài khoản không hợp lệ",
 	"login.password": "Mật khẩu *",
 	"login.password.required": "Bạn phải nhập mật khẩu",
 	"login.rememberMe": "Ghi nhớ tôi",
@@ -3931,6 +3934,7 @@ var messages_vi = {
 	"provideNewPassword.enterThePassword": "Nhập lại mật khẩu mới *",
 	"createPassword.enterThePassword.required": "Bạn phải nhập mật khẩu mới",
 	"completeInformation.idType": "Loại giấy tờ tùy thân *",
+	"completeInformation.idType.required": "Bạn phải chọn loại giấy tờ tùy thân",
 	"completeInformation.nbrPer": "Số giấy tờ tuỳ thân *",
 	"completeInformation.nbrPer.required": "Bạn phải nhập số giấy tờ tuỳ thân",
 	"completeInformation.nbrPer.invalid": "Số giấy tờ tùy thân không hợp lệ",
@@ -3967,8 +3971,8 @@ var BaseFormGroup = function BaseFormGroup(_ref) {
       _ref$isRequired = _ref.isRequired,
       isRequired = _ref$isRequired === void 0 ? true : _ref$isRequired;
 
-  var onChangeValue = function onChangeValue(e, form) {
-    e.stopPropagation();
+  var _onBlur = function onBlur(e, form) {
+    form.handleBlur(e);
     var value = e.target.value;
     value = value.trim();
     form.setFieldValue(fieldName, value);
@@ -3991,8 +3995,8 @@ var BaseFormGroup = function BaseFormGroup(_ref) {
         disabled: disabled,
         value: field.value,
         placeholder: msg,
-        onChange: function onChange(e) {
-          return onChangeValue(e, form);
+        onBlur: function onBlur(e) {
+          return _onBlur(e, form);
         }
       }));
     }), isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) ? /*#__PURE__*/React__default.createElement("div", {
@@ -6036,7 +6040,11 @@ var Register = function Register() {
 };
 
 var formSchema$3 = Yup.object().shape({
-  username: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+  username: Yup.string().matches(PHONE_REGEX, function () {
+    return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "login.username.invalid"
+    });
+  }).required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "forgotPassword.username.required"
   })),
   email: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -6439,7 +6447,7 @@ var LandingPage = function LandingPage(props) {
 
 var CompleteInforValidate = Yup.object().shape({
   icNumber: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "completeInformation.nbrPer.required"
+    id: "completeInformation.idType.required"
   })).when('icType', {
     is: 'CMND',
     then: Yup.string().matches(PERSONAL_ID_REGEX, function () {
@@ -6485,7 +6493,12 @@ var CompleteInforValidate = Yup.object().shape({
   })),
   district: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "completeInformation.district.required"
-  }))
+  })),
+  refCode: Yup.string().matches(PHONE_REGEX, function () {
+    return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "register.refCode.invalid"
+    });
+  })
 });
 
 var CompleteInformation = function CompleteInformation() {
@@ -7096,7 +7109,7 @@ var usePageAuthorities = function usePageAuthorities() {
       return item.authority;
     });
     setAuthorities(authList);
-  }, [userRoles]);
+  }, [userRoles, history.location.pathname]);
   return authorities;
 };
 
