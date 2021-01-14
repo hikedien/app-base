@@ -7101,6 +7101,9 @@ var usePageAuthorities = function usePageAuthorities() {
       return;
     }
 
+    roleList.sort(function (a, b) {
+      return a.id - b.id;
+    });
     var lastRole = roleList[roleList.length - 1];
     var userRoleList = userRoles.filter(function (item) {
       return item.roleId === lastRole.id;

@@ -6460,6 +6460,7 @@ const usePageAuthorities = () => {
       return;
     }
 
+    roleList.sort((a, b) => a.id - b.id);
     const lastRole = roleList[roleList.length - 1];
     const userRoleList = userRoles.filter(item => item.roleId === lastRole.id);
     const authList = userRoleList.map(item => item.authority);
