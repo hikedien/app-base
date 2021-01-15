@@ -2932,6 +2932,19 @@ const loadUserRoles = () => {
     }
   };
 };
+const goBackHomePage$1 = () => {
+  return async (dispatch, getState) => {
+    const {
+      appId
+    } = getState().customizer;
+
+    if (appId === AppId.APP_NO1) {
+      history.push('/');
+    } else {
+      window.location.href = getExternalAppUrl(AppId.APP_NO1, '/');
+    }
+  };
+};
 
 const Context = React.createContext();
 
@@ -6469,5 +6482,5 @@ const usePageAuthorities = () => {
   return authorities;
 };
 
-export { AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, HttpClient, Radio, Select, hideConfirmAlert$1 as hideConfirmAlert, showConfirmAlert$2 as showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
+export { AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, HttpClient, Radio, Select, goBackHomePage$1 as goBackHomePage, hideConfirmAlert$1 as hideConfirmAlert, showConfirmAlert$2 as showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
 //# sourceMappingURL=index.modern.js.map

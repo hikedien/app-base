@@ -3271,6 +3271,23 @@ var loadUserRoles = function loadUserRoles() {
     }
   };
 };
+var goBackHomePage$1 = function goBackHomePage() {
+  return function (dispatch, getState) {
+    try {
+      var appId = getState().customizer.appId;
+
+      if (appId === AppId.APP_NO1) {
+        history.push('/');
+      } else {
+        window.location.href = getExternalAppUrl(AppId.APP_NO1, '/');
+      }
+
+      return Promise.resolve();
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+};
 
 var Context = React__default.createContext();
 
@@ -7148,6 +7165,7 @@ exports.FallbackSpinner = FallbackSpinner;
 exports.HttpClient = HttpClient;
 exports.Radio = Radio;
 exports.Select = Select;
+exports.goBackHomePage = goBackHomePage$1;
 exports.hideConfirmAlert = hideConfirmAlert$1;
 exports.showConfirmAlert = showConfirmAlert$2;
 exports.useBankList = useBankList;
