@@ -4077,13 +4077,17 @@ var BaseFormDatePicker = function BaseFormDatePicker(_ref) {
 var BaseFormDatePicker$1 = reactIntl.injectIntl(BaseFormDatePicker);
 
 var Select = function Select(props) {
-  var _useState = React.useState(''),
+  var _useState = React.useState(props.defaultValue || ''),
       inputValue = _useState[0],
       setInputValue = _useState[1];
 
   var _useState2 = React.useState(false),
       isFocused = _useState2[0],
       setIsFocused = _useState2[1];
+
+  React.useEffect(function () {
+    setInputValue(props.value);
+  }, [props.value]);
 
   var onChange = function onChange(e, actions) {
     if (props.onChange) {
