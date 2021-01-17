@@ -177,7 +177,7 @@ var GENDER_OPTIONS = [{
     id: "common.gender.female"
   })
 }, {
-  value: 'OTHER',
+  value: 'OTHERS',
   label: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "common.gender.other"
   })
@@ -848,7 +848,7 @@ var SHOW_LOADING_BAR = 'SHOW_LOADING_BAR';
 var HIDE_LOADING_BAR = 'HIDE_LOADING_BAR';
 var SHOW_CONFIRM_ALERT = 'SHOW_CONFIRM_ALERT';
 var HIDE_CONFIRM_ALERT = 'HIDE_CONFIRM_ALERT';
-var showConfirmAlert$1 = function showConfirmAlert(configs) {
+var showConfirmAlert = function showConfirmAlert(configs) {
   return function (dispatch) {
     return dispatch({
       type: SHOW_CONFIRM_ALERT,
@@ -1699,7 +1699,7 @@ var UserDropdown = function UserDropdown() {
   };
 
   var onClickLogout = function onClickLogout() {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "navbar.logout"
       }),
@@ -4545,7 +4545,7 @@ var UserAccountTab = function UserAccountTab() {
 
   var onSubmit = function onSubmit(values) {
     try {
-      dispatch(showConfirmAlert$1({
+      dispatch(showConfirmAlert({
         title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
           id: "setting.accountInformation"
         }),
@@ -4564,7 +4564,7 @@ var UserAccountTab = function UserAccountTab() {
   };
 
   var onClickBackHome = function onClickBackHome() {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "common.home"
       }),
@@ -4835,7 +4835,7 @@ var ChangePassword = function ChangePassword() {
   var dispatch = reactRedux.useDispatch();
 
   var onClickSubmit = function onClickSubmit(values) {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "setting.changePassword"
       }),
@@ -4850,7 +4850,7 @@ var ChangePassword = function ChangePassword() {
   };
 
   var onClickBackHome = function onClickBackHome() {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "common.home"
       }),
@@ -5298,7 +5298,7 @@ var LanguageTab = function LanguageTab() {
       setLang = _useState[1];
 
   var onClickBackHome = function onClickBackHome() {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "common.home"
       }),
@@ -5313,7 +5313,7 @@ var LanguageTab = function LanguageTab() {
   };
 
   var onClickSaveChange = function onClickSaveChange(context) {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "setting.language"
       }),
@@ -5537,7 +5537,7 @@ var Policies = function Policies() {
   var dispatch = reactRedux.useDispatch();
 
   var onClickBackHome = function onClickBackHome() {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "common.home"
       }),
@@ -5590,7 +5590,7 @@ var ContactTab = function ContactTab() {
   var dispatch = reactRedux.useDispatch();
 
   var onClickBackHome = function onClickBackHome() {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "common.home"
       }),
@@ -5605,7 +5605,7 @@ var ContactTab = function ContactTab() {
   };
 
   var onClickCall = function onClickCall() {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "setting.call"
       }),
@@ -6466,7 +6466,7 @@ var LandingPage = function LandingPage(props) {
 
 var CompleteInforValidate = Yup.object().shape({
   icNumber: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "completeInformation.idType.required"
+    id: "completeInformation.nbrPer.required"
   })).when('icType', {
     is: 'CMND',
     then: Yup.string().matches(PERSONAL_ID_REGEX, function () {
@@ -7083,7 +7083,7 @@ var FallbackSpinner = /*#__PURE__*/function (_React$Component) {
 
 var SHOW_CONFIRM_ALERT$1 = 'SHOW_CONFIRM_ALERT';
 var HIDE_CONFIRM_ALERT$1 = 'HIDE_CONFIRM_ALERT';
-var showConfirmAlert$2 = function showConfirmAlert(configs) {
+var showConfirmAlert$1 = function showConfirmAlert(configs) {
   return function (dispatch) {
     return dispatch({
       type: SHOW_CONFIRM_ALERT$1,
@@ -7131,7 +7131,7 @@ var usePageAuthorities = function usePageAuthorities() {
       return item.authority;
     });
     setAuthorities(authList);
-  }, [userRoles, history.location.pathname]);
+  }, [userRoles, roles, history.location.pathname]);
   return authorities;
 };
 
@@ -7169,7 +7169,7 @@ exports.Radio = Radio;
 exports.Select = Select;
 exports.goBackHomePage = goBackHomePage$1;
 exports.hideConfirmAlert = hideConfirmAlert$1;
-exports.showConfirmAlert = showConfirmAlert$2;
+exports.showConfirmAlert = showConfirmAlert$1;
 exports.useBankList = useBankList;
 exports.useCityList = useCityList;
 exports.useDeviceDetect = useDeviceDetect;

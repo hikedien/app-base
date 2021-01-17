@@ -174,7 +174,7 @@ const GENDER_OPTIONS = [{
     id: "common.gender.female"
   })
 }, {
-  value: 'OTHER',
+  value: 'OTHERS',
   label: /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "common.gender.other"
   })
@@ -694,7 +694,7 @@ const SHOW_LOADING_BAR = 'SHOW_LOADING_BAR';
 const HIDE_LOADING_BAR = 'HIDE_LOADING_BAR';
 const SHOW_CONFIRM_ALERT = 'SHOW_CONFIRM_ALERT';
 const HIDE_CONFIRM_ALERT = 'HIDE_CONFIRM_ALERT';
-const showConfirmAlert$1 = configs => {
+const showConfirmAlert = configs => {
   return dispatch => dispatch({
     type: SHOW_CONFIRM_ALERT,
     payload: configs
@@ -1494,7 +1494,7 @@ const UserDropdown = () => {
   };
 
   const onClickLogout = () => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "navbar.logout"
       }),
@@ -4116,7 +4116,7 @@ const UserAccountTab = () => {
   };
 
   const onSubmit = async values => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.accountInformation"
       }),
@@ -4131,7 +4131,7 @@ const UserAccountTab = () => {
   };
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -4385,7 +4385,7 @@ const ChangePassword = () => {
   const dispatch = useDispatch();
 
   const onClickSubmit = values => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.changePassword"
       }),
@@ -4400,7 +4400,7 @@ const ChangePassword = () => {
   };
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -4812,7 +4812,7 @@ const LanguageTab = () => {
   const [lang, setLang] = useState(localStorage.getItem('language'));
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -4827,7 +4827,7 @@ const LanguageTab = () => {
   };
 
   const onClickSaveChange = context => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.language"
       }),
@@ -5041,7 +5041,7 @@ const Policies = () => {
   const dispatch = useDispatch();
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -5091,7 +5091,7 @@ const ContactTab = () => {
   const dispatch = useDispatch();
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -5106,7 +5106,7 @@ const ContactTab = () => {
   };
 
   const onClickCall = () => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.call"
       }),
@@ -5879,7 +5879,7 @@ const LandingPage = props => {
 
 const CompleteInforValidate = object().shape({
   icNumber: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "completeInformation.idType.required"
+    id: "completeInformation.nbrPer.required"
   })).when('icType', {
     is: 'CMND',
     then: string().matches(PERSONAL_ID_REGEX, () => /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -6449,7 +6449,7 @@ class FallbackSpinner extends React.Component {
 
 const SHOW_CONFIRM_ALERT$1 = 'SHOW_CONFIRM_ALERT';
 const HIDE_CONFIRM_ALERT$1 = 'HIDE_CONFIRM_ALERT';
-const showConfirmAlert$2 = configs => {
+const showConfirmAlert$1 = configs => {
   return dispatch => dispatch({
     type: SHOW_CONFIRM_ALERT$1,
     payload: configs
@@ -6480,9 +6480,9 @@ const usePageAuthorities = () => {
     const userRoleList = userRoles.filter(item => item.roleId === lastRole.id);
     const authList = userRoleList.map(item => item.authority);
     setAuthorities(authList);
-  }, [userRoles, history.location.pathname]);
+  }, [userRoles, roles, history.location.pathname]);
   return authorities;
 };
 
-export { AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, HttpClient, Radio, Select, goBackHomePage$1 as goBackHomePage, hideConfirmAlert$1 as hideConfirmAlert, showConfirmAlert$2 as showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
+export { AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, HttpClient, Radio, Select, goBackHomePage$1 as goBackHomePage, hideConfirmAlert$1 as hideConfirmAlert, showConfirmAlert$1 as showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
 //# sourceMappingURL=index.modern.js.map
