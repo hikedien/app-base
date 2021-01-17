@@ -3004,6 +3004,7 @@ var messages_en = {
 	"common.home": "Home",
 	"common.backHome.confirmMessage": "Do you want to go back to home page?",
 	"common.saveChanges": "Save Changes",
+	"common.saveChanges.confirmMessage": "Do you want to save the changes?",
 	"common.cancel": "Cancel",
 	"common.ok": "Ok",
 	"common.noResults": "No results",
@@ -3322,6 +3323,7 @@ var messages_vi = {
 	"common.home": "Trang chủ",
 	"common.backHome.confirmMessage": "Bạn có muốn quay lại trang chủ không?",
 	"common.saveChanges": "Lưu thay đổi",
+	"common.saveChanges.confirmMessage": "Bạn có muốn lưu thay đổi?",
 	"common.cancel": "Hủy",
 	"common.ok": "Đồng ý",
 	"common.noResults": "Không có kết quả",
@@ -3716,9 +3718,6 @@ var BaseFormDatePicker$1 = injectIntl(BaseFormDatePicker);
 const Select = props => {
   const [inputValue, setInputValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
-  useEffect(() => {
-    setInputValue(props.value);
-  }, [props.value]);
 
   const onChange = (e, actions) => {
     if (props.onChange) {
