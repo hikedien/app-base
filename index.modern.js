@@ -3716,7 +3716,7 @@ const BaseFormDatePicker = ({
 var BaseFormDatePicker$1 = injectIntl(BaseFormDatePicker);
 
 const Select = props => {
-  const [inputValue, setInputValue] = useState(props.defaultValue || '');
+  const [inputValue, setInputValue] = useState();
   const [isFocused, setIsFocused] = useState(false);
   useEffect(() => {
     setInputValue(props.value);
@@ -3732,6 +3732,8 @@ const Select = props => {
     } else {
       setInputValue(e ? e.value : '');
     }
+
+    setIsFocused(false);
   };
 
   const onFocus = e => {
@@ -3761,7 +3763,7 @@ const Select = props => {
       default:
         return /*#__PURE__*/React.createElement(ReactSelect, componentProps);
     }
-  }, [props, inputValue]);
+  }, [props]);
   return /*#__PURE__*/React.createElement(FormGroup, {
     className: "form-label-group position-relative"
   }, /*#__PURE__*/React.createElement(SelectComponent, Object.assign({}, props, {
