@@ -4085,6 +4085,10 @@ var Select = function Select(props) {
       isFocused = _useState2[0],
       setIsFocused = _useState2[1];
 
+  React.useEffect(function () {
+    setInputValue(props.value);
+  }, [props.value]);
+
   var onChange = function onChange(e, actions) {
     if (props.onChange) {
       props.onChange(e, actions);
