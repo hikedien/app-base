@@ -3718,9 +3718,6 @@ var BaseFormDatePicker$1 = injectIntl(BaseFormDatePicker);
 const Select = props => {
   const [inputValue, setInputValue] = useState();
   const [isFocused, setIsFocused] = useState(false);
-  useEffect(() => {
-    setInputValue(props.value);
-  }, [props.value]);
 
   const onChange = (e, actions) => {
     if (props.onChange) {
