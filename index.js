@@ -36,6 +36,8 @@ var Ripples = _interopDefault(require('react-ripples'));
 require('react-perfect-scrollbar/dist/css/styles.css');
 require('react-toastify/dist/ReactToastify.css');
 require('prismjs/themes/prism-tomorrow.css');
+var Table = _interopDefault(require('react-table'));
+require('react-table/react-table.css');
 
 var generateUUID = function generateUUID() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -7083,6 +7085,17 @@ var FallbackSpinner = /*#__PURE__*/function (_React$Component) {
   return FallbackSpinner;
 }(React__default.Component);
 
+var ReactTable = function ReactTable(props) {
+  return /*#__PURE__*/React__default.createElement(Table, _extends({
+    previousText: "Previous",
+    nextText: "Next",
+    noDataText: "No rows found",
+    pageText: "Page",
+    ofText: "of",
+    rowsText: "rows"
+  }, props));
+};
+
 var SHOW_CONFIRM_ALERT$1 = 'SHOW_CONFIRM_ALERT';
 var HIDE_CONFIRM_ALERT$1 = 'HIDE_CONFIRM_ALERT';
 var showConfirmAlert$1 = function showConfirmAlert(configs) {
@@ -7168,6 +7181,7 @@ exports.DatePicker = DatePicker;
 exports.FallbackSpinner = FallbackSpinner;
 exports.HttpClient = HttpClient;
 exports.Radio = Radio;
+exports.ReactTable = ReactTable;
 exports.Select = Select;
 exports.goBackHomePage = goBackHomePage$1;
 exports.hideConfirmAlert = hideConfirmAlert$1;

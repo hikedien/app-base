@@ -37,6 +37,8 @@ import Ripples from 'react-ripples';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import 'react-toastify/dist/ReactToastify.css';
 import 'prismjs/themes/prism-tomorrow.css';
+import Table from 'react-table';
+import 'react-table/react-table.css';
 
 const generateUUID = () => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -6449,6 +6451,17 @@ class FallbackSpinner extends React.Component {
 
 }
 
+const ReactTable = props => {
+  return /*#__PURE__*/React.createElement(Table, Object.assign({
+    previousText: "Previous",
+    nextText: "Next",
+    noDataText: "No rows found",
+    pageText: "Page",
+    ofText: "of",
+    rowsText: "rows"
+  }, props));
+};
+
 const SHOW_CONFIRM_ALERT$1 = 'SHOW_CONFIRM_ALERT';
 const HIDE_CONFIRM_ALERT$1 = 'HIDE_CONFIRM_ALERT';
 const showConfirmAlert$1 = configs => {
@@ -6486,5 +6499,5 @@ const usePageAuthorities = () => {
   return authorities;
 };
 
-export { AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, HttpClient, Radio, Select, goBackHomePage$1 as goBackHomePage, hideConfirmAlert$1 as hideConfirmAlert, showConfirmAlert$1 as showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
+export { AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, HttpClient, Radio, ReactTable, Select, goBackHomePage$1 as goBackHomePage, hideConfirmAlert$1 as hideConfirmAlert, showConfirmAlert$1 as showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
 //# sourceMappingURL=index.modern.js.map
