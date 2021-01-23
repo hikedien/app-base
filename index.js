@@ -37,7 +37,6 @@ require('react-perfect-scrollbar/dist/css/styles.css');
 require('react-toastify/dist/ReactToastify.css');
 require('prismjs/themes/prism-tomorrow.css');
 var Table = _interopDefault(require('react-table'));
-require('react-table/react-table.css');
 
 var generateUUID = function generateUUID() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {

@@ -38,7 +38,6 @@ import 'react-perfect-scrollbar/dist/css/styles.css';
 import 'react-toastify/dist/ReactToastify.css';
 import 'prismjs/themes/prism-tomorrow.css';
 import Table from 'react-table';
-import 'react-table/react-table.css';
 
 const generateUUID = () => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
