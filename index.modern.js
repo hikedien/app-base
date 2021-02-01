@@ -3089,7 +3089,7 @@ var messages_en = {
 	"menu.insuranceCar": "Car Insurance",
 	"menu.approveOpenAccount": "Account Approval",
 	"menu.promotion": "Promotion",
-	"navbar.language.vi": "Vietnamese",
+	"navbar.language.vi": "Tiếng việt",
 	"navbar.language.en": "English",
 	"navbar.logout": "Logout",
 	"navbar.logout.confirmMessage": "Do you want to logout?",
@@ -3204,9 +3204,9 @@ var messages_en = {
 	"generalInfo.policy.10.3": "10.3  Và nếu bạn thay đổi ý định và/hoặc bạn muốn từ chối nhận tiếp thị trực tiếp phi điện tử, thì bạn cứ cho chúng tôi biết. Chỉ cần sử dụng một trong các tùy chọn trong mục Liên hệ với chúng tôi.",
 	"generalInfo.policy.11": "11. LIÊN HỆ VỚI CHÚNG TÔI",
 	"generalInfo.policy.11.1": "11.1  Nếu bạn muốn thực hiện các quyền của mình trong Phần “Quyền kiểm soát dữ liệu cá nhân của bạn” hoặc nếu bạn yêu cầu bất kỳ thông tin nào theo thông báo này, bạn có thể liên hệ với chúng tôi theo nhiều cách khác nhau.",
-	"generalInfo.policy.11.1.1": "11.1.1  Gọi cho đường dây nóng của chúng tôi: <b>0582.33.55.88</b>",
+	"generalInfo.policy.11.1.1": "11.1.1  Gọi cho đường dây nóng của chúng tôi: <b>0899.300.800</b>",
 	"generalInfo.policy.11.1.2": "11.1.2  Gửi thư điện tử cho chúng tôi theo địa chỉ: <b>lienhe@inon.vn</b>",
-	"generalInfo.policy.11.1.3": "11.1.3  Hoặc liên hệ trực tiếp với chúng tôi tại văn phòng: <b>Tầng 6 – P611, Tòa nhà MD Complex, số 68 Nguyễn Cơ Thạch, Phường Cầu Diễn, Quận Nam Từ Liêm, Thành Phố Hà Nội.</b>",
+	"generalInfo.policy.11.1.3": "11.1.3  Hoặc liên hệ trực tiếp với chúng tôi tại văn phòng: <b>Phòng 301A, Tòa nhà Thiên Bảo, số 47-49 Lê Văn Hưu, Phường Ngô Thì Nhậm, Quận Hai Bà Trưng, Thành phố Hà Nội.</b>",
 	"generalInfo.terms.1": "1. CÁC ĐIỀU KHOẢN VÀ ĐIỀU KIỆN SỬ DỤNG",
 	"generalInfo.terms.1.1": "1.1  Trang thông tin điện tử này <b>(www.inon.vn) do Công Ty TNHH NPG NAM PHONG - Đơn vị chủ quản của Hệ thống và Thương hiệu InOn (sau đây gọi tắt là “InOn”)</b> hoàn toàn sở hữu và điều hành.",
 	"generalInfo.terms.1.2": "1.2  Việc sử dụng trang thông tin điện tử này phụ thuộc vào các điều khoản và điều kiện cụ thể sau: (A) các điều khoản và điều kiện được nêu dưới đây và (B) mọi điều khoản và điều kiện bổ sung cụ thể tùy từng thời điểm để điều chỉnh việc sử dụng, và truy cập vào một số mục của trang thông tin điện tử này (và các điều khoản bổ sung đó sẽ có hiệu lực ràng buộc khi chúng được đăng tải trên trang thông tin điện tử này) <b>(\"Điều Khoản và Điều Kiện\")</b>.",
@@ -3395,7 +3395,7 @@ var messages_vi = {
 	"menu.allBonus": "Điểm thưởng tất cả",
 	"menu.bonusApproval": "Phê duyệt điểm thưởng",
 	"menu.bonusClient": "Điểm thưởng KH cá nhân",
-	"menu.insuranceCertificate": "Giấy chứng nhân BH",
+	"menu.insuranceCertificate": "Giấy chứng nhận BH",
 	"menu.insuranceCertificate.newImport": "Nhập mới",
 	"menu.insuranceCertificate.newExport": "Xuất mới",
 	"menu.insuranceCertificate.wrongImport": "Nhập sai hỏng",
@@ -3411,7 +3411,7 @@ var messages_vi = {
 	"menu.approveOpenAccount": "Phê duyệt mở tài khoản",
 	"menu.promotion": "Khuyến mại",
 	"navbar.language.vi": "Tiếng Việt",
-	"navbar.language.en": "Tiếng Anh",
+	"navbar.language.en": "English",
 	"navbar.logout": "Đăng xuất",
 	"navbar.logout.confirmMessage": "Bạn có muốn đăng xuất tài khoản?",
 	"footer.copyRight": "©2020 InOn - Đã đăng ký bản quyền",
@@ -3525,9 +3525,9 @@ var messages_vi = {
 	"generalInfo.policy.10.3": "10.3  Và nếu bạn thay đổi ý định và/hoặc bạn muốn từ chối nhận tiếp thị trực tiếp phi điện tử, thì bạn cứ cho chúng tôi biết. Chỉ cần sử dụng một trong các tùy chọn trong mục Liên hệ với chúng tôi.",
 	"generalInfo.policy.11": "11. LIÊN HỆ VỚI CHÚNG TÔI",
 	"generalInfo.policy.11.1": "11.1  Nếu bạn muốn thực hiện các quyền của mình trong Phần “Quyền kiểm soát dữ liệu cá nhân của bạn” hoặc nếu bạn yêu cầu bất kỳ thông tin nào theo thông báo này, bạn có thể liên hệ với chúng tôi theo nhiều cách khác nhau.",
-	"generalInfo.policy.11.1.1": "11.1.1  Gọi cho đường dây nóng của chúng tôi: <b>0582.33.55.88</b>",
+	"generalInfo.policy.11.1.1": "11.1.1  Gọi cho đường dây nóng của chúng tôi: <b>0899.300.800</b>",
 	"generalInfo.policy.11.1.2": "11.1.2  Gửi thư điện tử cho chúng tôi theo địa chỉ: <b>lienhe@inon.vn</b>",
-	"generalInfo.policy.11.1.3": "11.1.3  Hoặc liên hệ trực tiếp với chúng tôi tại văn phòng: <b>Tầng 6 – P611, Tòa nhà MD Complex, số 68 Nguyễn Cơ Thạch, Phường Cầu Diễn, Quận Nam Từ Liêm, Thành Phố Hà Nội.</b>",
+	"generalInfo.policy.11.1.3": "11.1.3  Hoặc liên hệ trực tiếp với chúng tôi tại văn phòng: <b>Phòng 301A, Tòa nhà Thiên Bảo, số 47-49 Lê Văn Hưu, Phường Ngô Thì Nhậm, Quận Hai Bà Trưng, Thành phố Hà Nội.</b>",
 	"generalInfo.terms.1": "1. CÁC ĐIỀU KHOẢN VÀ ĐIỀU KIỆN SỬ DỤNG",
 	"generalInfo.terms.1.1": "1.1  Trang thông tin điện tử này <b>(www.inon.vn) do Công Ty TNHH NPG NAM PHONG - Đơn vị chủ quản của Hệ thống và Thương hiệu InOn (sau đây gọi tắt là “InOn”)</b> hoàn toàn sở hữu và điều hành.",
 	"generalInfo.terms.1.2": "1.2  Việc sử dụng trang thông tin điện tử này phụ thuộc vào các điều khoản và điều kiện cụ thể sau: (A) các điều khoản và điều kiện được nêu dưới đây và (B) mọi điều khoản và điều kiện bổ sung cụ thể tùy từng thời điểm để điều chỉnh việc sử dụng, và truy cập vào một số mục của trang thông tin điện tử này (và các điều khoản bổ sung đó sẽ có hiệu lực ràng buộc khi chúng được đăng tải trên trang thông tin điện tử này) <b>(\"Điều Khoản và Điều Kiện\")</b>.",
@@ -3721,7 +3721,7 @@ const BaseFormDatePicker = ({
 var BaseFormDatePicker$1 = injectIntl(BaseFormDatePicker);
 
 const Select = props => {
-  const [inputValue, setInputValue] = useState();
+  const [inputValue, setInputValue] = useState(props.value);
   const [isFocused, setIsFocused] = useState(false);
   useEffect(() => {
     setInputValue(props.value);
@@ -4235,7 +4235,6 @@ const UserAccountTab = () => {
   }, /*#__PURE__*/React.createElement(BaseFormGroupSelect, {
     messageId: "completeInformation.idType",
     fieldName: "icType",
-    disabled: true,
     options: IC_TYPES_OPTIONS,
     errors: errors,
     touched: touched
