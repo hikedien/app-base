@@ -552,7 +552,9 @@ const compeleteInfo = user => {
       const response = await AuthService.compeleteInfo(user);
 
       if (response.status === 200 && response.data) {
-        toastSuccess('Hoàn tất đăng ký thành công');
+        toastSuccess( /*#__PURE__*/React.createElement(FormattedMessage, {
+          id: "completeInformation.success"
+        }));
         history.push('/');
       }
     } catch (error) {
@@ -3305,7 +3307,8 @@ var messages_en = {
 	"completeInformation.bank": "Bank*",
 	"completeInformation.bank.required": "Bạn phải chọn Ngân hàng*",
 	"completeInformation.back": "BACK",
-	"completeInformation.done": "DONE"
+	"completeInformation.done": "DONE",
+	"completeInformation.success": "Complete information successfully!"
 };
 
 var login$1 = "Đăng nhập";
@@ -3627,7 +3630,8 @@ var messages_vi = {
 	"completeInformation.bank": "Ngân hàng*",
 	"completeInformation.bank.required": "Bạn phải chọn Ngân hàng",
 	"completeInformation.back": "Quay lại",
-	"completeInformation.done": "Hoàn thành"
+	"completeInformation.done": "Hoàn thành",
+	"completeInformation.success": "Hoàn tất đăng ký thành công!"
 };
 
 const BaseFormGroup = ({
