@@ -144,7 +144,7 @@ var MAX_TABLET_WIDTH = 1024;
 var REMEMBER_ME_TOKEN = 'rememberMe';
 var VN_COUNTRY_CODE = 192;
 var PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])((?=.*[0-9])|(?=.*[!@#$%^&*])).{8,}$/gm;
-var PHONE_REGEX = /\b(84|0[3|5|7|8|9])+([0-9]{8})\b/g;
+var PHONE_REGEX = /^\b(84|0[3|5|7|8|9])+([0-9]{8})\b$/g;
 var PERSONAL_ID_REGEX = /^(\d{9}|\d{12})$/;
 var CITIZEN_INDENTIFY_REGEX = /^(\d{12})$/;
 var PASSPORT_REGEX = /^(?!^0+$)[a-zA-Z0-9]{3,20}$/;
@@ -1977,7 +1977,7 @@ var NavbarUser = /*#__PURE__*/function (_React$PureComponent) {
     }, /*#__PURE__*/React__default.createElement("div", {
       className: "user-nav d-sm-flex d-none"
     }, /*#__PURE__*/React__default.createElement("span", {
-      className: "user-name text-bold-600"
+      className: "user-name text-bold-600 mb-0"
     }, user.fullName)), /*#__PURE__*/React__default.createElement("span", {
       "data-tour": "user"
     }, /*#__PURE__*/React__default.createElement("img", {
@@ -6123,27 +6123,20 @@ var ForgotPassword = function ForgotPassword() {
         touched = _ref.touched,
         values = _ref.values;
     return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement("h4", {
-      className: "text-center text-white"
+      className: "text-center text-white mb-2"
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "forgotPassword"
-    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
-      className: "form-label-group position-relative mt-3"
-    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "forgotPassword.username"
-    }, function (msg) {
-      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.Field, {
-        name: "username",
-        className: "form-control " + (errors.username && touched.username && 'is-invalid'),
-        placeholder: msg
-      }), errors.username && touched.username ? /*#__PURE__*/React__default.createElement("div", {
-        className: "text-danger"
-      }, errors.username) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
-    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+    })), /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      messageId: "forgotPassword.username",
+      fieldName: "username",
+      errors: errors,
+      touched: touched
+    }), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
       className: "form-label-group position-relative"
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "forgotPassword.email"
     }, function (msg) {
-      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.FastField, {
+      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.Field, {
         name: "email"
       }, function (_ref2) {
         var field = _ref2.field,
@@ -6153,7 +6146,7 @@ var ForgotPassword = function ForgotPassword() {
           placeholder: msg
         }, field, {
           onChange: function onChange(e) {
-            return form.setFieldValue('email', e.target.value);
+            return form.setFieldValue('email', e.target.value ? e.target.value.trim() : '');
           }
         }));
       }), errors.email && touched.email ? /*#__PURE__*/React__default.createElement("div", {

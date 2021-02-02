@@ -141,7 +141,7 @@ const MAX_TABLET_WIDTH = 1024;
 const REMEMBER_ME_TOKEN = 'rememberMe';
 const VN_COUNTRY_CODE = 192;
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])((?=.*[0-9])|(?=.*[!@#$%^&*])).{8,}$/gm;
-const PHONE_REGEX = /\b(84|0[3|5|7|8|9])+([0-9]{8})\b/g;
+const PHONE_REGEX = /^\b(84|0[3|5|7|8|9])+([0-9]{8})\b$/g;
 const PERSONAL_ID_REGEX = /^(\d{9}|\d{12})$/;
 const CITIZEN_INDENTIFY_REGEX = /^(\d{12})$/;
 const PASSPORT_REGEX = /^(?!^0+$)[a-zA-Z0-9]{3,20}$/;
@@ -1739,7 +1739,7 @@ class NavbarUser extends React.PureComponent {
     }, /*#__PURE__*/React.createElement("div", {
       className: "user-nav d-sm-flex d-none"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "user-name text-bold-600"
+      className: "user-name text-bold-600 mb-0"
     }, user.fullName)), /*#__PURE__*/React.createElement("span", {
       "data-tour": "user"
     }, /*#__PURE__*/React.createElement("img", {
@@ -5558,24 +5558,19 @@ const ForgotPassword = () => {
     touched,
     values
   }) => /*#__PURE__*/React.createElement(Form, null, /*#__PURE__*/React.createElement("h4", {
-    className: "text-center text-white"
+    className: "text-center text-white mb-2"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "forgotPassword"
-  })), /*#__PURE__*/React.createElement(FormGroup, {
-    className: "form-label-group position-relative mt-3"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "forgotPassword.username"
-  }, msg => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Field, {
-    name: "username",
-    className: `form-control ${errors.username && touched.username && 'is-invalid'}`,
-    placeholder: msg
-  }), errors.username && touched.username ? /*#__PURE__*/React.createElement("div", {
-    className: "text-danger"
-  }, errors.username) : null, /*#__PURE__*/React.createElement(Label, null, msg)))), /*#__PURE__*/React.createElement(FormGroup, {
+  })), /*#__PURE__*/React.createElement(BaseFormGroup, {
+    messageId: "forgotPassword.username",
+    fieldName: "username",
+    errors: errors,
+    touched: touched
+  }), /*#__PURE__*/React.createElement(FormGroup, {
     className: "form-label-group position-relative"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "forgotPassword.email"
-  }, msg => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(FastField, {
+  }, msg => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Field, {
     name: "email"
   }, ({
     field,
@@ -5584,7 +5579,7 @@ const ForgotPassword = () => {
     className: `${errors.email && touched.email && 'is-invalid not-show-icon'}`,
     placeholder: msg
   }, field, {
-    onChange: e => form.setFieldValue('email', e.target.value)
+    onChange: e => form.setFieldValue('email', e.target.value ? e.target.value.trim() : '')
   }))), errors.email && touched.email ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
   }, errors.email) : null, values.username ? /*#__PURE__*/React.createElement("div", {
