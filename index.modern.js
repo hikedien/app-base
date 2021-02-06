@@ -781,7 +781,9 @@ const setUpHttpClient = (store, apiBaseUrl) => {
 
       case 400:
       case 500:
-        toastError(e.response.data.message);
+        toastError( /*#__PURE__*/React.createElement(FormattedMessage, {
+          id: "commom.error.500"
+        }));
     }
 
     return e.response;
@@ -3012,6 +3014,7 @@ var messages_en = {
 	"common.ok": "Ok",
 	"common.noResults": "No results",
 	"common.sesionExpired": "Your session has expired, please relogin!",
+	"commom.error.500": "An error occurred, please try again!",
 	login: login,
 	"login.firstWelcome": "Welcome to InOn X!",
 	"login.logedWelcome": "Hi,",
@@ -3073,6 +3076,7 @@ var messages_en = {
 	"menu.personalBonus": "Personal Bonus",
 	"menu.partnerBonus": "Partner Bonus",
 	"menu.lxPartnerBonus": "LX Partner Bonus",
+	"menu.customerBonus": "Customer Bonus Point",
 	"menu.allBonus": "All Bonus",
 	"menu.bonusApproval": "Bonus Approval",
 	"menu.bonusClient": "Client Bonus",
@@ -3334,6 +3338,7 @@ var messages_vi = {
 	"common.ok": "Đồng ý",
 	"common.noResults": "Không có kết quả",
 	"common.sesionExpired": "Phiên làm việc của bạn đã hết hạn, bạn vui lòng đăng nhập lại!",
+	"commom.error.500": "Có lỗi xảy ra, xin vui lòng thử lại!",
 	login: login$1,
 	"login.firstWelcome": "Chào mừng bạn đến với InOn X!",
 	"login.logedWelcome": "Xin chào,",
@@ -3392,6 +3397,7 @@ var messages_vi = {
 	"menu.allFee": "Phí của tất cả",
 	"menu.bonusManagement": "Quản lý điểm thưởng",
 	"menu.systemBonus": "Điểm thưởng hệ thống",
+	"menu.customerBonus": "Điểm thưởng KH cá nhân",
 	"menu.personalBonus": "Điểm thưởng cá nhân",
 	"menu.partnerBonus": "Điểm thưởng đối tác",
 	"menu.lxPartnerBonus": "Điểm thưởng vãng lai",
