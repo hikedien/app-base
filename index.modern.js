@@ -408,11 +408,7 @@ AuthService.updateAvatar = async (user, file) => {
     type: 'application/json'
   }));
   formData.append('file', file);
-  const res = await HttpClient.post(API_UPLOAD_FILE, formData, {
-    headers: {
-      'Content-Type': undefined
-    }
-  });
+  const res = await HttpClient.post(API_UPLOAD_FILE, formData);
 
   if (res.status === 200) {
     return HttpClient.defaults.baseURL + API_GET_FILE + '?fileCode=' + res.data.code;
@@ -779,7 +775,6 @@ const setUpHttpClient = (store, apiBaseUrl) => {
           type: 'LOGOUT_ACTION'
         });
 
-      case 400:
       case 500:
         toastError( /*#__PURE__*/React.createElement(FormattedMessage, {
           id: "commom.error.500"

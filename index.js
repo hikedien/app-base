@@ -487,11 +487,7 @@ AuthService.updateAvatar = function (user, file) {
       type: 'application/json'
     }));
     formData.append('file', file);
-    return Promise.resolve(HttpClient.post(API_UPLOAD_FILE, formData, {
-      headers: {
-        'Content-Type': undefined
-      }
-    })).then(function (res) {
+    return Promise.resolve(HttpClient.post(API_UPLOAD_FILE, formData)).then(function (res) {
       return res.status === 200 ? HttpClient.defaults.baseURL + API_GET_FILE + '?fileCode=' + res.data.code : '';
     });
   } catch (e) {
@@ -945,7 +941,6 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
           type: 'LOGOUT_ACTION'
         });
 
-      case 400:
       case 500:
         toastError( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
           id: "commom.error.500"
