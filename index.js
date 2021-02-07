@@ -113,7 +113,8 @@ var AppId = {
   APP_NO1: 'APP_NO1',
   INSURANCE_APP: 'INSURANCE_APP',
   SUPPLEMENT_APP: 'SUPPLEMENT_APP',
-  ELITE_APP: 'ELITE_APP'
+  ELITE_APP: 'ELITE_APP',
+  DIVAY_APP: 'DIVAY_APP'
 };
 
 var API_BASE_URL = 'https://apisit.inon.vn';
@@ -3420,7 +3421,9 @@ var messages_en = {
 	"menu.personalFee": "Personal Fee",
 	"menu.lxPartnerFee": "LX Partner Fee",
 	"menu.partnerFee": "Partner Fee",
+	"menu.customerFee": "Customer Fee",
 	"menu.allFee": "All Fee",
+	"menu.feeApproval": "Fee Approval",
 	"menu.bonusManagement": "Bonus Mangement",
 	"menu.systemBonus": "System Bonus",
 	"menu.personalBonus": "Personal Bonus",
@@ -3744,7 +3747,9 @@ var messages_vi = {
 	"menu.personalFee": "Phí của cá nhân",
 	"menu.lxPartnerFee": "Phí của vãng lai",
 	"menu.partnerFee": "Phí của đối tác",
+	"menu.customerFee": "Phí của KH cá nhân",
 	"menu.allFee": "Phí của tất cả",
+	"menu.feeApproval": "Phê duyệt phí",
 	"menu.bonusManagement": "Quản lý điểm thưởng",
 	"menu.systemBonus": "Điểm thưởng hệ thống",
 	"menu.customerBonus": "Điểm thưởng KH cá nhân",
