@@ -120,7 +120,8 @@ var AppId = {
 
 var API_BASE_URL = 'https://apisit.inon.vn';
 var DIVAY_URL = ' https://admin-divay-test.azurewebsites.net';
-var API_LOGIN_URL = '/api/divay-authenticate';
+var API_LOGIN_URL = '/api/authenticate';
+var API_DIVAY_LOGIN_URL = '/api/divay-authenticate';
 var API_LOGOUT_URL = '/api/authenticate';
 var API_CHANGE_PASSWORD = '/api/change-password';
 var API_REGISTER = '/nth/onboarding/api/authenticate/register';
@@ -259,8 +260,8 @@ var USER_ROLE = {
 };
 var IMAGE = {
   LOGO: 'https://sit2.inon.vn/resources/images/divay-logo-v.svg',
-  LOGO_NO_TEXT: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/logo-no-text.svg?alt=media&token=e2383562-e9d0-4b31-80fa-58a3fc47b1bd',
-  LOGO_TEXT: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/logo-text.svg?alt=media&token=52459968-57b8-4b21-9af2-febdd7a7650d',
+  LOGO_NO_TEXT: 'https://sit2.inon.vn/resources/images/divay-logo-no-text.svg',
+  LOGO_TEXT: 'https://sit2.inon.vn/resources/images/divay-logo-text.svg',
   NAV_ICON_1: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-1.png?alt=media&token=0ccdb6bc-09da-43a3-b18f-56d2598e542b',
   NAV_ICON_2: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-2.png?alt=media&token=def3402b-65f0-458b-b4f8-e9c6d8d3bb09',
   NAV_ICON_3: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-3.png?alt=media&token=1ce1a25c-b095-4f80-8987-3ae9b977e3a8',
@@ -280,6 +281,7 @@ var appConfigs = {
   API_BASE_URL: API_BASE_URL,
   DIVAY_URL: DIVAY_URL,
   API_LOGIN_URL: API_LOGIN_URL,
+  API_DIVAY_LOGIN_URL: API_DIVAY_LOGIN_URL,
   API_LOGOUT_URL: API_LOGOUT_URL,
   API_CHANGE_PASSWORD: API_CHANGE_PASSWORD,
   API_REGISTER: API_REGISTER,
@@ -412,7 +414,7 @@ var setBaseHistory = function setBaseHistory(appHistory) {
 var AuthService = function AuthService() {};
 
 AuthService.login = function (user) {
-  return HttpClient.post(API_LOGIN_URL, user);
+  return HttpClient.post(API_DIVAY_LOGIN_URL, user);
 };
 
 AuthService.getUserInfo = function (username, authToken) {
@@ -2309,7 +2311,11 @@ var SidebarHeader = function SidebarHeader(props) {
     onClick: onClickHome
   }, /*#__PURE__*/React__default.createElement("img", {
     className: "img-fluid logo-img",
-    src: "https://divay.vn/images/logo2.png",
+    src: IMAGE.LOGO_NO_TEXT,
+    alt: "logo"
+  }), /*#__PURE__*/React__default.createElement("img", {
+    className: "img-fluid logo-text",
+    src: IMAGE.LOGO_TEXT,
     alt: "logo"
   })), /*#__PURE__*/React__default.createElement("li", {
     className: "nav-item nav-toggle"
@@ -4152,7 +4158,7 @@ var Select = function Select(props) {
     theme: function theme(_theme) {
       return _extends({}, _theme, {
         colors: _extends({}, _theme.colors, {
-          primary: '#338955'
+          primary: '#AC368A'
         })
       });
     }
