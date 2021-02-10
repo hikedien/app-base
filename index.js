@@ -14,6 +14,7 @@ var Icon = require('react-feather');
 var reactToastify = require('react-toastify');
 var reactIntl = require('react-intl');
 var history$1 = require('history');
+var jwt_decode = _interopDefault(require('jwt-decode'));
 var sessionStorage = _interopDefault(require('redux-persist/es/storage/session'));
 var reactRouterDom = require('react-router-dom');
 var classnames = _interopDefault(require('classnames'));
@@ -118,7 +119,8 @@ var AppId = {
 };
 
 var API_BASE_URL = 'https://apisit.inon.vn';
-var API_LOGIN_URL = '/api/authenticate';
+var DIVAY_URL = ' https://admin-divay-test.azurewebsites.net';
+var API_LOGIN_URL = '/api/divay-authenticate';
 var API_LOGOUT_URL = '/api/authenticate';
 var API_CHANGE_PASSWORD = '/api/change-password';
 var API_REGISTER = '/nth/onboarding/api/authenticate/register';
@@ -256,7 +258,7 @@ var USER_ROLE = {
   HTDT: 'HT.DT'
 };
 var IMAGE = {
-  LOGO: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Logo.svg?alt=media&token=e2aad749-912d-45c3-969b-060528c6c7ef',
+  LOGO: 'https://sit2.inon.vn/resources/images/divay-logo-v.svg',
   LOGO_NO_TEXT: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/logo-no-text.svg?alt=media&token=e2383562-e9d0-4b31-80fa-58a3fc47b1bd',
   LOGO_TEXT: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/logo-text.svg?alt=media&token=52459968-57b8-4b21-9af2-febdd7a7650d',
   NAV_ICON_1: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-1.png?alt=media&token=0ccdb6bc-09da-43a3-b18f-56d2598e542b',
@@ -276,6 +278,7 @@ var IMAGE = {
 var appConfigs = {
   __proto__: null,
   API_BASE_URL: API_BASE_URL,
+  DIVAY_URL: DIVAY_URL,
   API_LOGIN_URL: API_LOGIN_URL,
   API_LOGOUT_URL: API_LOGOUT_URL,
   API_CHANGE_PASSWORD: API_CHANGE_PASSWORD,
@@ -546,24 +549,19 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
     }
   };
 };
-var loginAction = function loginAction(user) {
+var loginAction = function loginAction(userId, hmac) {
   return function (dispatch, getState) {
     try {
-      user.rememberMe = user.isRemeberMe;
-      return Promise.resolve(AuthService.login(user)).then(function (response) {
+      return Promise.resolve(AuthService.login({
+        userId: userId,
+        hmac: hmac
+      })).then(function (response) {
         var _temp4 = function () {
           if (response.status === API_R_200) {
             var authToken = response.data.id_token;
+            var user = jwt_decode(authToken);
             return Promise.resolve(AuthService.getUserInfo(user.username, authToken)).then(function (_AuthService$getUserI2) {
               response = _AuthService$getUserI2;
-
-              if (user.isRemeberMe) {
-                localStorage.setItem(REMEMBER_ME_TOKEN, JSON.stringify({
-                  username: user.username,
-                  name: response.data.fullName
-                }));
-              }
-
               var userSettings = response.data.userSettings;
 
               if (userSettings) {
@@ -586,10 +584,6 @@ var loginAction = function loginAction(user) {
 
               setSessionTimeout();
             });
-          } else {
-            dispatch({
-              type: LOGOUT_ACTION
-            });
           }
         }();
 
@@ -604,10 +598,13 @@ var setSessionTimeout = function setSessionTimeout() {
   return function (dispatch) {
     clearTimeout(sessionTimeOut);
     sessionTimeOut = setTimeout(function () {
-      toastError( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-        id: "common.sesionExpired"
-      }));
       dispatch(logoutAction());
+      dispatch({
+        type: LOGIN_FAIL_ACTION,
+        errorMessage: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+          id: "common.sesionExpired"
+        })
+      });
     }, SESSION_TIMEOUT * 60 * 1000);
   };
 };
@@ -926,6 +923,7 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
     });
     return response;
   }, function (e) {
+    var token = store.getState().auth.authToken;
     store.dispatch({
       type: HIDE_LOADING_BAR,
       payload: ''
@@ -936,15 +934,25 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
     }
 
     switch (e.response.status) {
+      case 400:
       case 403:
-        toastError(e.response.data.message);
-        store.dispatch({
-          type: 'LOGOUT_ACTION'
-        });
+        if (token) {
+          toastError(e.response.data.message);
+          store.dispatch({
+            type: 'LOGOUT_ACTION'
+          });
+        } else {
+          store.dispatch({
+            type: LOGIN_FAIL_ACTION,
+            payload: e.response.data.message
+          });
+        }
+
+        break;
 
       case 500:
         toastError( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-          id: "commom.error.500"
+          id: "common.error.500"
         }));
     }
 
@@ -1027,7 +1035,8 @@ var authInitialState = {
     user: {},
     token: ''
   },
-  resetPasswordToken: ''
+  resetPasswordToken: '',
+  errorMessage: ''
 };
 var authReducers = function authReducers(state, action) {
   if (state === void 0) {
@@ -1038,7 +1047,8 @@ var authReducers = function authReducers(state, action) {
     case LOGIN_ACTION:
       {
         return _extends({}, state, action.payload, {
-          loginStatus: LOGIN_STATUS.SUCCESS
+          loginStatus: LOGIN_STATUS.SUCCESS,
+          errorMessage: ''
         });
       }
 
@@ -1050,7 +1060,8 @@ var authReducers = function authReducers(state, action) {
     case LOGIN_FAIL_ACTION:
       {
         return _extends({}, state, {
-          loginStatus: LOGIN_STATUS.FAIL
+          loginStatus: LOGIN_STATUS.FAIL,
+          errorMessage: action.payload
         });
       }
 
@@ -2037,16 +2048,7 @@ var ThemeNavbar = function ThemeNavbar(props) {
     onClick: props.sidebarVisibility
   }, /*#__PURE__*/React__default.createElement(Icon.Menu, {
     className: "ficon"
-  })))), /*#__PURE__*/React__default.createElement("ul", {
-    className: "nav navbar-nav d-none d-xl-flex bookmark-icons"
-  }, Array(5).fill(0).map(function (_, index) {
-    return /*#__PURE__*/React__default.createElement(reactstrap.NavItem, {
-      key: index
-    }, /*#__PURE__*/React__default.createElement("img", {
-      className: "img-fluid",
-      src: IMAGE["NAV_ICON_" + (index + 1)]
-    }));
-  })))), /*#__PURE__*/React__default.createElement(NavbarUser$1, {
+  })))))), /*#__PURE__*/React__default.createElement(NavbarUser$1, {
     handleAppOverlay: props.handleAppOverlay,
     changeCurrentLang: props.changeCurrentLang,
     appId: props.appId,
@@ -2132,11 +2134,7 @@ var Footer = function Footer(props) {
     className: "d-flex justify-content-between"
   }, /*#__PURE__*/React__default.createElement("div", {
     className: "float-md-left d-block d-md-inline-block mt-25"
-  }, /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "footer.copyRight"
-  })), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "footer.companySlogan"
-  }))), /*#__PURE__*/React__default.createElement("div", {
+  }), /*#__PURE__*/React__default.createElement("div", {
     className: "float-md-right d-none d-md-block"
   }, /*#__PURE__*/React__default.createElement("a", {
     className: "mr-1",
@@ -2311,11 +2309,7 @@ var SidebarHeader = function SidebarHeader(props) {
     onClick: onClickHome
   }, /*#__PURE__*/React__default.createElement("img", {
     className: "img-fluid logo-img",
-    src: IMAGE.LOGO_NO_TEXT,
-    alt: "logo"
-  }), /*#__PURE__*/React__default.createElement("img", {
-    className: "img-fluid logo-text",
-    src: IMAGE.LOGO_TEXT,
+    src: "https://divay.vn/images/logo2.png",
     alt: "logo"
   })), /*#__PURE__*/React__default.createElement("li", {
     className: "nav-item nav-toggle"
@@ -3363,9 +3357,10 @@ var messages_en = {
 	"common.saveChanges.confirmMessage": "Do you want to save the changes?",
 	"common.cancel": "Cancel",
 	"common.ok": "Ok",
+	"common.back": "Back",
 	"common.noResults": "No results",
 	"common.sesionExpired": "Your session has expired, please relogin!",
-	"commom.error.500": "An error occurred, please try again!",
+	"common.error.500": "An error occurred, please try again!",
 	login: login,
 	"login.firstWelcome": "Welcome to InOn X!",
 	"login.logedWelcome": "Hi,",
@@ -3376,6 +3371,7 @@ var messages_en = {
 	"login.password.required": "You must enter your password",
 	"login.rememberMe": "Remember me",
 	"login.notMe": "Not me",
+	"login.loggingIn": "Logging In...",
 	"login.fail": "Username or password was incorrect",
 	"login.sayHi": "Hi, {name}",
 	register: register$1,
@@ -3421,9 +3417,7 @@ var messages_en = {
 	"menu.personalFee": "Personal Fee",
 	"menu.lxPartnerFee": "LX Partner Fee",
 	"menu.partnerFee": "Partner Fee",
-	"menu.customerFee": "Customer Fee",
 	"menu.allFee": "All Fee",
-	"menu.feeApproval": "Fee Approval",
 	"menu.bonusManagement": "Bonus Mangement",
 	"menu.systemBonus": "System Bonus",
 	"menu.personalBonus": "Personal Bonus",
@@ -3688,10 +3682,11 @@ var messages_vi = {
 	"common.saveChanges": "Lưu thay đổi",
 	"common.saveChanges.confirmMessage": "Bạn có muốn lưu thay đổi?",
 	"common.cancel": "Hủy",
+	"common.back": "Quay lại",
 	"common.ok": "Đồng ý",
 	"common.noResults": "Không có kết quả",
 	"common.sesionExpired": "Phiên làm việc của bạn đã hết hạn, bạn vui lòng đăng nhập lại!",
-	"commom.error.500": "Có lỗi xảy ra, xin vui lòng thử lại!",
+	"common.error.500": "Có lỗi xảy ra, xin vui lòng thử lại!",
 	login: login$1,
 	"login.firstWelcome": "Chào mừng bạn đến với InOn X!",
 	"login.logedWelcome": "Xin chào,",
@@ -3702,6 +3697,7 @@ var messages_vi = {
 	"login.password.required": "Bạn phải nhập mật khẩu",
 	"login.rememberMe": "Ghi nhớ tôi",
 	"login.notMe": "Không phải tôi",
+	"login.loggingIn": "Đang đăng nhập...",
 	"login.fail": "Tài khoản hoặc mật khẩu của bạn không chính xác",
 	"login.sayHi": "Xin chào, {name}",
 	register: register$2,
@@ -3747,9 +3743,7 @@ var messages_vi = {
 	"menu.personalFee": "Phí của cá nhân",
 	"menu.lxPartnerFee": "Phí của vãng lai",
 	"menu.partnerFee": "Phí của đối tác",
-	"menu.customerFee": "Phí của KH cá nhân",
 	"menu.allFee": "Phí của tất cả",
-	"menu.feeApproval": "Phê duyệt phí",
 	"menu.bonusManagement": "Quản lý điểm thưởng",
 	"menu.systemBonus": "Điểm thưởng hệ thống",
 	"menu.customerBonus": "Điểm thưởng KH cá nhân",
@@ -6825,6 +6819,55 @@ var ConfirmAlert = function ConfirmAlert() {
   }, otherConfigs), content);
 };
 
+var AutoLogin = function AutoLogin() {
+  var dispatch = reactRedux.useDispatch();
+
+  var _useSelector = reactRedux.useSelector(function (state) {
+    return state.auth;
+  }),
+      loginStatus = _useSelector.loginStatus,
+      errorMessage = _useSelector.errorMessage;
+
+  React.useEffect(function () {
+    var queryParams = new URLSearchParams(window.location.search);
+    var userId = queryParams.get('userId');
+    var hmac = queryParams.get('hmac');
+    dispatch(loginAction(userId, hmac));
+  }, []);
+  return /*#__PURE__*/React__default.createElement("div", {
+    className: "fallback-spinner auto-login"
+  }, /*#__PURE__*/React__default.createElement("img", {
+    className: "fallback-logo",
+    src: IMAGE.LOGO,
+    alt: "logo"
+  }), loginStatus === '' ? /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("div", {
+    className: "loading"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "effect-1 effects"
+  }), /*#__PURE__*/React__default.createElement("div", {
+    className: "effect-2 effects"
+  }), /*#__PURE__*/React__default.createElement("div", {
+    className: "effect-3 effects"
+  })), /*#__PURE__*/React__default.createElement("div", {
+    className: "login-waiting"
+  }, /*#__PURE__*/React__default.createElement("h3", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "login.loggingIn"
+  })))) : loginStatus === LOGIN_STATUS.FAIL ? /*#__PURE__*/React__default.createElement("div", {
+    className: "w-100"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "error-message"
+  }, /*#__PURE__*/React__default.createElement("h3", null, errorMessage), /*#__PURE__*/React__default.createElement("div", {
+    className: "mt-2"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+    color: "primary",
+    onClick: function onClick() {
+      return window.location.href = DIVAY_URL;
+    }
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "common.back"
+  }))))) : '');
+};
+
 var AppRouter = function AppRouter(props) {
   var checkLoginStatus = props.checkLoginStatus,
       appId = props.appId,
@@ -6890,8 +6933,6 @@ var AppRouter = function AppRouter(props) {
     component: GeneralInfo
   }];
   var landingPageRoutes = [{
-    path: 'login'
-  }, {
     path: 'register'
   }, {
     path: 'forgot-password'
@@ -6930,7 +6971,10 @@ var AppRouter = function AppRouter(props) {
         render: function render() {
           return children;
         }
-      }))) : /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, landingPageRoutes.map(function (item) {
+      }))) : /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
+        path: "/login",
+        component: AutoLogin
+      }), landingPageRoutes.map(function (item) {
         return /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
           key: item.path,
           path: "/" + item.path,
