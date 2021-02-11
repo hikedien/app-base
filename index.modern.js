@@ -112,7 +112,9 @@ const AppId = {
   INSURANCE_APP: 'INSURANCE_APP',
   SUPPLEMENT_APP: 'SUPPLEMENT_APP',
   ELITE_APP: 'ELITE_APP',
-  DIVAY_APP: 'DIVAY_APP'
+  DIVAY_APP: 'DIVAY_APP',
+  DIVAY_INSURANCE_APP: 'DIVAY_INSURANCE_APP',
+  DIVAY_SUPPLEMENT_APP: 'DIVAY_SUPPLEMENT_APP'
 };
 
 const API_BASE_URL = 'https://apisit.inon.vn';
@@ -203,12 +205,15 @@ const IC_TYPES_OPTIONS = [{
 const getExternalAppUrl = (appId, url) => {
   switch (appId) {
     case AppId.APP_NO1:
+    case AppId.DIVAY_APP:
       return `${window.location.origin}/${url}?redirectUrl=${url}`;
 
     case AppId.INSURANCE_APP:
+    case AppId.DIVAY_INSURANCE_APP:
       return `${window.location.origin}/insurance${url}?redirectUrl=${url}`;
 
     case AppId.SUPPLEMENT_APP:
+    case AppId.DIVAY_SUPPLEMENT_APP:
       return `${window.location.origin}/supplement${url}?redirectUrl=${url}`;
 
     case AppId.ELITE_APP:
@@ -464,17 +469,21 @@ const checkLoginStatus = (authToken, redirectUrl) => {
     }
   };
 };
-const loginAction = (userId, hmac) => {
+const loginAction = (userId, hmac, insId) => {
   return async (dispatch, getState) => {
-    let response = await AuthService.login({
+    const user = {
       userId,
-      hmac
-    });
+      hmac,
+      insId
+    };
+    let response = await AuthService.login(user);
 
     if (response.status === API_R_200) {
       const authToken = response.data.id_token;
-      const user = jwt_decode(authToken);
-      response = await AuthService.getUserInfo(user.username, authToken);
+
+      const _user = jwt_decode(authToken);
+
+      response = await AuthService.getUserInfo(_user.username, authToken);
       const {
         userSettings
       } = response.data;
@@ -487,15 +496,21 @@ const loginAction = (userId, hmac) => {
         type: LOGIN_ACTION,
         payload: {
           authToken,
-          user: response.data || []
+          user: response.data || [],
+          divayUserInfo: _user
         }
       });
 
-      if (getState().customizer.appId !== AppId.APP_NO1) {
-        window.location.href = getExternalAppUrl(AppId.APP_NO1, '/');
+      if (getState().customizer.appId !== AppId.DIVAY_INSURANCE_APP) {
+        window.location.href = getExternalAppUrl(AppId.DIVAY_INSURANCE_APP, '/');
       } else {
-        history.push('/');
+        history.push('/buy-insurance');
       }
+    } else {
+      dispatch({
+        type: LOGIN_FAIL_ACTION,
+        payload: ''
+      });
     }
   };
 };
@@ -869,7 +884,8 @@ const authInitialState = {
     token: ''
   },
   resetPasswordToken: '',
-  errorMessage: ''
+  errorMessage: '',
+  divayUserInfo: {}
 };
 const authReducers = (state = { ...authInitialState
 }, action) => {
@@ -1021,10 +1037,10 @@ const goBackHomePage = () => {
       appId
     } = getState().customizer;
 
-    if (appId === AppId.APP_NO1) {
-      history.push('/');
+    if (appId === AppId.DIVAY_INSURANCE_APP) {
+      history.push('/buy-insurance');
     } else {
-      window.location.href = getExternalAppUrl(AppId.APP_NO1, '/');
+      window.location.href = getExternalAppUrl(AppId.DIVAY_INSURANCE_APP, '/buy-insurance');
     }
   };
 };
@@ -2941,10 +2957,10 @@ const goBackHomePage$1 = () => {
       appId
     } = getState().customizer;
 
-    if (appId === AppId.APP_NO1) {
-      history.push('/');
+    if (appId === AppId.DIVAY_INSURANCE_APP) {
+      history.push('/buy-insurance');
     } else {
-      window.location.href = getExternalAppUrl(AppId.APP_NO1, '/');
+      window.location.href = getExternalAppUrl(AppId.DIVAY_INSURANCE_APP, '/buy-insurance');
     }
   };
 };
@@ -6233,7 +6249,8 @@ const AutoLogin = () => {
     const queryParams = new URLSearchParams(window.location.search);
     const userId = queryParams.get('userId');
     const hmac = queryParams.get('hmac');
-    dispatch(loginAction(userId, hmac));
+    const insId = queryParams.get('insId');
+    dispatch(loginAction(userId, hmac, insId));
   }, []);
   return /*#__PURE__*/React.createElement("div", {
     className: "fallback-spinner auto-login"
