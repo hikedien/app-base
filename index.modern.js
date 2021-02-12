@@ -509,7 +509,9 @@ const loginAction = (userId, hmac, insId) => {
     } else {
       dispatch({
         type: LOGIN_FAIL_ACTION,
-        payload: ''
+        payload: /*#__PURE__*/React.createElement(FormattedMessage, {
+          id: "login.loginFail"
+        })
       });
     }
   };
@@ -3043,6 +3045,7 @@ var messages_en = {
 	"login.loggingIn": "Logging In...",
 	"login.fail": "Username or password was incorrect",
 	"login.sayHi": "Hi, {name}",
+	"login.loginFail": "Login unsuccessful",
 	register: register$1,
 	"register.fullname": "Full name *",
 	"register.fullname.required": "You must enter your full name",
@@ -3369,6 +3372,7 @@ var messages_vi = {
 	"login.loggingIn": "Đang đăng nhập...",
 	"login.fail": "Tài khoản hoặc mật khẩu của bạn không chính xác",
 	"login.sayHi": "Xin chào, {name}",
+	"login.loginFail": "Đăng nhập không thành công!",
 	register: register$2,
 	"register.fullname": "Họ và tên *",
 	"register.email": "Email*",
@@ -6383,7 +6387,7 @@ const AppRouter = props => {
       path: "/",
       render: () => children
     }))) : /*#__PURE__*/React.createElement(Switch, null, /*#__PURE__*/React.createElement(Route, {
-      path: "/login",
+      path: "/yeu-cau",
       component: AutoLogin
     }), landingPageRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
       key: item.path,
@@ -6402,7 +6406,7 @@ const AppRouter = props => {
       render: () => children
     }) : /*#__PURE__*/React.createElement(Redirect, {
       from: "/",
-      to: "/login"
+      to: "/yeu-cau"
     }), /*#__PURE__*/React.createElement(Redirect, {
       from: "/",
       to: "/"
