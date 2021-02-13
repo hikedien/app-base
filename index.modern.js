@@ -14,7 +14,6 @@ export { toast } from 'react-toastify';
 import { FormattedMessage, injectIntl, IntlProvider, useIntl } from 'react-intl';
 export { FormattedMessage } from 'react-intl';
 import { createBrowserHistory } from 'history';
-import jwt_decode from 'jwt-decode';
 import sessionStorage from 'redux-persist/es/storage/session';
 import { useHistory, Link, Router, Switch, Route, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
@@ -223,12 +222,15 @@ const getExternalAppUrl = (appId, url) => {
 const getContextPath = appId => {
   switch (appId) {
     case AppId.APP_NO1:
+    case AppId.DIVAY_APP:
       return '';
 
     case AppId.INSURANCE_APP:
+    case AppId.DIVAY_INSURANCE_APP:
       return 'insurance';
 
     case AppId.SUPPLEMENT_APP:
+    case AppId.DIVAY_SUPPLEMENT_APP:
       return 'supplement';
 
     case AppId.ELITE_APP:
@@ -428,6 +430,8 @@ AuthService.updateAvatar = async (user, file) => {
   return '';
 };
 
+function e(e){this.message=e;}e.prototype=new Error,e.prototype.name="InvalidCharacterError";var r="undefined"!=typeof window&&window.atob&&window.atob.bind(window)||function(r){var t=String(r).replace(/=+$/,"");if(t.length%4==1)throw new e("'atob' failed: The string to be decoded is not correctly encoded.");for(var n,o,a=0,i=0,c="";o=t.charAt(i++);~o&&(n=a%4?64*n+o:o,a++%4)?c+=String.fromCharCode(255&n>>(-2*a&6)):0)o="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=".indexOf(o);return c};function t(e){var t=e.replace(/-/g,"+").replace(/_/g,"/");switch(t.length%4){case 0:break;case 2:t+="==";break;case 3:t+="=";break;default:throw "Illegal base64url string!"}try{return function(e){return decodeURIComponent(r(e).replace(/(.)/g,(function(e,r){var t=r.charCodeAt(0).toString(16).toUpperCase();return t.length<2&&(t="0"+t),"%"+t})))}(t)}catch(e){return r(t)}}function n(e){this.message=e;}function o(e,r){if("string"!=typeof e)throw new n("Invalid token specified");var o=!0===(r=r||{}).header?0:1;try{return JSON.parse(t(e.split(".")[o]))}catch(e){throw new n("Invalid token specified: "+e.message)}}n.prototype=new Error,n.prototype.name="InvalidTokenError";//# sourceMappingURL=jwt-decode.esm.js.map
+
 const LOGIN_ACTION = 'LOGIN_ACTION';
 const LOGIN_FAIL_ACTION = 'LOGIN_FAIL_ACTION';
 const LOGOUT_ACTION = 'LOGOUT_ACTION';
@@ -481,7 +485,7 @@ const loginAction = (userId, hmac, insId) => {
     if (response.status === API_R_200) {
       const authToken = response.data.id_token;
 
-      const _user = jwt_decode(authToken);
+      const _user = o(authToken);
 
       response = await AuthService.getUserInfo(_user.username, authToken);
       const {
