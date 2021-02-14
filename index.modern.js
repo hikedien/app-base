@@ -905,6 +905,7 @@ const authReducers = (state = { ...authInitialState
 
     case LOGOUT_ACTION:
       {
+        window.location.href = DIVAY_URL;
         return { ...authInitialState
         };
       }
@@ -6284,7 +6285,7 @@ const AutoLogin = () => {
     className: "mt-2"
   }, /*#__PURE__*/React.createElement(Button.Ripple, {
     color: "primary",
-    onClick: () => window.location.href = DIVAY_URL
+    onClick: () => window.history.back()
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "common.back"
   }))))) : '');

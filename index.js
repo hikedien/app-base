@@ -1076,6 +1076,7 @@ var authReducers = function authReducers(state, action) {
 
     case LOGOUT_ACTION:
       {
+        window.location.href = DIVAY_URL;
         return _extends({}, authInitialState);
       }
 
@@ -6890,7 +6891,7 @@ var AutoLogin = function AutoLogin() {
   }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
     color: "primary",
     onClick: function onClick() {
-      return window.location.href = DIVAY_URL;
+      return window.history.back();
     }
   }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "common.back"
