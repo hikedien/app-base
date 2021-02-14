@@ -480,7 +480,7 @@ const loginAction = (userId, hmac, insId) => {
       hmac,
       insId
     };
-    let response = await AuthService.login(loginInfo);
+    let response = await AuthService.login(divayUserInfo);
 
     if (response.status === API_R_200) {
       const authToken = response.data.id_token;

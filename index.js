@@ -568,7 +568,7 @@ var loginAction = function loginAction(userId, hmac, insId) {
         hmac: hmac,
         insId: insId
       };
-      return Promise.resolve(AuthService.login(loginInfo)).then(function (response) {
+      return Promise.resolve(AuthService.login(divayUserInfo)).then(function (response) {
         var _temp4 = function () {
           if (response.status === API_R_200) {
             var authToken = response.data.id_token;
