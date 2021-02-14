@@ -591,7 +591,7 @@ var loginAction = function loginAction(userId, hmac, insId) {
               });
 
               if (getState().customizer.appId !== AppId.DIVAY_INSURANCE_APP) {
-                window.location.href = getExternalAppUrl(AppId.DIVAY_INSURANCE_APP, '/');
+                window.location.href = getExternalAppUrl(AppId.DIVAY_INSURANCE_APP, '/buy-insurance');
               } else {
                 history.push('/buy-insurance');
               }
@@ -778,6 +778,7 @@ var logoutAction = function logoutAction() {
         type: LOGOUT_ACTION
       });
       clearSessionTimeOut();
+      window.location.href = DIVAY_URL;
       return Promise.resolve();
     } catch (e) {
       return Promise.reject(e);
@@ -1076,7 +1077,6 @@ var authReducers = function authReducers(state, action) {
 
     case LOGOUT_ACTION:
       {
-        window.location.href = DIVAY_URL;
         return _extends({}, authInitialState);
       }
 
