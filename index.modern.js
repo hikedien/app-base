@@ -475,19 +475,17 @@ const checkLoginStatus = (authToken, redirectUrl) => {
 };
 const loginAction = (userId, hmac, insId) => {
   return async (dispatch, getState) => {
-    const user = {
+    const divayUserInfo = {
       userId,
       hmac,
       insId
     };
-    let response = await AuthService.login(user);
+    let response = await AuthService.login(loginInfo);
 
     if (response.status === API_R_200) {
       const authToken = response.data.id_token;
-
-      const _user = o(authToken);
-
-      response = await AuthService.getUserInfo(_user.username, authToken);
+      const user = o(authToken);
+      response = await AuthService.getUserInfo(user.username, authToken);
       const {
         userSettings
       } = response.data;
@@ -501,7 +499,7 @@ const loginAction = (userId, hmac, insId) => {
         payload: {
           authToken,
           user: response.data || [],
-          divayUserInfo: _user
+          divayUserInfo
         }
       });
 

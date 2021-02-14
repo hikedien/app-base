@@ -563,19 +563,17 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
 var loginAction = function loginAction(userId, hmac, insId) {
   return function (dispatch, getState) {
     try {
-      var user = {
+      var divayUserInfo = {
         userId: userId,
         hmac: hmac,
         insId: insId
       };
-      return Promise.resolve(AuthService.login(user)).then(function (response) {
+      return Promise.resolve(AuthService.login(loginInfo)).then(function (response) {
         var _temp4 = function () {
           if (response.status === API_R_200) {
             var authToken = response.data.id_token;
-
-            var _user = o(authToken);
-
-            return Promise.resolve(AuthService.getUserInfo(_user.username, authToken)).then(function (_AuthService$getUserI2) {
+            var user = o(authToken);
+            return Promise.resolve(AuthService.getUserInfo(user.username, authToken)).then(function (_AuthService$getUserI2) {
               response = _AuthService$getUserI2;
               var userSettings = response.data.userSettings;
 
@@ -588,7 +586,7 @@ var loginAction = function loginAction(userId, hmac, insId) {
                 payload: {
                   authToken: authToken,
                   user: response.data || [],
-                  divayUserInfo: _user
+                  divayUserInfo: divayUserInfo
                 }
               });
 
