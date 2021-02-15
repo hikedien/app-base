@@ -589,14 +589,14 @@ var loginAction = function loginAction(userId, hmac, insId) {
                   divayUserInfo: divayUserInfo
                 }
               });
-
-              if (getState().customizer.appId !== AppId.DIVAY_INSURANCE_APP) {
-                window.location.href = getExternalAppUrl(AppId.DIVAY_INSURANCE_APP, '/buy-insurance');
-              } else {
-                history.push('/buy-insurance');
-              }
-
               setSessionTimeout();
+              setTimeout(function () {
+                if (getState().customizer.appId !== AppId.DIVAY_INSURANCE_APP) {
+                  window.location.href = getExternalAppUrl(AppId.DIVAY_INSURANCE_APP, '/buy-insurance');
+                } else {
+                  history.push('/buy-insurance');
+                }
+              }, 500);
             });
           } else {
             dispatch({

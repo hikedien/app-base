@@ -502,12 +502,13 @@ const loginAction = (userId, hmac, insId) => {
           divayUserInfo
         }
       });
-
-      if (getState().customizer.appId !== AppId.DIVAY_INSURANCE_APP) {
-        window.location.href = getExternalAppUrl(AppId.DIVAY_INSURANCE_APP, '/buy-insurance');
-      } else {
-        history.push('/buy-insurance');
-      }
+      setTimeout(() => {
+        if (getState().customizer.appId !== AppId.DIVAY_INSURANCE_APP) {
+          window.location.href = getExternalAppUrl(AppId.DIVAY_INSURANCE_APP, '/buy-insurance');
+        } else {
+          history.push('/buy-insurance');
+        }
+      }, 500);
     } else {
       dispatch({
         type: LOGIN_FAIL_ACTION,
