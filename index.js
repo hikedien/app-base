@@ -936,16 +936,11 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
     }
 
     switch (e.response.status) {
-      case 400:
-        toastError(e.response.data.message);
-        break;
-
       case 403:
         toastError(e.response.data.message);
         store.dispatch({
           type: 'LOGOUT_ACTION'
         });
-        break;
 
       case 500:
         toastError( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
