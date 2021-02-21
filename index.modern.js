@@ -3801,13 +3801,13 @@ const DatePicker = props => {
       onChange: value => props.onChange(value),
       ...props.options
     });
-  }, []);
+  }, [props.value]);
   return /*#__PURE__*/React.createElement(FormGroup, {
     className: "form-label-group position-relative"
   }, /*#__PURE__*/React.createElement("input", {
     ref: datePickerRef,
     disabled: props.disabled,
-    className: "form-control position-relative bg-white mt-2  flatpickr-input "
+    className: "form-control position-relative bg-white flatpickr-input "
   }), /*#__PURE__*/React.createElement(Label, null, props.placeholder), props.errors && props.touched && getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
   }, getPropObject(props.errors, props.fieldName)) : null);
