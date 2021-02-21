@@ -26,7 +26,7 @@ import ScrollToTop from 'react-scroll-up';
 import Hammer from 'react-hammerjs';
 import { object, string, ref } from 'yup';
 import { Field, Formik, Form, FastField } from 'formik';
-import 'react-flatpickr';
+import moment from 'moment';
 import ReactSelect from 'react-select';
 import AsyncSelect from 'react-select/async';
 import CreatableSelect from 'react-select/creatable';
@@ -3802,7 +3802,7 @@ const DatePicker = props => {
       onClose: value => props.onClose && props.onClose(value),
       ...props.options
     });
-    datePickerRef.current.value = props.value || '';
+    datePickerRef.current.value = moment(props.value).isValid() ? props.value : '';
   }, [props.value]);
   return /*#__PURE__*/React.createElement(FormGroup, {
     className: "form-label-group position-relative"
@@ -3810,7 +3810,7 @@ const DatePicker = props => {
     ref: datePickerRef,
     disabled: props.disabled,
     placeholder: props.placeholder,
-    className: "form-control position-relative bg-white flatpickr-input "
+    className: "form-control position-relative bg-white flatpickr-input"
   }), /*#__PURE__*/React.createElement(Label, null, props.placeholder), props.errors && props.touched && getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
   }, getPropObject(props.errors, props.fieldName)) : null);
