@@ -117,6 +117,7 @@ const AppId = {
 };
 
 const API_BASE_URL = 'https://apisit.inon.vn';
+const RESOURCE_URL = 'https://sit2.inon.vn/resources/images/';
 const DIVAY_URL = ' https://admin-divay-test.azurewebsites.net';
 const API_LOGIN_URL = '/api/authenticate';
 const API_DIVAY_LOGIN_URL = '/api/divay-authenticate';
@@ -263,26 +264,27 @@ const USER_ROLE = {
   HTDT: 'HT.DT'
 };
 const IMAGE = {
-  LOGO: 'https://sit2.inon.vn/resources/images/divay-logo-v.svg',
-  LOGO_NO_TEXT: 'https://sit2.inon.vn/resources/images/divay-logo-no-text.svg',
-  LOGO_TEXT: 'https://sit2.inon.vn/resources/images/divay-logo-text.svg',
-  NAV_ICON_1: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-1.png?alt=media&token=0ccdb6bc-09da-43a3-b18f-56d2598e542b',
-  NAV_ICON_2: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-2.png?alt=media&token=def3402b-65f0-458b-b4f8-e9c6d8d3bb09',
-  NAV_ICON_3: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-3.png?alt=media&token=1ce1a25c-b095-4f80-8987-3ae9b977e3a8',
-  NAV_ICON_4: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-4.png?alt=media&token=549432c1-9dd6-4d0a-948a-3f2de513d238',
-  NAV_ICON_5: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/nav-icon-5.png?alt=media&token=659d7162-783c-42ed-af7a-d05d0a3be595',
-  BUY_INSURANCE: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/Vector.png?alt=media&token=56bac236-f494-4643-81f1-11611229e62e',
-  LOGO_WHITE: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/LogoWhite.png?alt=media&token=8289e81f-7b3f-41cd-b5dc-5220bbe8d203',
-  LANDING_PAGE_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-Signup-01%203%20(1).png?alt=media&token=19aca74e-c81f-40e2-a00d-a91b7ee9f27a',
-  LANDING_PAGE_2_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/BG-step5-02%201.png?alt=media&token=2902f404-802a-4c4a-89f5-39a4cd72ab44',
-  LANDING_PAGE_TABLET_BG: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-Bg-ipad(doc)-05.png?alt=media&token=2a140f47-3de6-4a08-9eed-5e2e26e57252',
-  DOWNLOAD_APP_IOS: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-APP%26GP-03.png?alt=media&token=c9a13eca-3fe6-40d0-ac1d-df417b95385d',
-  DOWNLOAD_APP_ANDROID: 'https://firebasestorage.googleapis.com/v0/b/inon-8d496.appspot.com/o/IO-APP%26GP-01.png?alt=media&token=b2aefa9d-d464-41d3-9fd0-b374ed0dca93'
+  LOGO: RESOURCE_URL + 'divay-logo-v.svg',
+  LOGO_NO_TEXT: RESOURCE_URL + 'divay-logo-no-text.svg',
+  LOGO_TEXT: RESOURCE_URL + 'divay-logo-text.svg',
+  NAV_ICON_1: RESOURCE_URL + 'nav-plane-icon.svg',
+  NAV_ICON_2: RESOURCE_URL + 'nav-bus-icon.svg',
+  NAV_ICON_3: RESOURCE_URL + 'nav-people-icon.svg',
+  NAV_ICON_4: RESOURCE_URL + 'nav-motorbike-icon.svg',
+  NAV_ICON_5: RESOURCE_URL + 'nav-car-icon.svg',
+  BUY_INSURANCE: RESOURCE_URL + 'buy-insurance-icon.svg',
+  LOGO_WHITE: RESOURCE_URL + 'in-on-logo-white.svg',
+  LANDING_PAGE_BG: RESOURCE_URL + 'lading-page-h.svg',
+  LANDING_PAGE_2_BG: RESOURCE_URL + 'lading-page-2.svg',
+  LANDING_PAGE_TABLET_BG: RESOURCE_URL + 'lading-page-v.svg',
+  DOWNLOAD_APP_IOS: RESOURCE_URL + 'app-store.svg',
+  DOWNLOAD_APP_ANDROID: RESOURCE_URL + 'google-store.svg'
 };
 
 var appConfigs = {
   __proto__: null,
   API_BASE_URL: API_BASE_URL,
+  RESOURCE_URL: RESOURCE_URL,
   DIVAY_URL: DIVAY_URL,
   API_LOGIN_URL: API_LOGIN_URL,
   API_DIVAY_LOGIN_URL: API_DIVAY_LOGIN_URL,
