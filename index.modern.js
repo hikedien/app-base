@@ -6427,7 +6427,7 @@ const DatePicker = props => {
   const intl = useIntl();
   const datePickerRef = useRef();
   useEffect(() => {
-    flatpickr(datePickerRef.current, {
+    const instance = flatpickr(datePickerRef.current, {
       locale: intl.locale === 'vi' ? flatpickr.l10ns.vn : '',
       allowInput: false,
       defaultDate: props.value,
@@ -6435,7 +6435,7 @@ const DatePicker = props => {
       onClose: value => props.onClose && props.onClose(value),
       ...props.options
     });
-    datePickerRef.current.value = moment(props.value).isValid() ? flatpickr.formatDate(props.value, props.options.dateFormat || 'm/d/Y') : '';
+    datePickerRef.current.value = moment(props.value).isValid() ? instance.input.value : '';
   }, [props.value]);
   return /*#__PURE__*/React.createElement(FormGroup, {
     className: "form-label-group position-relative"
