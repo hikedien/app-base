@@ -26,7 +26,7 @@ import ScrollToTop from 'react-scroll-up';
 import Hammer from 'react-hammerjs';
 import { object, string, ref } from 'yup';
 import { Field, Formik, Form, FastField } from 'formik';
-import moment from 'moment';
+import 'moment';
 import ReactSelect from 'react-select';
 import AsyncSelect from 'react-select/async';
 import CreatableSelect from 'react-select/creatable';
@@ -6427,7 +6427,7 @@ const DatePicker = props => {
   const intl = useIntl();
   const datePickerRef = useRef();
   useEffect(() => {
-    const instance = flatpickr(datePickerRef.current, {
+    flatpickr(datePickerRef.current, {
       locale: intl.locale === 'vi' ? flatpickr.l10ns.vn : '',
       allowInput: false,
       defaultDate: props.value,
@@ -6435,7 +6435,7 @@ const DatePicker = props => {
       onClose: value => props.onClose && props.onClose(value),
       ...props.options
     });
-    datePickerRef.current.value = moment(props.value).isValid() ? instance.input.value : '';
+    datePickerRef.current.value = instance.input.value;
   }, [props.value]);
   return /*#__PURE__*/React.createElement(FormGroup, {
     className: "form-label-group position-relative"

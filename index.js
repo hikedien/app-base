@@ -25,7 +25,7 @@ var ScrollToTop = _interopDefault(require('react-scroll-up'));
 var Hammer = _interopDefault(require('react-hammerjs'));
 var Yup = require('yup');
 var formik = require('formik');
-var moment = _interopDefault(require('moment'));
+require('moment');
 var ReactSelect = _interopDefault(require('react-select'));
 var AsyncSelect = _interopDefault(require('react-select/async'));
 var CreatableSelect = _interopDefault(require('react-select/creatable'));
@@ -6786,7 +6786,7 @@ var DatePicker = function DatePicker(props) {
   var intl = reactIntl.useIntl();
   var datePickerRef = React.useRef();
   React.useEffect(function () {
-    var instance = flatpickr(datePickerRef.current, _extends({
+    flatpickr(datePickerRef.current, _extends({
       locale: intl.locale === 'vi' ? flatpickr.l10ns.vn : '',
       allowInput: false,
       defaultDate: props.value,
@@ -6797,7 +6797,7 @@ var DatePicker = function DatePicker(props) {
         return props.onClose && props.onClose(value);
       }
     }, props.options));
-    datePickerRef.current.value = moment(props.value).isValid() ? instance.input.value : '';
+    datePickerRef.current.value = instance.input.value;
   }, [props.value]);
   return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
     className: "form-label-group position-relative"
