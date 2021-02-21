@@ -3799,7 +3799,7 @@ const DatePicker = props => {
       allowInput: false,
       defaultDate: props.value,
       onChange: value => props.onChange(value),
-      onClose: value => props.onClose(value),
+      onClose: value => props.onClose && props.onClose(value),
       ...props.options
     });
     datePickerRef.current.value = props.value;

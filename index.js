@@ -4158,7 +4158,7 @@ var DatePicker = function DatePicker(props) {
         return props.onChange(value);
       },
       onClose: function onClose(value) {
-        return props.onClose(value);
+        return props.onClose && props.onClose(value);
       }
     }, props.options));
     datePickerRef.current.value = props.value;
