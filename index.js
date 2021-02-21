@@ -25,7 +25,7 @@ var ScrollToTop = _interopDefault(require('react-scroll-up'));
 var Hammer = _interopDefault(require('react-hammerjs'));
 var Yup = require('yup');
 var formik = require('formik');
-var moment = _interopDefault(require('moment'));
+require('moment');
 var ReactSelect = _interopDefault(require('react-select'));
 var AsyncSelect = _interopDefault(require('react-select/async'));
 var CreatableSelect = _interopDefault(require('react-select/creatable'));
@@ -6819,7 +6819,7 @@ var DatePicker = function DatePicker(props) {
         return props.onClose && props.onClose(value);
       }
     }, props.options));
-    datePickerRef.current.value = moment(props.value).isValid() ? instance.input.value : '';
+    datePickerRef.current.value = instance.input.value;
   }, [props.value]);
   return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
     className: "form-label-group position-relative"
@@ -6827,7 +6827,7 @@ var DatePicker = function DatePicker(props) {
     ref: datePickerRef,
     disabled: props.disabled,
     placeholder: props.placeholder,
-    className: "form-control position-relative bg-white flatpickr-input"
+    className: "form-control position-relative bg-white flatpickr-input " + props.className
   }), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, props.placeholder), props.errors && props.touched && getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React__default.createElement("div", {
     className: "text-danger"
   }, getPropObject(props.errors, props.fieldName)) : null);
