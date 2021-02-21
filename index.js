@@ -6786,7 +6786,7 @@ var DatePicker = function DatePicker(props) {
   var intl = reactIntl.useIntl();
   var datePickerRef = React.useRef();
   React.useEffect(function () {
-    flatpickr(datePickerRef.current, _extends({
+    var instance = flatpickr(datePickerRef.current, _extends({
       locale: intl.locale === 'vi' ? flatpickr.l10ns.vn : '',
       allowInput: false,
       defaultDate: props.value,
