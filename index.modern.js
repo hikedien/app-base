@@ -3802,7 +3802,7 @@ const DatePicker = props => {
       onClose: value => props.onClose && props.onClose(value),
       ...props.options
     });
-    datePickerRef.current.value = props.value;
+    datePickerRef.current.value = props.value || '';
   }, [props.value]);
   return /*#__PURE__*/React.createElement(FormGroup, {
     className: "form-label-group position-relative"
