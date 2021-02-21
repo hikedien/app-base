@@ -6797,7 +6797,7 @@ var DatePicker = function DatePicker(props) {
         return props.onClose && props.onClose(value);
       }
     }, props.options));
-    datePickerRef.current.value = moment(props.value).isValid() ? props.value : '';
+    datePickerRef.current.value = moment(props.value).isValid() ? flatpickr.formatDate(props.value, props.options.dateFormat || 'm/d/Y') : '';
   }, [props.value]);
   return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
     className: "form-label-group position-relative"
