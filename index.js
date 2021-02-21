@@ -4162,7 +4162,7 @@ var DatePicker = function DatePicker(props) {
       }
     }, props.options));
     datePickerRef.current.value = props.value;
-  }, []);
+  }, [props.value]);
   return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
     className: "form-label-group position-relative"
   }, /*#__PURE__*/React__default.createElement("input", {

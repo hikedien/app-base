@@ -3803,7 +3803,7 @@ const DatePicker = props => {
       ...props.options
     });
     datePickerRef.current.value = props.value;
-  }, []);
+  }, [props.value]);
   return /*#__PURE__*/React.createElement(FormGroup, {
     className: "form-label-group position-relative"
   }, /*#__PURE__*/React.createElement("input", {
