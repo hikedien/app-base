@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Component, PureComponent, useCallback } from 'react';
+import React, { useState, useEffect, Component, PureComponent, useRef, useCallback } from 'react';
 import { useDispatch, connect, useSelector, Provider } from 'react-redux';
 import { combineReducers, createStore, applyMiddleware, compose } from 'redux';
 import createDebounce from 'redux-debounced';
@@ -26,7 +26,7 @@ import ScrollToTop from 'react-scroll-up';
 import Hammer from 'react-hammerjs';
 import { object, string, ref } from 'yup';
 import { Field, Formik, Form, FastField } from 'formik';
-import Flatpickr from 'react-flatpickr';
+import 'react-flatpickr';
 import ReactSelect from 'react-select';
 import AsyncSelect from 'react-select/async';
 import CreatableSelect from 'react-select/creatable';
@@ -741,6 +741,8 @@ const setUpHttpClient = (store, apiBaseUrl) => {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
+    config.headers.appId = store.getState().customizer.appId;
+    config.headers.appVersion = 'v1';
     config.headers.deviceId = deviceId;
     config.headers['Accept-Language'] = language;
 
@@ -3685,11 +3687,106 @@ const BaseFormGroup = ({
   }, getPropObject(errors, fieldName)) : null, /*#__PURE__*/React.createElement(Label, null, msg))));
 };
 
-const DatePicker = props => /*#__PURE__*/React.createElement(FormGroup, {
-  className: "form-label-group position-relative"
-}, /*#__PURE__*/React.createElement(Flatpickr, props), /*#__PURE__*/React.createElement(Label, null, props.placeholder), props.errors && props.touched && getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React.createElement("div", {
-  className: "text-danger"
-}, getPropObject(props.errors, props.fieldName)) : null);
+var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+function unwrapExports (x) {
+	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+}
+
+function createCommonjsModule(fn, module) {
+	return module = { exports: {} }, fn(module, module.exports), module.exports;
+}
+
+var vn = createCommonjsModule(function (module, exports) {
+(function (global, factory) {
+   factory(exports) ;
+}(commonjsGlobal, (function (exports) {
+  var fp = typeof window !== "undefined" && window.flatpickr !== undefined
+      ? window.flatpickr
+      : {
+          l10ns: {},
+      };
+  var Vietnamese = {
+      weekdays: {
+          shorthand: ["CN", "T2", "T3", "T4", "T5", "T6", "T7"],
+          longhand: [
+              "Chủ nhật",
+              "Thứ hai",
+              "Thứ ba",
+              "Thứ tư",
+              "Thứ năm",
+              "Thứ sáu",
+              "Thứ bảy",
+          ],
+      },
+      months: {
+          shorthand: [
+              "Th1",
+              "Th2",
+              "Th3",
+              "Th4",
+              "Th5",
+              "Th6",
+              "Th7",
+              "Th8",
+              "Th9",
+              "Th10",
+              "Th11",
+              "Th12",
+          ],
+          longhand: [
+              "Tháng một",
+              "Tháng hai",
+              "Tháng ba",
+              "Tháng tư",
+              "Tháng năm",
+              "Tháng sáu",
+              "Tháng bảy",
+              "Tháng tám",
+              "Tháng chín",
+              "Tháng mười",
+              "Tháng 11",
+              "Tháng 12",
+          ],
+      },
+      firstDayOfWeek: 1,
+      rangeSeparator: " đến ",
+  };
+  fp.l10ns.vn = Vietnamese;
+  var vn = fp.l10ns;
+
+  exports.Vietnamese = Vietnamese;
+  exports.default = vn;
+
+  Object.defineProperty(exports, '__esModule', { value: true });
+
+})));
+});
+
+unwrapExports(vn);
+
+const DatePicker = props => {
+  const intl = useIntl();
+  const datePickerRef = useRef();
+  useEffect(() => {
+    flatpickr(datePickerRef.current, {
+      locale: intl.locale === 'vi' ? flatpickr.l10ns.vn : '',
+      allowInput: false,
+      defaultDate: props.value,
+      onChange: value => props.onChange(value),
+      ...props.options
+    });
+  }, []);
+  return /*#__PURE__*/React.createElement(FormGroup, {
+    className: "form-label-group position-relative"
+  }, /*#__PURE__*/React.createElement("input", {
+    ref: datePickerRef,
+    disabled: props.disabled,
+    className: "form-control position-relative bg-white mt-2  flatpickr-input "
+  }), /*#__PURE__*/React.createElement(Label, null, props.placeholder), props.errors && props.touched && getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React.createElement("div", {
+    className: "text-danger"
+  }, getPropObject(props.errors, props.fieldName)) : null);
+};
 
 const BaseFormDatePicker = ({
   fieldName,

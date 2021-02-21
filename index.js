@@ -25,7 +25,7 @@ var ScrollToTop = _interopDefault(require('react-scroll-up'));
 var Hammer = _interopDefault(require('react-hammerjs'));
 var Yup = require('yup');
 var formik = require('formik');
-var Flatpickr = _interopDefault(require('react-flatpickr'));
+require('react-flatpickr');
 var ReactSelect = _interopDefault(require('react-select'));
 var AsyncSelect = _interopDefault(require('react-select/async'));
 var CreatableSelect = _interopDefault(require('react-select/creatable'));
@@ -907,6 +907,8 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
       config.headers.Authorization = "Bearer " + token;
     }
 
+    config.headers.appId = store.getState().customizer.appId;
+    config.headers.appVersion = 'v1';
     config.headers.deviceId = deviceId;
     config.headers['Accept-Language'] = language;
 
@@ -4044,10 +4046,104 @@ var BaseFormGroup = function BaseFormGroup(_ref) {
   }));
 };
 
+var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+function unwrapExports (x) {
+	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+}
+
+function createCommonjsModule(fn, module) {
+	return module = { exports: {} }, fn(module, module.exports), module.exports;
+}
+
+var vn = createCommonjsModule(function (module, exports) {
+(function (global, factory) {
+   factory(exports) ;
+}(commonjsGlobal, (function (exports) {
+  var fp = typeof window !== "undefined" && window.flatpickr !== undefined
+      ? window.flatpickr
+      : {
+          l10ns: {},
+      };
+  var Vietnamese = {
+      weekdays: {
+          shorthand: ["CN", "T2", "T3", "T4", "T5", "T6", "T7"],
+          longhand: [
+              "Chủ nhật",
+              "Thứ hai",
+              "Thứ ba",
+              "Thứ tư",
+              "Thứ năm",
+              "Thứ sáu",
+              "Thứ bảy",
+          ],
+      },
+      months: {
+          shorthand: [
+              "Th1",
+              "Th2",
+              "Th3",
+              "Th4",
+              "Th5",
+              "Th6",
+              "Th7",
+              "Th8",
+              "Th9",
+              "Th10",
+              "Th11",
+              "Th12",
+          ],
+          longhand: [
+              "Tháng một",
+              "Tháng hai",
+              "Tháng ba",
+              "Tháng tư",
+              "Tháng năm",
+              "Tháng sáu",
+              "Tháng bảy",
+              "Tháng tám",
+              "Tháng chín",
+              "Tháng mười",
+              "Tháng 11",
+              "Tháng 12",
+          ],
+      },
+      firstDayOfWeek: 1,
+      rangeSeparator: " đến ",
+  };
+  fp.l10ns.vn = Vietnamese;
+  var vn = fp.l10ns;
+
+  exports.Vietnamese = Vietnamese;
+  exports.default = vn;
+
+  Object.defineProperty(exports, '__esModule', { value: true });
+
+})));
+});
+
+unwrapExports(vn);
+
 var DatePicker = function DatePicker(props) {
+  var intl = reactIntl.useIntl();
+  var datePickerRef = React.useRef();
+  React.useEffect(function () {
+    flatpickr(datePickerRef.current, _extends({
+      locale: intl.locale === 'vi' ? flatpickr.l10ns.vn : '',
+      allowInput: false,
+      defaultDate: props.value,
+      onChange: function onChange(value) {
+        return props.onChange(value);
+      }
+    }, props.options));
+  }, []);
   return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
     className: "form-label-group position-relative"
-  }, /*#__PURE__*/React__default.createElement(Flatpickr, props), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, props.placeholder), props.errors && props.touched && getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React__default.createElement("div", {
+  }, /*#__PURE__*/React__default.createElement("input", {
+    ref: datePickerRef,
+    disabled: props.disabled,
+    className: "form-control position-relative bg-white mt-2  flatpickr-input "
+  }), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, props.placeholder), props.errors && props.touched && getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React__default.createElement("div", {
     className: "text-danger"
   }, getPropObject(props.errors, props.fieldName)) : null);
 };
