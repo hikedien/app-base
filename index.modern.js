@@ -14,6 +14,7 @@ export { toast } from 'react-toastify';
 import { FormattedMessage, injectIntl, IntlProvider, useIntl } from 'react-intl';
 export { FormattedMessage } from 'react-intl';
 import { createBrowserHistory } from 'history';
+import jwt_decode from 'jwt-decode';
 import sessionStorage from 'redux-persist/es/storage/session';
 import { useHistory, Link, Router, Switch, Route, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
@@ -432,8 +433,6 @@ AuthService.updateAvatar = async (user, file) => {
   return '';
 };
 
-function e(e){this.message=e;}e.prototype=new Error,e.prototype.name="InvalidCharacterError";var r="undefined"!=typeof window&&window.atob&&window.atob.bind(window)||function(r){var t=String(r).replace(/=+$/,"");if(t.length%4==1)throw new e("'atob' failed: The string to be decoded is not correctly encoded.");for(var n,o,a=0,i=0,c="";o=t.charAt(i++);~o&&(n=a%4?64*n+o:o,a++%4)?c+=String.fromCharCode(255&n>>(-2*a&6)):0)o="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=".indexOf(o);return c};function t(e){var t=e.replace(/-/g,"+").replace(/_/g,"/");switch(t.length%4){case 0:break;case 2:t+="==";break;case 3:t+="=";break;default:throw "Illegal base64url string!"}try{return function(e){return decodeURIComponent(r(e).replace(/(.)/g,(function(e,r){var t=r.charCodeAt(0).toString(16).toUpperCase();return t.length<2&&(t="0"+t),"%"+t})))}(t)}catch(e){return r(t)}}function n(e){this.message=e;}function o(e,r){if("string"!=typeof e)throw new n("Invalid token specified");var o=!0===(r=r||{}).header?0:1;try{return JSON.parse(t(e.split(".")[o]))}catch(e){throw new n("Invalid token specified: "+e.message)}}n.prototype=new Error,n.prototype.name="InvalidTokenError";//# sourceMappingURL=jwt-decode.esm.js.map
-
 const LOGIN_ACTION = 'LOGIN_ACTION';
 const LOGIN_FAIL_ACTION = 'LOGIN_FAIL_ACTION';
 const LOGOUT_ACTION = 'LOGOUT_ACTION';
@@ -486,7 +485,7 @@ const loginAction = (userId, hmac, insId) => {
 
     if (response.status === API_R_200) {
       const authToken = response.data.id_token;
-      const user = o(authToken);
+      const user = jwt_decode(authToken);
       response = await AuthService.getUserInfo(user.username, authToken);
       const {
         userSettings
@@ -3241,7 +3240,7 @@ var messages_en = {
 	"generalInfo.policy.11.1": "11.1  Nếu bạn muốn thực hiện các quyền của mình trong Phần “Quyền kiểm soát dữ liệu cá nhân của bạn” hoặc nếu bạn yêu cầu bất kỳ thông tin nào theo thông báo này, bạn có thể liên hệ với chúng tôi theo nhiều cách khác nhau.",
 	"generalInfo.policy.11.1.1": "11.1.1  Gọi cho đường dây nóng của chúng tôi: <b>02437.630.999</b>",
 	"generalInfo.policy.11.1.2": "11.1.2  Gửi thư điện tử cho chúng tôi theo địa chỉ: <b>support@divay.vn</b>",
-	"generalInfo.policy.11.1.3": "11.1.3  Hoặc liên hệ trực tiếp với chúng tôi tại văn phòng: <b>Phòng 301A, Tòa nhà Thiên Bảo, số 47-49 Lê Văn Hưu, Phường Ngô Thì Nhậm, Quận Hai Bà Trưng, Thành phố Hà Nội.</b>",
+	"generalInfo.policy.11.1.3": "11.1.3  Hoặc liên hệ trực tiếp với chúng tôi tại trụ sở chính: <b>314 Định Công, Phường Định Công, Quận Hoàng Mai, Thành Phố Hà Nội.</b>",
 	"generalInfo.terms.1": "1. CÁC ĐIỀU KHOẢN VÀ ĐIỀU KIỆN SỬ DỤNG",
 	"generalInfo.terms.1.1": "1.1  Trang thông tin điện tử này <b>(www.Divay.vn) do Công Ty Divay và Thương hiệu Divay </b> hoàn toàn sở hữu và điều hành.",
 	"generalInfo.terms.1.2": "1.2  Việc sử dụng trang thông tin điện tử này phụ thuộc vào các điều khoản và điều kiện cụ thể sau: (A) các điều khoản và điều kiện được nêu dưới đây và (B) mọi điều khoản và điều kiện bổ sung cụ thể tùy từng thời điểm để điều chỉnh việc sử dụng, và truy cập vào một số mục của trang thông tin điện tử này (và các điều khoản bổ sung đó sẽ có hiệu lực ràng buộc khi chúng được đăng tải trên trang thông tin điện tử này) <b>(\"Điều Khoản và Điều Kiện\")</b>.",
@@ -3570,7 +3569,7 @@ var messages_vi = {
 	"generalInfo.policy.11.1": "11.1  Nếu bạn muốn thực hiện các quyền của mình trong Phần “Quyền kiểm soát dữ liệu cá nhân của bạn” hoặc nếu bạn yêu cầu bất kỳ thông tin nào theo thông báo này, bạn có thể liên hệ với chúng tôi theo nhiều cách khác nhau.",
 	"generalInfo.policy.11.1.1": "11.1.1  Gọi cho đường dây nóng của chúng tôi: <b>02437.630.999</b>",
 	"generalInfo.policy.11.1.2": "11.1.2  Gửi thư điện tử cho chúng tôi theo địa chỉ: <b>support@divay.vn</b>",
-	"generalInfo.policy.11.1.3": "11.1.3  Hoặc liên hệ trực tiếp với chúng tôi tại văn phòng: <b>Phòng 301A, Tòa nhà Thiên Bảo, số 47-49 Lê Văn Hưu, Phường Ngô Thì Nhậm, Quận Hai Bà Trưng, Thành phố Hà Nội.</b>",
+	"generalInfo.policy.11.1.3": "11.1.3  Hoặc liên hệ trực tiếp với chúng tôi tại trụ sở chính: <b>314 Định Công, Phường Định Công, Quận Hoàng Mai, Thành Phố Hà Nội.</b>",
 	"generalInfo.terms.1": "1. CÁC ĐIỀU KHOẢN VÀ ĐIỀU KIỆN SỬ DỤNG",
 	"generalInfo.terms.1.1": "1.1  Trang thông tin điện tử này <b>(www.Divay.vn) do Công Ty Divay và Thương hiệu Divay </b> hoàn toàn sở hữu và điều hành.",
 	"generalInfo.terms.1.2": "1.2  Việc sử dụng trang thông tin điện tử này phụ thuộc vào các điều khoản và điều kiện cụ thể sau: (A) các điều khoản và điều kiện được nêu dưới đây và (B) mọi điều khoản và điều kiện bổ sung cụ thể tùy từng thời điểm để điều chỉnh việc sử dụng, và truy cập vào một số mục của trang thông tin điện tử này (và các điều khoản bổ sung đó sẽ có hiệu lực ràng buộc khi chúng được đăng tải trên trang thông tin điện tử này) <b>(\"Điều Khoản và Điều Kiện\")</b>.",
