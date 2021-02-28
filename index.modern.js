@@ -15,6 +15,7 @@ import { FormattedMessage, injectIntl, IntlProvider, useIntl } from 'react-intl'
 export { FormattedMessage } from 'react-intl';
 import { createBrowserHistory } from 'history';
 import jwt_decode from 'jwt-decode';
+import moment from 'moment';
 import sessionStorage from 'redux-persist/es/storage/session';
 import { useHistory, Link, Router, Switch, Route, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
@@ -27,7 +28,6 @@ import ScrollToTop from 'react-scroll-up';
 import Hammer from 'react-hammerjs';
 import { object, string, ref } from 'yup';
 import { Field, Formik, Form, FastField } from 'formik';
-import 'moment';
 import ReactSelect from 'react-select';
 import AsyncSelect from 'react-select/async';
 import CreatableSelect from 'react-select/creatable';
@@ -122,7 +122,7 @@ const RESOURCE_URL = 'https://sit2.inon.vn/resources/images/';
 const DIVAY_URL = ' https://admin-divay-test.azurewebsites.net';
 const API_LOGIN_URL = '/api/authenticate';
 const API_DIVAY_LOGIN_URL = '/api/divay-authenticate';
-const API_LOGOUT_URL = '/api/authenticate';
+const API_LOGOUT_URL = '/api/logout';
 const API_CHANGE_PASSWORD = '/api/change-password';
 const API_REGISTER = '/nth/onboarding/api/authenticate/register';
 const API_GET_USER = '/nth/user/api/users';
@@ -163,6 +163,7 @@ const API_TIME_OUT = 70000;
 const MAX_FILE_SIZE = 5;
 const CONTACT_PHONE = '02437.630.999';
 const SESSION_TIMEOUT = 15;
+const DATE_TIME_FORMAT = 'YYYY/MM/DD HH:mm:ss';
 const LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
   FAIL: 'FAIL'
@@ -325,6 +326,7 @@ var appConfigs = {
   MAX_FILE_SIZE: MAX_FILE_SIZE,
   CONTACT_PHONE: CONTACT_PHONE,
   SESSION_TIMEOUT: SESSION_TIMEOUT,
+  DATE_TIME_FORMAT: DATE_TIME_FORMAT,
   LOGIN_STATUS: LOGIN_STATUS,
   USER_TYPE: USER_TYPE,
   GENDER_OPTIONS: GENDER_OPTIONS,
@@ -366,8 +368,8 @@ AuthService.compeleteInfo = user => {
   return HttpClient.post(`${API_COMPLETE_INFO}`, user);
 };
 
-AuthService.logout = user => {
-  return HttpClient.post(API_LOGOUT_URL, user);
+AuthService.logout = userId => {
+  return HttpClient.post(`${API_LOGOUT_URL}/${userId}`);
 };
 
 AuthService.createPassword = (password, registerToken) => {
@@ -439,7 +441,7 @@ const LOGOUT_ACTION = 'LOGOUT_ACTION';
 const SAVE_REGISTER_TOKEN = 'SAVE_REGISTER_TOKEN';
 const SAVE_RESET_PASSWORD_TOKEN = 'SAVE_RESET_PASSWORD_TOKEN';
 const UPDATE_USER_INFO = 'UPDATE_USER_INFO';
-let sessionTimeOut = null;
+const CHANGE_SESSION_EXPIRE_TIME = 'CHANGE_SESSION_EXPIRE_TIME';
 const checkLoginStatus = (authToken, redirectUrl) => {
   return async (dispatch, getState) => {
     try {
@@ -457,17 +459,19 @@ const checkLoginStatus = (authToken, redirectUrl) => {
             user: response.data || {}
           }
         });
+        changeActionExpireTime();
         const {
           appId
         } = getState().customizer;
         history.push(redirectUrl || window.location.pathname.replace(`/${getContextPath(appId)}/`, '/'));
-        setSessionTimeout();
       } else {
+        console.log(error);
         dispatch({
           type: LOGOUT_ACTION
         });
       }
     } catch (error) {
+      console.log(error);
       dispatch({
         type: LOGOUT_ACTION
       });
@@ -519,23 +523,6 @@ const loginAction = (userId, hmac, insId) => {
       });
     }
   };
-};
-const setSessionTimeout = () => {
-  return dispatch => {
-    clearTimeout(sessionTimeOut);
-    sessionTimeOut = setTimeout(() => {
-      dispatch(logoutAction());
-      dispatch({
-        type: LOGIN_FAIL_ACTION,
-        errorMessage: /*#__PURE__*/React.createElement(FormattedMessage, {
-          id: "common.sesionExpired"
-        })
-      });
-    }, SESSION_TIMEOUT * 60 * 1000);
-  };
-};
-const clearSessionTimeOut = () => {
-  clearTimeout(sessionTimeOut);
 };
 const createPassword = password => {
   return async (dispatch, getState) => {
@@ -644,11 +631,14 @@ const resetPassword = password => {
   };
 };
 const logoutAction = () => {
-  return async dispatch => {
+  return async (dispatch, getState) => {
+    const {
+      id
+    } = getState().auth.user;
+    await AuthService.logout(id);
     dispatch({
       type: LOGOUT_ACTION
     });
-    clearSessionTimeOut();
     window.location.href = DIVAY_URL;
   };
 };
@@ -710,6 +700,13 @@ const changeLanguageSetting = (lang, callBack) => {
     }
   };
 };
+const changeActionExpireTime = () => {
+  return dispatch => {
+    dispatch({
+      type: CHANGE_SESSION_EXPIRE_TIME
+    });
+  };
+};
 
 const SHOW_LOADING_BAR = 'SHOW_LOADING_BAR';
 const HIDE_LOADING_BAR = 'HIDE_LOADING_BAR';
@@ -752,18 +749,41 @@ const setUpHttpClient = (store, apiBaseUrl) => {
     localStorage.setItem('language', 'vi');
   }
 
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(position => {
+      localStorage.setItem('latitude', position.coords.latitude);
+      localStorage.setItem('longitude', position.coords.longitude);
+    });
+  }
+
   HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
   HttpClient.interceptors.request.use(config => {
     const token = store.getState().auth.authToken;
+    const sessionExpireTime = store.getState().auth.sessionExpireTime;
     language = localStorage.getItem('language');
 
     if (token) {
-      store.dispatch(setSessionTimeout());
+      store.dispatch({
+        type: CHANGE_SESSION_EXPIRE_TIME
+      });
       config.headers.Authorization = `Bearer ${token}`;
+      const isSessionExpired = moment().isAfter(moment(sessionExpireTime));
+
+      if (sessionExpireTime && isSessionExpired) {
+        toastError( /*#__PURE__*/React.createElement(FormattedMessage, {
+          id: "common.sessionExpired"
+        }));
+        store.dispatch({
+          type: LOGOUT_ACTION
+        });
+        return;
+      }
     }
 
     config.headers.appId = store.getState().customizer.appId;
     config.headers.appVersion = 'v1';
+    config.headers.latitude = localStorage.getItem('latitude');
+    config.headers.longitude = localStorage.getItem('longitude');
     config.headers.deviceId = deviceId;
     config.headers['Accept-Language'] = language;
 
@@ -796,6 +816,10 @@ const setUpHttpClient = (store, apiBaseUrl) => {
     switch (e.response.status) {
       case 400:
       case 403:
+        if (e.response.data.error === 'Forbidden') {
+          return e.response;
+        }
+
         if (token) {
           toastError(e.response.data.message);
           store.dispatch({
@@ -894,7 +918,8 @@ const authInitialState = {
   },
   resetPasswordToken: '',
   errorMessage: '',
-  divayUserInfo: {}
+  divayUserInfo: {},
+  sessionExpireTime: null
 };
 const authReducers = (state = { ...authInitialState
 }, action) => {
@@ -940,6 +965,13 @@ const authReducers = (state = { ...authInitialState
       {
         return { ...state,
           user: action.payload
+        };
+      }
+
+    case CHANGE_SESSION_EXPIRE_TIME:
+      {
+        return { ...state,
+          sessionExpireTime: moment().add(SESSION_TIMEOUT, 'minutes').format(DATE_TIME_FORMAT)
         };
       }
 
@@ -1078,6 +1110,22 @@ const navbarReducer = (state = initialState, action) => {
   }
 };
 
+const SHOW_LOADING_BAR$1 = 'SHOW_LOADING_BAR';
+const HIDE_LOADING_BAR$1 = 'HIDE_LOADING_BAR';
+const SHOW_CONFIRM_ALERT$1 = 'SHOW_CONFIRM_ALERT';
+const HIDE_CONFIRM_ALERT$1 = 'HIDE_CONFIRM_ALERT';
+const showConfirmAlert$1 = configs => {
+  return dispatch => dispatch({
+    type: SHOW_CONFIRM_ALERT$1,
+    payload: configs
+  });
+};
+const hideConfirmAlert$1 = () => {
+  return dispatch => dispatch({
+    type: HIDE_CONFIRM_ALERT$1
+  });
+};
+
 const DEFAULT_CONFIRM_ALERT = {
   title: '',
   isShow: false,
@@ -1094,19 +1142,19 @@ const initialState$1 = {
 
 const uiReducer = (state = initialState$1, action) => {
   switch (action.type) {
-    case SHOW_LOADING_BAR:
+    case SHOW_LOADING_BAR$1:
       return { ...state,
         isLoading: true,
         loading: state.loading.add(action.payload)
       };
 
-    case HIDE_LOADING_BAR:
+    case HIDE_LOADING_BAR$1:
       state.loading.delete(action.payload);
       return { ...state,
         isLoading: !!state.loading.size
       };
 
-    case SHOW_CONFIRM_ALERT:
+    case SHOW_CONFIRM_ALERT$1:
       return { ...state,
         confirmAlert: {
           isShow: true,
@@ -1115,7 +1163,7 @@ const uiReducer = (state = initialState$1, action) => {
         }
       };
 
-    case HIDE_CONFIRM_ALERT:
+    case HIDE_CONFIRM_ALERT$1:
       return { ...state,
         confirmAlert: { ...DEFAULT_CONFIRM_ALERT
         }
@@ -1533,7 +1581,7 @@ const UserDropdown = () => {
   };
 
   const onClickLogout = () => {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "navbar.logout"
       }),
@@ -3037,7 +3085,7 @@ var messages_en = {
 	"common.ok": "Ok",
 	"common.back": "Back",
 	"common.noResults": "No results",
-	"common.sesionExpired": "Your session has expired, please relogin!",
+	"common.sessionExpired": "Your session has expired, please relogin!",
 	"common.error.500": "An error occurred, please try again!",
 	login: login,
 	"login.firstWelcome": "Welcome to Divay X!",
@@ -3366,7 +3414,7 @@ var messages_vi = {
 	"common.back": "Quay lại",
 	"common.ok": "Đồng ý",
 	"common.noResults": "Không có kết quả",
-	"common.sesionExpired": "Phiên làm việc của bạn đã hết hạn, bạn vui lòng đăng nhập lại!",
+	"common.sessionExpired": "Phiên làm việc của bạn đã hết hạn, bạn vui lòng đăng nhập lại!",
 	"common.error.500": "Có lỗi xảy ra, xin vui lòng thử lại!",
 	login: login$1,
 	"login.firstWelcome": "Chào mừng bạn đến với Divay X!",
@@ -6922,7 +6970,7 @@ const UserAccountTab = () => {
   };
 
   const onSubmit = async values => {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.accountInformation"
       }),
@@ -6937,7 +6985,7 @@ const UserAccountTab = () => {
   };
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -7190,7 +7238,7 @@ const ChangePassword = () => {
   const dispatch = useDispatch();
 
   const onClickSubmit = values => {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.changePassword"
       }),
@@ -7205,7 +7253,7 @@ const ChangePassword = () => {
   };
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -7552,7 +7600,7 @@ const Terms = () => {
   const dispatch = useDispatch();
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -7617,7 +7665,7 @@ const LanguageTab = () => {
   const [lang, setLang] = useState(localStorage.getItem('language'));
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -7632,7 +7680,7 @@ const LanguageTab = () => {
   };
 
   const onClickSaveChange = context => {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.language"
       }),
@@ -7846,7 +7894,7 @@ const Policies = () => {
   const dispatch = useDispatch();
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -7896,7 +7944,7 @@ const ContactTab = () => {
   const dispatch = useDispatch();
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -7911,7 +7959,7 @@ const ContactTab = () => {
   };
 
   const onClickCall = () => {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.call"
       }),
@@ -8981,7 +9029,7 @@ const ConfirmAlert = () => {
       onConfirm();
     }
 
-    dispatch(hideConfirmAlert());
+    dispatch(hideConfirmAlert$1());
   };
 
   const onClickCancel = () => {
@@ -8989,7 +9037,7 @@ const ConfirmAlert = () => {
       onCancel();
     }
 
-    dispatch(hideConfirmAlert());
+    dispatch(hideConfirmAlert$1());
   };
 
   return /*#__PURE__*/React.createElement(SweetAlert, Object.assign({
@@ -9304,20 +9352,6 @@ const ReactTable = props => {
   }, props));
 };
 
-const SHOW_CONFIRM_ALERT$1 = 'SHOW_CONFIRM_ALERT';
-const HIDE_CONFIRM_ALERT$1 = 'HIDE_CONFIRM_ALERT';
-const showConfirmAlert$1 = configs => {
-  return dispatch => dispatch({
-    type: SHOW_CONFIRM_ALERT$1,
-    payload: configs
-  });
-};
-const hideConfirmAlert$1 = () => {
-  return dispatch => dispatch({
-    type: HIDE_CONFIRM_ALERT$1
-  });
-};
-
 const usePageAuthorities = () => {
   const [authorities, setAuthorities] = useState([]);
   const {
@@ -9341,5 +9375,5 @@ const usePageAuthorities = () => {
   return authorities;
 };
 
-export { AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, HttpClient, Radio, ReactTable, Select, goBackHomePage$1 as goBackHomePage, hideConfirmAlert$1 as hideConfirmAlert, showConfirmAlert$1 as showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
+export { AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, HttpClient, Radio, ReactTable, Select, goBackHomePage$1 as goBackHomePage, hideConfirmAlert, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
 //# sourceMappingURL=index.modern.js.map
