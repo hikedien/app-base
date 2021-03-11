@@ -277,7 +277,7 @@ var IMAGE = {
   NAV_ICON_3: RESOURCE_URL + 'nav-people-icon.svg',
   NAV_ICON_4: RESOURCE_URL + 'nav-motorbike-icon.svg',
   NAV_ICON_5: RESOURCE_URL + 'nav-car-icon.svg',
-  BUY_INSURANCE: RESOURCE_URL + 'buy-insurance-icon.svg',
+  BUY_INSURANCE: RESOURCE_URL + 'divay-buy-insurance.svg',
   LOGO_WHITE: RESOURCE_URL + 'in-on-logo-white.svg',
   LANDING_PAGE_BG: RESOURCE_URL + 'lading-page-h.svg',
   LANDING_PAGE_2_BG: RESOURCE_URL + 'lading-page-2.svg',
