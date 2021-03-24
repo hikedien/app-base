@@ -16,7 +16,7 @@ var reactIntl = require('react-intl');
 var history$1 = require('history');
 var jwt_decode = _interopDefault(require('jwt-decode'));
 var moment = _interopDefault(require('moment'));
-var sessionStorage = _interopDefault(require('redux-persist/es/storage/session'));
+var sessionStorage$1 = _interopDefault(require('redux-persist/es/storage/session'));
 var reactRouterDom = require('react-router-dom');
 var classnames = _interopDefault(require('classnames'));
 var reactstrap = require('reactstrap');
@@ -1369,7 +1369,7 @@ var rootReducer = function rootReducer(appReducer) {
     customizer: customizerReducer,
     ui: uiReducer,
     auth: reduxPersist.persistReducer({
-      storage: sessionStorage,
+      storage: sessionStorage$1,
       key: 'root',
       blacklist: ['loginStatus']
     }, authReducers),
@@ -6945,6 +6945,12 @@ var AutoLogin = function AutoLogin() {
     var insId = queryParams.get('insId');
     dispatch(loginAction(userId, hmac, insId));
   }, []);
+
+  var onClickGoBackHome = function onClickGoBackHome() {
+    sessionStorage.clear();
+    window.location.href = DIVAY_URL;
+  };
+
   return /*#__PURE__*/React__default.createElement("div", {
     className: "fallback-spinner auto-login"
   }, /*#__PURE__*/React__default.createElement("img", {
@@ -6971,9 +6977,7 @@ var AutoLogin = function AutoLogin() {
     className: "mt-2"
   }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
     color: "primary",
-    onClick: function onClick() {
-      return window.history.back();
-    }
+    onClick: onClickGoBackHome
   }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "common.back"
   }))))) : '');

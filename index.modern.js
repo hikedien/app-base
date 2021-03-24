@@ -16,7 +16,7 @@ export { FormattedMessage } from 'react-intl';
 import { createBrowserHistory } from 'history';
 import jwt_decode from 'jwt-decode';
 import moment from 'moment';
-import sessionStorage from 'redux-persist/es/storage/session';
+import sessionStorage$1 from 'redux-persist/es/storage/session';
 import { useHistory, Link, Router, Switch, Route, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
 import { FormGroup, Label, DropdownMenu, DropdownItem, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Navbar as Navbar$1, Button, Badge, Input, Row, Col, Media, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, Collapse, Modal, ModalBody } from 'reactstrap';
@@ -1181,7 +1181,7 @@ const rootReducer = appReducer => combineReducers({
   customizer: customizerReducer,
   ui: uiReducer,
   auth: persistReducer({
-    storage: sessionStorage,
+    storage: sessionStorage$1,
     key: 'root',
     blacklist: ['loginStatus']
   }, authReducers),
@@ -6338,6 +6338,12 @@ const AutoLogin = () => {
     const insId = queryParams.get('insId');
     dispatch(loginAction(userId, hmac, insId));
   }, []);
+
+  const onClickGoBackHome = () => {
+    sessionStorage.clear();
+    window.location.href = DIVAY_URL;
+  };
+
   return /*#__PURE__*/React.createElement("div", {
     className: "fallback-spinner auto-login"
   }, /*#__PURE__*/React.createElement("img", {
@@ -6364,7 +6370,7 @@ const AutoLogin = () => {
     className: "mt-2"
   }, /*#__PURE__*/React.createElement(Button.Ripple, {
     color: "primary",
-    onClick: () => window.history.back()
+    onClick: onClickGoBackHome
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "common.back"
   }))))) : '');
