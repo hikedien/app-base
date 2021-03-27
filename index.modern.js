@@ -5821,8 +5821,8 @@ const LandingHeader = ({
   isLanding2
 }) => {
   return /*#__PURE__*/React.createElement(Context.Consumer, null, context => {
-    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Link, {
-      to: "/"
+    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("a", {
+      href: "https://inon.vn/"
     }, /*#__PURE__*/React.createElement("img", {
       src: isLanding2 ? IMAGE.LOGO : IMAGE.LOGO_WHITE,
       alt: "logo"

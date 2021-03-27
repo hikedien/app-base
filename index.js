@@ -6397,8 +6397,8 @@ var CreatePassword = function CreatePassword(_ref) {
 var LandingHeader = function LandingHeader(_ref) {
   var isLanding2 = _ref.isLanding2;
   return /*#__PURE__*/React__default.createElement(Context.Consumer, null, function (context) {
-    return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
-      to: "/"
+    return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("a", {
+      href: "https://inon.vn/"
     }, /*#__PURE__*/React__default.createElement("img", {
       src: isLanding2 ? IMAGE.LOGO : IMAGE.LOGO_WHITE,
       alt: "logo"
