@@ -122,7 +122,7 @@ const AppId = {
 
 const API_BASE_URL = 'https://api.inon.vn';
 const RESOURCE_URL = 'https://sit2.inon.vn/resources/images/';
-const DIVAY_URL = ' https://admin-divay-test.azurewebsites.net';
+const DIVAY_URL = 'https://admin.divay.vn/';
 const API_LOGIN_URL = '/api/authenticate';
 const API_DIVAY_LOGIN_URL = '/api/divay-authenticate';
 const API_LOGOUT_URL = '/api/logout';
