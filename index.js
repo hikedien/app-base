@@ -8804,7 +8804,6 @@ var SocialLogin = function SocialLogin() {
         }
 
         dispatch(socialLogin(_extends({}, userInfo, {
-          picture: '',
           email: values.email,
           phoneNumber: values.phoneNumber
         }), LOGIN_METHODS.FACEBOOK, openAddInfoModal));
