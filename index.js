@@ -10341,6 +10341,7 @@ Object.defineProperty(exports, 'Button', {
     return reactstrap.Button;
   }
 });
+exports.AccountSettings = AccountSettings;
 exports.AppId = AppId;
 exports.AutoComplete = Autocomplete;
 exports.BaseApp = App;
