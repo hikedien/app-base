@@ -14,7 +14,7 @@ export { toast } from 'react-toastify';
 import { FormattedMessage, injectIntl, IntlProvider, useIntl } from 'react-intl';
 export { FormattedMessage } from 'react-intl';
 import { createBrowserHistory } from 'history';
-import moment from 'moment';
+import moment$1 from 'moment';
 import sessionStorage from 'redux-persist/es/storage/session';
 import { useHistory, Link, Router, Switch, Route, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
@@ -957,7 +957,7 @@ const setUpHttpClient = (store, apiBaseUrl) => {
         type: CHANGE_SESSION_EXPIRE_TIME
       });
       config.headers.Authorization = `Bearer ${token}`;
-      const isSessionExpired = moment().isAfter(moment(sessionExpireTime));
+      const isSessionExpired = moment$1().isAfter(moment$1(sessionExpireTime));
 
       if (sessionExpireTime && isSessionExpired) {
         toastError( /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -1153,7 +1153,7 @@ const authReducers = (state = { ...authInitialState
     case CHANGE_SESSION_EXPIRE_TIME:
       {
         return { ...state,
-          sessionExpireTime: moment().add(SESSION_TIMEOUT, 'minutes').format(DATE_TIME_FORMAT)
+          sessionExpireTime: moment$1().add(SESSION_TIMEOUT, 'minutes').format(DATE_TIME_FORMAT)
         };
       }
 
@@ -3812,6 +3812,7 @@ const BaseFormGroup = ({
   maxLength,
   disabled,
   onChange,
+  isShowErrorMessage: _isShowErrorMessage = true,
   isRequired: _isRequired = true
 }) => {
   const onBlur = (e, form) => {
@@ -3841,7 +3842,7 @@ const BaseFormGroup = ({
     field,
     form
   }) => /*#__PURE__*/React.createElement(Input, Object.assign({
-    className: `form-control ${_isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'}`
+    className: `form-control ${_isRequired && getPropObject(form.errors, fieldName) && getPropObject(form.touched, fieldName) && 'is-invalid'}`
   }, field, {
     type: type,
     disabled: disabled,
@@ -3850,7 +3851,7 @@ const BaseFormGroup = ({
     placeholder: msg,
     onBlur: e => onBlur(e, form),
     onChange: e => handleChange(e, form)
-  }))), _isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) ? /*#__PURE__*/React.createElement("div", {
+  }))), _isRequired && _isShowErrorMessage && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
   }, getPropObject(errors, fieldName)) : null, /*#__PURE__*/React.createElement(Label, null, msg))));
 };
@@ -6612,8 +6613,8 @@ const DatePicker = props => {
     ref: datePickerRef,
     disabled: props.disabled,
     placeholder: props.placeholder,
-    className: "form-control position-relative bg-white flatpickr-input"
-  }), /*#__PURE__*/React.createElement(Label, null, props.placeholder), props.errors && props.touched && getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React.createElement("div", {
+    className: `form-control position-relative bg-white flatpickr-input ${props.className}`
+  }), /*#__PURE__*/React.createElement(Label, null, props.placeholder), props.errors && props.touched && props.isShowErrorMessage && getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
   }, getPropObject(props.errors, props.fieldName)) : null);
 };
@@ -6624,25 +6625,28 @@ const BaseFormDatePicker = ({
   touched,
   messageId,
   value,
+  className,
   options,
-  intl,
   onChange,
   disabled,
+  isShowErrorMessage,
   isRequired: _isRequired = true
 }) => {
   const defaultOptions = {
     dateFormat: 'm/d/Y'
   };
+  const intl = useIntl();
   return /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Field, {
     name: fieldName
   }, ({
     field,
     form
   }) => /*#__PURE__*/React.createElement(DatePicker, {
-    className: `form-control position-relative ${!disabled ? 'bg-white' : ''} ${_isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'}`,
-    placeholder: intl.formatMessage({
+    className: `form-control position-relative ${!disabled ? 'bg-white' : ''} ${_isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'} ${className}`,
+    placeholder: messageId ? intl.formatMessage({
       id: messageId
-    }),
+    }) : '',
+    isShowErrorMessage: isShowErrorMessage,
     fieldName: fieldName,
     notRequired: !_isRequired,
     errors: errors,
@@ -6654,13 +6658,11 @@ const BaseFormDatePicker = ({
       form.setFieldValue(fieldName, date[0]);
 
       if (onChange) {
-        onChange(date);
+        onChange(date, form);
       }
     }
   })));
 };
-
-var BaseFormDatePicker$1 = injectIntl(BaseFormDatePicker);
 
 const Select = props => {
   const [inputValue, setInputValue] = useState(props.value);
@@ -6723,7 +6725,7 @@ const Select = props => {
         primary: '#338955'
       }
     })
-  })), props.required ? getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React.createElement("div", {
+  })), props.required && props.isShowErrorMessage ? getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
   }, getPropObject(props.errors, props.fieldName)) : null : '', /*#__PURE__*/React.createElement("input", {
     className: "d-none",
@@ -6749,6 +6751,7 @@ const BaseFormGroupSelect = ({
   onChange,
   loadOptions,
   type,
+  isShowErrorMessage: _isShowErrorMessage = true,
   defaultOptions
 }) => {
   const intl = useIntl();
@@ -6763,6 +6766,7 @@ const BaseFormGroupSelect = ({
     }),
     className: `${_isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'}`,
     type: type,
+    isShowErrorMessage: _isShowErrorMessage,
     classNamePrefix: "Select",
     fieldName: fieldName,
     required: _isRequired,
@@ -6779,7 +6783,7 @@ const BaseFormGroupSelect = ({
       form.setFieldValue(fieldName, e.value);
 
       if (onChange) {
-        onChange(e);
+        onChange(e, form);
       }
     }
   }));
@@ -7194,7 +7198,7 @@ const UserAccountTab = () => {
   }, /*#__PURE__*/React.createElement(Col, {
     sm: "12",
     md: "6"
-  }, /*#__PURE__*/React.createElement(BaseFormDatePicker$1, {
+  }, /*#__PURE__*/React.createElement(BaseFormDatePicker, {
     messageId: "completeInformation.dateOfBirth",
     fieldName: "dateOfBirth",
     errors: errors,
@@ -9164,7 +9168,7 @@ const CompleteInformation = () => {
     touched: touched
   }))), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
     sm: "6"
-  }, /*#__PURE__*/React.createElement(BaseFormDatePicker$1, {
+  }, /*#__PURE__*/React.createElement(BaseFormDatePicker, {
     messageId: "completeInformation.dateOfBirth",
     fieldName: "dateOfBirth",
     errors: errors,
@@ -9640,5 +9644,5 @@ const usePageAuthorities = () => {
   return authorities;
 };
 
-export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker$1 as BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, Radio, ReactTable, Select, goBackHomePage, hideConfirmAlert, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
+export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, Radio, ReactTable, Select, goBackHomePage, hideConfirmAlert, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
 //# sourceMappingURL=index.modern.js.map

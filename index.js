@@ -14,7 +14,7 @@ var Icon = require('react-feather');
 var reactToastify = require('react-toastify');
 var reactIntl = require('react-intl');
 var history$1 = require('history');
-var moment = _interopDefault(require('moment'));
+var moment$1 = _interopDefault(require('moment'));
 var sessionStorage = _interopDefault(require('redux-persist/es/storage/session'));
 var reactRouterDom = require('react-router-dom');
 var classnames = _interopDefault(require('classnames'));
@@ -1146,7 +1146,7 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
         type: CHANGE_SESSION_EXPIRE_TIME
       });
       config.headers.Authorization = "Bearer " + token;
-      var isSessionExpired = moment().isAfter(moment(sessionExpireTime));
+      var isSessionExpired = moment$1().isAfter(moment$1(sessionExpireTime));
 
       if (sessionExpireTime && isSessionExpired) {
         toastError( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -1346,7 +1346,7 @@ var authReducers = function authReducers(state, action) {
     case CHANGE_SESSION_EXPIRE_TIME:
       {
         return _extends({}, state, {
-          sessionExpireTime: moment().add(SESSION_TIMEOUT, 'minutes').format(DATE_TIME_FORMAT)
+          sessionExpireTime: moment$1().add(SESSION_TIMEOUT, 'minutes').format(DATE_TIME_FORMAT)
         });
       }
 
@@ -4175,6 +4175,8 @@ var BaseFormGroup = function BaseFormGroup(_ref) {
       maxLength = _ref.maxLength,
       disabled = _ref.disabled,
       onChange = _ref.onChange,
+      _ref$isShowErrorMessa = _ref.isShowErrorMessage,
+      isShowErrorMessage = _ref$isShowErrorMessa === void 0 ? true : _ref$isShowErrorMessa,
       _ref$isRequired = _ref.isRequired,
       isRequired = _ref$isRequired === void 0 ? true : _ref$isRequired;
 
@@ -4204,7 +4206,7 @@ var BaseFormGroup = function BaseFormGroup(_ref) {
       var field = _ref2.field,
           form = _ref2.form;
       return /*#__PURE__*/React__default.createElement(reactstrap.Input, _extends({
-        className: "form-control " + (isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid')
+        className: "form-control " + (isRequired && getPropObject(form.errors, fieldName) && getPropObject(form.touched, fieldName) && 'is-invalid')
       }, field, {
         type: type,
         disabled: disabled,
@@ -4218,7 +4220,7 @@ var BaseFormGroup = function BaseFormGroup(_ref) {
           return handleChange(e, form);
         }
       }));
-    }), isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) ? /*#__PURE__*/React__default.createElement("div", {
+    }), isRequired && isShowErrorMessage && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) ? /*#__PURE__*/React__default.createElement("div", {
       className: "text-danger"
     }, getPropObject(errors, fieldName)) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
   }));
@@ -6984,8 +6986,8 @@ var DatePicker = function DatePicker(props) {
     ref: datePickerRef,
     disabled: props.disabled,
     placeholder: props.placeholder,
-    className: "form-control position-relative bg-white flatpickr-input"
-  }), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, props.placeholder), props.errors && props.touched && getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React__default.createElement("div", {
+    className: "form-control position-relative bg-white flatpickr-input " + props.className
+  }), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, props.placeholder), props.errors && props.touched && props.isShowErrorMessage && getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React__default.createElement("div", {
     className: "text-danger"
   }, getPropObject(props.errors, props.fieldName)) : null);
 };
@@ -6995,25 +6997,28 @@ var BaseFormDatePicker = function BaseFormDatePicker(_ref) {
       errors = _ref.errors,
       touched = _ref.touched,
       messageId = _ref.messageId,
+      className = _ref.className,
       options = _ref.options,
-      intl = _ref.intl,
       _onChange = _ref.onChange,
       disabled = _ref.disabled,
+      isShowErrorMessage = _ref.isShowErrorMessage,
       _ref$isRequired = _ref.isRequired,
       isRequired = _ref$isRequired === void 0 ? true : _ref$isRequired;
   var defaultOptions = {
     dateFormat: 'm/d/Y'
   };
+  var intl = reactIntl.useIntl();
   return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(formik.Field, {
     name: fieldName
   }, function (_ref2) {
     var field = _ref2.field,
         form = _ref2.form;
     return /*#__PURE__*/React__default.createElement(DatePicker, {
-      className: "form-control position-relative " + (!disabled ? 'bg-white' : '') + " " + (isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'),
-      placeholder: intl.formatMessage({
+      className: "form-control position-relative " + (!disabled ? 'bg-white' : '') + " " + (isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid') + " " + className,
+      placeholder: messageId ? intl.formatMessage({
         id: messageId
-      }),
+      }) : '',
+      isShowErrorMessage: isShowErrorMessage,
       fieldName: fieldName,
       notRequired: !isRequired,
       errors: errors,
@@ -7025,14 +7030,12 @@ var BaseFormDatePicker = function BaseFormDatePicker(_ref) {
         form.setFieldValue(fieldName, date[0]);
 
         if (_onChange) {
-          _onChange(date);
+          _onChange(date, form);
         }
       }
     });
   }));
 };
-
-var BaseFormDatePicker$1 = reactIntl.injectIntl(BaseFormDatePicker);
 
 var Select = function Select(props) {
   var _useState = React.useState(props.value),
@@ -7105,7 +7108,7 @@ var Select = function Select(props) {
         })
       });
     }
-  })), props.required ? getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React__default.createElement("div", {
+  })), props.required && props.isShowErrorMessage ? getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React__default.createElement("div", {
     className: "text-danger"
   }, getPropObject(props.errors, props.fieldName)) : null : '', /*#__PURE__*/React__default.createElement("input", {
     className: "d-none",
@@ -7132,6 +7135,8 @@ var BaseFormGroupSelect = function BaseFormGroupSelect(_ref) {
       _onChange = _ref.onChange,
       loadOptions = _ref.loadOptions,
       type = _ref.type,
+      _ref$isShowErrorMessa = _ref.isShowErrorMessage,
+      isShowErrorMessage = _ref$isShowErrorMessa === void 0 ? true : _ref$isShowErrorMessa,
       defaultOptions = _ref.defaultOptions;
   var intl = reactIntl.useIntl();
   return /*#__PURE__*/React__default.createElement(formik.Field, {
@@ -7145,6 +7150,7 @@ var BaseFormGroupSelect = function BaseFormGroupSelect(_ref) {
       }),
       className: "" + (isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'),
       type: type,
+      isShowErrorMessage: isShowErrorMessage,
       classNamePrefix: "Select",
       fieldName: fieldName,
       required: isRequired,
@@ -7163,7 +7169,7 @@ var BaseFormGroupSelect = function BaseFormGroupSelect(_ref) {
         form.setFieldValue(fieldName, e.value);
 
         if (_onChange) {
-          _onChange(e);
+          _onChange(e, form);
         }
       }
     });
@@ -7648,7 +7654,7 @@ var UserAccountTab = function UserAccountTab() {
     }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "12",
       md: "6"
-    }, /*#__PURE__*/React__default.createElement(BaseFormDatePicker$1, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormDatePicker, {
       messageId: "completeInformation.dateOfBirth",
       fieldName: "dateOfBirth",
       errors: errors,
@@ -9799,7 +9805,7 @@ var CompleteInformation = function CompleteInformation() {
       touched: touched
     }))), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
       sm: "6"
-    }, /*#__PURE__*/React__default.createElement(BaseFormDatePicker$1, {
+    }, /*#__PURE__*/React__default.createElement(BaseFormDatePicker, {
       messageId: "completeInformation.dateOfBirth",
       fieldName: "dateOfBirth",
       errors: errors,
@@ -10348,7 +10354,7 @@ exports.AutoComplete = Autocomplete;
 exports.BaseApp = App;
 exports.BaseAppConfigs = appConfigs;
 exports.BaseAppUltils = index;
-exports.BaseFormDatePicker = BaseFormDatePicker$1;
+exports.BaseFormDatePicker = BaseFormDatePicker;
 exports.BaseFormGroup = BaseFormGroup;
 exports.BaseFormGroupSelect = BaseFormGroupSelect;
 exports.Checkbox = CheckBox;
