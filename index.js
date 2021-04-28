@@ -7604,6 +7604,7 @@ var UserAccountTab = function UserAccountTab() {
     validationSchema: validationSchema,
     onSubmit: onSubmit,
     initialValues: _extends({}, user, {
+      dateOfBirth: user.dateOfBirth || moment().subtract(15, 'years').toISOString(),
       userDetails: userDetails,
       userSettings: userSettings
     })
@@ -7646,7 +7647,6 @@ var UserAccountTab = function UserAccountTab() {
       sm: "12",
       md: "6"
     }, /*#__PURE__*/React__default.createElement(BaseFormDatePicker$1, {
-      disabled: true,
       messageId: "completeInformation.dateOfBirth",
       fieldName: "dateOfBirth",
       errors: errors,
