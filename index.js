@@ -10353,6 +10353,7 @@ exports.BaseFormGroupSelect = BaseFormGroupSelect;
 exports.Checkbox = CheckBox;
 exports.DatePicker = DatePicker;
 exports.FallbackSpinner = FallbackSpinner;
+exports.GeneralInfo = GeneralInfo;
 exports.HttpClient = HttpClient;
 exports.Radio = Radio;
 exports.ReactTable = ReactTable;
