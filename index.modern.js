@@ -669,7 +669,7 @@ const loginAction = user => {
   };
 };
 const socialLogin = (data, loginMethod, openAddInfoPopup) => {
-  return async dispatch => {
+  return async (dispatch, getState) => {
     let res = await AuthService.guestSocialLogin(data);
 
     if (!res || !res.data) {
@@ -693,7 +693,11 @@ const socialLogin = (data, loginMethod, openAddInfoPopup) => {
       }
     });
     setTimeout(() => {
-      window.location.href = getExternalAppUrl(AppId.ELITE_APP, '/');
+      if (getState().customizer.appId !== AppId.ELITE_APP) {
+        window.location.href = getExternalAppUrl(AppId.ELITE_APP, '/');
+      } else {
+        history.push('/');
+      }
     }, 500);
   };
 };

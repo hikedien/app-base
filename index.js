@@ -784,7 +784,7 @@ var loginAction = function loginAction(user) {
   };
 };
 var socialLogin = function socialLogin(data, loginMethod, openAddInfoPopup) {
-  return function (dispatch) {
+  return function (dispatch, getState) {
     try {
       return Promise.resolve(AuthService.guestSocialLogin(data)).then(function (res) {
         if (!res || !res.data) {
@@ -810,7 +810,11 @@ var socialLogin = function socialLogin(data, loginMethod, openAddInfoPopup) {
             }
           });
           setTimeout(function () {
-            window.location.href = getExternalAppUrl(AppId.ELITE_APP, '/');
+            if (getState().customizer.appId !== AppId.ELITE_APP) {
+              window.location.href = getExternalAppUrl(AppId.ELITE_APP, '/');
+            } else {
+              history.push('/');
+            }
           }, 500);
         });
       });
