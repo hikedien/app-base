@@ -762,8 +762,10 @@ var loginAction = function loginAction(user) {
                 }
               });
               setTimeout(function () {
-                if (getState().customizer.appId !== AppId.APP_NO1) {
-                  window.location.href = getExternalAppUrl(AppId.APP_NO1, '/');
+                var mainApp = getState().auth.isGuest ? AppId.ELITE_APP : AppId.APP_NO1;
+
+                if (getState().customizer.appId !== mainApp) {
+                  window.location.href = getExternalAppUrl(mainApp, '/');
                 } else {
                   history.push('/');
                 }
