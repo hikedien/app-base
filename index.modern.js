@@ -829,10 +829,6 @@ const logoutAction = () => {
     dispatch({
       type: LOGOUT_ACTION
     });
-
-    if (window.FB) {
-      window.FB.logout();
-    }
   };
 };
 const updateUserInfo = (user, avatarImage) => {
@@ -954,7 +950,10 @@ const setUpHttpClient = (store, apiBaseUrl) => {
 
   HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
   HttpClient.interceptors.request.use(config => {
-    const token = store.getState().auth.authToken;
+    const {
+      appId
+    } = store.getState().auth.customizer;
+    const token = appId === AppId.ELITE_APP ? store.getState().auth.guest.authToken : store.getState().auth.authToken;
     const sessionExpireTime = store.getState().auth.sessionExpireTime;
     language = localStorage.getItem('language');
 
@@ -8248,13 +8247,15 @@ const SocialLogin = () => {
   };
 
   const handleFBLogin = data => {
-    dispatch(socialLogin({
-      socialId: data.id,
-      email: data.email,
-      picture: data.picture.data.url,
-      name: data.name,
-      provider: LOGIN_METHODS.FACEBOOK
-    }, LOGIN_METHODS.FACEBOOK, openAddInfoModal));
+    if (data.accessToken) {
+      dispatch(socialLogin({
+        socialId: data.id,
+        email: data.email,
+        picture: data.picture.data.url,
+        name: data.name,
+        provider: LOGIN_METHODS.FACEBOOK
+      }, LOGIN_METHODS.FACEBOOK, openAddInfoModal));
+    }
   };
 
   const handleGoogleLogin = data => {
@@ -8330,6 +8331,7 @@ const SocialLogin = () => {
     type: "button",
     appId: FB_APP_ID,
     cssClass: "fb-login-button",
+    disableMobileRedirect: true,
     render: ({
       onClick
     }) => /*#__PURE__*/React.createElement("div", {

@@ -983,10 +983,6 @@ var logoutAction = function logoutAction() {
         dispatch({
           type: LOGOUT_ACTION
         });
-
-        if (window.FB) {
-          window.FB.logout();
-        }
       });
     } catch (e) {
       return Promise.reject(e);
@@ -1143,7 +1139,8 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
 
   HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
   HttpClient.interceptors.request.use(function (config) {
-    var token = store.getState().auth.authToken;
+    var appId = store.getState().auth.customizer.appId;
+    var token = appId === AppId.ELITE_APP ? store.getState().auth.guest.authToken : store.getState().auth.authToken;
     var sessionExpireTime = store.getState().auth.sessionExpireTime;
     language = localStorage.getItem('language');
 
@@ -8782,13 +8779,15 @@ var SocialLogin = function SocialLogin() {
   };
 
   var handleFBLogin = function handleFBLogin(data) {
-    dispatch(socialLogin({
-      socialId: data.id,
-      email: data.email,
-      picture: data.picture.data.url,
-      name: data.name,
-      provider: LOGIN_METHODS.FACEBOOK
-    }, LOGIN_METHODS.FACEBOOK, openAddInfoModal));
+    if (data.accessToken) {
+      dispatch(socialLogin({
+        socialId: data.id,
+        email: data.email,
+        picture: data.picture.data.url,
+        name: data.name,
+        provider: LOGIN_METHODS.FACEBOOK
+      }, LOGIN_METHODS.FACEBOOK, openAddInfoModal));
+    }
   };
 
   var handleGoogleLogin = function handleGoogleLogin(data) {
@@ -8871,6 +8870,7 @@ var SocialLogin = function SocialLogin() {
     type: "button",
     appId: FB_APP_ID,
     cssClass: "fb-login-button",
+    disableMobileRedirect: true,
     render: function render(_ref2) {
       var onClick = _ref2.onClick;
       return /*#__PURE__*/React__default.createElement("div", {
