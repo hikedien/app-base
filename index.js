@@ -14,7 +14,7 @@ var Icon = require('react-feather');
 var reactToastify = require('react-toastify');
 var reactIntl = require('react-intl');
 var history$1 = require('history');
-var moment$1 = _interopDefault(require('moment'));
+var moment = _interopDefault(require('moment'));
 var storage = _interopDefault(require('redux-persist/es/storage'));
 var reactRouterDom = require('react-router-dom');
 var classnames = _interopDefault(require('classnames'));
@@ -806,10 +806,12 @@ var socialLogin = function socialLogin(data, loginMethod, openAddInfoPopup) {
           dispatch({
             type: LOGIN_ACTION,
             payload: {
-              authToken: authToken,
-              loginMethod: loginMethod,
-              type: 'PASSWORD',
-              user: res.data || {}
+              guest: {
+                authToken: authToken,
+                loginMethod: loginMethod,
+                type: 'PASSWORD',
+                user: res.data || {}
+              }
             }
           });
           setTimeout(function () {
@@ -1047,8 +1049,11 @@ var changePassword = function changePassword(_ref2) {
 var changeLanguageSetting = function changeLanguageSetting(lang, callBack) {
   return function (dispatch, getState) {
     try {
-      var _getState$auth$user$u = getState().auth.user.userSettings,
-          userSettings = _getState$auth$user$u === void 0 ? {} : _getState$auth$user$u;
+      var appId = getState().customizer.appId;
+
+      var _ref3 = appId === AppId.ELITE_APP ? getState().auth.guest.user : getState().auth.user,
+          _ref3$userSettings = _ref3.userSettings,
+          userSettings = _ref3$userSettings === void 0 ? {} : _ref3$userSettings;
 
       var value = _extends({}, userSettings, {
         language: lang.toUpperCase()
@@ -1147,7 +1152,7 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
         type: CHANGE_SESSION_EXPIRE_TIME
       });
       config.headers.Authorization = "Bearer " + token;
-      var isSessionExpired = moment$1().isAfter(moment$1(sessionExpireTime));
+      var isSessionExpired = moment().isAfter(moment(sessionExpireTime));
 
       if (sessionExpireTime && isSessionExpired) {
         toastError( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -1295,6 +1300,7 @@ var authInitialState = {
     user: {},
     token: ''
   },
+  guest: {},
   resetPasswordToken: '',
   sessionExpireTime: null
 };
@@ -1347,7 +1353,7 @@ var authReducers = function authReducers(state, action) {
     case CHANGE_SESSION_EXPIRE_TIME:
       {
         return _extends({}, state, {
-          sessionExpireTime: moment$1().add(SESSION_TIMEOUT, 'minutes').format(DATE_TIME_FORMAT)
+          sessionExpireTime: moment().add(SESSION_TIMEOUT, 'minutes').format(DATE_TIME_FORMAT)
         });
       }
 
@@ -7434,13 +7440,18 @@ var validationSchema = Yup.object().shape({
 
 var UserAccountTab = function UserAccountTab() {
   var _useSelector = reactRedux.useSelector(function (state) {
-    return state.auth.user;
+    return state.customizer;
   }),
-      _useSelector$userDeta = _useSelector.userDetails,
-      userDetails = _useSelector$userDeta === void 0 ? {} : _useSelector$userDeta,
-      _useSelector$userSett = _useSelector.userSettings,
-      userSettings = _useSelector$userSett === void 0 ? {} : _useSelector$userSett,
-      user = _objectWithoutPropertiesLoose(_useSelector, ["userDetails", "userSettings"]);
+      appId = _useSelector.appId;
+
+  var _useSelector2 = reactRedux.useSelector(function (state) {
+    return appId !== AppId.ELITE_APP ? state.auth.user : state.auth.guest.user;
+  }),
+      _useSelector2$userDet = _useSelector2.userDetails,
+      userDetails = _useSelector2$userDet === void 0 ? {} : _useSelector2$userDet,
+      _useSelector2$userSet = _useSelector2.userSettings,
+      userSettings = _useSelector2$userSet === void 0 ? {} : _useSelector2$userSet,
+      user = _objectWithoutPropertiesLoose(_useSelector2, ["userDetails", "userSettings"]);
 
   var dispatch = reactRedux.useDispatch();
 
@@ -7512,7 +7523,7 @@ var UserAccountTab = function UserAccountTab() {
 
   var onSubmit = function onSubmit(values) {
     try {
-      dispatch(showConfirmAlert$1({
+      dispatch(showConfirmAlert({
         title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
           id: "setting.accountInformation"
         }),
@@ -7531,7 +7542,7 @@ var UserAccountTab = function UserAccountTab() {
   };
 
   var onClickBackHome = function onClickBackHome() {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "common.home"
       }),
@@ -7540,7 +7551,7 @@ var UserAccountTab = function UserAccountTab() {
         id: "common.backHome.confirmMessage"
       }),
       onConfirm: function onConfirm() {
-        dispatch(goBackHomePage$1());
+        dispatch(goBackHomePage());
       }
     }));
   };
@@ -10006,6 +10017,7 @@ var AppRouter = function AppRouter(props) {
       authToken = props.authToken,
       children = props.children,
       loadNavtigation = props.loadNavtigation,
+      changeIsGuest = props.changeIsGuest,
       loadUserRoles = props.loadUserRoles,
       setAppId = props.setAppId,
       history = props.history,
@@ -10023,6 +10035,10 @@ var AppRouter = function AppRouter(props) {
     if (authToken) {
       loadNavtigation(appId);
       loadUserRoles();
+    }
+
+    if (appId === AppId.ELITE_APP) {
+      changeIsGuest(true);
     }
   }, [authToken]);
 
@@ -10161,6 +10177,7 @@ var AppRouter$1 = reactRedux.connect(mapStateToProps$3, {
   loadNavtigation: loadNavtigation,
   loadUserRoles: loadUserRoles,
   loginAction: loginAction,
+  changeIsGuest: changeIsGuest,
   setAppId: setAppId
 })(AppRouter);
 

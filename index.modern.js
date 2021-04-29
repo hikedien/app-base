@@ -14,7 +14,7 @@ export { toast } from 'react-toastify';
 import { FormattedMessage, injectIntl, IntlProvider, useIntl } from 'react-intl';
 export { FormattedMessage } from 'react-intl';
 import { createBrowserHistory } from 'history';
-import moment$1 from 'moment';
+import moment from 'moment';
 import storage from 'redux-persist/es/storage';
 import { useHistory, Link, Router, Switch, Route, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
@@ -689,10 +689,12 @@ const socialLogin = (data, loginMethod, openAddInfoPopup) => {
     dispatch({
       type: LOGIN_ACTION,
       payload: {
-        authToken,
-        loginMethod,
-        type: 'PASSWORD',
-        user: res.data || {}
+        guest: {
+          authToken,
+          loginMethod,
+          type: 'PASSWORD',
+          user: res.data || {}
+        }
       }
     });
     setTimeout(() => {
@@ -875,8 +877,11 @@ const changePassword = ({
 const changeLanguageSetting = (lang, callBack) => {
   return async (dispatch, getState) => {
     const {
+      appId
+    } = getState().customizer;
+    const {
       userSettings = {}
-    } = getState().auth.user;
+    } = appId === AppId.ELITE_APP ? getState().auth.guest.user : getState().auth.user;
     const value = { ...userSettings,
       language: lang.toUpperCase()
     };
@@ -958,7 +963,7 @@ const setUpHttpClient = (store, apiBaseUrl) => {
         type: CHANGE_SESSION_EXPIRE_TIME
       });
       config.headers.Authorization = `Bearer ${token}`;
-      const isSessionExpired = moment$1().isAfter(moment$1(sessionExpireTime));
+      const isSessionExpired = moment().isAfter(moment(sessionExpireTime));
 
       if (sessionExpireTime && isSessionExpired) {
         toastError( /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -1103,6 +1108,7 @@ const authInitialState = {
     user: {},
     token: ''
   },
+  guest: {},
   resetPasswordToken: '',
   sessionExpireTime: null
 };
@@ -1154,7 +1160,7 @@ const authReducers = (state = { ...authInitialState
     case CHANGE_SESSION_EXPIRE_TIME:
       {
         return { ...state,
-          sessionExpireTime: moment$1().add(SESSION_TIMEOUT, 'minutes').format(DATE_TIME_FORMAT)
+          sessionExpireTime: moment().add(SESSION_TIMEOUT, 'minutes').format(DATE_TIME_FORMAT)
         };
       }
 
@@ -7000,11 +7006,14 @@ const validationSchema = object().shape({
 });
 
 const UserAccountTab = () => {
+  const {
+    appId
+  } = useSelector(state => state.customizer);
   let {
     userDetails = {},
     userSettings = {},
     ...user
-  } = useSelector(state => state.auth.user);
+  } = useSelector(state => appId !== AppId.ELITE_APP ? state.auth.user : state.auth.guest.user);
   const dispatch = useDispatch();
   const {
     cities
@@ -7070,7 +7079,7 @@ const UserAccountTab = () => {
   };
 
   const onSubmit = async values => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.accountInformation"
       }),
@@ -7085,7 +7094,7 @@ const UserAccountTab = () => {
   };
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -7094,7 +7103,7 @@ const UserAccountTab = () => {
         id: "common.backHome.confirmMessage"
       }),
       onConfirm: () => {
-        dispatch(goBackHomePage$1());
+        dispatch(goBackHomePage());
       }
     }));
   };
@@ -9362,6 +9371,7 @@ const AppRouter = props => {
     authToken,
     children,
     loadNavtigation,
+    changeIsGuest,
     loadUserRoles,
     setAppId,
     history,
@@ -9380,6 +9390,10 @@ const AppRouter = props => {
     if (authToken) {
       loadNavtigation(appId);
       loadUserRoles();
+    }
+
+    if (appId === AppId.ELITE_APP) {
+      changeIsGuest(true);
     }
   }, [authToken]);
 
@@ -9500,6 +9514,7 @@ var AppRouter$1 = connect(mapStateToProps$3, {
   loadNavtigation,
   loadUserRoles,
   loginAction,
+  changeIsGuest,
   setAppId
 })(AppRouter);
 
