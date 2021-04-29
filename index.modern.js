@@ -952,7 +952,7 @@ const setUpHttpClient = (store, apiBaseUrl) => {
   HttpClient.interceptors.request.use(config => {
     const {
       appId
-    } = store.getState().auth.customizer;
+    } = store.getState().customizer;
     const token = appId === AppId.ELITE_APP ? store.getState().auth.guest.authToken : store.getState().auth.authToken;
     const sessionExpireTime = store.getState().auth.sessionExpireTime;
     language = localStorage.getItem('language');
