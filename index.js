@@ -511,10 +511,8 @@ AuthService.changeUserSetting = function (value) {
 };
 
 AuthService.verifyAccount = function (token) {
-  return HttpClient.get(API_VERIFY_ACCOUNT, {
-    params: {
-      token: token
-    }
+  return HttpClient.post(API_VERIFY_ACCOUNT, {
+    token: token
   });
 };
 
@@ -1111,6 +1109,7 @@ var verifyAccount = function verifyAccount() {
   return function (dispatch) {
     try {
       var token = new URLSearchParams(document.location.search).get('token');
+      history.push(window.location.pathname);
 
       if (!token) {
         dispatch({
