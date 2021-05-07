@@ -433,9 +433,7 @@ AuthService.changeUserSetting = value => {
 };
 
 AuthService.verifyAccount = token => {
-  return HttpClient.post(API_VERIFY_ACCOUNT, {
-    token
-  });
+  return HttpClient.post(`${API_VERIFY_ACCOUNT}/${token}`);
 };
 
 AuthService.updateAvatar = async (user, file) => {

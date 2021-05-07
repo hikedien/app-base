@@ -511,9 +511,7 @@ AuthService.changeUserSetting = function (value) {
 };
 
 AuthService.verifyAccount = function (token) {
-  return HttpClient.post(API_VERIFY_ACCOUNT, {
-    token: token
-  });
+  return HttpClient.post(API_VERIFY_ACCOUNT + "/" + token);
 };
 
 AuthService.updateAvatar = function (user, file) {
