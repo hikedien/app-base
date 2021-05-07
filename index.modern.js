@@ -18,7 +18,7 @@ import moment from 'moment';
 import storage from 'redux-persist/es/storage';
 import { useHistory, Link, Router, Switch, Route, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
-import { FormGroup, Label, DropdownMenu, DropdownItem, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Navbar as Navbar$1, Button, Badge, Input, Row, Col, Media, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, Collapse, Modal, ModalHeader, ModalBody, ModalFooter, ButtonGroup } from 'reactstrap';
+import { FormGroup, Label, DropdownMenu, DropdownItem, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Navbar as Navbar$1, Button, Badge, Input, Row, Col, Media, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, Collapse, Modal, ModalHeader, ModalBody, ModalFooter, ButtonGroup, Spinner } from 'reactstrap';
 export { Button } from 'reactstrap';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import ReactDOM from 'react-dom';
@@ -39,6 +39,8 @@ import Ripples from 'react-ripples';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import 'react-toastify/dist/ReactToastify.css';
 import Table from 'react-table';
+import MaskedInput from 'react-text-mask';
+import createNumberMask from 'text-mask-addons/dist/createNumberMask';
 
 const generateUUID = () => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -126,6 +128,7 @@ const API_CHANGE_PASSWORD = '/api/change-password';
 const API_REGISTER = '/nth/onboarding/api/authenticate/register';
 const API_GET_USER = '/nth/user/api/users';
 const API_USER_SETTINGS = '/nth/user/api/user-settings';
+const API_VERIFY_ACCOUNT = '/nth/user/api/verify-account';
 const API_UPDATE_USER_INFO = '/nth/user/api/update-user-info';
 const API_GET_NAV_CONFIGS = '/nth/accesscontrol/api/roles';
 const API_GET_USER_ROLES = '/nth/accesscontrol/api/user-group-roles';
@@ -261,7 +264,8 @@ const USER_ROLE = {
   DTLX: 'LX.DT',
   BH: 'BH',
   BTBH: 'BTBH',
-  HTDT: 'HT.DT'
+  HTDT: 'HT.DT',
+  KHCN: 'KHCN'
 };
 const IMAGE = {
   LOGO: RESOURCE_URL + 'in-on-logo.svg',
@@ -278,7 +282,9 @@ const IMAGE = {
   LANDING_PAGE_2_BG: RESOURCE_URL + 'lading-page-2.svg',
   LANDING_PAGE_TABLET_BG: RESOURCE_URL + 'lading-page-v.svg',
   DOWNLOAD_APP_IOS: RESOURCE_URL + 'app-store.svg',
-  DOWNLOAD_APP_ANDROID: RESOURCE_URL + 'google-store.svg'
+  DOWNLOAD_APP_ANDROID: RESOURCE_URL + 'google-store.svg',
+  CHECK_ICON: RESOURCE_URL + 'check_icon.png',
+  FAIL_ICON: RESOURCE_URL + 'fail_icon.png'
 };
 
 var appConfigs = {
@@ -294,6 +300,7 @@ var appConfigs = {
   API_REGISTER: API_REGISTER,
   API_GET_USER: API_GET_USER,
   API_USER_SETTINGS: API_USER_SETTINGS,
+  API_VERIFY_ACCOUNT: API_VERIFY_ACCOUNT,
   API_UPDATE_USER_INFO: API_UPDATE_USER_INFO,
   API_GET_NAV_CONFIGS: API_GET_NAV_CONFIGS,
   API_GET_USER_ROLES: API_GET_USER_ROLES,
@@ -419,6 +426,14 @@ AuthService.changePassword = value => {
 
 AuthService.changeUserSetting = value => {
   return HttpClient.put(API_USER_SETTINGS, value);
+};
+
+AuthService.verifyAccount = token => {
+  return HttpClient.get(API_VERIFY_ACCOUNT, {
+    params: {
+      token
+    }
+  });
 };
 
 AuthService.updateAvatar = async (user, file) => {
@@ -574,7 +589,7 @@ const goBackHomePage = () => {
     if (appId === AppId.APP_NO1) {
       history.push('/');
     } else {
-      window.location.href = getExternalAppUrl(AppId.APP_NO1, '/');
+      window.location.href = getExternalAppUrl(appId === AppId.ELITE_APP ? AppId.ELITE_APP : AppId.APP_NO1, '/');
     }
   };
 };
@@ -586,6 +601,7 @@ const SAVE_REGISTER_TOKEN = 'SAVE_REGISTER_TOKEN';
 const SAVE_RESET_PASSWORD_TOKEN = 'SAVE_RESET_PASSWORD_TOKEN';
 const UPDATE_USER_INFO = 'UPDATE_USER_INFO';
 const CHANGE_SESSION_EXPIRE_TIME = 'CHANGE_SESSION_EXPIRE_TIME';
+const CHANGE_VERIFY_ACCOUNT_STATUS = 'CHANGE_VERIFY_ACCOUNT_STATUS';
 const CHANGE_IS_GUEST = 'CHANGE_IS_GUEST';
 const checkLoginStatus = (authToken, redirectUrl) => {
   return async (dispatch, getState) => {
@@ -610,13 +626,11 @@ const checkLoginStatus = (authToken, redirectUrl) => {
         } = getState().customizer;
         history.push(redirectUrl || window.location.pathname.replace(`/${getContextPath(appId)}/`, '/'));
       } else {
-        console.log(error);
         dispatch({
           type: LOGOUT_ACTION
         });
       }
     } catch (error) {
-      console.log(error);
       dispatch({
         type: LOGOUT_ACTION
       });
@@ -627,6 +641,9 @@ const loginAction = user => {
   return async (dispatch, getState) => {
     user.rememberMe = user.isRemeberMe;
     let response = await AuthService.login(user);
+    const {
+      isGuest
+    } = getState().auth;
 
     if (response.status === API_R_200) {
       const authToken = response.data.id_token;
@@ -640,30 +657,43 @@ const loginAction = user => {
       }
 
       const {
-        userSettings
+        userSettings,
+        groupId
       } = response.data;
 
       if (userSettings) {
         localStorage.setItem('language', userSettings.language.toLowerCase());
       }
 
-      dispatch({
-        type: LOGIN_ACTION,
-        payload: {
-          authToken,
-          type: 'PASSWORD',
-          user: response.data || []
+      if (isGuest) {
+        dispatch({
+          type: LOGIN_ACTION,
+          payload: {
+            guest: {
+              authToken,
+              loginMethod: LOGIN_METHODS.PASSWORD,
+              type: 'PASSWORD',
+              user: response.data || {}
+            }
+          }
+        });
+      } else {
+        if (groupId === USER_ROLE.KHCN) {
+          toastError('Bạn phải đăng ký để trở thành đại lý !');
+          return;
         }
-      });
-      setTimeout(() => {
-        const mainApp = getState().auth.isGuest ? AppId.ELITE_APP : AppId.APP_NO1;
 
-        if (getState().customizer.appId !== mainApp) {
-          window.location.href = getExternalAppUrl(mainApp, '/');
-        } else {
-          history.push('/');
-        }
-      }, 500);
+        dispatch({
+          type: LOGIN_ACTION,
+          payload: {
+            authToken,
+            type: 'PASSWORD',
+            user: response.data || []
+          }
+        });
+      }
+
+      redirectMainApp(isGuest, getState().customizer.appId);
     } else {
       dispatch({
         type: LOGOUT_ACTION
@@ -899,6 +929,54 @@ const changeActionExpireTime = () => {
     });
   };
 };
+const verifyAccount = () => {
+  return async dispatch => {
+    const token = new URLSearchParams(document.location.search).get('token');
+
+    if (!token) {
+      dispatch({
+        type: CHANGE_VERIFY_ACCOUNT_STATUS,
+        payload: {
+          token,
+          status: 'FAIL'
+        }
+      });
+      return;
+    }
+
+    const res = await AuthService.verifyAccount(token);
+
+    if (res.status === 200) {
+      dispatch({
+        type: CHANGE_VERIFY_ACCOUNT_STATUS,
+        payload: {
+          token,
+          status: 'SUCCESS'
+        }
+      });
+    } else {
+      dispatch({
+        type: CHANGE_VERIFY_ACCOUNT_STATUS,
+        payload: {
+          token,
+          status: 'FAIL'
+        }
+      });
+    }
+  };
+};
+
+const redirectMainApp = (isGuest, appId) => {
+  setTimeout(() => {
+    const mainApp = isGuest ? AppId.ELITE_APP : AppId.APP_NO1;
+
+    if (appId !== mainApp) {
+      window.location.href = getExternalAppUrl(mainApp, '/');
+    } else {
+      history.push('/');
+    }
+  }, 500);
+};
 
 const SHOW_LOADING_BAR = 'SHOW_LOADING_BAR';
 const HIDE_LOADING_BAR = 'HIDE_LOADING_BAR';
@@ -1103,6 +1181,10 @@ const authInitialState = {
   loginMethod: LOGIN_METHODS.PASSWORD,
   user: '',
   loginStatus: '',
+  verifyAccount: {
+    token: '',
+    status: ''
+  },
   register: {
     user: {},
     token: ''
@@ -1170,6 +1252,15 @@ const authReducers = (state = { ...authInitialState
         };
       }
 
+    case CHANGE_VERIFY_ACCOUNT_STATUS:
+      {
+        return { ...state,
+          verifyAccount: { ...state.verifyAccount,
+            ...action.payload
+          }
+        };
+      }
+
     default:
       return state;
   }
@@ -1186,7 +1277,7 @@ const goBackHomePage$1 = () => {
     if (appId === AppId.APP_NO1) {
       history.push('/');
     } else {
-      window.location.href = getExternalAppUrl(AppId.APP_NO1, '/');
+      window.location.href = getExternalAppUrl(appId === AppId.ELITE_APP ? AppId.ELITE_APP : AppId.APP_NO1, '/');
     }
   };
 };
@@ -3465,7 +3556,12 @@ var messages_en = {
 	"socialLogin.addInfo.info": "InOn needs you to add the following information to complete account registration.",
 	"socialLogin.agent": "Agent",
 	"socialLogin.personal": "Personal",
-	"socialLogin.loginWith": "Đăng nhập với"
+	"socialLogin.loginWith": "Login with",
+	"verifyAccount.title": "Account verification",
+	"verifyAccount.success": "Successful account verification, please click below to create a password.",
+	"verifyAccount.fail": "Account verification failed!",
+	"verifyAccount.loading": "Processing...",
+	"verifyAccount.createPassword": "Create password"
 };
 
 var login$1 = "Đăng nhập";
@@ -3806,7 +3902,12 @@ var messages_vi = {
 	"socialLogin.addInfo.info": "InOn cần bạn bổ sung các thông tin bên dưới để hoàn tất đăng ký tài khoản.",
 	"socialLogin.agent": "Đại lý",
 	"socialLogin.personal": "Cá nhân",
-	"socialLogin.loginWith": "Đăng nhập với"
+	"socialLogin.loginWith": "Đăng nhập với",
+	"verifyAccount.title": "Xác thực tài khoản",
+	"verifyAccount.success": "Xác thực tài khoản thành công, bạn vui lòng nhấn vào bên dưới để tạo mật khẩu.",
+	"verifyAccount.fail": "Xác thực tài khoản thất bại!",
+	"verifyAccount.loading": "Đang xử lý...",
+	"verifyAccount.createPassword": "Tạo mật khẩu"
 };
 
 const BaseFormGroup = ({
@@ -8958,6 +9059,76 @@ const devices = {
   laptop: `(max-width: ${size.laptop})`
 };
 
+const VerifyAccount = () => {
+  const {
+    token,
+    status
+  } = useSelector(state => state.auth.verifyAccount);
+  const dispatch = useDispatch();
+  const history = useHistory();
+  useEffect(() => {
+    dispatch(verifyAccount());
+  }, []);
+
+  const renderVerifyStatus = () => {
+    if (status === 'SUCCESS') {
+      return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+        style: {
+          width: '100px'
+        },
+        className: "mx-auto"
+      }, /*#__PURE__*/React.createElement("img", {
+        src: IMAGE.CHECK_ICON,
+        className: "img-fluid",
+        alt: "success-icon"
+      })), /*#__PURE__*/React.createElement("div", {
+        className: "mt-2"
+      }, /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "verifyAccount.success"
+      })), /*#__PURE__*/React.createElement("div", {
+        className: "mt-2"
+      }, /*#__PURE__*/React.createElement(Button.Ripple, {
+        onClick: () => history.push('/reset-password')
+      }, /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "verifyAccount.createPassword"
+      }))));
+    } else {
+      return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+        style: {
+          width: '100px'
+        },
+        className: "mx-auto"
+      }, /*#__PURE__*/React.createElement("img", {
+        src: IMAGE.FAIL_ICON,
+        className: "img-fluid",
+        alt: "failure-icon"
+      })), /*#__PURE__*/React.createElement("div", {
+        className: "mt-2"
+      }, /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "verifyAccount.fail"
+      })));
+    }
+  };
+
+  return /*#__PURE__*/React.createElement("div", {
+    className: "verify-account"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-center mb-3"
+  }, /*#__PURE__*/React.createElement("h4", {
+    className: "font-weight-bold text-white"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "verifyAccount.title"
+  })), !status ? /*#__PURE__*/React.createElement("div", {
+    className: "mt-4 d-flex align-items-center justify-content-center"
+  }, /*#__PURE__*/React.createElement(Spinner, {
+    color: "primary"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "ml-1"
+  }, "\u0110ang x\u1EED l\xFD...")) : /*#__PURE__*/React.createElement("div", {
+    className: "text-center p-2"
+  }, renderVerifyStatus())));
+};
+
 let _ = t => t,
     _t;
 const PagetStyle = styled.div(_t || (_t = _`
@@ -8992,6 +9163,9 @@ const LandingPage = props => {
       case 'reset-password':
       case 'provide-new-password':
         return /*#__PURE__*/React.createElement(CreatePassword, null);
+
+      case 'verify-account':
+        return /*#__PURE__*/React.createElement(VerifyAccount, null);
 
       default:
         return '';
@@ -9444,6 +9618,8 @@ const AppRouter = props => {
     path: 'provide-new-password'
   }, {
     path: 'reset-password'
+  }, {
+    path: 'verify-account'
   }];
   const landingPage2Routes = [{
     path: 'create-password'
@@ -9633,6 +9809,60 @@ const ReactTable = props => {
   }, props));
 };
 
+const defaultMaskOptions = {
+  prefix: '',
+  suffix: '',
+  includeThousandsSeparator: true,
+  thousandsSeparatorSymbol: ',',
+  allowDecimal: true,
+  decimalSymbol: '.',
+  decimalLimit: 3,
+  integerLimit: 13,
+  allowNegative: false,
+  allowLeadingZeroes: false
+};
+
+const CurrencyInput = ({
+  intl: {
+    formatMessage
+  },
+  maskOptions,
+  placeholder,
+  ...inputProps
+}) => {
+  const currencyMask = createNumberMask({ ...defaultMaskOptions,
+    ...maskOptions
+  });
+  return /*#__PURE__*/React.createElement(MaskedInput, Object.assign({
+    mask: currencyMask,
+    placeholder: formatMessage({
+      id: placeholder
+    })
+  }, inputProps));
+};
+
+CurrencyInput.defaultProps = {
+  inputMode: 'numeric',
+  maskOptions: {}
+};
+CurrencyInput.propTypes = {
+  inputmode: PropTypes.string,
+  maskOptions: PropTypes.shape({
+    prefix: PropTypes.string,
+    suffix: PropTypes.string,
+    includeThousandsSeparator: PropTypes.bool,
+    thousandsSeparatorSymbol: PropTypes.string,
+    allowDecimal: PropTypes.bool,
+    decimalSymbol: PropTypes.string,
+    decimalLimit: PropTypes.string,
+    requireDecimal: PropTypes.bool,
+    allowNegative: PropTypes.bool,
+    allowLeadingZeroes: PropTypes.bool,
+    integerLimit: PropTypes.number
+  })
+};
+var CurrencyInput$1 = injectIntl(CurrencyInput);
+
 const usePageAuthorities = () => {
   const [authorities, setAuthorities] = useState([]);
   const {
@@ -9656,5 +9886,5 @@ const usePageAuthorities = () => {
   return authorities;
 };
 
-export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, Radio, ReactTable, Select, goBackHomePage, hideConfirmAlert, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
+export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, CurrencyInput$1 as CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, Radio, ReactTable, Select, goBackHomePage, hideConfirmAlert, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
 //# sourceMappingURL=index.modern.js.map

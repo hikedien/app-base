@@ -38,6 +38,8 @@ var Ripples = _interopDefault(require('react-ripples'));
 require('react-perfect-scrollbar/dist/css/styles.css');
 require('react-toastify/dist/ReactToastify.css');
 var Table = _interopDefault(require('react-table'));
+var MaskedInput = _interopDefault(require('react-text-mask'));
+var createNumberMask = _interopDefault(require('text-mask-addons/dist/createNumberMask'));
 
 var generateUUID = function generateUUID() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -129,6 +131,7 @@ var API_CHANGE_PASSWORD = '/api/change-password';
 var API_REGISTER = '/nth/onboarding/api/authenticate/register';
 var API_GET_USER = '/nth/user/api/users';
 var API_USER_SETTINGS = '/nth/user/api/user-settings';
+var API_VERIFY_ACCOUNT = '/nth/user/api/verify-account';
 var API_UPDATE_USER_INFO = '/nth/user/api/update-user-info';
 var API_GET_NAV_CONFIGS = '/nth/accesscontrol/api/roles';
 var API_GET_USER_ROLES = '/nth/accesscontrol/api/user-group-roles';
@@ -264,7 +267,8 @@ var USER_ROLE = {
   DTLX: 'LX.DT',
   BH: 'BH',
   BTBH: 'BTBH',
-  HTDT: 'HT.DT'
+  HTDT: 'HT.DT',
+  KHCN: 'KHCN'
 };
 var IMAGE = {
   LOGO: RESOURCE_URL + 'in-on-logo.svg',
@@ -281,7 +285,9 @@ var IMAGE = {
   LANDING_PAGE_2_BG: RESOURCE_URL + 'lading-page-2.svg',
   LANDING_PAGE_TABLET_BG: RESOURCE_URL + 'lading-page-v.svg',
   DOWNLOAD_APP_IOS: RESOURCE_URL + 'app-store.svg',
-  DOWNLOAD_APP_ANDROID: RESOURCE_URL + 'google-store.svg'
+  DOWNLOAD_APP_ANDROID: RESOURCE_URL + 'google-store.svg',
+  CHECK_ICON: RESOURCE_URL + 'check_icon.png',
+  FAIL_ICON: RESOURCE_URL + 'fail_icon.png'
 };
 
 var appConfigs = {
@@ -297,6 +303,7 @@ var appConfigs = {
   API_REGISTER: API_REGISTER,
   API_GET_USER: API_GET_USER,
   API_USER_SETTINGS: API_USER_SETTINGS,
+  API_VERIFY_ACCOUNT: API_VERIFY_ACCOUNT,
   API_UPDATE_USER_INFO: API_UPDATE_USER_INFO,
   API_GET_NAV_CONFIGS: API_GET_NAV_CONFIGS,
   API_GET_USER_ROLES: API_GET_USER_ROLES,
@@ -499,6 +506,14 @@ AuthService.changeUserSetting = function (value) {
   return HttpClient.put(API_USER_SETTINGS, value);
 };
 
+AuthService.verifyAccount = function (token) {
+  return HttpClient.get(API_VERIFY_ACCOUNT, {
+    params: {
+      token: token
+    }
+  });
+};
+
 AuthService.updateAvatar = function (user, file) {
   try {
     var formData = new FormData();
@@ -666,7 +681,7 @@ var goBackHomePage = function goBackHomePage() {
       if (appId === AppId.APP_NO1) {
         history.push('/');
       } else {
-        window.location.href = getExternalAppUrl(AppId.APP_NO1, '/');
+        window.location.href = getExternalAppUrl(appId === AppId.ELITE_APP ? AppId.ELITE_APP : AppId.APP_NO1, '/');
       }
 
       return Promise.resolve();
@@ -683,6 +698,7 @@ var SAVE_REGISTER_TOKEN = 'SAVE_REGISTER_TOKEN';
 var SAVE_RESET_PASSWORD_TOKEN = 'SAVE_RESET_PASSWORD_TOKEN';
 var UPDATE_USER_INFO = 'UPDATE_USER_INFO';
 var CHANGE_SESSION_EXPIRE_TIME = 'CHANGE_SESSION_EXPIRE_TIME';
+var CHANGE_VERIFY_ACCOUNT_STATUS = 'CHANGE_VERIFY_ACCOUNT_STATUS';
 var CHANGE_IS_GUEST = 'CHANGE_IS_GUEST';
 var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
   return function (dispatch, getState) {
@@ -707,7 +723,6 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
                 history.push(redirectUrl || window.location.pathname.replace("/" + getContextPath(appId) + "/", '/'));
               });
             } else {
-              console.log(error);
               dispatch({
                 type: LOGOUT_ACTION
               });
@@ -716,8 +731,7 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
 
           if (_temp && _temp.then) return _temp.then(function () {});
         });
-      }, function (error) {
-        console.log(error);
+      }, function () {
         dispatch({
           type: LOGOUT_ACTION
         });
@@ -734,7 +748,8 @@ var loginAction = function loginAction(user) {
     try {
       user.rememberMe = user.isRemeberMe;
       return Promise.resolve(AuthService.login(user)).then(function (response) {
-        var _temp4 = function () {
+        var isGuest = getState().auth.isGuest;
+        return function () {
           if (response.status === API_R_200) {
             var authToken = response.data.id_token;
             changeActionExpireTime();
@@ -748,29 +763,43 @@ var loginAction = function loginAction(user) {
                 }));
               }
 
-              var userSettings = response.data.userSettings;
+              var _response$data = response.data,
+                  userSettings = _response$data.userSettings,
+                  groupId = _response$data.groupId;
 
               if (userSettings) {
                 localStorage.setItem('language', userSettings.language.toLowerCase());
               }
 
-              dispatch({
-                type: LOGIN_ACTION,
-                payload: {
-                  authToken: authToken,
-                  type: 'PASSWORD',
-                  user: response.data || []
+              if (isGuest) {
+                dispatch({
+                  type: LOGIN_ACTION,
+                  payload: {
+                    guest: {
+                      authToken: authToken,
+                      loginMethod: LOGIN_METHODS.PASSWORD,
+                      type: 'PASSWORD',
+                      user: response.data || {}
+                    }
+                  }
+                });
+              } else {
+                if (groupId === USER_ROLE.KHCN) {
+                  toastError('Bạn phải đăng ký để trở thành đại lý !');
+                  return;
                 }
-              });
-              setTimeout(function () {
-                var mainApp = getState().auth.isGuest ? AppId.ELITE_APP : AppId.APP_NO1;
 
-                if (getState().customizer.appId !== mainApp) {
-                  window.location.href = getExternalAppUrl(mainApp, '/');
-                } else {
-                  history.push('/');
-                }
-              }, 500);
+                dispatch({
+                  type: LOGIN_ACTION,
+                  payload: {
+                    authToken: authToken,
+                    type: 'PASSWORD',
+                    user: response.data || []
+                  }
+                });
+              }
+
+              redirectMainApp(isGuest, getState().customizer.appId);
             });
           } else {
             dispatch({
@@ -778,8 +807,6 @@ var loginAction = function loginAction(user) {
             });
           }
         }();
-
-        if (_temp4 && _temp4.then) return _temp4.then(function () {});
       });
     } catch (e) {
       return Promise.reject(e);
@@ -839,7 +866,7 @@ var changeIsGuest = function changeIsGuest(isGuest) {
 var createPassword = function createPassword(password) {
   return function (dispatch, getState) {
     try {
-      var _temp6 = _catch(function () {
+      var _temp5 = _catch(function () {
         return Promise.resolve(AuthService.createPassword(password, getState().auth.register.token)).then(function (response) {
           if (response.status === 200 && response.data) {
             history.push('/complete-information');
@@ -847,7 +874,7 @@ var createPassword = function createPassword(password) {
         });
       }, function () {});
 
-      return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(function () {}) : void 0);
+      return Promise.resolve(_temp5 && _temp5.then ? _temp5.then(function () {}) : void 0);
     } catch (e) {
       return Promise.reject(e);
     }
@@ -856,7 +883,7 @@ var createPassword = function createPassword(password) {
 var register = function register(values) {
   return function () {
     try {
-      var _temp8 = _catch(function () {
+      var _temp7 = _catch(function () {
         return Promise.resolve(AuthService.register(trimObjectValues(values))).then(function (res) {
           if (res.status === 200 && res.data) {
             toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -867,7 +894,7 @@ var register = function register(values) {
         });
       }, function () {});
 
-      return Promise.resolve(_temp8 && _temp8.then ? _temp8.then(function () {}) : void 0);
+      return Promise.resolve(_temp7 && _temp7.then ? _temp7.then(function () {}) : void 0);
     } catch (e) {
       return Promise.reject(e);
     }
@@ -876,7 +903,7 @@ var register = function register(values) {
 var compeleteInfo = function compeleteInfo(user) {
   return function (dispatch, getState) {
     try {
-      var _temp10 = _catch(function () {
+      var _temp9 = _catch(function () {
         user.registerToken = getState().auth.register.token;
         return Promise.resolve(AuthService.compeleteInfo(user)).then(function (response) {
           if (response.status === 200 && response.data) {
@@ -890,7 +917,7 @@ var compeleteInfo = function compeleteInfo(user) {
         console.log(error);
       });
 
-      return Promise.resolve(_temp10 && _temp10.then ? _temp10.then(function () {}) : void 0);
+      return Promise.resolve(_temp9 && _temp9.then ? _temp9.then(function () {}) : void 0);
     } catch (e) {
       return Promise.reject(e);
     }
@@ -930,7 +957,7 @@ var forgotPassword = function forgotPassword(_ref) {
       email = _ref.email;
   return function (dispatch, getState) {
     try {
-      var _temp12 = _catch(function () {
+      var _temp11 = _catch(function () {
         return Promise.resolve(AuthService.forgotPassword(username, email)).then(function (response) {
           if (response.status === 200 && response.data) {
             toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -945,7 +972,7 @@ var forgotPassword = function forgotPassword(_ref) {
         });
       }, function () {});
 
-      return Promise.resolve(_temp12 && _temp12.then ? _temp12.then(function () {}) : void 0);
+      return Promise.resolve(_temp11 && _temp11.then ? _temp11.then(function () {}) : void 0);
     } catch (e) {
       return Promise.reject(e);
     }
@@ -954,7 +981,7 @@ var forgotPassword = function forgotPassword(_ref) {
 var resetPassword = function resetPassword(password) {
   return function (dispatch, getState) {
     try {
-      var _temp14 = _catch(function () {
+      var _temp13 = _catch(function () {
         return Promise.resolve(AuthService.resetPassword(password, getState().auth.resetPasswordToken)).then(function (response) {
           if (response.status === 200 && response.data) {
             toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -969,7 +996,7 @@ var resetPassword = function resetPassword(password) {
         });
       }, function () {});
 
-      return Promise.resolve(_temp14 && _temp14.then ? _temp14.then(function () {}) : void 0);
+      return Promise.resolve(_temp13 && _temp13.then ? _temp13.then(function () {}) : void 0);
     } catch (e) {
       return Promise.reject(e);
     }
@@ -992,7 +1019,7 @@ var logoutAction = function logoutAction() {
 var updateUserInfo = function updateUserInfo(user, avatarImage) {
   return function (dispatch) {
     try {
-      var _temp17 = function _temp17() {
+      var _temp16 = function _temp16() {
         return Promise.resolve(AuthService.updateUserInfo(user)).then(function (res) {
           if (res.status === 200) {
             dispatch({
@@ -1007,7 +1034,7 @@ var updateUserInfo = function updateUserInfo(user, avatarImage) {
         });
       };
 
-      var _temp18 = function () {
+      var _temp17 = function () {
         if (avatarImage) {
           return Promise.resolve(AuthService.updateAvatar(user, avatarImage)).then(function (url) {
             user.userSettings.avatar = url || user.userSettings.avatar;
@@ -1015,7 +1042,7 @@ var updateUserInfo = function updateUserInfo(user, avatarImage) {
         }
       }();
 
-      return Promise.resolve(_temp18 && _temp18.then ? _temp18.then(_temp17) : _temp17(_temp18));
+      return Promise.resolve(_temp17 && _temp17.then ? _temp17.then(_temp16) : _temp16(_temp17));
     } catch (e) {
       return Promise.reject(e);
     }
@@ -1075,6 +1102,58 @@ var changeActionExpireTime = function changeActionExpireTime() {
       type: CHANGE_SESSION_EXPIRE_TIME
     });
   };
+};
+var verifyAccount = function verifyAccount() {
+  return function (dispatch) {
+    try {
+      var token = new URLSearchParams(document.location.search).get('token');
+
+      if (!token) {
+        dispatch({
+          type: CHANGE_VERIFY_ACCOUNT_STATUS,
+          payload: {
+            token: token,
+            status: 'FAIL'
+          }
+        });
+        return Promise.resolve();
+      }
+
+      return Promise.resolve(AuthService.verifyAccount(token)).then(function (res) {
+        if (res.status === 200) {
+          dispatch({
+            type: CHANGE_VERIFY_ACCOUNT_STATUS,
+            payload: {
+              token: token,
+              status: 'SUCCESS'
+            }
+          });
+        } else {
+          dispatch({
+            type: CHANGE_VERIFY_ACCOUNT_STATUS,
+            payload: {
+              token: token,
+              status: 'FAIL'
+            }
+          });
+        }
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+};
+
+var redirectMainApp = function redirectMainApp(isGuest, appId) {
+  setTimeout(function () {
+    var mainApp = isGuest ? AppId.ELITE_APP : AppId.APP_NO1;
+
+    if (appId !== mainApp) {
+      window.location.href = getExternalAppUrl(mainApp, '/');
+    } else {
+      history.push('/');
+    }
+  }, 500);
 };
 
 var SHOW_LOADING_BAR = 'SHOW_LOADING_BAR';
@@ -1293,6 +1372,10 @@ var authInitialState = {
   loginMethod: LOGIN_METHODS.PASSWORD,
   user: '',
   loginStatus: '',
+  verifyAccount: {
+    token: '',
+    status: ''
+  },
   register: {
     user: {},
     token: ''
@@ -1361,6 +1444,13 @@ var authReducers = function authReducers(state, action) {
         });
       }
 
+    case CHANGE_VERIFY_ACCOUNT_STATUS:
+      {
+        return _extends({}, state, {
+          verifyAccount: _extends({}, state.verifyAccount, action.payload)
+        });
+      }
+
     default:
       return state;
   }
@@ -1376,7 +1466,7 @@ var goBackHomePage$1 = function goBackHomePage() {
       if (appId === AppId.APP_NO1) {
         history.push('/');
       } else {
-        window.location.href = getExternalAppUrl(AppId.APP_NO1, '/');
+        window.location.href = getExternalAppUrl(appId === AppId.ELITE_APP ? AppId.ELITE_APP : AppId.APP_NO1, '/');
       }
 
       return Promise.resolve();
@@ -3826,7 +3916,12 @@ var messages_en = {
 	"socialLogin.addInfo.info": "InOn needs you to add the following information to complete account registration.",
 	"socialLogin.agent": "Agent",
 	"socialLogin.personal": "Personal",
-	"socialLogin.loginWith": "Đăng nhập với"
+	"socialLogin.loginWith": "Login with",
+	"verifyAccount.title": "Account verification",
+	"verifyAccount.success": "Successful account verification, please click below to create a password.",
+	"verifyAccount.fail": "Account verification failed!",
+	"verifyAccount.loading": "Processing...",
+	"verifyAccount.createPassword": "Create password"
 };
 
 var login$1 = "Đăng nhập";
@@ -4167,7 +4262,12 @@ var messages_vi = {
 	"socialLogin.addInfo.info": "InOn cần bạn bổ sung các thông tin bên dưới để hoàn tất đăng ký tài khoản.",
 	"socialLogin.agent": "Đại lý",
 	"socialLogin.personal": "Cá nhân",
-	"socialLogin.loginWith": "Đăng nhập với"
+	"socialLogin.loginWith": "Đăng nhập với",
+	"verifyAccount.title": "Xác thực tài khoản",
+	"verifyAccount.success": "Xác thực tài khoản thành công, bạn vui lòng nhấn vào bên dưới để tạo mật khẩu.",
+	"verifyAccount.fail": "Xác thực tài khoản thất bại!",
+	"verifyAccount.loading": "Đang xử lý...",
+	"verifyAccount.createPassword": "Tạo mật khẩu"
 };
 
 var BaseFormGroup = function BaseFormGroup(_ref) {
@@ -9577,6 +9677,79 @@ var devices = {
   laptop: "(max-width: " + size.laptop + ")"
 };
 
+var VerifyAccount = function VerifyAccount() {
+  var _useSelector = reactRedux.useSelector(function (state) {
+    return state.auth.verifyAccount;
+  }),
+      status = _useSelector.status;
+
+  var dispatch = reactRedux.useDispatch();
+  var history = reactRouterDom.useHistory();
+  React.useEffect(function () {
+    dispatch(verifyAccount());
+  }, []);
+
+  var renderVerifyStatus = function renderVerifyStatus() {
+    if (status === 'SUCCESS') {
+      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("div", {
+        style: {
+          width: '100px'
+        },
+        className: "mx-auto"
+      }, /*#__PURE__*/React__default.createElement("img", {
+        src: IMAGE.CHECK_ICON,
+        className: "img-fluid",
+        alt: "success-icon"
+      })), /*#__PURE__*/React__default.createElement("div", {
+        className: "mt-2"
+      }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "verifyAccount.success"
+      })), /*#__PURE__*/React__default.createElement("div", {
+        className: "mt-2"
+      }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+        onClick: function onClick() {
+          return history.push('/reset-password');
+        }
+      }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "verifyAccount.createPassword"
+      }))));
+    } else {
+      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("div", {
+        style: {
+          width: '100px'
+        },
+        className: "mx-auto"
+      }, /*#__PURE__*/React__default.createElement("img", {
+        src: IMAGE.FAIL_ICON,
+        className: "img-fluid",
+        alt: "failure-icon"
+      })), /*#__PURE__*/React__default.createElement("div", {
+        className: "mt-2"
+      }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "verifyAccount.fail"
+      })));
+    }
+  };
+
+  return /*#__PURE__*/React__default.createElement("div", {
+    className: "verify-account"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "text-center mb-3"
+  }, /*#__PURE__*/React__default.createElement("h4", {
+    className: "font-weight-bold text-white"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "verifyAccount.title"
+  })), !status ? /*#__PURE__*/React__default.createElement("div", {
+    className: "mt-4 d-flex align-items-center justify-content-center"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Spinner, {
+    color: "primary"
+  }), /*#__PURE__*/React__default.createElement("span", {
+    className: "ml-1"
+  }, "\u0110ang x\u1EED l\xFD...")) : /*#__PURE__*/React__default.createElement("div", {
+    className: "text-center p-2"
+  }, renderVerifyStatus())));
+};
+
 function _templateObject() {
   var data = _taggedTemplateLiteralLoose(["\n  height: 100%;\n  .landing-page {\n    background-image: url('", "');\n\n    @media ", " {\n      background-image: url('", "');\n    }\n  }\n"]);
 
@@ -9612,6 +9785,9 @@ var LandingPage = function LandingPage(props) {
       case 'reset-password':
       case 'provide-new-password':
         return /*#__PURE__*/React__default.createElement(CreatePassword, null);
+
+      case 'verify-account':
+        return /*#__PURE__*/React__default.createElement(VerifyAccount, null);
 
       default:
         return '';
@@ -10087,6 +10263,8 @@ var AppRouter = function AppRouter(props) {
     path: 'provide-new-password'
   }, {
     path: 'reset-password'
+  }, {
+    path: 'verify-account'
   }];
   var landingPage2Routes = [{
     path: 'create-password'
@@ -10306,6 +10484,56 @@ var ReactTable = function ReactTable(props) {
   }, props));
 };
 
+var defaultMaskOptions = {
+  prefix: '',
+  suffix: '',
+  includeThousandsSeparator: true,
+  thousandsSeparatorSymbol: ',',
+  allowDecimal: true,
+  decimalSymbol: '.',
+  decimalLimit: 3,
+  integerLimit: 13,
+  allowNegative: false,
+  allowLeadingZeroes: false
+};
+
+var CurrencyInput = function CurrencyInput(_ref) {
+  var formatMessage = _ref.intl.formatMessage,
+      maskOptions = _ref.maskOptions,
+      placeholder = _ref.placeholder,
+      inputProps = _objectWithoutPropertiesLoose(_ref, ["intl", "maskOptions", "placeholder"]);
+
+  var currencyMask = createNumberMask(_extends({}, defaultMaskOptions, maskOptions));
+  return /*#__PURE__*/React__default.createElement(MaskedInput, _extends({
+    mask: currencyMask,
+    placeholder: formatMessage({
+      id: placeholder
+    })
+  }, inputProps));
+};
+
+CurrencyInput.defaultProps = {
+  inputMode: 'numeric',
+  maskOptions: {}
+};
+CurrencyInput.propTypes = {
+  inputmode: PropTypes.string,
+  maskOptions: PropTypes.shape({
+    prefix: PropTypes.string,
+    suffix: PropTypes.string,
+    includeThousandsSeparator: PropTypes.bool,
+    thousandsSeparatorSymbol: PropTypes.string,
+    allowDecimal: PropTypes.bool,
+    decimalSymbol: PropTypes.string,
+    decimalLimit: PropTypes.string,
+    requireDecimal: PropTypes.bool,
+    allowNegative: PropTypes.bool,
+    allowLeadingZeroes: PropTypes.bool,
+    integerLimit: PropTypes.number
+  })
+};
+var CurrencyInput$1 = reactIntl.injectIntl(CurrencyInput);
+
 var usePageAuthorities = function usePageAuthorities() {
   var _useState = React.useState([]),
       authorities = _useState[0],
@@ -10370,6 +10598,7 @@ exports.BaseFormDatePicker = BaseFormDatePicker;
 exports.BaseFormGroup = BaseFormGroup;
 exports.BaseFormGroupSelect = BaseFormGroupSelect;
 exports.Checkbox = CheckBox;
+exports.CurrencyInput = CurrencyInput$1;
 exports.DatePicker = DatePicker;
 exports.FallbackSpinner = FallbackSpinner;
 exports.GeneralInfo = GeneralInfo;
