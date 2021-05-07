@@ -934,7 +934,6 @@ const changeActionExpireTime = () => {
 const verifyAccount = () => {
   return async dispatch => {
     const token = new URLSearchParams(document.location.search).get('token');
-    history.push(window.location.pathname);
 
     if (!token) {
       dispatch({
@@ -9071,6 +9070,7 @@ const VerifyAccount = () => {
   const history = useHistory();
   useEffect(() => {
     dispatch(verifyAccount());
+    history.push(window.location.pathname);
   }, []);
 
   const renderVerifyStatus = () => {

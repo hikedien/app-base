@@ -1109,7 +1109,6 @@ var verifyAccount = function verifyAccount() {
   return function (dispatch) {
     try {
       var token = new URLSearchParams(document.location.search).get('token');
-      history.push(window.location.pathname);
 
       if (!token) {
         dispatch({
@@ -9690,6 +9689,7 @@ var VerifyAccount = function VerifyAccount() {
   var history = reactRouterDom.useHistory();
   React.useEffect(function () {
     dispatch(verifyAccount());
+    history.push(window.location.pathname);
   }, []);
 
   var renderVerifyStatus = function renderVerifyStatus() {
