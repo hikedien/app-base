@@ -123,7 +123,7 @@ const AppId = {
 
 const API_BASE_URL = 'https://apisit.inon.vn';
 const RESOURCE_URL = 'https://sit2.inon.vn/resources/images/';
-const FB_APP_ID = '1038489453224143';
+const FB_APP_ID = '2651185198505964';
 const GOOGLE_APP_ID = '400818618331-k9ptcdcgr99po0g5q5mh8e5ekodgj61n.apps.googleusercontent.com';
 const API_LOGIN_URL = '/api/authenticate';
 const API_LOGOUT_URL = '/api/logout';
