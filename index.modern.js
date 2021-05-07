@@ -130,9 +130,9 @@ const API_LOGOUT_URL = '/api/logout';
 const API_GUEST_SOCIAL_LOGIN = '/api/social-login/guest';
 const API_CHANGE_PASSWORD = '/api/change-password';
 const API_REGISTER = '/nth/onboarding/api/authenticate/register';
+const API_VERIFY_ACCOUNT = '/nth/onboarding/api/authenticate/verify-account';
 const API_GET_USER = '/nth/user/api/users';
 const API_USER_SETTINGS = '/nth/user/api/user-settings';
-const API_VERIFY_ACCOUNT = '/nth/user/api/authenticate/verify-account';
 const API_UPDATE_USER_INFO = '/nth/user/api/update-user-info';
 const API_GET_NAV_CONFIGS = '/nth/accesscontrol/api/roles';
 const API_GET_USER_ROLES = '/nth/accesscontrol/api/user-group-roles';
@@ -302,9 +302,9 @@ var appConfigs = {
   API_GUEST_SOCIAL_LOGIN: API_GUEST_SOCIAL_LOGIN,
   API_CHANGE_PASSWORD: API_CHANGE_PASSWORD,
   API_REGISTER: API_REGISTER,
+  API_VERIFY_ACCOUNT: API_VERIFY_ACCOUNT,
   API_GET_USER: API_GET_USER,
   API_USER_SETTINGS: API_USER_SETTINGS,
-  API_VERIFY_ACCOUNT: API_VERIFY_ACCOUNT,
   API_UPDATE_USER_INFO: API_UPDATE_USER_INFO,
   API_GET_NAV_CONFIGS: API_GET_NAV_CONFIGS,
   API_GET_USER_ROLES: API_GET_USER_ROLES,
