@@ -9068,7 +9068,7 @@ const VerifyAccount = () => {
   const history = useHistory();
   useEffect(() => {
     dispatch(verifyAccount());
-    history.push(window.location.pathname);
+    history.replace(window.location.pathname);
   }, []);
 
   const renderVerifyStatus = () => {

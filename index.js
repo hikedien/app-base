@@ -9687,7 +9687,7 @@ var VerifyAccount = function VerifyAccount() {
   var history = reactRouterDom.useHistory();
   React.useEffect(function () {
     dispatch(verifyAccount());
-    history.push(window.location.pathname);
+    history.replace(window.location.pathname);
   }, []);
 
   var renderVerifyStatus = function renderVerifyStatus() {
