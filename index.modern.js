@@ -38,9 +38,9 @@ import TopBarProgress from 'react-topbar-progress-indicator';
 import Ripples from 'react-ripples';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import 'react-toastify/dist/ReactToastify.css';
-import Table from 'react-table';
 import MaskedInput from 'react-text-mask';
 import createNumberMask from 'text-mask-addons/dist/createNumberMask';
+import Table from 'react-table';
 
 const generateUUID = () => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -9791,30 +9791,6 @@ class FallbackSpinner extends React.Component {
 
 }
 
-const ReactTable = props => {
-  const intl = useIntl();
-  return /*#__PURE__*/React.createElement(Table, Object.assign({
-    previousText: intl.formatMessage({
-      id: 'common.table.previous'
-    }),
-    nextText: intl.formatMessage({
-      id: 'common.table.next'
-    }),
-    noDataText: intl.formatMessage({
-      id: 'common.table.noData'
-    }),
-    pageText: intl.formatMessage({
-      id: 'common.table.page'
-    }),
-    ofText: intl.formatMessage({
-      id: 'common.table.of'
-    }),
-    rowsText: intl.formatMessage({
-      id: 'common.table.rows'
-    })
-  }, props));
-};
-
 const defaultMaskOptions = {
   prefix: '',
   suffix: '',
@@ -9829,13 +9805,13 @@ const defaultMaskOptions = {
 };
 
 const CurrencyInput = ({
-  intl: {
-    formatMessage
-  },
   maskOptions,
   placeholder,
   ...inputProps
 }) => {
+  const {
+    formatMessage
+  } = useIntl();
   const currencyMask = createNumberMask({ ...defaultMaskOptions,
     ...maskOptions
   });
@@ -9867,7 +9843,30 @@ CurrencyInput.propTypes = {
     integerLimit: PropTypes.number
   })
 };
-var CurrencyInput$1 = injectIntl(CurrencyInput);
+
+const ReactTable = props => {
+  const intl = useIntl();
+  return /*#__PURE__*/React.createElement(Table, Object.assign({
+    previousText: intl.formatMessage({
+      id: 'common.table.previous'
+    }),
+    nextText: intl.formatMessage({
+      id: 'common.table.next'
+    }),
+    noDataText: intl.formatMessage({
+      id: 'common.table.noData'
+    }),
+    pageText: intl.formatMessage({
+      id: 'common.table.page'
+    }),
+    ofText: intl.formatMessage({
+      id: 'common.table.of'
+    }),
+    rowsText: intl.formatMessage({
+      id: 'common.table.rows'
+    })
+  }, props));
+};
 
 const usePageAuthorities = () => {
   const [authorities, setAuthorities] = useState([]);
@@ -9892,5 +9891,5 @@ const usePageAuthorities = () => {
   return authorities;
 };
 
-export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, CurrencyInput$1 as CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, Radio, ReactTable, Select, goBackHomePage, hideConfirmAlert, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
+export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, Radio, ReactTable, Select, goBackHomePage, hideConfirmAlert, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
 //# sourceMappingURL=index.modern.js.map

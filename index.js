@@ -37,9 +37,9 @@ var TopBarProgress = _interopDefault(require('react-topbar-progress-indicator'))
 var Ripples = _interopDefault(require('react-ripples'));
 require('react-perfect-scrollbar/dist/css/styles.css');
 require('react-toastify/dist/ReactToastify.css');
-var Table = _interopDefault(require('react-table'));
 var MaskedInput = _interopDefault(require('react-text-mask'));
 var createNumberMask = _interopDefault(require('text-mask-addons/dist/createNumberMask'));
+var Table = _interopDefault(require('react-table'));
 
 var generateUUID = function generateUUID() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -10466,30 +10466,6 @@ var FallbackSpinner = /*#__PURE__*/function (_React$Component) {
   return FallbackSpinner;
 }(React__default.Component);
 
-var ReactTable = function ReactTable(props) {
-  var intl = reactIntl.useIntl();
-  return /*#__PURE__*/React__default.createElement(Table, _extends({
-    previousText: intl.formatMessage({
-      id: 'common.table.previous'
-    }),
-    nextText: intl.formatMessage({
-      id: 'common.table.next'
-    }),
-    noDataText: intl.formatMessage({
-      id: 'common.table.noData'
-    }),
-    pageText: intl.formatMessage({
-      id: 'common.table.page'
-    }),
-    ofText: intl.formatMessage({
-      id: 'common.table.of'
-    }),
-    rowsText: intl.formatMessage({
-      id: 'common.table.rows'
-    })
-  }, props));
-};
-
 var defaultMaskOptions = {
   prefix: '',
   suffix: '',
@@ -10504,10 +10480,12 @@ var defaultMaskOptions = {
 };
 
 var CurrencyInput = function CurrencyInput(_ref) {
-  var formatMessage = _ref.intl.formatMessage,
-      maskOptions = _ref.maskOptions,
+  var maskOptions = _ref.maskOptions,
       placeholder = _ref.placeholder,
-      inputProps = _objectWithoutPropertiesLoose(_ref, ["intl", "maskOptions", "placeholder"]);
+      inputProps = _objectWithoutPropertiesLoose(_ref, ["maskOptions", "placeholder"]);
+
+  var _useIntl = reactIntl.useIntl(),
+      formatMessage = _useIntl.formatMessage;
 
   var currencyMask = createNumberMask(_extends({}, defaultMaskOptions, maskOptions));
   return /*#__PURE__*/React__default.createElement(MaskedInput, _extends({
@@ -10538,7 +10516,30 @@ CurrencyInput.propTypes = {
     integerLimit: PropTypes.number
   })
 };
-var CurrencyInput$1 = reactIntl.injectIntl(CurrencyInput);
+
+var ReactTable = function ReactTable(props) {
+  var intl = reactIntl.useIntl();
+  return /*#__PURE__*/React__default.createElement(Table, _extends({
+    previousText: intl.formatMessage({
+      id: 'common.table.previous'
+    }),
+    nextText: intl.formatMessage({
+      id: 'common.table.next'
+    }),
+    noDataText: intl.formatMessage({
+      id: 'common.table.noData'
+    }),
+    pageText: intl.formatMessage({
+      id: 'common.table.page'
+    }),
+    ofText: intl.formatMessage({
+      id: 'common.table.of'
+    }),
+    rowsText: intl.formatMessage({
+      id: 'common.table.rows'
+    })
+  }, props));
+};
 
 var usePageAuthorities = function usePageAuthorities() {
   var _useState = React.useState([]),
@@ -10604,7 +10605,7 @@ exports.BaseFormDatePicker = BaseFormDatePicker;
 exports.BaseFormGroup = BaseFormGroup;
 exports.BaseFormGroupSelect = BaseFormGroupSelect;
 exports.Checkbox = CheckBox;
-exports.CurrencyInput = CurrencyInput$1;
+exports.CurrencyInput = CurrencyInput;
 exports.DatePicker = DatePicker;
 exports.FallbackSpinner = FallbackSpinner;
 exports.GeneralInfo = GeneralInfo;
