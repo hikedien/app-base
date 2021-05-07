@@ -79,6 +79,9 @@ var trimObjectValues = function trimObjectValues(object, excludeKeys) {
   });
   return object;
 };
+var numberFormat = function numberFormat(value) {
+  return Intl.NumberFormat().format(value);
+};
 var toastError = function toastError(message) {
   reactToastify.toast.error( /*#__PURE__*/React__default.createElement("div", {
     className: "d-flex align-items-center"
@@ -108,6 +111,7 @@ var index = {
   trimValue: trimValue,
   bytesToMb: bytesToMb,
   trimObjectValues: trimObjectValues,
+  numberFormat: numberFormat,
   toastError: toastError,
   toastSuccess: toastSuccess
 };
@@ -9745,7 +9749,9 @@ var VerifyAccount = function VerifyAccount() {
     color: "primary"
   }), /*#__PURE__*/React__default.createElement("span", {
     className: "ml-1"
-  }, "\u0110ang x\u1EED l\xFD...")) : /*#__PURE__*/React__default.createElement("div", {
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "verifyAccount.loading"
+  }))) : /*#__PURE__*/React__default.createElement("div", {
     className: "text-center p-2"
   }, renderVerifyStatus())));
 };
