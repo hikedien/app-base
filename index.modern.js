@@ -981,13 +981,6 @@ const changeLanguageSetting = (lang, callBack) => {
 };
 const changeActionExpireTime = () => {
   return dispatch => {
-    clearTimeout(sessionTimeout);
-    sessionTimeout = setTimeout(() => {
-      toastError( /*#__PURE__*/React.createElement(FormattedMessage, {
-        id: "common.sessionExpired"
-      }));
-      dispatch(logoutAction());
-    }, SESSION_TIMEOUT * 60 * 1000);
     dispatch({
       type: CHANGE_SESSION_EXPIRE_TIME
     });

@@ -1154,13 +1154,6 @@ var changeLanguageSetting = function changeLanguageSetting(lang, callBack) {
 };
 var changeActionExpireTime = function changeActionExpireTime() {
   return function (dispatch) {
-    clearTimeout(sessionTimeout);
-    sessionTimeout = setTimeout(function () {
-      toastError( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-        id: "common.sessionExpired"
-      }));
-      dispatch(logoutAction());
-    }, SESSION_TIMEOUT * 60 * 1000);
     dispatch({
       type: CHANGE_SESSION_EXPIRE_TIME
     });
