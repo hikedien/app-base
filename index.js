@@ -884,22 +884,20 @@ var changeIsGuest = function changeIsGuest(isGuest) {
 };
 var goToGuestApp = function goToGuestApp() {
   return function (dispatch, getState) {
-    var isGuest = getState().auth.isGuest;
     var appId = getState().customizer.appId;
     dispatch({
       type: GOTO_GUEST_APP
     });
-    redirectMainApp(isGuest, appId);
+    redirectMainApp(false, appId);
   };
 };
 var goToAgencyApp = function goToAgencyApp() {
   return function (dispatch, getState) {
-    var isGuest = getState().auth.isGuest;
     var appId = getState().customizer.appId;
     dispatch({
       type: GOTO_AGENCY_APP
     });
-    redirectMainApp(isGuest, appId);
+    redirectMainApp(true, appId);
   };
 };
 var createPassword = function createPassword(password) {

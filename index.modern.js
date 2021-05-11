@@ -768,29 +768,23 @@ const changeIsGuest = isGuest => {
 const goToGuestApp = () => {
   return (dispatch, getState) => {
     const {
-      isGuest
-    } = getState().auth;
-    const {
       appId
     } = getState().customizer;
     dispatch({
       type: GOTO_GUEST_APP
     });
-    redirectMainApp(isGuest, appId);
+    redirectMainApp(false, appId);
   };
 };
 const goToAgencyApp = () => {
   return (dispatch, getState) => {
-    const {
-      isGuest
-    } = getState().auth;
     const {
       appId
     } = getState().customizer;
     dispatch({
       type: GOTO_AGENCY_APP
     });
-    redirectMainApp(isGuest, appId);
+    redirectMainApp(true, appId);
   };
 };
 const createPassword = password => {
