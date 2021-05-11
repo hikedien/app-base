@@ -6816,6 +6816,8 @@ const DatePicker = props => {
       locale: intl.locale === 'vi' ? flatpickr.l10ns.vn : '',
       ...props.options
     },
+    disabled: props.disabled,
+    placeholder: props.placeholder,
     "data-enable-time": true,
     className: `form-control position-relative bg-white flatpickr-input ${props.className}`,
     value: props.value,
