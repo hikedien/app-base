@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Component, PureComponent, useRef, useCallback } from 'react';
+import React, { useState, useEffect, Component, PureComponent, useCallback } from 'react';
 import { useDispatch, connect, useSelector, Provider } from 'react-redux';
 import { combineReducers, createStore, applyMiddleware, compose } from 'redux';
 import createDebounce from 'redux-debounced';
@@ -27,6 +27,7 @@ import ScrollToTop from 'react-scroll-up';
 import Hammer from 'react-hammerjs';
 import { object, string, ref } from 'yup';
 import { Field, Formik, Form, FastField } from 'formik';
+import Flatpickr from 'react-flatpickr';
 import ReactSelect from 'react-select';
 import AsyncSelect from 'react-select/async';
 import CreatableSelect from 'react-select/creatable';
@@ -6819,26 +6820,20 @@ unwrapExports(vn);
 
 const DatePicker = props => {
   const intl = useIntl();
-  const datePickerRef = useRef();
-  useEffect(() => {
-    const instance = flatpickr(datePickerRef.current, {
-      locale: intl.locale === 'vi' ? flatpickr.l10ns.vn : '',
-      allowInput: false,
-      defaultDate: props.value,
-      onChange: value => props.onChange(value),
-      onClose: value => props.onClose && props.onClose(value),
-      disableMobile: true,
-      ...props.options
-    });
-    datePickerRef.current.value = instance.input.value;
-  }, [props.value]);
   return /*#__PURE__*/React.createElement(FormGroup, {
     className: "form-label-group position-relative"
-  }, /*#__PURE__*/React.createElement("input", {
-    ref: datePickerRef,
-    disabled: props.disabled,
-    placeholder: props.placeholder,
-    className: `form-control position-relative bg-white flatpickr-input ${props.className}`
+  }, /*#__PURE__*/React.createElement(Flatpickr, {
+    options: {
+      disableMobile: true,
+      allowInput: false,
+      locale: intl.locale === 'vi' ? flatpickr.l10ns.vn : '',
+      ...props.options
+    },
+    "data-enable-time": true,
+    className: `form-control position-relative bg-white flatpickr-input ${props.className}`,
+    value: props.value,
+    onClose: () => props.onClose && props.onClose(),
+    onChange: date => props.onChange && props.onChange(date)
   }), /*#__PURE__*/React.createElement(Label, null, props.placeholder), props.errors && props.touched && props.isShowErrorMessage && getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
   }, getPropObject(props.errors, props.fieldName)) : null);

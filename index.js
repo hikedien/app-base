@@ -26,6 +26,7 @@ var ScrollToTop = _interopDefault(require('react-scroll-up'));
 var Hammer = _interopDefault(require('react-hammerjs'));
 var Yup = require('yup');
 var formik = require('formik');
+var Flatpickr = _interopDefault(require('react-flatpickr'));
 var ReactSelect = _interopDefault(require('react-select'));
 var AsyncSelect = _interopDefault(require('react-select/async'));
 var CreatableSelect = _interopDefault(require('react-select/creatable'));
@@ -7187,29 +7188,23 @@ unwrapExports(vn);
 
 var DatePicker = function DatePicker(props) {
   var intl = reactIntl.useIntl();
-  var datePickerRef = React.useRef();
-  React.useEffect(function () {
-    var instance = flatpickr(datePickerRef.current, _extends({
-      locale: intl.locale === 'vi' ? flatpickr.l10ns.vn : '',
-      allowInput: false,
-      defaultDate: props.value,
-      onChange: function onChange(value) {
-        return props.onChange(value);
-      },
-      onClose: function onClose(value) {
-        return props.onClose && props.onClose(value);
-      },
-      disableMobile: true
-    }, props.options));
-    datePickerRef.current.value = instance.input.value;
-  }, [props.value]);
   return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
     className: "form-label-group position-relative"
-  }, /*#__PURE__*/React__default.createElement("input", {
-    ref: datePickerRef,
-    disabled: props.disabled,
-    placeholder: props.placeholder,
-    className: "form-control position-relative bg-white flatpickr-input " + props.className
+  }, /*#__PURE__*/React__default.createElement(Flatpickr, {
+    options: _extends({
+      disableMobile: true,
+      allowInput: false,
+      locale: intl.locale === 'vi' ? flatpickr.l10ns.vn : ''
+    }, props.options),
+    "data-enable-time": true,
+    className: "form-control position-relative bg-white flatpickr-input " + props.className,
+    value: props.value,
+    onClose: function onClose() {
+      return props.onClose && props.onClose();
+    },
+    onChange: function onChange(date) {
+      return props.onChange && props.onChange(date);
+    }
   }), /*#__PURE__*/React__default.createElement(reactstrap.Label, null, props.placeholder), props.errors && props.touched && props.isShowErrorMessage && getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React__default.createElement("div", {
     className: "text-danger"
   }, getPropObject(props.errors, props.fieldName)) : null);
