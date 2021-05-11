@@ -8808,8 +8808,8 @@ const Register = () => {
     };
 
     if (isGuest) {
-      window.recaptchaVerifier.verify();
       dispatch(saveRegisterInfo(data));
+      window.recaptchaVerifier.verify();
       history.push('/verify-otp');
     } else {
       dispatch(register(data));
