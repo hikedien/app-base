@@ -8,7 +8,7 @@ import { persistReducer, persistStore } from 'redux-persist';
 import Axios from 'axios';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
 import * as Icon from 'react-feather';
-import { AlertTriangle, Check, User, Lock, FileText, Shield, Globe, MessageSquare, Power, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, ChevronDown, Sun } from 'react-feather';
+import { AlertTriangle, Check, User, Lock, Users, FileText, Shield, Globe, MessageSquare, Power, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, ChevronDown, Sun } from 'react-feather';
 import { toast, ToastContainer } from 'react-toastify';
 export { toast } from 'react-toastify';
 import { FormattedMessage, injectIntl, IntlProvider, useIntl } from 'react-intl';
@@ -32,7 +32,9 @@ import AsyncSelect from 'react-select/async';
 import CreatableSelect from 'react-select/creatable';
 import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
 import GoogleLogin from 'react-google-login';
+import firebase from 'firebase';
 import styled from 'styled-components';
+import OtpInput from 'react-otp-input';
 import SweetAlert from 'react-bootstrap-sweetalert';
 import TopBarProgress from 'react-topbar-progress-indicator';
 import Ripples from 'react-ripples';
@@ -131,6 +133,7 @@ const API_GUEST_SOCIAL_LOGIN = '/api/social-login/guest';
 const API_CHANGE_PASSWORD = '/api/change-password';
 const API_REGISTER = '/nth/onboarding/api/authenticate/register';
 const API_VERIFY_ACCOUNT = '/nth/onboarding/api/authenticate/verify-account';
+const API_VERIFY_PHONENUMBER = '/nth/onboarding/api/authenticate/verify-phone-number';
 const API_GET_USER = '/nth/user/api/users';
 const API_USER_SETTINGS = '/nth/user/api/user-settings';
 const API_UPDATE_USER_INFO = '/nth/user/api/update-user-info';
@@ -159,6 +162,15 @@ const PERSONAL_ID_REGEX = /^(\d{9}|\d{12})$/;
 const CITIZEN_INDENTIFY_REGEX = /^(\d{12})$/;
 const PASSPORT_REGEX = /^(?!^0+$)[a-zA-Z0-9]{3,20}$/;
 const NAME_REGEX = /^([ÀÁÂÃÈÉÊẾÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêếềìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹý0-9A-Za-z_. ])+$/g;
+const FIRE_BASE_CONFIGS = {
+  apiKey: "AIzaSyCvWX-pLEPOxjwp2AJq3_t11JQjRMKtaT8",
+  authDomain: "inonvn.firebaseapp.com",
+  projectId: "inonvn",
+  storageBucket: "inonvn.appspot.com",
+  messagingSenderId: "316619339575",
+  appId: "1:316619339575:web:a44ffe85ab9b3619f88cb2",
+  measurementId: "G-9NZ14LNF58"
+};
 const AUTHORITIES = {
   VIEW: 'view',
   EDIT: 'edit',
@@ -303,6 +315,7 @@ var appConfigs = {
   API_CHANGE_PASSWORD: API_CHANGE_PASSWORD,
   API_REGISTER: API_REGISTER,
   API_VERIFY_ACCOUNT: API_VERIFY_ACCOUNT,
+  API_VERIFY_PHONENUMBER: API_VERIFY_PHONENUMBER,
   API_GET_USER: API_GET_USER,
   API_USER_SETTINGS: API_USER_SETTINGS,
   API_UPDATE_USER_INFO: API_UPDATE_USER_INFO,
@@ -331,6 +344,7 @@ var appConfigs = {
   CITIZEN_INDENTIFY_REGEX: CITIZEN_INDENTIFY_REGEX,
   PASSPORT_REGEX: PASSPORT_REGEX,
   NAME_REGEX: NAME_REGEX,
+  FIRE_BASE_CONFIGS: FIRE_BASE_CONFIGS,
   AUTHORITIES: AUTHORITIES,
   LOGIN_METHODS: LOGIN_METHODS,
   API_TIME_OUT: API_TIME_OUT,
@@ -434,6 +448,10 @@ AuthService.changeUserSetting = value => {
 
 AuthService.verifyAccount = token => {
   return HttpClient.post(`${API_VERIFY_ACCOUNT}/${token}`);
+};
+
+AuthService.verifyPhoneNumber = value => {
+  return HttpClient.post(`${API_VERIFY_PHONENUMBER}`, value);
 };
 
 AuthService.updateAvatar = async (user, file) => {
@@ -603,6 +621,9 @@ const UPDATE_USER_INFO = 'UPDATE_USER_INFO';
 const CHANGE_SESSION_EXPIRE_TIME = 'CHANGE_SESSION_EXPIRE_TIME';
 const CHANGE_VERIFY_ACCOUNT_STATUS = 'CHANGE_VERIFY_ACCOUNT_STATUS';
 const CHANGE_IS_GUEST = 'CHANGE_IS_GUEST';
+const GOTO_GUEST_APP = 'GOTO_GUEST_APP';
+const GOTO_AGENCY_APP = 'GOTO_AGENCY_APP';
+var sessionTimeout = null;
 const checkLoginStatus = (authToken, redirectUrl) => {
   return async (dispatch, getState) => {
     try {
@@ -610,6 +631,9 @@ const checkLoginStatus = (authToken, redirectUrl) => {
       const {
         username
       } = getState().auth.user;
+      const {
+        appId
+      } = getState().customizer;
 
       if (response.status === API_R_200 && username) {
         response = await AuthService.getUserInfo(getState().auth.user.username, authToken);
@@ -620,10 +644,6 @@ const checkLoginStatus = (authToken, redirectUrl) => {
             user: response.data || {}
           }
         });
-        changeActionExpireTime();
-        const {
-          appId
-        } = getState().customizer;
         history.push(redirectUrl || window.location.pathname.replace(`/${getContextPath(appId)}/`, '/'));
       } else {
         dispatch({
@@ -744,6 +764,34 @@ const changeIsGuest = isGuest => {
     });
   };
 };
+const goToGuestApp = () => {
+  return (dispatch, getState) => {
+    const {
+      isGuest
+    } = getState().auth;
+    const {
+      appId
+    } = getState().customizer;
+    dispatch({
+      type: GOTO_GUEST_APP
+    });
+    redirectMainApp(isGuest, appId);
+  };
+};
+const goToAgencyApp = () => {
+  return (dispatch, getState) => {
+    const {
+      isGuest
+    } = getState().auth;
+    const {
+      appId
+    } = getState().customizer;
+    dispatch({
+      type: GOTO_AGENCY_APP
+    });
+    redirectMainApp(isGuest, appId);
+  };
+};
 const createPassword = password => {
   return async (dispatch, getState) => {
     try {
@@ -755,16 +803,18 @@ const createPassword = password => {
     } catch (error) {}
   };
 };
-const register = values => {
+const register = (values, isGuest) => {
   return async () => {
     try {
       const res = await AuthService.register(trimObjectValues(values));
 
       if (res.status === 200 && res.data) {
-        toastSuccess( /*#__PURE__*/React.createElement(FormattedMessage, {
-          id: "register.registerSuccess"
-        }));
-        history.push('/login');
+        if (!isGuest) {
+          toastSuccess( /*#__PURE__*/React.createElement(FormattedMessage, {
+            id: "register.registerSuccess"
+          }));
+          history.push('/login');
+        }
       }
     } catch (error) {}
   };
@@ -801,6 +851,17 @@ const saveRegisterToken = registerToken => {
     } else {
       history.push('/');
     }
+  };
+};
+const saveRegisterInfo = values => {
+  return async dispatch => {
+    dispatch({
+      type: SAVE_REGISTER_TOKEN,
+      payload: {
+        token: '',
+        user: values
+      }
+    });
   };
 };
 const saveResetPasswordToken = token => {
@@ -852,6 +913,7 @@ const resetPassword = password => {
 };
 const logoutAction = () => {
   return async (dispatch, getState) => {
+    clearTimeout(sessionTimeout);
     const {
       id
     } = getState().auth.user;
@@ -924,6 +986,13 @@ const changeLanguageSetting = (lang, callBack) => {
 };
 const changeActionExpireTime = () => {
   return dispatch => {
+    clearTimeout(sessionTimeout);
+    sessionTimeout = setTimeout(() => {
+      toastError( /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "common.sessionExpired"
+      }));
+      dispatch(logoutAction());
+    }, SESSION_TIMEOUT * 60 * 1000);
     dispatch({
       type: CHANGE_SESSION_EXPIRE_TIME
     });
@@ -931,19 +1000,6 @@ const changeActionExpireTime = () => {
 };
 const verifyAccount = () => {
   return async dispatch => {
-    const token = new URLSearchParams(document.location.search).get('token');
-
-    if (!token) {
-      dispatch({
-        type: CHANGE_VERIFY_ACCOUNT_STATUS,
-        payload: {
-          token,
-          status: 'FAIL'
-        }
-      });
-      return;
-    }
-
     const res = await AuthService.verifyAccount(token);
 
     if (res.status === 200) {
@@ -962,6 +1018,18 @@ const verifyAccount = () => {
           status: 'FAIL'
         }
       });
+    }
+  };
+};
+const verifyPhoneNumber = values => {
+  return async dispatch => {
+    const res = await AuthService.verifyPhoneNumber(values);
+
+    if (res.status === 200) {
+      toastSuccess( /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "verifyAccount.otp.registerSuccess"
+      }));
+      history.push('/login');
     }
   };
 };
@@ -1036,9 +1104,7 @@ const setUpHttpClient = (store, apiBaseUrl) => {
     language = localStorage.getItem('language');
 
     if (token) {
-      store.dispatch({
-        type: CHANGE_SESSION_EXPIRE_TIME
-      });
+      store.dispatch(changeActionExpireTime());
       config.headers.Authorization = `Bearer ${token}`;
       const isSessionExpired = moment().isAfter(moment(sessionExpireTime));
 
@@ -1258,6 +1324,26 @@ const authReducers = (state = { ...authInitialState
           verifyAccount: { ...state.verifyAccount,
             ...action.payload
           }
+        };
+      }
+
+    case GOTO_AGENCY_APP:
+      {
+        return { ...state,
+          user: state.guest.user,
+          authToken: state.guest.authToken
+        };
+      }
+
+    case GOTO_GUEST_APP:
+      {
+        return { ...state,
+          guest: {
+            user: state.user,
+            authToken: state.authToken
+          },
+          user: '',
+          authToken: ''
         };
       }
 
@@ -1776,6 +1862,11 @@ const UserDropdown = () => {
     history.push(path);
   };
 
+  const onClickGoToGuestApp = e => {
+    e.preventDefault();
+    dispatch(goToGuestApp());
+  };
+
   const onClickLogout = () => {
     dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -1815,6 +1906,19 @@ const UserDropdown = () => {
     className: "align-middle"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "setting.changePassword"
+  }))), /*#__PURE__*/React.createElement(DropdownItem, {
+    divider: true
+  }), /*#__PURE__*/React.createElement(DropdownItem, {
+    tag: "a",
+    href: "#",
+    onClick: e => onClickGoToGuestApp(e)
+  }, /*#__PURE__*/React.createElement(Users, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "setting.goToGuestApp"
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     divider: true
   }), /*#__PURE__*/React.createElement(DropdownItem, {
@@ -3364,6 +3468,7 @@ var messages_en = {
 	"setting.gender.M": "Male",
 	"setting.gender.F": "FeMale",
 	"setting.gender.O": "Others",
+	"setting.goToGuestApp": "Back to Guest app",
 	"setting.call": "Call",
 	"setting.call.confirmMessage": "Would you like to call {phoneNumber}?",
 	"setting.sendEmail": "Send mail",
@@ -3561,7 +3666,12 @@ var messages_en = {
 	"verifyAccount.success": "Successful account verification, please click below to create a password.",
 	"verifyAccount.fail": "Account verification failed!",
 	"verifyAccount.loading": "Processing...",
-	"verifyAccount.createPassword": "Create password"
+	"verifyAccount.createPassword": "Create password",
+	"verifyAccount.phoneNumberVerification": "Phone number verification",
+	"verifyAccount.otp.info": "Please enter the OTP that has been sent to your phone number <b> {phoneNumber} </b>",
+	"verifyAccount.otp.verify": "Verify",
+	"verifyAccount.otp.getOtp": "Get OTP",
+	"verifyAccount.otp.registerSuccess": "Đăng ký thành công, liên kết tạo mật khẩu đã được gửi đến email của bạn!"
 };
 
 var login$1 = "Đăng nhập";
@@ -3709,6 +3819,7 @@ var messages_vi = {
 	"setting.gender.M": "Name",
 	"setting.gender.F": "Nữ",
 	"setting.gender.O": "Khác",
+	"setting.goToGuestApp": "Về trang KHCN",
 	"setting.call": "Gọi điện",
 	"setting.call.confirmMessage": "Bạn có muốn gọi đến số {phoneNumber}?",
 	"setting.sendEmail": "Gửi mail",
@@ -3907,7 +4018,12 @@ var messages_vi = {
 	"verifyAccount.success": "Xác thực tài khoản thành công, bạn vui lòng nhấn vào bên dưới để tạo mật khẩu.",
 	"verifyAccount.fail": "Xác thực tài khoản thất bại!",
 	"verifyAccount.loading": "Đang xử lý...",
-	"verifyAccount.createPassword": "Tạo mật khẩu"
+	"verifyAccount.createPassword": "Tạo mật khẩu",
+	"verifyAccount.phoneNumberVerification": "Xác thực số điện thoại",
+	"verifyAccount.otp.info": "Bạn vui lòng nhập mã OTP đã được gửi về số điện thoại <b>{phoneNumber}</b>",
+	"verifyAccount.otp.verify": "Xác nhận",
+	"verifyAccount.otp.getOtp": "Lấy lại mã OTP",
+	"verifyAccount.otp.registerSuccess": "Đăng ký thành công, link tạo mật khẩu đã được gửi đến email của ban!"
 };
 
 const BaseFormGroup = ({
@@ -8679,9 +8795,21 @@ const Register = () => {
   const [isAppcepted, setIsAppcepted] = useState(false);
   const [isNotApccepted, setIsNotAccepted] = useState(false);
   const {
-    isGuest
+    isGuest,
+    register: registerInfo
   } = useSelector(state => state.auth);
   const dispatch = useDispatch();
+  const history = useHistory();
+  useEffect(() => {
+    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier("recaptcha-container", {
+      size: "invisible",
+      callback: recaptchaToken => {
+        dispatch(register({ ...registerInfo.user,
+          recaptchaToken
+        }, true));
+      }
+    });
+  }, []);
 
   const onSubmit = async values => {
     if (!isAppcepted) {
@@ -8689,9 +8817,17 @@ const Register = () => {
       return;
     }
 
-    dispatch(register({ ...values,
+    const data = { ...values,
       isGuest
-    }));
+    };
+
+    if (isGuest) {
+      window.recaptchaVerifier.verify();
+      dispatch(saveRegisterInfo(data));
+      history.push('/verify-otp');
+    } else {
+      dispatch(register(data));
+    }
   };
 
   const ontoggleAccepted = checked => {
@@ -9068,7 +9204,6 @@ const VerifyAccount = () => {
   const history = useHistory();
   useEffect(() => {
     dispatch(verifyAccount());
-    history.replace(window.location.pathname);
   }, []);
 
   const renderVerifyStatus = () => {
@@ -9132,6 +9267,77 @@ const VerifyAccount = () => {
   }, renderVerifyStatus())));
 };
 
+const VerifyOtp = () => {
+  const [otp, setOtp] = useState('');
+  const registerInfo = useSelector(state => state.auth.register);
+  const dispatch = useDispatch();
+  const history = useHistory();
+  const intl = useIntl();
+  const NUM_INPUTS = 6;
+  useEffect(() => {
+    if (!window.recaptchaVerifier) {
+      history.push('/register');
+    }
+  }, []);
+
+  const onChangeOtp = value => {
+    setOtp(value);
+  };
+
+  const onClickVerify = () => {
+    dispatch(verifyPhoneNumber({ ...registerInfo.user,
+      code: otp
+    }));
+  };
+
+  const onClickGetOtp = () => {
+    window.recaptchaVerifier.verify().then(value => {
+      if (value === registerInfo.user.recaptchaToken) {
+        toastError("Mã Otp đã được gửi đến điện thoại của bạn!");
+      }
+    });
+  };
+
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "text-center"
+  }, /*#__PURE__*/React.createElement("h4", {
+    className: "font-weight-bold text-white"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "verifyAccount.phoneNumberVerification"
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2",
+    dangerouslySetInnerHTML: {
+      __html: intl.formatMessage({
+        id: 'verifyAccount.otp.info'
+      }, {
+        phoneNumber: registerInfo.user.phoneNumber
+      })
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "w-100 d-flex justify-content-center my-2"
+  }, /*#__PURE__*/React.createElement(OtpInput, {
+    inputStyle: "otp-input",
+    value: otp,
+    onChange: onChangeOtp,
+    isInputNum: true,
+    shouldAutoFocus: true,
+    numInputs: NUM_INPUTS,
+    separator: /*#__PURE__*/React.createElement("span", {
+      className: "ml-2"
+    })
+  })), /*#__PURE__*/React.createElement(Button.Ripple, {
+    onClick: onClickGetOtp,
+    className: "mr-2"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "verifyAccount.otp.getOtp"
+  })), /*#__PURE__*/React.createElement(Button.Ripple, {
+    onClick: onClickVerify,
+    disabled: otp.length !== NUM_INPUTS
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "verifyAccount.otp.verify"
+  }))));
+};
+
 let _ = t => t,
     _t;
 const PagetStyle = styled.div(_t || (_t = _`
@@ -9170,6 +9376,9 @@ const LandingPage = props => {
       case 'verify-account':
         return /*#__PURE__*/React.createElement(VerifyAccount, null);
 
+      case 'verify-otp':
+        return /*#__PURE__*/React.createElement(VerifyOtp, null);
+
       default:
         return '';
     }
@@ -9203,7 +9412,9 @@ const LandingPage = props => {
     id: "register"
   }))), /*#__PURE__*/React.createElement("div", {
     className: "lg-content p-2 p-md-4 p-lg-5"
-  }, /*#__PURE__*/React.createElement(TabView, null))), /*#__PURE__*/React.createElement(LandingFooter, null)));
+  }, /*#__PURE__*/React.createElement(TabView, null))), /*#__PURE__*/React.createElement("div", {
+    id: "recaptcha-container"
+  }), /*#__PURE__*/React.createElement(LandingFooter, null)));
 };
 
 const CompleteInforValidate = object().shape({
@@ -9623,6 +9834,8 @@ const AppRouter = props => {
     path: 'reset-password'
   }, {
     path: 'verify-account'
+  }, {
+    path: 'verify-otp'
   }];
   const landingPage2Routes = [{
     path: 'create-password'
@@ -9696,6 +9909,7 @@ var AppRouter$1 = connect(mapStateToProps$3, {
   loadUserRoles,
   loginAction,
   changeIsGuest,
+  logoutAction,
   setAppId
 })(AppRouter);
 
@@ -9752,6 +9966,7 @@ const App = ({
   const persistor = persistStore(store);
   setBaseHistory(history);
   setUpHttpClient(store, apiBaseUrl);
+  firebase.initializeApp(FIRE_BASE_CONFIGS);
   return /*#__PURE__*/React.createElement(Provider, {
     store: store
   }, /*#__PURE__*/React.createElement(PersistGate, {
@@ -9888,5 +10103,5 @@ const usePageAuthorities = () => {
   return authorities;
 };
 
-export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, Radio, ReactTable, Select, goBackHomePage, hideConfirmAlert, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
+export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, Radio, ReactTable, Select, goBackHomePage, goToAgencyApp, hideConfirmAlert, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
 //# sourceMappingURL=index.modern.js.map
