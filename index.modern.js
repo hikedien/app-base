@@ -773,7 +773,7 @@ const goToGuestApp = () => {
     dispatch({
       type: GOTO_GUEST_APP
     });
-    redirectMainApp(false, appId);
+    redirectMainApp(true, appId);
   };
 };
 const goToAgencyApp = () => {
@@ -784,7 +784,7 @@ const goToAgencyApp = () => {
     dispatch({
       type: GOTO_AGENCY_APP
     });
-    redirectMainApp(true, appId);
+    redirectMainApp(false, appId);
   };
 };
 const createPassword = password => {
@@ -6818,7 +6818,7 @@ const DatePicker = props => {
     },
     disabled: props.disabled,
     placeholder: props.placeholder,
-    "data-enable-time": props.enableTime || false,
+    "data-enable-time": true,
     className: `form-control position-relative bg-white flatpickr-input ${props.className}`,
     value: props.value,
     onClose: () => props.onClose && props.onClose(),
