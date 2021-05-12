@@ -6818,7 +6818,7 @@ const DatePicker = props => {
     },
     disabled: props.disabled,
     placeholder: props.placeholder,
-    "data-enable-time": true,
+    "data-enable-time": props.enableTime || false,
     className: `form-control position-relative bg-white flatpickr-input ${props.className}`,
     value: props.value,
     onClose: () => props.onClose && props.onClose(),
