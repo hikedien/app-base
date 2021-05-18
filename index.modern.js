@@ -6834,6 +6834,7 @@ const BaseFormDatePicker = ({
   touched,
   messageId,
   value,
+  validate,
   className,
   options,
   onChange,
@@ -6846,7 +6847,8 @@ const BaseFormDatePicker = ({
   };
   const intl = useIntl();
   return /*#__PURE__*/React.createElement(FormGroup, null, /*#__PURE__*/React.createElement(Field, {
-    name: fieldName
+    name: fieldName,
+    validate: validate
   }, ({
     field,
     form

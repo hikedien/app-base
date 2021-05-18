@@ -7208,6 +7208,7 @@ var BaseFormDatePicker = function BaseFormDatePicker(_ref) {
       errors = _ref.errors,
       touched = _ref.touched,
       messageId = _ref.messageId,
+      validate = _ref.validate,
       className = _ref.className,
       options = _ref.options,
       _onChange = _ref.onChange,
@@ -7220,7 +7221,8 @@ var BaseFormDatePicker = function BaseFormDatePicker(_ref) {
   };
   var intl = reactIntl.useIntl();
   return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement(formik.Field, {
-    name: fieldName
+    name: fieldName,
+    validate: validate
   }, function (_ref2) {
     var field = _ref2.field,
         form = _ref2.form;
