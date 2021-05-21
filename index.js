@@ -9885,13 +9885,13 @@ var LandingPageHeader = function LandingPageHeader() {
       src: IMAGE.LOGO,
       alt: "logo"
     }))), /*#__PURE__*/React__default.createElement("div", {
-      className: "languages d-flex align-items-center "
+      className: "languages d-flex align-items-center"
     }, /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledButtonDropdown, {
       direction: "left"
     }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
       color: "primary",
       tag: "div",
-      className: "cursor-pointer mb-2"
+      className: "cursor-pointer"
     }, context.state.locale === 'en' ? /*#__PURE__*/React__default.createElement("img", {
       alt: "usa-icon",
       className: "cursor-pointer",

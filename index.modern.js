@@ -9261,13 +9261,13 @@ const LandingPageHeader = () => /*#__PURE__*/React.createElement(Context.Consume
   src: IMAGE.LOGO,
   alt: "logo"
 }))), /*#__PURE__*/React.createElement("div", {
-  className: "languages d-flex align-items-center "
+  className: "languages d-flex align-items-center"
 }, /*#__PURE__*/React.createElement(UncontrolledButtonDropdown, {
   direction: "left"
 }, /*#__PURE__*/React.createElement(DropdownToggle, {
   color: "primary",
   tag: "div",
-  className: "cursor-pointer mb-2"
+  className: "cursor-pointer"
 }, context.state.locale === 'en' ? /*#__PURE__*/React.createElement("img", {
   alt: "usa-icon",
   className: "cursor-pointer",
