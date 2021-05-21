@@ -6837,7 +6837,6 @@ const BaseFormDatePicker = ({
   errors,
   touched,
   messageId,
-  value,
   className,
   options,
   onChange,
@@ -8863,7 +8862,8 @@ const Register = () => {
   const [isNotApccepted, setIsNotAccepted] = useState(false);
   const {
     isGuest,
-    register: registerInfo
+    register: registerInfo,
+    guest
   } = useSelector(state => state.auth);
   const dispatch = useDispatch();
   const history = useHistory();
@@ -8904,9 +8904,9 @@ const Register = () => {
 
   return /*#__PURE__*/React.createElement(Formik, {
     initialValues: {
-      fullName: '',
-      email: '',
-      phoneNumber: '',
+      fullName: isGuest ? guest === null || guest === void 0 ? void 0 : guest.user.fullName : '',
+      email: isGuest ? guest === null || guest === void 0 ? void 0 : guest.user.email : '',
+      phoneNumber: isGuest ? guest === null || guest === void 0 ? void 0 : guest.user.phoneNumber : '',
       refCode: ''
     },
     onSubmit: onSubmit,

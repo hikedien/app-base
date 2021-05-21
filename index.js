@@ -9449,7 +9449,8 @@ var Register = function Register() {
     return state.auth;
   }),
       isGuest = _useSelector.isGuest,
-      registerInfo = _useSelector.register;
+      registerInfo = _useSelector.register,
+      guest = _useSelector.guest;
 
   var dispatch = reactRedux.useDispatch();
   var history = reactRouterDom.useHistory();
@@ -9496,9 +9497,9 @@ var Register = function Register() {
 
   return /*#__PURE__*/React__default.createElement(formik.Formik, {
     initialValues: {
-      fullName: '',
-      email: '',
-      phoneNumber: '',
+      fullName: isGuest ? guest === null || guest === void 0 ? void 0 : guest.user.fullName : '',
+      email: isGuest ? guest === null || guest === void 0 ? void 0 : guest.user.email : '',
+      phoneNumber: isGuest ? guest === null || guest === void 0 ? void 0 : guest.user.phoneNumber : '',
       refCode: ''
     },
     onSubmit: onSubmit,
