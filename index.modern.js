@@ -9047,7 +9047,7 @@ const ForgotPassword = () => {
   })) : '', /*#__PURE__*/React.createElement(Label, null, msg)))), /*#__PURE__*/React.createElement("div", {
     className: "d-flex justify-content-center"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "col-md-4 px-2"
+    className: "col-md-4"
   }, /*#__PURE__*/React.createElement(Link, {
     to: '/'
   }, /*#__PURE__*/React.createElement(Button, {
@@ -9055,7 +9055,7 @@ const ForgotPassword = () => {
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "common.back"
   })))), /*#__PURE__*/React.createElement("div", {
-    className: "col-md-4 px-2"
+    className: "col-md-4"
   }, /*#__PURE__*/React.createElement(Button, {
     color: "primary",
     type: "submit"

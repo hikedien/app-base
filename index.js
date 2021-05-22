@@ -9662,7 +9662,7 @@ var ForgotPassword = function ForgotPassword() {
     })), /*#__PURE__*/React__default.createElement("div", {
       className: "d-flex justify-content-center"
     }, /*#__PURE__*/React__default.createElement("div", {
-      className: "col-md-4 px-2"
+      className: "col-md-4"
     }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
       to: '/'
     }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
@@ -9670,7 +9670,7 @@ var ForgotPassword = function ForgotPassword() {
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "common.back"
     })))), /*#__PURE__*/React__default.createElement("div", {
-      className: "col-md-4 px-2"
+      className: "col-md-4"
     }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
       color: "primary",
       type: "submit"
