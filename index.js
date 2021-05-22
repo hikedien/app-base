@@ -234,7 +234,7 @@ var IC_TYPES_OPTIONS = [{
 var getExternalAppUrl = function getExternalAppUrl(appId, url) {
   switch (appId) {
     case AppId.APP_NO1:
-      return window.location.origin + "/" + url + "?redirectUrl=" + url;
+      return window.location.origin + "/app" + url + "?redirectUrl=" + url;
 
     case AppId.INSURANCE_APP:
       return window.location.origin + "/insurance" + url + "?redirectUrl=" + url;
@@ -243,13 +243,13 @@ var getExternalAppUrl = function getExternalAppUrl(appId, url) {
       return window.location.origin + "/supplement" + url + "?redirectUrl=" + url;
 
     case AppId.ELITE_APP:
-      return window.location.origin + "/elite" + url + "?redirectUrl=" + url;
+      return "" + window.location.origin + url + "?redirectUrl=" + url;
   }
 };
 var getContextPath = function getContextPath(appId) {
   switch (appId) {
     case AppId.APP_NO1:
-      return '';
+      return 'app';
 
     case AppId.INSURANCE_APP:
       return 'insurance';
@@ -258,7 +258,7 @@ var getContextPath = function getContextPath(appId) {
       return 'supplement';
 
     case AppId.ELITE_APP:
-      return 'elite';
+      return '';
   }
 };
 var getPropObject = function getPropObject(obj, prop) {

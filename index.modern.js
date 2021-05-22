@@ -160,7 +160,7 @@ const IC_TYPES_OPTIONS = [{
 const getExternalAppUrl = (appId, url) => {
   switch (appId) {
     case AppId.APP_NO1:
-      return `${window.location.origin}/${url}?redirectUrl=${url}`;
+      return `${window.location.origin}/app${url}?redirectUrl=${url}`;
 
     case AppId.INSURANCE_APP:
       return `${window.location.origin}/insurance${url}?redirectUrl=${url}`;
@@ -169,13 +169,13 @@ const getExternalAppUrl = (appId, url) => {
       return `${window.location.origin}/supplement${url}?redirectUrl=${url}`;
 
     case AppId.ELITE_APP:
-      return `${window.location.origin}/elite${url}?redirectUrl=${url}`;
+      return `${window.location.origin}${url}?redirectUrl=${url}`;
   }
 };
 const getContextPath = appId => {
   switch (appId) {
     case AppId.APP_NO1:
-      return '';
+      return 'app';
 
     case AppId.INSURANCE_APP:
       return 'insurance';
@@ -184,7 +184,7 @@ const getContextPath = appId => {
       return 'supplement';
 
     case AppId.ELITE_APP:
-      return 'elite';
+      return '';
   }
 };
 const getPropObject = (obj, prop) => {
