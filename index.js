@@ -1,20 +1,20 @@
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
+var reactIntl = require('react-intl');
 var React = require('react');
 var React__default = _interopDefault(React);
+var history$1 = require('history');
+var Axios = _interopDefault(require('axios'));
+var axiosExtensions = require('axios-extensions');
+var Icon = require('react-feather');
+var reactToastify = require('react-toastify');
+var moment = _interopDefault(require('moment'));
 var reactRedux = require('react-redux');
 var redux = require('redux');
 var createDebounce = _interopDefault(require('redux-debounced'));
 var thunk = _interopDefault(require('redux-thunk'));
 var react = require('redux-persist/integration/react');
 var reduxPersist = require('redux-persist');
-var Axios = _interopDefault(require('axios'));
-var axiosExtensions = require('axios-extensions');
-var Icon = require('react-feather');
-var reactToastify = require('react-toastify');
-var reactIntl = require('react-intl');
-var history$1 = require('history');
-var moment = _interopDefault(require('moment'));
 var storage = _interopDefault(require('redux-persist/es/storage'));
 var reactRouterDom = require('react-router-dom');
 var classnames = _interopDefault(require('classnames'));
@@ -44,80 +44,80 @@ var MaskedInput = _interopDefault(require('react-text-mask'));
 var createNumberMask = _interopDefault(require('text-mask-addons/dist/createNumberMask'));
 var Table = _interopDefault(require('react-table'));
 
-var generateUUID = function generateUUID() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    var r = Math.random() * 16 | 0,
-        v = c == 'x' ? r : r & 0x3 | 0x8;
-    return v.toString(16);
-  });
-};
-var trimValue = function trimValue(value) {
-  return value ? value.trim() : '';
-};
-var bytesToMb = function bytesToMb(bytes) {
-  return Math.round(bytes / Math.pow(1024, 2), 2);
-};
-var trimObjectValues = function trimObjectValues(object, excludeKeys) {
-  if (excludeKeys === void 0) {
-    excludeKeys = [];
-  }
+function _extends() {
+  _extends = Object.assign || function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
 
-  if (!object) {
-    return;
-  }
-
-  Object.keys(object).forEach(function (key) {
-    if (excludeKeys.indexOf(key) >= 0) {
-      return;
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
     }
 
-    switch (typeof object[key]) {
-      case 'string':
-        object[key] = trimValue(object[key]);
-        break;
+    return target;
+  };
 
-      case 'object':
-        trimObjectValues(object[key]);
-    }
-  });
-  return object;
-};
-var numberFormat = function numberFormat(value) {
-  return Intl.NumberFormat().format(value);
-};
-var toastError = function toastError(message) {
-  reactToastify.toast.error( /*#__PURE__*/React__default.createElement("div", {
-    className: "d-flex align-items-center"
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "col-1 p-0"
-  }, /*#__PURE__*/React__default.createElement(Icon.AlertTriangle, {
-    size: 24
-  })), /*#__PURE__*/React__default.createElement("p", {
-    className: "mx-1 my-0"
-  }, message)));
-};
-var toastSuccess = function toastSuccess(message) {
-  reactToastify.toast.success( /*#__PURE__*/React__default.createElement("div", {
-    className: "d-flex align-items-center"
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "col-1 p-0"
-  }, /*#__PURE__*/React__default.createElement(Icon.Check, {
-    size: 24
-  })), /*#__PURE__*/React__default.createElement("p", {
-    className: "mx-1 my-0"
-  }, message)));
-};
+  return _extends.apply(this, arguments);
+}
 
-var index = {
-  __proto__: null,
-  generateUUID: generateUUID,
-  trimValue: trimValue,
-  bytesToMb: bytesToMb,
-  trimObjectValues: trimObjectValues,
-  numberFormat: numberFormat,
-  toastError: toastError,
-  toastSuccess: toastSuccess
-};
+function _inheritsLoose(subClass, superClass) {
+  subClass.prototype = Object.create(superClass.prototype);
+  subClass.prototype.constructor = subClass;
+  subClass.__proto__ = superClass;
+}
+
+function _objectWithoutPropertiesLoose(source, excluded) {
+  if (source == null) return {};
+  var target = {};
+  var sourceKeys = Object.keys(source);
+  var key, i;
+
+  for (i = 0; i < sourceKeys.length; i++) {
+    key = sourceKeys[i];
+    if (excluded.indexOf(key) >= 0) continue;
+    target[key] = source[key];
+  }
+
+  return target;
+}
+
+function _assertThisInitialized(self) {
+  if (self === void 0) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
+
+  return self;
+}
+
+function _taggedTemplateLiteralLoose(strings, raw) {
+  if (!raw) {
+    raw = strings.slice(0);
+  }
+
+  strings.raw = raw;
+  return strings;
+}
+
+// A type of promise-like that resolves synchronously and supports only one observer
+
+const _iteratorSymbol = /*#__PURE__*/ typeof Symbol !== "undefined" ? (Symbol.iterator || (Symbol.iterator = Symbol("Symbol.iterator"))) : "@@iterator";
+
+const _asyncIteratorSymbol = /*#__PURE__*/ typeof Symbol !== "undefined" ? (Symbol.asyncIterator || (Symbol.asyncIterator = Symbol("Symbol.asyncIterator"))) : "@@asyncIterator";
+
+// Asynchronously call a function and send errors to recovery continuation
+function _catch(body, recover) {
+	try {
+		var result = body();
+	} catch(e) {
+		return recover(e);
+	}
+	if (result && result.then) {
+		return result.then(void 0, recover);
+	}
+	return result;
+}
 
 var AppId = {
   APP_NO1: 'APP_NO1',
@@ -370,86 +370,227 @@ var appConfigs = {
   IMAGE: IMAGE
 };
 
-function _extends() {
-  _extends = Object.assign || function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-
-  return _extends.apply(this, arguments);
-}
-
-function _inheritsLoose(subClass, superClass) {
-  subClass.prototype = Object.create(superClass.prototype);
-  subClass.prototype.constructor = subClass;
-  subClass.__proto__ = superClass;
-}
-
-function _objectWithoutPropertiesLoose(source, excluded) {
-  if (source == null) return {};
-  var target = {};
-  var sourceKeys = Object.keys(source);
-  var key, i;
-
-  for (i = 0; i < sourceKeys.length; i++) {
-    key = sourceKeys[i];
-    if (excluded.indexOf(key) >= 0) continue;
-    target[key] = source[key];
-  }
-
-  return target;
-}
-
-function _assertThisInitialized(self) {
-  if (self === void 0) {
-    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-  }
-
-  return self;
-}
-
-function _taggedTemplateLiteralLoose(strings, raw) {
-  if (!raw) {
-    raw = strings.slice(0);
-  }
-
-  strings.raw = raw;
-  return strings;
-}
-
-// A type of promise-like that resolves synchronously and supports only one observer
-
-const _iteratorSymbol = /*#__PURE__*/ typeof Symbol !== "undefined" ? (Symbol.iterator || (Symbol.iterator = Symbol("Symbol.iterator"))) : "@@iterator";
-
-const _asyncIteratorSymbol = /*#__PURE__*/ typeof Symbol !== "undefined" ? (Symbol.asyncIterator || (Symbol.asyncIterator = Symbol("Symbol.asyncIterator"))) : "@@asyncIterator";
-
-// Asynchronously call a function and send errors to recovery continuation
-function _catch(body, recover) {
-	try {
-		var result = body();
-	} catch(e) {
-		return recover(e);
-	}
-	if (result && result.then) {
-		return result.then(void 0, recover);
-	}
-	return result;
-}
-
 var history = history$1.createBrowserHistory({
   basename: ''
 });
 var setBaseHistory = function setBaseHistory(appHistory) {
   history = appHistory;
+};
+
+var generateUUID = function generateUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    var r = Math.random() * 16 | 0,
+        v = c == 'x' ? r : r & 0x3 | 0x8;
+    return v.toString(16);
+  });
+};
+var trimValue = function trimValue(value) {
+  return value ? value.trim() : '';
+};
+var bytesToMb = function bytesToMb(bytes) {
+  return Math.round(bytes / Math.pow(1024, 2), 2);
+};
+var trimObjectValues = function trimObjectValues(object, excludeKeys) {
+  if (excludeKeys === void 0) {
+    excludeKeys = [];
+  }
+
+  if (!object) {
+    return;
+  }
+
+  Object.keys(object).forEach(function (key) {
+    if (excludeKeys.indexOf(key) >= 0) {
+      return;
+    }
+
+    switch (typeof object[key]) {
+      case 'string':
+        object[key] = trimValue(object[key]);
+        break;
+
+      case 'object':
+        trimObjectValues(object[key]);
+    }
+  });
+  return object;
+};
+var numberFormat = function numberFormat(value) {
+  return Intl.NumberFormat().format(value);
+};
+var toastError = function toastError(message) {
+  reactToastify.toast.error( /*#__PURE__*/React__default.createElement("div", {
+    className: "d-flex align-items-center"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "col-1 p-0"
+  }, /*#__PURE__*/React__default.createElement(Icon.AlertTriangle, {
+    size: 24
+  })), /*#__PURE__*/React__default.createElement("p", {
+    className: "mx-1 my-0"
+  }, message)));
+};
+var toastSuccess = function toastSuccess(message) {
+  reactToastify.toast.success( /*#__PURE__*/React__default.createElement("div", {
+    className: "d-flex align-items-center"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "col-1 p-0"
+  }, /*#__PURE__*/React__default.createElement(Icon.Check, {
+    size: 24
+  })), /*#__PURE__*/React__default.createElement("p", {
+    className: "mx-1 my-0"
+  }, message)));
+};
+
+var index = {
+  __proto__: null,
+  generateUUID: generateUUID,
+  trimValue: trimValue,
+  bytesToMb: bytesToMb,
+  trimObjectValues: trimObjectValues,
+  numberFormat: numberFormat,
+  toastError: toastError,
+  toastSuccess: toastSuccess
+};
+
+var SHOW_LOADING_BAR = 'SHOW_LOADING_BAR';
+var HIDE_LOADING_BAR = 'HIDE_LOADING_BAR';
+var SHOW_CONFIRM_ALERT = 'SHOW_CONFIRM_ALERT';
+var HIDE_CONFIRM_ALERT = 'HIDE_CONFIRM_ALERT';
+var showConfirmAlert = function showConfirmAlert(configs) {
+  return function (dispatch) {
+    return dispatch({
+      type: SHOW_CONFIRM_ALERT,
+      payload: configs
+    });
+  };
+};
+var hideConfirmAlert = function hideConfirmAlert() {
+  return function (dispatch) {
+    return dispatch({
+      type: HIDE_CONFIRM_ALERT
+    });
+  };
+};
+
+var HttpClient = Axios.create({
+  timeout: API_TIME_OUT,
+  adapter: axiosExtensions.throttleAdapterEnhancer(axiosExtensions.cacheAdapterEnhancer(Axios.defaults.adapter, {
+    threshold: 15 * 60 * 1000
+  })),
+  invalidate: function (config, request) {
+    try {
+      var _temp2 = function () {
+        if (request.clearCacheEntry) {
+          return Promise.resolve(config.store.removeItem(config.uuid)).then(function () {});
+        }
+      }();
+
+      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }
+});
+HttpClient.defaults.headers['Content-Type'] = 'application/json';
+var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
+  var deviceId = localStorage.getItem('deviceId');
+  var language = localStorage.getItem('language');
+
+  if (!deviceId) {
+    deviceId = generateUUID();
+    localStorage.setItem('deviceId', deviceId);
+  }
+
+  if (!language) {
+    localStorage.setItem('language', 'vi');
+  }
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function (position) {
+      localStorage.setItem('latitude', position.coords.latitude);
+      localStorage.setItem('longitude', position.coords.longitude);
+    });
+  }
+
+  HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
+  HttpClient.interceptors.request.use(function (config) {
+    var appId = store.getState().customizer.appId;
+    var token = appId === AppId.ELITE_APP ? store.getState().auth.guest.authToken : store.getState().auth.authToken;
+    var sessionExpireTime = store.getState().auth.sessionExpireTime;
+    language = localStorage.getItem('language');
+
+    if (token) {
+      store.dispatch(changeActionExpireTime());
+      config.headers.Authorization = "Bearer " + token;
+      var isSessionExpired = moment().isAfter(moment(sessionExpireTime));
+
+      if (sessionExpireTime && isSessionExpired) {
+        toastError( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+          id: "common.sessionExpired"
+        }));
+        store.dispatch({
+          type: LOGOUT_ACTION
+        });
+        return;
+      }
+    }
+
+    config.headers.appId = store.getState().customizer.appId;
+    config.headers.appVersion = 'v1';
+    config.headers.latitude = localStorage.getItem('latitude');
+    config.headers.longitude = localStorage.getItem('longitude');
+    config.headers.deviceId = deviceId;
+    config.headers['Accept-Language'] = language;
+
+    if (!config.isBackgroundRequest) {
+      store.dispatch({
+        type: SHOW_LOADING_BAR,
+        payload: ''
+      });
+    }
+
+    return config;
+  });
+  HttpClient.interceptors.response.use(function (response) {
+    store.dispatch({
+      type: HIDE_LOADING_BAR,
+      payload: ''
+    });
+    return response;
+  }, function (e) {
+    store.dispatch({
+      type: HIDE_LOADING_BAR,
+      payload: ''
+    });
+
+    if (!e.response) {
+      return e;
+    }
+
+    switch (e.response.status) {
+      case 400:
+        toastError(e.response.data.message);
+        break;
+
+      case 403:
+        if (e.response.data.error === 'Forbidden') {
+          return e.response;
+        }
+
+        toastError(e.response.data.message);
+        store.dispatch({
+          type: 'LOGOUT_ACTION'
+        });
+        break;
+
+      case 500:
+        toastError( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+          id: "common.error.500"
+        }));
+    }
+
+    return e.response;
+  });
 };
 
 var AuthService = function AuthService() {};
@@ -1189,147 +1330,6 @@ var redirectMainApp = function redirectMainApp(isGuest, appId) {
       history.push('/');
     }
   }, 500);
-};
-
-var SHOW_LOADING_BAR = 'SHOW_LOADING_BAR';
-var HIDE_LOADING_BAR = 'HIDE_LOADING_BAR';
-var SHOW_CONFIRM_ALERT = 'SHOW_CONFIRM_ALERT';
-var HIDE_CONFIRM_ALERT = 'HIDE_CONFIRM_ALERT';
-var showConfirmAlert = function showConfirmAlert(configs) {
-  return function (dispatch) {
-    return dispatch({
-      type: SHOW_CONFIRM_ALERT,
-      payload: configs
-    });
-  };
-};
-var hideConfirmAlert = function hideConfirmAlert() {
-  return function (dispatch) {
-    return dispatch({
-      type: HIDE_CONFIRM_ALERT
-    });
-  };
-};
-
-var HttpClient = Axios.create({
-  timeout: API_TIME_OUT,
-  adapter: axiosExtensions.throttleAdapterEnhancer(axiosExtensions.cacheAdapterEnhancer(Axios.defaults.adapter, {
-    threshold: 15 * 60 * 1000
-  })),
-  invalidate: function (config, request) {
-    try {
-      var _temp2 = function () {
-        if (request.clearCacheEntry) {
-          return Promise.resolve(config.store.removeItem(config.uuid)).then(function () {});
-        }
-      }();
-
-      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  }
-});
-HttpClient.defaults.headers['Content-Type'] = 'application/json';
-var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
-  var deviceId = localStorage.getItem('deviceId');
-  var language = localStorage.getItem('language');
-
-  if (!deviceId) {
-    deviceId = generateUUID();
-    localStorage.setItem('deviceId', deviceId);
-  }
-
-  if (!language) {
-    localStorage.setItem('language', 'vi');
-  }
-
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(function (position) {
-      localStorage.setItem('latitude', position.coords.latitude);
-      localStorage.setItem('longitude', position.coords.longitude);
-    });
-  }
-
-  HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
-  HttpClient.interceptors.request.use(function (config) {
-    var appId = store.getState().customizer.appId;
-    var token = appId === AppId.ELITE_APP ? store.getState().auth.guest.authToken : store.getState().auth.authToken;
-    var sessionExpireTime = store.getState().auth.sessionExpireTime;
-    language = localStorage.getItem('language');
-
-    if (token) {
-      store.dispatch(changeActionExpireTime());
-      config.headers.Authorization = "Bearer " + token;
-      var isSessionExpired = moment().isAfter(moment(sessionExpireTime));
-
-      if (sessionExpireTime && isSessionExpired) {
-        toastError( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-          id: "common.sessionExpired"
-        }));
-        store.dispatch({
-          type: LOGOUT_ACTION
-        });
-        return;
-      }
-    }
-
-    config.headers.appId = store.getState().customizer.appId;
-    config.headers.appVersion = 'v1';
-    config.headers.latitude = localStorage.getItem('latitude');
-    config.headers.longitude = localStorage.getItem('longitude');
-    config.headers.deviceId = deviceId;
-    config.headers['Accept-Language'] = language;
-
-    if (!config.isBackgroundRequest) {
-      store.dispatch({
-        type: SHOW_LOADING_BAR,
-        payload: ''
-      });
-    }
-
-    return config;
-  });
-  HttpClient.interceptors.response.use(function (response) {
-    store.dispatch({
-      type: HIDE_LOADING_BAR,
-      payload: ''
-    });
-    return response;
-  }, function (e) {
-    store.dispatch({
-      type: HIDE_LOADING_BAR,
-      payload: ''
-    });
-
-    if (!e.response) {
-      return e;
-    }
-
-    switch (e.response.status) {
-      case 400:
-        toastError(e.response.data.message);
-        break;
-
-      case 403:
-        if (e.response.data.error === 'Forbidden') {
-          return e.response;
-        }
-
-        toastError(e.response.data.message);
-        store.dispatch({
-          type: 'LOGOUT_ACTION'
-        });
-        break;
-
-      case 500:
-        toastError( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-          id: "common.error.500"
-        }));
-    }
-
-    return e.response;
-  });
 };
 
 var themeConfig = {
@@ -9497,9 +9497,9 @@ var Register = function Register() {
 
   return /*#__PURE__*/React__default.createElement(formik.Formik, {
     initialValues: {
-      fullName: isGuest ? guest === null || guest === void 0 ? void 0 : guest.user.fullName : '',
-      email: isGuest ? guest === null || guest === void 0 ? void 0 : guest.user.email : '',
-      phoneNumber: isGuest ? guest === null || guest === void 0 ? void 0 : guest.user.phoneNumber : '',
+      fullName: isGuest ? '' : guest === null || guest === void 0 ? void 0 : guest.user.fullName,
+      email: isGuest ? '' : guest === null || guest === void 0 ? void 0 : guest.user.email,
+      phoneNumber: isGuest ? '' : guest === null || guest === void 0 ? void 0 : guest.user.phoneNumber,
       refCode: ''
     },
     onSubmit: onSubmit,
@@ -10728,16 +10728,16 @@ var usePageAuthorities = function usePageAuthorities() {
   return authorities;
 };
 
-Object.defineProperty(exports, 'toast', {
-  enumerable: true,
-  get: function () {
-    return reactToastify.toast;
-  }
-});
 Object.defineProperty(exports, 'FormattedMessage', {
   enumerable: true,
   get: function () {
     return reactIntl.FormattedMessage;
+  }
+});
+Object.defineProperty(exports, 'toast', {
+  enumerable: true,
+  get: function () {
+    return reactToastify.toast;
   }
 });
 Object.defineProperty(exports, 'Button', {
@@ -10764,6 +10764,7 @@ exports.HttpClient = HttpClient;
 exports.Radio = Radio;
 exports.ReactTable = ReactTable;
 exports.Select = Select;
+exports.changeIsGuest = changeIsGuest;
 exports.goBackHomePage = goBackHomePage;
 exports.goToAgencyApp = goToAgencyApp;
 exports.hideConfirmAlert = hideConfirmAlert;

@@ -1,20 +1,20 @@
+import { FormattedMessage, injectIntl, IntlProvider, useIntl } from 'react-intl';
+export { FormattedMessage } from 'react-intl';
 import React, { useState, useEffect, Component, PureComponent, useCallback } from 'react';
-import { useDispatch, connect, useSelector, Provider } from 'react-redux';
-import { combineReducers, createStore, applyMiddleware, compose } from 'redux';
-import createDebounce from 'redux-debounced';
-import thunk from 'redux-thunk';
-import { PersistGate } from 'redux-persist/integration/react';
-import { persistReducer, persistStore } from 'redux-persist';
+import { createBrowserHistory } from 'history';
 import Axios from 'axios';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
 import * as Icon from 'react-feather';
 import { AlertTriangle, Check, User, Lock, Users, FileText, Shield, Globe, MessageSquare, Power, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, ChevronDown, Sun } from 'react-feather';
 import { toast, ToastContainer } from 'react-toastify';
 export { toast } from 'react-toastify';
-import { FormattedMessage, injectIntl, IntlProvider, useIntl } from 'react-intl';
-export { FormattedMessage } from 'react-intl';
-import { createBrowserHistory } from 'history';
 import moment from 'moment';
+import { useDispatch, connect, useSelector, Provider } from 'react-redux';
+import { combineReducers, createStore, applyMiddleware, compose } from 'redux';
+import createDebounce from 'redux-debounced';
+import thunk from 'redux-thunk';
+import { PersistGate } from 'redux-persist/integration/react';
+import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/es/storage';
 import { useHistory, Link, Router, Switch, Route, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
@@ -44,77 +44,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import MaskedInput from 'react-text-mask';
 import createNumberMask from 'text-mask-addons/dist/createNumberMask';
 import Table from 'react-table';
-
-const generateUUID = () => {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    var r = Math.random() * 16 | 0,
-        v = c == 'x' ? r : r & 0x3 | 0x8;
-    return v.toString(16);
-  });
-};
-const trimValue = value => {
-  return value ? value.trim() : '';
-};
-const bytesToMb = bytes => {
-  return Math.round(bytes / Math.pow(1024, 2), 2);
-};
-const trimObjectValues = (object, excludeKeys = []) => {
-  if (!object) {
-    return;
-  }
-
-  Object.keys(object).forEach(key => {
-    if (excludeKeys.indexOf(key) >= 0) {
-      return;
-    }
-
-    switch (typeof object[key]) {
-      case 'string':
-        object[key] = trimValue(object[key]);
-        break;
-
-      case 'object':
-        trimObjectValues(object[key]);
-    }
-  });
-  return object;
-};
-const numberFormat = value => {
-  return Intl.NumberFormat().format(value);
-};
-const toastError = message => {
-  toast.error( /*#__PURE__*/React.createElement("div", {
-    className: "d-flex align-items-center"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "col-1 p-0"
-  }, /*#__PURE__*/React.createElement(AlertTriangle, {
-    size: 24
-  })), /*#__PURE__*/React.createElement("p", {
-    className: "mx-1 my-0"
-  }, message)));
-};
-const toastSuccess = message => {
-  toast.success( /*#__PURE__*/React.createElement("div", {
-    className: "d-flex align-items-center"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "col-1 p-0"
-  }, /*#__PURE__*/React.createElement(Check, {
-    size: 24
-  })), /*#__PURE__*/React.createElement("p", {
-    className: "mx-1 my-0"
-  }, message)));
-};
-
-var index = {
-  __proto__: null,
-  generateUUID: generateUUID,
-  trimValue: trimValue,
-  bytesToMb: bytesToMb,
-  trimObjectValues: trimObjectValues,
-  numberFormat: numberFormat,
-  toastError: toastError,
-  toastSuccess: toastSuccess
-};
 
 const AppId = {
   APP_NO1: 'APP_NO1',
@@ -308,63 +237,63 @@ const IMAGE = {
 };
 
 var appConfigs = {
-  __proto__: null,
-  API_BASE_URL: API_BASE_URL,
-  RESOURCE_URL: RESOURCE_URL,
-  FB_APP_ID: FB_APP_ID,
-  GOOGLE_APP_ID: GOOGLE_APP_ID,
-  API_LOGIN_URL: API_LOGIN_URL,
-  API_LOGOUT_URL: API_LOGOUT_URL,
-  API_GUEST_SOCIAL_LOGIN: API_GUEST_SOCIAL_LOGIN,
-  API_CHANGE_PASSWORD: API_CHANGE_PASSWORD,
-  API_REGISTER: API_REGISTER,
-  API_VERIFY_ACCOUNT: API_VERIFY_ACCOUNT,
-  API_VERIFY_PHONENUMBER: API_VERIFY_PHONENUMBER,
-  API_GET_USER: API_GET_USER,
-  API_USER_SETTINGS: API_USER_SETTINGS,
-  API_UPDATE_USER_INFO: API_UPDATE_USER_INFO,
-  API_GET_NAV_CONFIGS: API_GET_NAV_CONFIGS,
-  API_GET_USER_ROLES: API_GET_USER_ROLES,
-  API_CREATE_PASSWORD: API_CREATE_PASSWORD,
-  API_GET_USER_BY_REGISTER_TOKEN: API_GET_USER_BY_REGISTER_TOKEN,
-  API_COMPLETE_INFO: API_COMPLETE_INFO,
-  API_FORGOT_PASSWORD: API_FORGOT_PASSWORD,
-  API_RESET_PASSWORD: API_RESET_PASSWORD,
-  API_EMAIL_SUGGESTION: API_EMAIL_SUGGESTION,
-  API_R_200: API_R_200,
-  API_GET_CITIES_BY_COUNTRY: API_GET_CITIES_BY_COUNTRY,
-  API_GET_DISTRICTS_BY_CITY: API_GET_DISTRICTS_BY_CITY,
-  API_GET_WARDS_BY_CITY: API_GET_WARDS_BY_CITY,
-  API_GET_BANKS: API_GET_BANKS,
-  API_UPLOAD_FILE: API_UPLOAD_FILE,
-  API_GET_FILE: API_GET_FILE,
-  MAX_MOBILE_WIDTH: MAX_MOBILE_WIDTH,
-  MAX_TABLET_WIDTH: MAX_TABLET_WIDTH,
-  REMEMBER_ME_TOKEN: REMEMBER_ME_TOKEN,
-  VN_COUNTRY_CODE: VN_COUNTRY_CODE,
-  PASSWORD_REGEX: PASSWORD_REGEX,
-  PHONE_REGEX: PHONE_REGEX,
-  PERSONAL_ID_REGEX: PERSONAL_ID_REGEX,
-  CITIZEN_INDENTIFY_REGEX: CITIZEN_INDENTIFY_REGEX,
-  PASSPORT_REGEX: PASSPORT_REGEX,
-  NAME_REGEX: NAME_REGEX,
-  FIRE_BASE_CONFIGS: FIRE_BASE_CONFIGS,
-  AUTHORITIES: AUTHORITIES,
-  LOGIN_METHODS: LOGIN_METHODS,
-  API_TIME_OUT: API_TIME_OUT,
-  MAX_FILE_SIZE: MAX_FILE_SIZE,
-  CONTACT_PHONE: CONTACT_PHONE,
-  SESSION_TIMEOUT: SESSION_TIMEOUT,
-  DATE_TIME_FORMAT: DATE_TIME_FORMAT,
-  LOGIN_STATUS: LOGIN_STATUS,
-  USER_TYPE: USER_TYPE,
-  GENDER_OPTIONS: GENDER_OPTIONS,
-  IC_TYPES_OPTIONS: IC_TYPES_OPTIONS,
-  getExternalAppUrl: getExternalAppUrl,
-  getContextPath: getContextPath,
-  getPropObject: getPropObject,
-  USER_ROLE: USER_ROLE,
-  IMAGE: IMAGE
+    __proto__: null,
+    API_BASE_URL: API_BASE_URL,
+    RESOURCE_URL: RESOURCE_URL,
+    FB_APP_ID: FB_APP_ID,
+    GOOGLE_APP_ID: GOOGLE_APP_ID,
+    API_LOGIN_URL: API_LOGIN_URL,
+    API_LOGOUT_URL: API_LOGOUT_URL,
+    API_GUEST_SOCIAL_LOGIN: API_GUEST_SOCIAL_LOGIN,
+    API_CHANGE_PASSWORD: API_CHANGE_PASSWORD,
+    API_REGISTER: API_REGISTER,
+    API_VERIFY_ACCOUNT: API_VERIFY_ACCOUNT,
+    API_VERIFY_PHONENUMBER: API_VERIFY_PHONENUMBER,
+    API_GET_USER: API_GET_USER,
+    API_USER_SETTINGS: API_USER_SETTINGS,
+    API_UPDATE_USER_INFO: API_UPDATE_USER_INFO,
+    API_GET_NAV_CONFIGS: API_GET_NAV_CONFIGS,
+    API_GET_USER_ROLES: API_GET_USER_ROLES,
+    API_CREATE_PASSWORD: API_CREATE_PASSWORD,
+    API_GET_USER_BY_REGISTER_TOKEN: API_GET_USER_BY_REGISTER_TOKEN,
+    API_COMPLETE_INFO: API_COMPLETE_INFO,
+    API_FORGOT_PASSWORD: API_FORGOT_PASSWORD,
+    API_RESET_PASSWORD: API_RESET_PASSWORD,
+    API_EMAIL_SUGGESTION: API_EMAIL_SUGGESTION,
+    API_R_200: API_R_200,
+    API_GET_CITIES_BY_COUNTRY: API_GET_CITIES_BY_COUNTRY,
+    API_GET_DISTRICTS_BY_CITY: API_GET_DISTRICTS_BY_CITY,
+    API_GET_WARDS_BY_CITY: API_GET_WARDS_BY_CITY,
+    API_GET_BANKS: API_GET_BANKS,
+    API_UPLOAD_FILE: API_UPLOAD_FILE,
+    API_GET_FILE: API_GET_FILE,
+    MAX_MOBILE_WIDTH: MAX_MOBILE_WIDTH,
+    MAX_TABLET_WIDTH: MAX_TABLET_WIDTH,
+    REMEMBER_ME_TOKEN: REMEMBER_ME_TOKEN,
+    VN_COUNTRY_CODE: VN_COUNTRY_CODE,
+    PASSWORD_REGEX: PASSWORD_REGEX,
+    PHONE_REGEX: PHONE_REGEX,
+    PERSONAL_ID_REGEX: PERSONAL_ID_REGEX,
+    CITIZEN_INDENTIFY_REGEX: CITIZEN_INDENTIFY_REGEX,
+    PASSPORT_REGEX: PASSPORT_REGEX,
+    NAME_REGEX: NAME_REGEX,
+    FIRE_BASE_CONFIGS: FIRE_BASE_CONFIGS,
+    AUTHORITIES: AUTHORITIES,
+    LOGIN_METHODS: LOGIN_METHODS,
+    API_TIME_OUT: API_TIME_OUT,
+    MAX_FILE_SIZE: MAX_FILE_SIZE,
+    CONTACT_PHONE: CONTACT_PHONE,
+    SESSION_TIMEOUT: SESSION_TIMEOUT,
+    DATE_TIME_FORMAT: DATE_TIME_FORMAT,
+    LOGIN_STATUS: LOGIN_STATUS,
+    USER_TYPE: USER_TYPE,
+    GENDER_OPTIONS: GENDER_OPTIONS,
+    IC_TYPES_OPTIONS: IC_TYPES_OPTIONS,
+    getExternalAppUrl: getExternalAppUrl,
+    getContextPath: getContextPath,
+    getPropObject: getPropObject,
+    USER_ROLE: USER_ROLE,
+    IMAGE: IMAGE
 };
 
 let history = createBrowserHistory({
@@ -372,6 +301,208 @@ let history = createBrowserHistory({
 });
 const setBaseHistory = appHistory => {
   history = appHistory;
+};
+
+const generateUUID = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    var r = Math.random() * 16 | 0,
+        v = c == 'x' ? r : r & 0x3 | 0x8;
+    return v.toString(16);
+  });
+};
+const trimValue = value => {
+  return value ? value.trim() : '';
+};
+const bytesToMb = bytes => {
+  return Math.round(bytes / Math.pow(1024, 2), 2);
+};
+const trimObjectValues = (object, excludeKeys = []) => {
+  if (!object) {
+    return;
+  }
+
+  Object.keys(object).forEach(key => {
+    if (excludeKeys.indexOf(key) >= 0) {
+      return;
+    }
+
+    switch (typeof object[key]) {
+      case 'string':
+        object[key] = trimValue(object[key]);
+        break;
+
+      case 'object':
+        trimObjectValues(object[key]);
+    }
+  });
+  return object;
+};
+const numberFormat = value => {
+  return Intl.NumberFormat().format(value);
+};
+const toastError = message => {
+  toast.error( /*#__PURE__*/React.createElement("div", {
+    className: "d-flex align-items-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "col-1 p-0"
+  }, /*#__PURE__*/React.createElement(AlertTriangle, {
+    size: 24
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "mx-1 my-0"
+  }, message)));
+};
+const toastSuccess = message => {
+  toast.success( /*#__PURE__*/React.createElement("div", {
+    className: "d-flex align-items-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "col-1 p-0"
+  }, /*#__PURE__*/React.createElement(Check, {
+    size: 24
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "mx-1 my-0"
+  }, message)));
+};
+
+var index = {
+    __proto__: null,
+    generateUUID: generateUUID,
+    trimValue: trimValue,
+    bytesToMb: bytesToMb,
+    trimObjectValues: trimObjectValues,
+    numberFormat: numberFormat,
+    toastError: toastError,
+    toastSuccess: toastSuccess
+};
+
+const SHOW_LOADING_BAR = 'SHOW_LOADING_BAR';
+const HIDE_LOADING_BAR = 'HIDE_LOADING_BAR';
+const SHOW_CONFIRM_ALERT = 'SHOW_CONFIRM_ALERT';
+const HIDE_CONFIRM_ALERT = 'HIDE_CONFIRM_ALERT';
+const showConfirmAlert = configs => {
+  return dispatch => dispatch({
+    type: SHOW_CONFIRM_ALERT,
+    payload: configs
+  });
+};
+const hideConfirmAlert = () => {
+  return dispatch => dispatch({
+    type: HIDE_CONFIRM_ALERT
+  });
+};
+
+const HttpClient = Axios.create({
+  timeout: API_TIME_OUT,
+  adapter: throttleAdapterEnhancer(cacheAdapterEnhancer(Axios.defaults.adapter, {
+    threshold: 15 * 60 * 1000
+  })),
+  invalidate: async (config, request) => {
+    if (request.clearCacheEntry) {
+      await config.store.removeItem(config.uuid);
+    }
+  }
+});
+HttpClient.defaults.headers['Content-Type'] = 'application/json';
+const setUpHttpClient = (store, apiBaseUrl) => {
+  let deviceId = localStorage.getItem('deviceId');
+  let language = localStorage.getItem('language');
+
+  if (!deviceId) {
+    deviceId = generateUUID();
+    localStorage.setItem('deviceId', deviceId);
+  }
+
+  if (!language) {
+    localStorage.setItem('language', 'vi');
+  }
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(position => {
+      localStorage.setItem('latitude', position.coords.latitude);
+      localStorage.setItem('longitude', position.coords.longitude);
+    });
+  }
+
+  HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
+  HttpClient.interceptors.request.use(config => {
+    const {
+      appId
+    } = store.getState().customizer;
+    const token = appId === AppId.ELITE_APP ? store.getState().auth.guest.authToken : store.getState().auth.authToken;
+    const sessionExpireTime = store.getState().auth.sessionExpireTime;
+    language = localStorage.getItem('language');
+
+    if (token) {
+      store.dispatch(changeActionExpireTime());
+      config.headers.Authorization = `Bearer ${token}`;
+      const isSessionExpired = moment().isAfter(moment(sessionExpireTime));
+
+      if (sessionExpireTime && isSessionExpired) {
+        toastError( /*#__PURE__*/React.createElement(FormattedMessage, {
+          id: "common.sessionExpired"
+        }));
+        store.dispatch({
+          type: LOGOUT_ACTION
+        });
+        return;
+      }
+    }
+
+    config.headers.appId = store.getState().customizer.appId;
+    config.headers.appVersion = 'v1';
+    config.headers.latitude = localStorage.getItem('latitude');
+    config.headers.longitude = localStorage.getItem('longitude');
+    config.headers.deviceId = deviceId;
+    config.headers['Accept-Language'] = language;
+
+    if (!config.isBackgroundRequest) {
+      store.dispatch({
+        type: SHOW_LOADING_BAR,
+        payload: ''
+      });
+    }
+
+    return config;
+  });
+  HttpClient.interceptors.response.use(response => {
+    store.dispatch({
+      type: HIDE_LOADING_BAR,
+      payload: ''
+    });
+    return response;
+  }, e => {
+    store.dispatch({
+      type: HIDE_LOADING_BAR,
+      payload: ''
+    });
+
+    if (!e.response) {
+      return e;
+    }
+
+    switch (e.response.status) {
+      case 400:
+        toastError(e.response.data.message);
+        break;
+
+      case 403:
+        if (e.response.data.error === 'Forbidden') {
+          return e.response;
+        }
+
+        toastError(e.response.data.message);
+        store.dispatch({
+          type: 'LOGOUT_ACTION'
+        });
+        break;
+
+      case 500:
+        toastError( /*#__PURE__*/React.createElement(FormattedMessage, {
+          id: "common.error.500"
+        }));
+    }
+
+    return e.response;
+  });
 };
 
 class AuthService {}
@@ -1012,137 +1143,6 @@ const redirectMainApp = (isGuest, appId) => {
       history.push('/');
     }
   }, 500);
-};
-
-const SHOW_LOADING_BAR = 'SHOW_LOADING_BAR';
-const HIDE_LOADING_BAR = 'HIDE_LOADING_BAR';
-const SHOW_CONFIRM_ALERT = 'SHOW_CONFIRM_ALERT';
-const HIDE_CONFIRM_ALERT = 'HIDE_CONFIRM_ALERT';
-const showConfirmAlert = configs => {
-  return dispatch => dispatch({
-    type: SHOW_CONFIRM_ALERT,
-    payload: configs
-  });
-};
-const hideConfirmAlert = () => {
-  return dispatch => dispatch({
-    type: HIDE_CONFIRM_ALERT
-  });
-};
-
-const HttpClient = Axios.create({
-  timeout: API_TIME_OUT,
-  adapter: throttleAdapterEnhancer(cacheAdapterEnhancer(Axios.defaults.adapter, {
-    threshold: 15 * 60 * 1000
-  })),
-  invalidate: async (config, request) => {
-    if (request.clearCacheEntry) {
-      await config.store.removeItem(config.uuid);
-    }
-  }
-});
-HttpClient.defaults.headers['Content-Type'] = 'application/json';
-const setUpHttpClient = (store, apiBaseUrl) => {
-  let deviceId = localStorage.getItem('deviceId');
-  let language = localStorage.getItem('language');
-
-  if (!deviceId) {
-    deviceId = generateUUID();
-    localStorage.setItem('deviceId', deviceId);
-  }
-
-  if (!language) {
-    localStorage.setItem('language', 'vi');
-  }
-
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(position => {
-      localStorage.setItem('latitude', position.coords.latitude);
-      localStorage.setItem('longitude', position.coords.longitude);
-    });
-  }
-
-  HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
-  HttpClient.interceptors.request.use(config => {
-    const {
-      appId
-    } = store.getState().customizer;
-    const token = appId === AppId.ELITE_APP ? store.getState().auth.guest.authToken : store.getState().auth.authToken;
-    const sessionExpireTime = store.getState().auth.sessionExpireTime;
-    language = localStorage.getItem('language');
-
-    if (token) {
-      store.dispatch(changeActionExpireTime());
-      config.headers.Authorization = `Bearer ${token}`;
-      const isSessionExpired = moment().isAfter(moment(sessionExpireTime));
-
-      if (sessionExpireTime && isSessionExpired) {
-        toastError( /*#__PURE__*/React.createElement(FormattedMessage, {
-          id: "common.sessionExpired"
-        }));
-        store.dispatch({
-          type: LOGOUT_ACTION
-        });
-        return;
-      }
-    }
-
-    config.headers.appId = store.getState().customizer.appId;
-    config.headers.appVersion = 'v1';
-    config.headers.latitude = localStorage.getItem('latitude');
-    config.headers.longitude = localStorage.getItem('longitude');
-    config.headers.deviceId = deviceId;
-    config.headers['Accept-Language'] = language;
-
-    if (!config.isBackgroundRequest) {
-      store.dispatch({
-        type: SHOW_LOADING_BAR,
-        payload: ''
-      });
-    }
-
-    return config;
-  });
-  HttpClient.interceptors.response.use(response => {
-    store.dispatch({
-      type: HIDE_LOADING_BAR,
-      payload: ''
-    });
-    return response;
-  }, e => {
-    store.dispatch({
-      type: HIDE_LOADING_BAR,
-      payload: ''
-    });
-
-    if (!e.response) {
-      return e;
-    }
-
-    switch (e.response.status) {
-      case 400:
-        toastError(e.response.data.message);
-        break;
-
-      case 403:
-        if (e.response.data.error === 'Forbidden') {
-          return e.response;
-        }
-
-        toastError(e.response.data.message);
-        store.dispatch({
-          type: 'LOGOUT_ACTION'
-        });
-        break;
-
-      case 500:
-        toastError( /*#__PURE__*/React.createElement(FormattedMessage, {
-          id: "common.error.500"
-        }));
-    }
-
-    return e.response;
-  });
 };
 
 const themeConfig = {
@@ -8904,9 +8904,9 @@ const Register = () => {
 
   return /*#__PURE__*/React.createElement(Formik, {
     initialValues: {
-      fullName: isGuest ? guest === null || guest === void 0 ? void 0 : guest.user.fullName : '',
-      email: isGuest ? guest === null || guest === void 0 ? void 0 : guest.user.email : '',
-      phoneNumber: isGuest ? guest === null || guest === void 0 ? void 0 : guest.user.phoneNumber : '',
+      fullName: isGuest ? '' : guest === null || guest === void 0 ? void 0 : guest.user.fullName,
+      email: isGuest ? '' : guest === null || guest === void 0 ? void 0 : guest.user.email,
+      phoneNumber: isGuest ? '' : guest === null || guest === void 0 ? void 0 : guest.user.phoneNumber,
       refCode: ''
     },
     onSubmit: onSubmit,
@@ -10037,5 +10037,5 @@ const usePageAuthorities = () => {
   return authorities;
 };
 
-export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, Radio, ReactTable, Select, goBackHomePage, goToAgencyApp, hideConfirmAlert, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
+export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, Radio, ReactTable, Select, changeIsGuest, goBackHomePage, goToAgencyApp, hideConfirmAlert, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
 //# sourceMappingURL=index.modern.js.map
