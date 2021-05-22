@@ -8858,6 +8858,8 @@ const formSchema$2 = object().shape({
 });
 
 const Register = () => {
+  var _guest$user, _guest$user2, _guest$user3;
+
   const [isAppcepted, setIsAppcepted] = useState(false);
   const [isNotApccepted, setIsNotAccepted] = useState(false);
   const {
@@ -8904,9 +8906,9 @@ const Register = () => {
 
   return /*#__PURE__*/React.createElement(Formik, {
     initialValues: {
-      fullName: isGuest ? '' : guest === null || guest === void 0 ? void 0 : guest.user.fullName,
-      email: isGuest ? '' : guest === null || guest === void 0 ? void 0 : guest.user.email,
-      phoneNumber: isGuest ? '' : guest === null || guest === void 0 ? void 0 : guest.user.phoneNumber,
+      fullName: isGuest ? '' : guest === null || guest === void 0 ? void 0 : (_guest$user = guest.user) === null || _guest$user === void 0 ? void 0 : _guest$user.fullName,
+      email: isGuest ? '' : guest === null || guest === void 0 ? void 0 : (_guest$user2 = guest.user) === null || _guest$user2 === void 0 ? void 0 : _guest$user2.email,
+      phoneNumber: isGuest ? '' : guest === null || guest === void 0 ? void 0 : (_guest$user3 = guest.user) === null || _guest$user3 === void 0 ? void 0 : _guest$user3.phoneNumber,
       refCode: ''
     },
     onSubmit: onSubmit,
