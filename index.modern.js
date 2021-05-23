@@ -1267,9 +1267,17 @@ const authReducers = (state = { ...authInitialState
 
     case UPDATE_USER_INFO:
       {
-        return { ...state,
-          user: action.payload
-        };
+        if (!state.guest.user) {
+          return { ...state,
+            user: action.payload
+          };
+        } else {
+          return { ...state,
+            guest: { ...state.guest,
+              user: action.payload
+            }
+          };
+        }
       }
 
     case CHANGE_SESSION_EXPIRE_TIME:

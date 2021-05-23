@@ -1458,9 +1458,17 @@ var authReducers = function authReducers(state, action) {
 
     case UPDATE_USER_INFO:
       {
-        return _extends({}, state, {
-          user: action.payload
-        });
+        if (!state.guest.user) {
+          return _extends({}, state, {
+            user: action.payload
+          });
+        } else {
+          return _extends({}, state, {
+            guest: _extends({}, state.guest, {
+              user: action.payload
+            })
+          });
+        }
       }
 
     case CHANGE_SESSION_EXPIRE_TIME:
