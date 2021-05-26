@@ -9722,6 +9722,7 @@ const AppRouter = props => {
     user,
     loginStatus,
     isAuthentication,
+    guest,
     authToken,
     children,
     loadNavtigation,
@@ -9734,7 +9735,7 @@ const AppRouter = props => {
   useEffect(() => {
     setAppId(appId);
     const urlParams = new URLSearchParams(document.location.search);
-    const code = urlParams.get('code') || authToken;
+    const code = urlParams.get('code') || (appId === AppId.ELITE_APP ? guest.authToken : authToken);
     const redirectUrl = urlParams.get('redirectUrl');
 
     if (code && loginStatus !== LOGIN_STATUS.SUCCESS) {
@@ -9854,7 +9855,8 @@ const AppRouter = props => {
 const mapStateToProps$3 = state => {
   return {
     isAuthentication: !!state.auth.authToken,
-    authToken: state.customizer.appId === AppId.ELITE_APP ? state.auth.guest.authToken : state.auth.authToken,
+    authToken: state.auth.authToken,
+    guest: state.auth.guest,
     loginStatus: state.auth.loginStatus,
     user: state.auth.user
   };
