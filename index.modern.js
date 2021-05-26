@@ -764,22 +764,28 @@ const checkLoginStatus = (authToken, redirectUrl) => {
     try {
       let response = await AuthService.checkLoginByToken();
       const {
-        username
-      } = getState().auth.user;
-      const {
         appId
       } = getState().customizer;
+      const {
+        username
+      } = appId === AppId.ELITE_APP ? getState().auth.guest.user : getState().auth.user;
 
       if (response.status === API_R_200 && username) {
-        response = await AuthService.getUserInfo(getState().auth.user.username, authToken);
-        dispatch({
-          type: LOGIN_ACTION,
-          payload: {
+        response = await AuthService.getUserInfo(username, authToken);
+        const payload = appId === AppId.ELITE_APP ? {
+          guest: {
             authToken,
             user: response.data || {}
           }
+        } : {
+          authToken,
+          user: response.data || {}
+        };
+        dispatch({
+          type: LOGIN_ACTION,
+          payload
         });
-        history.push(redirectUrl || window.location.pathname.replace(`/${getContextPath(appId)}/`, '/'));
+        history.replace(redirectUrl || window.location.pathname.replace(`/${getContextPath(appId)}/`, '/'));
       } else {
         dispatch({
           type: LOGOUT_ACTION
@@ -9848,7 +9854,7 @@ const AppRouter = props => {
 const mapStateToProps$3 = state => {
   return {
     isAuthentication: !!state.auth.authToken,
-    authToken: state.auth.authToken,
+    authToken: state.customizer.appId === AppId.ELITE_APP ? state.auth.guest.authToken : state.auth.authToken,
     loginStatus: state.auth.loginStatus,
     user: state.auth.user
   };

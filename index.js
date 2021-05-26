@@ -871,21 +871,29 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
     try {
       var _temp3 = _catch(function () {
         return Promise.resolve(AuthService.checkLoginByToken()).then(function (response) {
-          var username = getState().auth.user.username;
           var appId = getState().customizer.appId;
+
+          var _ref = appId === AppId.ELITE_APP ? getState().auth.guest.user : getState().auth.user,
+              username = _ref.username;
 
           var _temp = function () {
             if (response.status === API_R_200 && username) {
-              return Promise.resolve(AuthService.getUserInfo(getState().auth.user.username, authToken)).then(function (_AuthService$getUserI) {
+              return Promise.resolve(AuthService.getUserInfo(username, authToken)).then(function (_AuthService$getUserI) {
                 response = _AuthService$getUserI;
-                dispatch({
-                  type: LOGIN_ACTION,
-                  payload: {
+                var payload = appId === AppId.ELITE_APP ? {
+                  guest: {
                     authToken: authToken,
                     user: response.data || {}
                   }
+                } : {
+                  authToken: authToken,
+                  user: response.data || {}
+                };
+                dispatch({
+                  type: LOGIN_ACTION,
+                  payload: payload
                 });
-                history.push(redirectUrl || window.location.pathname.replace("/" + getContextPath(appId) + "/", '/'));
+                history.replace(redirectUrl || window.location.pathname.replace("/" + getContextPath(appId) + "/", '/'));
               });
             } else {
               dispatch({
@@ -1151,9 +1159,9 @@ var saveResetPasswordToken = function saveResetPasswordToken(token) {
     });
   };
 };
-var forgotPassword = function forgotPassword(_ref) {
-  var username = _ref.username,
-      email = _ref.email;
+var forgotPassword = function forgotPassword(_ref2) {
+  var username = _ref2.username,
+      email = _ref2.email;
   return function (dispatch, getState) {
     try {
       var _temp11 = _catch(function () {
@@ -1248,9 +1256,9 @@ var updateUserInfo = function updateUserInfo(user, avatarImage) {
     }
   };
 };
-var changePassword = function changePassword(_ref2) {
-  var oldPassword = _ref2.oldPassword,
-      newPassword = _ref2.newPassword;
+var changePassword = function changePassword(_ref3) {
+  var oldPassword = _ref3.oldPassword,
+      newPassword = _ref3.newPassword;
   return function (dispatch) {
     try {
       return Promise.resolve(AuthService.changePassword({
@@ -1274,9 +1282,9 @@ var changeLanguageSetting = function changeLanguageSetting(lang, callBack) {
     try {
       var appId = getState().customizer.appId;
 
-      var _ref3 = appId === AppId.ELITE_APP ? getState().auth.guest.user : getState().auth.user,
-          _ref3$userSettings = _ref3.userSettings,
-          userSettings = _ref3$userSettings === void 0 ? {} : _ref3$userSettings;
+      var _ref4 = appId === AppId.ELITE_APP ? getState().auth.guest.user : getState().auth.user,
+          _ref4$userSettings = _ref4.userSettings,
+          userSettings = _ref4$userSettings === void 0 ? {} : _ref4$userSettings;
 
       var value = _extends({}, userSettings, {
         language: lang.toUpperCase()
@@ -10517,7 +10525,7 @@ var AppRouter = function AppRouter(props) {
 var mapStateToProps$3 = function mapStateToProps(state) {
   return {
     isAuthentication: !!state.auth.authToken,
-    authToken: state.auth.authToken,
+    authToken: state.customizer.appId === AppId.ELITE_APP ? state.auth.guest.authToken : state.auth.authToken,
     loginStatus: state.auth.loginStatus,
     user: state.auth.user
   };
