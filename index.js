@@ -1093,7 +1093,7 @@ var compeleteInfo = function compeleteInfo(user) {
             toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
               id: "completeInformation.success"
             }));
-            history.push('/');
+            history.push('/login');
           }
         });
       }, function (error) {
@@ -1119,7 +1119,7 @@ var saveRegisterToken = function saveRegisterToken(registerToken) {
             }
           });
         } else {
-          history.push('/');
+          history.push('/login');
         }
       });
     } catch (e) {
@@ -1166,7 +1166,7 @@ var forgotPassword = function forgotPassword(_ref) {
               type: SAVE_RESET_PASSWORD_TOKEN,
               payload: ''
             });
-            history.push('/');
+            history.push('/login');
           }
         });
       }, function () {});
@@ -1190,7 +1190,7 @@ var resetPassword = function resetPassword(password) {
               type: SAVE_RESET_PASSWORD_TOKEN,
               payload: ''
             });
-            history.push('/');
+            history.push('/login');
           }
         });
       }, function () {});
@@ -9505,6 +9505,11 @@ var Register = function Register() {
     setIsNotAccepted(!checked);
   };
 
+  var onChangeFullName = function onChangeFullName(e, form) {
+    var value = e.target.value.replace(/[^\w\s]/gi, '');
+    form.setFieldValue('fullName', value);
+  };
+
   return /*#__PURE__*/React__default.createElement(formik.Formik, {
     initialValues: {
       fullName: isGuest ? '' : guest === null || guest === void 0 ? void 0 : (_guest$user = guest.user) === null || _guest$user === void 0 ? void 0 : _guest$user.fullName,
@@ -9521,6 +9526,7 @@ var Register = function Register() {
       fieldName: "fullName",
       errors: errors,
       touched: touched,
+      onChange: onChangeFullName,
       messageId: "register.fullname"
     }), /*#__PURE__*/React__default.createElement(BaseFormGroup, {
       fieldName: "email",
@@ -10202,6 +10208,7 @@ var LandingPage = function LandingPage(props) {
         return /*#__PURE__*/React__default.createElement(ForgotPassword, null);
 
       case 'reset-password':
+      case 'provide-new-password':
         return /*#__PURE__*/React__default.createElement(CreatePassword, null);
 
       case 'create-password':

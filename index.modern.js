@@ -958,7 +958,7 @@ const compeleteInfo = user => {
         toastSuccess( /*#__PURE__*/React.createElement(FormattedMessage, {
           id: "completeInformation.success"
         }));
-        history.push('/');
+        history.push('/login');
       }
     } catch (error) {
       console.log(error);
@@ -978,7 +978,7 @@ const saveRegisterToken = registerToken => {
         }
       });
     } else {
-      history.push('/');
+      history.push('/login');
     }
   };
 };
@@ -1017,7 +1017,7 @@ const forgotPassword = ({
           type: SAVE_RESET_PASSWORD_TOKEN,
           payload: ''
         });
-        history.push('/');
+        history.push('/login');
       }
     } catch (error) {}
   };
@@ -1035,7 +1035,7 @@ const resetPassword = password => {
           type: SAVE_RESET_PASSWORD_TOKEN,
           payload: ''
         });
-        history.push('/');
+        history.push('/login');
       }
     } catch (error) {}
   };
@@ -8912,6 +8912,11 @@ const Register = () => {
     setIsNotAccepted(!checked);
   };
 
+  const onChangeFullName = (e, form) => {
+    const value = e.target.value.replace(/[^\w\s]/gi, '');
+    form.setFieldValue('fullName', value);
+  };
+
   return /*#__PURE__*/React.createElement(Formik, {
     initialValues: {
       fullName: isGuest ? '' : guest === null || guest === void 0 ? void 0 : (_guest$user = guest.user) === null || _guest$user === void 0 ? void 0 : _guest$user.fullName,
@@ -8928,6 +8933,7 @@ const Register = () => {
     fieldName: "fullName",
     errors: errors,
     touched: touched,
+    onChange: onChangeFullName,
     messageId: "register.fullname"
   }), /*#__PURE__*/React.createElement(BaseFormGroup, {
     fieldName: "email",
@@ -9554,6 +9560,7 @@ const LandingPage = props => {
         return /*#__PURE__*/React.createElement(ForgotPassword, null);
 
       case 'reset-password':
+      case 'provide-new-password':
         return /*#__PURE__*/React.createElement(CreatePassword, null);
 
       case 'create-password':
