@@ -9729,7 +9729,8 @@ var formSchema$4 = Yup.object().shape({
 });
 
 var CreatePassword = function CreatePassword(_ref) {
-  var isCreatePassword = _ref.isCreatePassword;
+  var _ref$isCreatePassword = _ref.isCreatePassword,
+      isCreatePassword = _ref$isCreatePassword === void 0 ? false : _ref$isCreatePassword;
   var history = reactRouterDom.useHistory();
   var dispatch = reactRedux.useDispatch();
   React.useEffect(function () {
@@ -9749,7 +9750,7 @@ var CreatePassword = function CreatePassword(_ref) {
 
     if (code) {
       dispatch(saveRegisterToken(code));
-      history.push(history.location.pathname);
+      history.replace(history.location.pathname);
     }
   };
 
@@ -9758,7 +9759,7 @@ var CreatePassword = function CreatePassword(_ref) {
 
     if (code) {
       dispatch(saveResetPasswordToken(code));
-      history.push(history.location.pathname);
+      history.replace(history.location.pathname);
     }
   };
 

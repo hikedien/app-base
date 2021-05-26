@@ -9111,16 +9111,16 @@ const formSchema$4 = object().shape({
 });
 
 const CreatePassword = ({
-  isCreatePassword
+  isCreatePassword: _isCreatePassword = false
 }) => {
   const history = useHistory();
   const dispatch = useDispatch();
   useEffect(() => {
-    isCreatePassword ? setRegisterToken() : setResetPassword();
+    _isCreatePassword ? setRegisterToken() : setResetPassword();
   }, []);
 
   const onClickContinue = values => {
-    if (isCreatePassword) {
+    if (_isCreatePassword) {
       dispatch(createPassword(values.password));
     } else {
       dispatch(resetPassword(values.password));
@@ -9132,7 +9132,7 @@ const CreatePassword = ({
 
     if (code) {
       dispatch(saveRegisterToken(code));
-      history.push(history.location.pathname);
+      history.replace(history.location.pathname);
     }
   };
 
@@ -9141,7 +9141,7 @@ const CreatePassword = ({
 
     if (code) {
       dispatch(saveResetPasswordToken(code));
-      history.push(history.location.pathname);
+      history.replace(history.location.pathname);
     }
   };
 
@@ -9185,7 +9185,7 @@ const CreatePassword = ({
     color: "primary",
     type: "submit"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: isCreatePassword ? 'createPassword.continutes' : 'createPassword.done'
+    id: _isCreatePassword ? 'createPassword.continutes' : 'createPassword.done'
   })))));
 };
 
