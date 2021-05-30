@@ -9742,7 +9742,7 @@ const AppRouter = props => {
       checkLoginStatus(code, redirectUrl);
     }
 
-    if (authToken) {
+    if (code) {
       loadNavtigation(appId);
       loadUserRoles();
     }
