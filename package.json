@@ -29,6 +29,7 @@
     "prismjs": "^1.19.0",
     "prop-types": "~15.7.2",
     "query-string": "^6.10.1",
+    "qrcode.react": "^1.0.1",
     "react": "^16.13.0",
     "react-dom": "^16.12.0",
     "react-feather": "~2.0.3",
