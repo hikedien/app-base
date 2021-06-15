@@ -4428,6 +4428,7 @@ var BaseFormGroup = function BaseFormGroup(_ref) {
       touched = _ref.touched,
       messageId = _ref.messageId,
       type = _ref.type,
+      className = _ref.className,
       maxLength = _ref.maxLength,
       disabled = _ref.disabled,
       onChange = _ref.onChange,
@@ -4452,7 +4453,7 @@ var BaseFormGroup = function BaseFormGroup(_ref) {
   };
 
   return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
-    className: "form-label-group position-relative"
+    className: "form-label-group position-relative " + className
   }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: messageId
   }, function (msg) {

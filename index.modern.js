@@ -4063,6 +4063,7 @@ const BaseFormGroup = ({
   touched,
   messageId,
   type,
+  className,
   maxLength,
   disabled,
   onChange,
@@ -4087,7 +4088,7 @@ const BaseFormGroup = ({
   };
 
   return /*#__PURE__*/React.createElement(FormGroup, {
-    className: "form-label-group position-relative"
+    className: `form-label-group position-relative ${className}`
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: messageId
   }, msg => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Field, {
