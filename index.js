@@ -10542,22 +10542,9 @@ var AppRouter = function AppRouter(props) {
       changeIsGuest(true);
     }
   }, [authToken]);
-
-  var setMessages = function setMessages(message) {
-    if (message === void 0) {
-      message = {};
-    }
-
-    var newMessage = {};
-    Object.keys(message).forEach(function (key) {
-      newMessage[appId + '.' + key] = message[key];
-    });
-    return newMessage;
-  };
-
   var appMessage = {
-    en: _extends({}, messages_en, setMessages(message.en)),
-    vi: _extends({}, messages_vi, setMessages(message.vi))
+    en: _extends({}, messages_en, message.en),
+    vi: _extends({}, messages_vi, message.vi)
   };
   var settingRoutes = [{
     path: 'account-info',

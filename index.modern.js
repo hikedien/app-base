@@ -9873,21 +9873,12 @@ const AppRouter = props => {
       changeIsGuest(true);
     }
   }, [authToken]);
-
-  const setMessages = (message = {}) => {
-    const newMessage = {};
-    Object.keys(message).forEach(key => {
-      newMessage[appId + '.' + key] = message[key];
-    });
-    return newMessage;
-  };
-
   const appMessage = {
     en: { ...messages_en,
-      ...setMessages(message.en)
+      ...message.en
     },
     vi: { ...messages_vi,
-      ...setMessages(message.vi)
+      ...message.vi
     }
   };
   const settingRoutes = [{
