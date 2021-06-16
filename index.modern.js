@@ -735,9 +735,11 @@ const loadUserRoles = () => {
 };
 const goBackHomePage = () => {
   return async (dispatch, getState) => {
+    var _getState, _getState$guest;
+
     const {
       authToken
-    } = getState().guest.auth;
+    } = (_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$guest = _getState.guest) === null || _getState$guest === void 0 ? void 0 : _getState$guest.auth;
 
     if (authToken) {
       history.push('/home');
@@ -1328,9 +1330,11 @@ const LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
 const LOAD_USER_ROLE$1 = 'LOAD_USER_ROLE';
 const goBackHomePage$1 = () => {
   return async (dispatch, getState) => {
+    var _getState, _getState$guest;
+
     const {
       authToken
-    } = getState().guest.auth;
+    } = (_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$guest = _getState.guest) === null || _getState$guest === void 0 ? void 0 : _getState$guest.auth;
 
     if (authToken) {
       history.push('/home');

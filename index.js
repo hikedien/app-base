@@ -841,7 +841,10 @@ var loadUserRoles = function loadUserRoles() {
 var goBackHomePage = function goBackHomePage() {
   return function (dispatch, getState) {
     try {
-      var authToken = getState().guest.auth.authToken;
+      var _getState, _getState$guest;
+
+      var _getState$guest$auth = (_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$guest = _getState.guest) === null || _getState$guest === void 0 ? void 0 : _getState$guest.auth,
+          authToken = _getState$guest$auth.authToken;
 
       if (authToken) {
         history.push('/home');
@@ -1522,7 +1525,10 @@ var LOAD_USER_ROLE$1 = 'LOAD_USER_ROLE';
 var goBackHomePage$1 = function goBackHomePage() {
   return function (dispatch, getState) {
     try {
-      var authToken = getState().guest.auth.authToken;
+      var _getState, _getState$guest;
+
+      var _getState$guest$auth = (_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$guest = _getState.guest) === null || _getState$guest === void 0 ? void 0 : _getState$guest.auth,
+          authToken = _getState$guest$auth.authToken;
 
       if (authToken) {
         history.push('/home');
