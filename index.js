@@ -843,8 +843,8 @@ var goBackHomePage = function goBackHomePage() {
     try {
       var _getState, _getState$guest;
 
-      var _getState$guest$auth = (_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$guest = _getState.guest) === null || _getState$guest === void 0 ? void 0 : _getState$guest.auth,
-          authToken = _getState$guest$auth.authToken;
+      var _ref = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$guest = _getState.guest) === null || _getState$guest === void 0 ? void 0 : _getState$guest.auth) || {},
+          authToken = _ref.authToken;
 
       if (authToken) {
         history.push('/home');
@@ -1527,8 +1527,8 @@ var goBackHomePage$1 = function goBackHomePage() {
     try {
       var _getState, _getState$guest;
 
-      var _getState$guest$auth = (_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$guest = _getState.guest) === null || _getState$guest === void 0 ? void 0 : _getState$guest.auth,
-          authToken = _getState$guest$auth.authToken;
+      var _ref = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$guest = _getState.guest) === null || _getState$guest === void 0 ? void 0 : _getState$guest.auth) || {},
+          authToken = _ref.authToken;
 
       if (authToken) {
         history.push('/home');

@@ -739,7 +739,7 @@ const goBackHomePage = () => {
 
     const {
       authToken
-    } = (_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$guest = _getState.guest) === null || _getState$guest === void 0 ? void 0 : _getState$guest.auth;
+    } = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$guest = _getState.guest) === null || _getState$guest === void 0 ? void 0 : _getState$guest.auth) || {};
 
     if (authToken) {
       history.push('/home');
@@ -1334,7 +1334,7 @@ const goBackHomePage$1 = () => {
 
     const {
       authToken
-    } = (_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$guest = _getState.guest) === null || _getState$guest === void 0 ? void 0 : _getState$guest.auth;
+    } = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$guest = _getState.guest) === null || _getState$guest === void 0 ? void 0 : _getState$guest.auth) || {};
 
     if (authToken) {
       history.push('/home');
