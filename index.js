@@ -583,6 +583,7 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
         store.dispatch({
           type: 'LOGOUT_ACTION'
         });
+        history.push('/login');
         break;
 
       case 500:
@@ -895,7 +896,7 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
                   type: LOGIN_ACTION,
                   payload: payload
                 });
-                history.replace(redirectUrl || window.location.pathname.replace("/" + getContextPath(appId) + "/", '/'));
+                dispatch(goBackHomePage());
               });
             } else {
               dispatch({
@@ -1014,9 +1015,7 @@ var socialLogin = function socialLogin(data, loginMethod, openAddInfoPopup) {
               }
             }
           });
-          setTimeout(function () {
-            dispatch(goBackHomePage());
-          }, 500);
+          dispatch(goBackHomePage());
         });
       });
     } catch (e) {
@@ -1327,15 +1326,13 @@ var verifyPhoneNumber = function verifyPhoneNumber(values) {
 };
 
 var redirectMainApp = function redirectMainApp(isGuest, appId) {
-  setTimeout(function () {
-    var mainApp = isGuest ? AppId.ELITE_APP : AppId.APP_NO1;
+  var mainApp = isGuest ? AppId.ELITE_APP : AppId.APP_NO1;
 
-    if (mainApp === AppId.ELITE_APP) {
-      history.push('/home');
-    } else {
-      history.push('/app/home');
-    }
-  }, 500);
+  if (mainApp === AppId.ELITE_APP) {
+    history.push('/home');
+  } else {
+    history.push('/app/home');
+  }
 };
 
 var themeConfig = {

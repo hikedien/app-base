@@ -495,6 +495,7 @@ const setUpHttpClient = (store, apiBaseUrl) => {
         store.dispatch({
           type: 'LOGOUT_ACTION'
         });
+        history.push('/login');
         break;
 
       case 500:
@@ -787,7 +788,7 @@ const checkLoginStatus = (authToken, redirectUrl) => {
           type: LOGIN_ACTION,
           payload
         });
-        history.replace(redirectUrl || window.location.pathname.replace(`/${getContextPath(appId)}/`, '/'));
+        dispatch(goBackHomePage());
       } else {
         dispatch({
           type: LOGOUT_ACTION
@@ -890,9 +891,7 @@ const socialLogin = (data, loginMethod, openAddInfoPopup) => {
         }
       }
     });
-    setTimeout(() => {
-      dispatch(goBackHomePage());
-    }, 500);
+    dispatch(goBackHomePage());
   };
 };
 const changeIsGuest = isGuest => {
@@ -1138,15 +1137,13 @@ const verifyPhoneNumber = values => {
 };
 
 const redirectMainApp = (isGuest, appId) => {
-  setTimeout(() => {
-    const mainApp = isGuest ? AppId.ELITE_APP : AppId.APP_NO1;
+  const mainApp = isGuest ? AppId.ELITE_APP : AppId.APP_NO1;
 
-    if (mainApp === AppId.ELITE_APP) {
-      history.push('/home');
-    } else {
-      history.push('/app/home');
-    }
-  }, 500);
+  if (mainApp === AppId.ELITE_APP) {
+    history.push('/home');
+  } else {
+    history.push('/app/home');
+  }
 };
 
 const themeConfig = {
