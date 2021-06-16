@@ -735,11 +735,11 @@ const loadUserRoles = () => {
 };
 const goBackHomePage = () => {
   return async (dispatch, getState) => {
-    var _getState, _getState$guest;
+    var _getState, _getState$auth;
 
     const {
       authToken
-    } = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$guest = _getState.guest) === null || _getState$guest === void 0 ? void 0 : _getState$guest.auth) || {};
+    } = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$auth = _getState.auth) === null || _getState$auth === void 0 ? void 0 : _getState$auth.guest) || {};
 
     if (authToken) {
       history.push('/home');
@@ -1324,11 +1324,11 @@ const LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
 const LOAD_USER_ROLE$1 = 'LOAD_USER_ROLE';
 const goBackHomePage$1 = () => {
   return async (dispatch, getState) => {
-    var _getState, _getState$guest;
+    var _getState, _getState$auth;
 
     const {
       authToken
-    } = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$guest = _getState.guest) === null || _getState$guest === void 0 ? void 0 : _getState$guest.auth) || {};
+    } = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$auth = _getState.auth) === null || _getState$auth === void 0 ? void 0 : _getState$auth.guest) || {};
 
     if (authToken) {
       history.push('/home');
@@ -2272,8 +2272,7 @@ const Footer = props => {
     })
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React.createElement("span", {
     onClick: onClickBackHome
   }, /*#__PURE__*/React.createElement(Home, null), /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
@@ -2281,17 +2280,15 @@ const Footer = props => {
     id: "menu.home"
   })))), /*#__PURE__*/React.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#",
-    onClick: e => goToPage(e, '/contracts')
+  }, /*#__PURE__*/React.createElement("span", {
+    onClick: e => goToPage(e, '/insurance/contracts')
   }, /*#__PURE__*/React.createElement(List, null), /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "menu.contract"
   })))), /*#__PURE__*/React.createElement("div", {
     className: "position-relative w-25"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React.createElement("span", {
     onClick: e => goToPage(e, '/insurance/buy-insurance')
   }, /*#__PURE__*/React.createElement("img", {
     src: IMAGE.BUY_INSURANCE,
@@ -2307,8 +2304,7 @@ const Footer = props => {
     id: "menu.buyInsurance"
   })))), /*#__PURE__*/React.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React.createElement("span", {
     onClick: onClickBackHome
   }, /*#__PURE__*/React.createElement(Gift, null), /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
@@ -2316,8 +2312,7 @@ const Footer = props => {
     id: "menu.promotion"
   })))), /*#__PURE__*/React.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React.createElement("span", {
     onClick: e => history.push('/contact')
   }, /*#__PURE__*/React.createElement(MessageSquare, null), /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
@@ -2963,8 +2958,7 @@ class Sidebar extends Component {
       activePath: activePath
     }), /*#__PURE__*/React.createElement(ScrollbarTag, Object.assign({
       className: classnames("main-menu-content", {
-        "overflow-hidden": ScrollbarTag !== "div",
-        "overflow-scroll": ScrollbarTag === "div"
+        "overflow-hidden": ScrollbarTag !== "div"
       })
     }, ScrollbarTag !== "div" && {
       options: {

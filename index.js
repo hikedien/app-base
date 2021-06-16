@@ -841,9 +841,9 @@ var loadUserRoles = function loadUserRoles() {
 var goBackHomePage = function goBackHomePage() {
   return function (dispatch, getState) {
     try {
-      var _getState, _getState$guest;
+      var _getState, _getState$auth;
 
-      var _ref = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$guest = _getState.guest) === null || _getState$guest === void 0 ? void 0 : _getState$guest.auth) || {},
+      var _ref = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$auth = _getState.auth) === null || _getState$auth === void 0 ? void 0 : _getState$auth.guest) || {},
           authToken = _ref.authToken;
 
       if (authToken) {
@@ -1523,9 +1523,9 @@ var LOAD_USER_ROLE$1 = 'LOAD_USER_ROLE';
 var goBackHomePage$1 = function goBackHomePage() {
   return function (dispatch, getState) {
     try {
-      var _getState, _getState$guest;
+      var _getState, _getState$auth;
 
-      var _ref = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$guest = _getState.guest) === null || _getState$guest === void 0 ? void 0 : _getState$guest.auth) || {},
+      var _ref = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$auth = _getState.auth) === null || _getState$auth === void 0 ? void 0 : _getState$auth.guest) || {},
           authToken = _ref.authToken;
 
       if (authToken) {
@@ -2548,8 +2548,7 @@ var Footer = function Footer(props) {
     })
   }, /*#__PURE__*/React__default.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React__default.createElement("span", {
     onClick: onClickBackHome
   }, /*#__PURE__*/React__default.createElement(Icon.Home, null), /*#__PURE__*/React__default.createElement("div", {
     className: "mt-1"
@@ -2557,10 +2556,9 @@ var Footer = function Footer(props) {
     id: "menu.home"
   })))), /*#__PURE__*/React__default.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React__default.createElement("span", {
     onClick: function onClick(e) {
-      return goToPage(e, '/contracts');
+      return goToPage(e, '/insurance/contracts');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.List, null), /*#__PURE__*/React__default.createElement("div", {
     className: "mt-1"
@@ -2568,8 +2566,7 @@ var Footer = function Footer(props) {
     id: "menu.contract"
   })))), /*#__PURE__*/React__default.createElement("div", {
     className: "position-relative w-25"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React__default.createElement("span", {
     onClick: function onClick(e) {
       return goToPage(e, '/insurance/buy-insurance');
     }
@@ -2587,8 +2584,7 @@ var Footer = function Footer(props) {
     id: "menu.buyInsurance"
   })))), /*#__PURE__*/React__default.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React__default.createElement("span", {
     onClick: onClickBackHome
   }, /*#__PURE__*/React__default.createElement(Icon.Gift, null), /*#__PURE__*/React__default.createElement("div", {
     className: "mt-1"
@@ -2596,8 +2592,7 @@ var Footer = function Footer(props) {
     id: "menu.promotion"
   })))), /*#__PURE__*/React__default.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React__default.createElement("span", {
     onClick: function onClick(e) {
       return history.push('/contact');
     }
@@ -3310,8 +3305,7 @@ var Sidebar = /*#__PURE__*/function (_Component) {
       activePath: activePath
     }), /*#__PURE__*/React__default.createElement(ScrollbarTag, _extends({
       className: classnames("main-menu-content", {
-        "overflow-hidden": ScrollbarTag !== "div",
-        "overflow-scroll": ScrollbarTag === "div"
+        "overflow-hidden": ScrollbarTag !== "div"
       })
     }, ScrollbarTag !== "div" && {
       options: {
