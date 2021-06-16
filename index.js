@@ -10643,7 +10643,8 @@ var mapStateToProps$3 = function mapStateToProps(state) {
     authToken: state.auth.authToken,
     guest: state.auth.guest,
     loginStatus: state.auth.loginStatus,
-    user: state.auth.user
+    user: state.auth.user,
+    appId: state.customizer.appId
   };
 };
 
