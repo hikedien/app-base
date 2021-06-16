@@ -643,7 +643,7 @@ const mapRoleToNavItem = role => {
   item.icon = /*#__PURE__*/React.createElement(IconTag, {
     size: 20
   });
-  item.navLink = role.menuPath;
+  item.navLink = getExternalAppUrl(role.appId, role.menuPath);
 
   if (role.isHighlight) {
     item.badge = 'primary';
@@ -664,7 +664,7 @@ const getNativgationConfig = (appId, navConfigs) => {
     item.isExternalApp = false;
 
     if (item.children) {
-      item.children.map(child => child.isExternalApp = child.appId !== appId);
+      item.children.map(child => child.isExternalApp = false);
 
       if (item.children.length === 1) {
         item.navLink = item.children[0].navLink;
@@ -1872,7 +1872,7 @@ const UserDropdown = () => {
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/change-password')
+    onClick: e => handleNavigation(e, '/app/change-password')
   }, /*#__PURE__*/React.createElement(Lock, {
     size: 14,
     className: "mr-50"

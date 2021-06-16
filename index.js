@@ -739,7 +739,7 @@ var mapRoleToNavItem = function mapRoleToNavItem(role) {
   item.icon = /*#__PURE__*/React__default.createElement(IconTag, {
     size: 20
   });
-  item.navLink = role.menuPath;
+  item.navLink = getExternalAppUrl(role.appId, role.menuPath);
 
   if (role.isHighlight) {
     item.badge = 'primary';
@@ -761,7 +761,7 @@ var getNativgationConfig = function getNativgationConfig(appId, navConfigs) {
 
     if (item.children) {
       item.children.map(function (child) {
-        return child.isExternalApp = child.appId !== appId;
+        return child.isExternalApp = false;
       });
 
       if (item.children.length === 1) {
@@ -2099,7 +2099,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/change-password');
+      return handleNavigation(e, '/app/change-password');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
     size: 14,
