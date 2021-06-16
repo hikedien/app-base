@@ -9845,12 +9845,10 @@ const AppRouter = props => {
     loadNavtigation,
     changeIsGuest,
     loadUserRoles,
-    setAppId,
     history,
     message
   } = props;
   useEffect(() => {
-    setAppId(appId);
     const urlParams = new URLSearchParams(document.location.search);
     const code = urlParams.get('code') || (appId === AppId.ELITE_APP ? guest.authToken : authToken);
     const redirectUrl = urlParams.get('redirectUrl');

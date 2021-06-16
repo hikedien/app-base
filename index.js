@@ -10515,11 +10515,9 @@ var AppRouter = function AppRouter(props) {
       loadNavtigation = props.loadNavtigation,
       changeIsGuest = props.changeIsGuest,
       loadUserRoles = props.loadUserRoles,
-      setAppId = props.setAppId,
       history = props.history,
       message = props.message;
   React.useEffect(function () {
-    setAppId(appId);
     var urlParams = new URLSearchParams(document.location.search);
     var code = urlParams.get('code') || (appId === AppId.ELITE_APP ? guest.authToken : authToken);
     var redirectUrl = urlParams.get('redirectUrl');
