@@ -426,10 +426,7 @@ const setUpHttpClient = (store, apiBaseUrl) => {
 
   HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
   HttpClient.interceptors.request.use(config => {
-    const {
-      appId
-    } = store.getState().customizer;
-    const token = appId === AppId.ELITE_APP ? store.getState().auth.guest.authToken : store.getState().auth.authToken;
+    const token = store.getState().auth.guest.authToken || store.getState().auth.authToken;
     const sessionExpireTime = store.getState().auth.sessionExpireTime;
     language = localStorage.getItem('language');
 
