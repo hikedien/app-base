@@ -2509,17 +2509,12 @@ var Footer = function Footer(props) {
 
   var goToPage = function goToPage(e, navLink) {
     e.preventDefault();
-
-    if (appId === AppId.INSURANCE_APP) {
-      history.push(navLink);
-    } else {
-      window.location.href = getExternalAppUrl(AppId.INSURANCE_APP, navLink);
-    }
+    history.push(navLink);
   };
 
   var onClickBackHome = function onClickBackHome(e) {
     e.preventDefault();
-    dispatch(goBackHomePage$1());
+    dispatch(goBackHomePage());
   };
 
   return /*#__PURE__*/React__default.createElement("footer", null, /*#__PURE__*/React__default.createElement("div", {
@@ -2578,7 +2573,7 @@ var Footer = function Footer(props) {
   }, /*#__PURE__*/React__default.createElement("a", {
     href: "#",
     onClick: function onClick(e) {
-      return goToPage(e, '/buy-insurance');
+      return goToPage(e, '/insurance/buy-insurance');
     }
   }, /*#__PURE__*/React__default.createElement("img", {
     src: IMAGE.BUY_INSURANCE,
@@ -10008,8 +10003,8 @@ var LandingPageHeader = function LandingPageHeader() {
   return /*#__PURE__*/React__default.createElement(Context.Consumer, null, function (context) {
     return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("div", {
       className: "d-flex justify-content-between align-items-center"
-    }, /*#__PURE__*/React__default.createElement("a", {
-      href: "https://inon.vn/"
+    }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
+      to: '/'
     }, /*#__PURE__*/React__default.createElement("span", {
       className: "d-block d-lg-none"
     }, /*#__PURE__*/React__default.createElement("img", {

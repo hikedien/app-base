@@ -2241,17 +2241,12 @@ const Footer = props => {
 
   const goToPage = (e, navLink) => {
     e.preventDefault();
-
-    if (appId === AppId.INSURANCE_APP) {
-      history.push(navLink);
-    } else {
-      window.location.href = getExternalAppUrl(AppId.INSURANCE_APP, navLink);
-    }
+    history.push(navLink);
   };
 
   const onClickBackHome = e => {
     e.preventDefault();
-    dispatch(goBackHomePage$1());
+    dispatch(goBackHomePage());
   };
 
   return /*#__PURE__*/React.createElement("footer", null, /*#__PURE__*/React.createElement("div", {
@@ -2307,7 +2302,7 @@ const Footer = props => {
     className: "position-relative w-25"
   }, /*#__PURE__*/React.createElement("a", {
     href: "#",
-    onClick: e => goToPage(e, '/buy-insurance')
+    onClick: e => goToPage(e, '/insurance/buy-insurance')
   }, /*#__PURE__*/React.createElement("img", {
     src: IMAGE.BUY_INSURANCE,
     className: "buy-insurance",
@@ -9371,8 +9366,8 @@ const VerifyOtp = () => {
 
 const LandingPageHeader = () => /*#__PURE__*/React.createElement(Context.Consumer, null, context => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
   className: "d-flex justify-content-between align-items-center"
-}, /*#__PURE__*/React.createElement("a", {
-  href: "https://inon.vn/"
+}, /*#__PURE__*/React.createElement(Link$1, {
+  to: '/'
 }, /*#__PURE__*/React.createElement("span", {
   className: "d-block d-lg-none"
 }, /*#__PURE__*/React.createElement("img", {
