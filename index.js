@@ -2087,7 +2087,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/account-info');
+      return handleNavigation(e, '/app/account-info');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.User, {
     size: 14,
@@ -2113,7 +2113,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/share-with-friends');
+      return handleNavigation(e, '/app/share-with-friends');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Link, {
     size: 14,
@@ -2143,7 +2143,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/terms-and-condition');
+      return handleNavigation(e, '/app/terms-and-condition');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.FileText, {
     size: 14,
@@ -2156,7 +2156,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/privacy-policy');
+      return handleNavigation(e, '/app/privacy-policy');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Shield, {
     size: 14,
@@ -2169,7 +2169,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/language');
+      return handleNavigation(e, '/app/language');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Globe, {
     size: 14,
@@ -2182,7 +2182,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/contact');
+      return handleNavigation(e, '/app/contact');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.MessageSquare, {
     size: 14,
@@ -10510,7 +10510,6 @@ var AppRouter = function AppRouter(props) {
       authToken = props.authToken,
       children = props.children,
       loadNavtigation = props.loadNavtigation,
-      changeIsGuest = props.changeIsGuest,
       loadUserRoles = props.loadUserRoles,
       history = props.history,
       message = props.message;
@@ -10521,12 +10520,11 @@ var AppRouter = function AppRouter(props) {
 
     if (code && loginStatus !== LOGIN_STATUS.SUCCESS) {
       checkLoginStatus(code, redirectUrl);
-      loadNavtigation(appId);
-      loadUserRoles();
     }
 
-    if (appId === AppId.ELITE_APP) {
-      changeIsGuest(true);
+    if (authToken) {
+      loadNavtigation(appId);
+      loadUserRoles();
     }
   }, [authToken]);
   var appMessage = {
@@ -10587,7 +10585,7 @@ var AppRouter = function AppRouter(props) {
       }), /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, settingRoutes.map(function (item) {
         return /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
           key: item.path,
-          path: "/" + item.path,
+          path: "/app/" + item.path,
           render: function render() {
             return /*#__PURE__*/React__default.createElement(item.component, {
               activeTab: item.path

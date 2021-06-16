@@ -1864,7 +1864,7 @@ const UserDropdown = () => {
   }, /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/account-info')
+    onClick: e => handleNavigation(e, '/app/account-info')
   }, /*#__PURE__*/React.createElement(User, {
     size: 14,
     className: "mr-50"
@@ -1886,7 +1886,7 @@ const UserDropdown = () => {
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/share-with-friends')
+    onClick: e => handleNavigation(e, '/app/share-with-friends')
   }, /*#__PURE__*/React.createElement(Link, {
     size: 14,
     className: "mr-50"
@@ -1912,7 +1912,7 @@ const UserDropdown = () => {
   }), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/terms-and-condition')
+    onClick: e => handleNavigation(e, '/app/terms-and-condition')
   }, /*#__PURE__*/React.createElement(FileText, {
     size: 14,
     className: "mr-50"
@@ -1923,7 +1923,7 @@ const UserDropdown = () => {
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/privacy-policy')
+    onClick: e => handleNavigation(e, '/app/privacy-policy')
   }, /*#__PURE__*/React.createElement(Shield, {
     size: 14,
     className: "mr-50"
@@ -1934,7 +1934,7 @@ const UserDropdown = () => {
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/language')
+    onClick: e => handleNavigation(e, '/app/language')
   }, /*#__PURE__*/React.createElement(Globe, {
     size: 14,
     className: "mr-50"
@@ -1945,7 +1945,7 @@ const UserDropdown = () => {
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/contact')
+    onClick: e => handleNavigation(e, '/app/contact')
   }, /*#__PURE__*/React.createElement(MessageSquare, {
     size: 14,
     className: "mr-50"
@@ -9852,12 +9852,11 @@ const AppRouter = props => {
 
     if (code && loginStatus !== LOGIN_STATUS.SUCCESS) {
       checkLoginStatus(code, redirectUrl);
-      loadNavtigation(appId);
-      loadUserRoles();
     }
 
-    if (appId === AppId.ELITE_APP) {
-      changeIsGuest(true);
+    if (authToken) {
+      loadNavtigation(appId);
+      loadUserRoles();
     }
   }, [authToken]);
   const appMessage = {
@@ -9920,7 +9919,7 @@ const AppRouter = props => {
       appId
     }, /*#__PURE__*/React.createElement(Switch, null, settingRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
       key: item.path,
-      path: `/${item.path}`,
+      path: `/app/${item.path}`,
       render: () => /*#__PURE__*/React.createElement(item.component, {
         activeTab: item.path
       })
