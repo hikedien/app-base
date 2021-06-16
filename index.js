@@ -10349,8 +10349,8 @@ var LandingPage = function LandingPage(props) {
     className: "d-none d-lg-block landing-page-bg"
   }, /*#__PURE__*/React__default.createElement("div", {
     className: "logo mx-auto"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "https://inon.vn/"
+  }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
+    to: '/'
   }, /*#__PURE__*/React__default.createElement("img", {
     src: IMAGE.LOGO,
     alt: "logo"
@@ -10521,9 +10521,6 @@ var AppRouter = function AppRouter(props) {
 
     if (code && loginStatus !== LOGIN_STATUS.SUCCESS) {
       checkLoginStatus(code, redirectUrl);
-    }
-
-    if (code) {
       loadNavtigation(appId);
       loadUserRoles();
     }
