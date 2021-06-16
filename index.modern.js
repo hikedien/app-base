@@ -737,7 +737,7 @@ const goBackHomePage = () => {
   return async (dispatch, getState) => {
     const {
       authToken
-    } = getState().auth;
+    } = getState().guest.auth;
 
     if (authToken) {
       history.push('/home');
@@ -854,7 +854,7 @@ const loginAction = user => {
         });
       }
 
-      redirectMainApp(isGuest, getState().customizer.appId);
+      redirectMainApp(isGuest);
     } else {
       dispatch({
         type: LOGOUT_ACTION
@@ -1133,10 +1133,8 @@ const verifyPhoneNumber = values => {
   };
 };
 
-const redirectMainApp = (isGuest, appId) => {
-  const mainApp = isGuest ? AppId.ELITE_APP : AppId.APP_NO1;
-
-  if (mainApp === AppId.ELITE_APP) {
+const redirectMainApp = isGuest => {
+  if (isGuest) {
     history.push('/home');
   } else {
     history.push('/app/home');
@@ -1332,7 +1330,7 @@ const goBackHomePage$1 = () => {
   return async (dispatch, getState) => {
     const {
       authToken
-    } = getState().auth;
+    } = getState().guest.auth;
 
     if (authToken) {
       history.push('/home');

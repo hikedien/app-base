@@ -841,7 +841,7 @@ var loadUserRoles = function loadUserRoles() {
 var goBackHomePage = function goBackHomePage() {
   return function (dispatch, getState) {
     try {
-      var authToken = getState().auth.authToken;
+      var authToken = getState().guest.auth.authToken;
 
       if (authToken) {
         history.push('/home');
@@ -973,7 +973,7 @@ var loginAction = function loginAction(user) {
                 });
               }
 
-              redirectMainApp(isGuest, getState().customizer.appId);
+              redirectMainApp(isGuest);
             });
           } else {
             dispatch({
@@ -1324,10 +1324,8 @@ var verifyPhoneNumber = function verifyPhoneNumber(values) {
   };
 };
 
-var redirectMainApp = function redirectMainApp(isGuest, appId) {
-  var mainApp = isGuest ? AppId.ELITE_APP : AppId.APP_NO1;
-
-  if (mainApp === AppId.ELITE_APP) {
+var redirectMainApp = function redirectMainApp(isGuest) {
+  if (isGuest) {
     history.push('/home');
   } else {
     history.push('/app/home');
@@ -1524,7 +1522,7 @@ var LOAD_USER_ROLE$1 = 'LOAD_USER_ROLE';
 var goBackHomePage$1 = function goBackHomePage() {
   return function (dispatch, getState) {
     try {
-      var authToken = getState().auth.authToken;
+      var authToken = getState().guest.auth.authToken;
 
       if (authToken) {
         history.push('/home');
