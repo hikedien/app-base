@@ -2087,7 +2087,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/app/account-info');
+      return handleNavigation(e, '/account-info');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.User, {
     size: 14,
@@ -2100,7 +2100,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/app/change-password');
+      return handleNavigation(e, '/change-password');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
     size: 14,
@@ -2113,7 +2113,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/app/share-with-friends');
+      return handleNavigation(e, '/share-with-friends');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Link, {
     size: 14,
@@ -2143,7 +2143,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/app/terms-and-condition');
+      return handleNavigation(e, '/terms-and-condition');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.FileText, {
     size: 14,
@@ -2156,7 +2156,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/app/privacy-policy');
+      return handleNavigation(e, '/privacy-policy');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Shield, {
     size: 14,
@@ -2169,7 +2169,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/app/language');
+      return handleNavigation(e, '/language');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Globe, {
     size: 14,
@@ -2182,7 +2182,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/app/contact');
+      return handleNavigation(e, '/contact');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.MessageSquare, {
     size: 14,

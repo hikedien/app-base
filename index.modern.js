@@ -1864,7 +1864,7 @@ const UserDropdown = () => {
   }, /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/app/account-info')
+    onClick: e => handleNavigation(e, '/account-info')
   }, /*#__PURE__*/React.createElement(User, {
     size: 14,
     className: "mr-50"
@@ -1875,7 +1875,7 @@ const UserDropdown = () => {
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/app/change-password')
+    onClick: e => handleNavigation(e, '/change-password')
   }, /*#__PURE__*/React.createElement(Lock, {
     size: 14,
     className: "mr-50"
@@ -1886,7 +1886,7 @@ const UserDropdown = () => {
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/app/share-with-friends')
+    onClick: e => handleNavigation(e, '/share-with-friends')
   }, /*#__PURE__*/React.createElement(Link, {
     size: 14,
     className: "mr-50"
@@ -1912,7 +1912,7 @@ const UserDropdown = () => {
   }), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/app/terms-and-condition')
+    onClick: e => handleNavigation(e, '/terms-and-condition')
   }, /*#__PURE__*/React.createElement(FileText, {
     size: 14,
     className: "mr-50"
@@ -1923,7 +1923,7 @@ const UserDropdown = () => {
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/app/privacy-policy')
+    onClick: e => handleNavigation(e, '/privacy-policy')
   }, /*#__PURE__*/React.createElement(Shield, {
     size: 14,
     className: "mr-50"
@@ -1934,7 +1934,7 @@ const UserDropdown = () => {
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/app/language')
+    onClick: e => handleNavigation(e, '/language')
   }, /*#__PURE__*/React.createElement(Globe, {
     size: 14,
     className: "mr-50"
@@ -1945,7 +1945,7 @@ const UserDropdown = () => {
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/app/contact')
+    onClick: e => handleNavigation(e, '/contact')
   }, /*#__PURE__*/React.createElement(MessageSquare, {
     size: 14,
     className: "mr-50"
