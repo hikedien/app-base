@@ -235,16 +235,16 @@ var IC_TYPES_OPTIONS = [{
 var getExternalAppUrl = function getExternalAppUrl(appId, url) {
   switch (appId) {
     case AppId.APP_NO1:
-      return window.location.origin + "/app" + url + "?redirectUrl=" + url;
+      return "/app" + url;
 
     case AppId.INSURANCE_APP:
-      return window.location.origin + "/insurance" + url + "?redirectUrl=" + url;
+      return "/insurance" + url;
 
     case AppId.SUPPLEMENT_APP:
-      return window.location.origin + "/supplement" + url + "?redirectUrl=" + url;
+      return "/supplement" + url;
 
     case AppId.ELITE_APP:
-      return "" + window.location.origin + url + "?redirectUrl=" + url;
+      return "" + url;
   }
 };
 var getContextPath = function getContextPath(appId) {
@@ -757,7 +757,7 @@ var getNativgationConfig = function getNativgationConfig(appId, navConfigs) {
   }
 
   return navConfigs.map(function (item) {
-    item.isExternalApp = item.appId !== appId;
+    item.isExternalApp = false;
 
     if (item.children) {
       item.children.map(function (child) {
@@ -841,12 +841,12 @@ var loadUserRoles = function loadUserRoles() {
 var goBackHomePage = function goBackHomePage() {
   return function (dispatch, getState) {
     try {
-      var appId = getState().customizer.appId;
+      var authToken = getState().auth.authToken;
 
-      if (appId === AppId.APP_NO1) {
-        history.push('/');
+      if (authToken) {
+        history.push('/home');
       } else {
-        window.location.href = getExternalAppUrl(appId === AppId.ELITE_APP ? AppId.ELITE_APP : AppId.APP_NO1, '/');
+        history.push('/app/home');
       }
 
       return Promise.resolve();
@@ -1015,11 +1015,7 @@ var socialLogin = function socialLogin(data, loginMethod, openAddInfoPopup) {
             }
           });
           setTimeout(function () {
-            if (getState().customizer.appId !== AppId.ELITE_APP) {
-              window.location.href = getExternalAppUrl(AppId.ELITE_APP, '/');
-            } else {
-              history.push('/');
-            }
+            dispatch(goBackHomePage());
           }, 500);
         });
       });
@@ -1042,7 +1038,7 @@ var goToGuestApp = function goToGuestApp() {
     dispatch({
       type: GOTO_GUEST_APP
     });
-    redirectMainApp(true, appId);
+    redirectMainApp(true);
   };
 };
 var goToAgencyApp = function goToAgencyApp() {
@@ -1051,7 +1047,7 @@ var goToAgencyApp = function goToAgencyApp() {
     dispatch({
       type: GOTO_AGENCY_APP
     });
-    redirectMainApp(false, appId);
+    redirectMainApp(false);
   };
 };
 var createPassword = function createPassword(password) {
@@ -1334,10 +1330,10 @@ var redirectMainApp = function redirectMainApp(isGuest, appId) {
   setTimeout(function () {
     var mainApp = isGuest ? AppId.ELITE_APP : AppId.APP_NO1;
 
-    if (appId !== mainApp) {
-      window.location.href = getExternalAppUrl(mainApp, '/');
+    if (mainApp === AppId.ELITE_APP) {
+      history.push('/home');
     } else {
-      history.push('/');
+      history.push('/app/home');
     }
   }, 500);
 };
@@ -1532,12 +1528,12 @@ var LOAD_USER_ROLE$1 = 'LOAD_USER_ROLE';
 var goBackHomePage$1 = function goBackHomePage() {
   return function (dispatch, getState) {
     try {
-      var appId = getState().customizer.appId;
+      var authToken = getState().auth.authToken;
 
-      if (appId === AppId.APP_NO1) {
-        history.push('/');
+      if (authToken) {
+        history.push('/home');
       } else {
-        window.location.href = getExternalAppUrl(appId === AppId.ELITE_APP ? AppId.ELITE_APP : AppId.APP_NO1, '/');
+        history.push('/app/home');
       }
 
       return Promise.resolve();
@@ -2094,7 +2090,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/account-info');
+      return handleNavigation(e, '/app/account-info');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.User, {
     size: 14,
@@ -2107,7 +2103,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/change-password');
+      return handleNavigation(e, '/app/change-password');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
     size: 14,
@@ -2120,7 +2116,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/share-with-friends');
+      return handleNavigation(e, '/app/share-with-friends');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Link, {
     size: 14,
@@ -2150,7 +2146,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/terms-and-condition');
+      return handleNavigation(e, '/app/terms-and-condition');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.FileText, {
     size: 14,
@@ -2163,7 +2159,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/privacy-policy');
+      return handleNavigation(e, '/app/privacy-policy');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Shield, {
     size: 14,
@@ -2176,7 +2172,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/language');
+      return handleNavigation(e, '/app/language');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Globe, {
     size: 14,
@@ -2189,7 +2185,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/contact');
+      return handleNavigation(e, '/app/contact');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.MessageSquare, {
     size: 14,
@@ -10483,6 +10479,35 @@ var ConfirmAlert = function ConfirmAlert() {
   }, otherConfigs), content);
 };
 
+var CheckLocationChange = function CheckLocationChange() {
+  var history = reactRouterDom.useHistory();
+  var dispatch = reactRedux.useDispatch();
+
+  var _useSelector = reactRedux.useSelector(function (state) {
+    return state.customizer;
+  }),
+      appId = _useSelector.appId;
+
+  React.useEffect(function () {
+    var id;
+
+    if (window.location.href.includes('/app/')) {
+      id = AppId.APP_NO1;
+    } else if (window.location.href.includes('/insurance/')) {
+      id = AppId.INSURANCE_APP;
+    } else if (window.location.href.includes('/supplement/')) {
+      id = AppId.SUPPLEMENT_APP;
+    } else {
+      id = AppId.ELITE_APP;
+    }
+
+    if (appId !== id) {
+      dispatch(setAppId(id));
+    }
+  }, [history.location.pathname]);
+  return /*#__PURE__*/React__default.createElement("span", null);
+};
+
 var AppRouter = function AppRouter(props) {
   var checkLoginStatus = props.checkLoginStatus,
       appId = props.appId,
@@ -10626,7 +10651,7 @@ var AppRouter = function AppRouter(props) {
         to: "/"
       }));
     }
-  }))), /*#__PURE__*/React__default.createElement(reactToastify.ToastContainer, {
+  })), /*#__PURE__*/React__default.createElement(CheckLocationChange, null)), /*#__PURE__*/React__default.createElement(reactToastify.ToastContainer, {
     hideProgressBar: true,
     position: "top-right",
     autoClose: 5000,
@@ -10689,13 +10714,77 @@ RippleButton.propTypes = _extends({}, reactstrap.Button.propTypes, {
 reactstrap.Button.Ripple = RippleButton;
 
 var isLocalhost = Boolean(window.location.hostname === 'localhost' || window.location.hostname === '[::1]' || window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/));
+function register$3(config) {
+  if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
+    var publicUrl = new URL(process.env.PUBLIC_URL, window.location.href);
 
-function unregister() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.ready.then(function (registration) {
-      registration.unregister();
+    if (publicUrl.origin !== window.location.origin) {
+      return;
+    }
+
+    window.addEventListener('load', function () {
+      var swUrl = process.env.PUBLIC_URL + "/service-worker.js";
+
+      if (isLocalhost) {
+        checkValidServiceWorker(swUrl, config);
+        navigator.serviceWorker.ready.then(function () {
+          console.log('This web app is being served cache-first by a service ' + 'worker. To learn more, visit https://bit.ly/CRA-PWA');
+        });
+      } else {
+        registerValidSW(swUrl, config);
+      }
     });
   }
+}
+
+function registerValidSW(swUrl, config) {
+  navigator.serviceWorker.register(swUrl).then(function (registration) {
+    registration.onupdatefound = function () {
+      var installingWorker = registration.installing;
+
+      if (installingWorker == null) {
+        return;
+      }
+
+      installingWorker.onstatechange = function () {
+        if (installingWorker.state === 'installed') {
+          if (navigator.serviceWorker.controller) {
+            console.log('New content is available and will be used when all ' + 'tabs for this page are closed. See https://bit.ly/CRA-PWA.');
+
+            if (config && config.onUpdate) {
+              config.onUpdate(registration);
+            }
+          } else {
+            console.log('Content is cached for offline use.');
+
+            if (config && config.onSuccess) {
+              config.onSuccess(registration);
+            }
+          }
+        }
+      };
+    };
+  })["catch"](function (error) {
+    console.error('Error during service worker registration:', error);
+  });
+}
+
+function checkValidServiceWorker(swUrl, config) {
+  fetch(swUrl).then(function (response) {
+    var contentType = response.headers.get('content-type');
+
+    if (response.status === 404 || contentType != null && contentType.indexOf('javascript') === -1) {
+      navigator.serviceWorker.ready.then(function (registration) {
+        registration.unregister().then(function () {
+          window.location.reload();
+        });
+      });
+    } else {
+      registerValidSW(swUrl, config);
+    }
+  })["catch"](function () {
+    console.log('No internet connection found. App is running in offline mode.');
+  });
 }
 
 var App = function App(_ref) {
@@ -10725,7 +10814,7 @@ var App = function App(_ref) {
   })));
 };
 
-unregister();
+register$3();
 
 var FallbackSpinner = /*#__PURE__*/function (_React$Component) {
   _inheritsLoose(FallbackSpinner, _React$Component);

@@ -161,16 +161,16 @@ const IC_TYPES_OPTIONS = [{
 const getExternalAppUrl = (appId, url) => {
   switch (appId) {
     case AppId.APP_NO1:
-      return `${window.location.origin}/app${url}?redirectUrl=${url}`;
+      return `/app${url}`;
 
     case AppId.INSURANCE_APP:
-      return `${window.location.origin}/insurance${url}?redirectUrl=${url}`;
+      return `/insurance${url}`;
 
     case AppId.SUPPLEMENT_APP:
-      return `${window.location.origin}/supplement${url}?redirectUrl=${url}`;
+      return `/supplement${url}`;
 
     case AppId.ELITE_APP:
-      return `${window.location.origin}${url}?redirectUrl=${url}`;
+      return `${url}`;
   }
 };
 const getContextPath = appId => {
@@ -663,7 +663,7 @@ const getNativgationConfig = (appId, navConfigs) => {
   }
 
   return navConfigs.map(item => {
-    item.isExternalApp = item.appId !== appId;
+    item.isExternalApp = false;
 
     if (item.children) {
       item.children.map(child => child.isExternalApp = child.appId !== appId);
@@ -738,13 +738,13 @@ const loadUserRoles = () => {
 const goBackHomePage = () => {
   return async (dispatch, getState) => {
     const {
-      appId
-    } = getState().customizer;
+      authToken
+    } = getState().auth;
 
-    if (appId === AppId.APP_NO1) {
-      history.push('/');
+    if (authToken) {
+      history.push('/home');
     } else {
-      window.location.href = getExternalAppUrl(appId === AppId.ELITE_APP ? AppId.ELITE_APP : AppId.APP_NO1, '/');
+      history.push('/app/home');
     }
   };
 };
@@ -891,11 +891,7 @@ const socialLogin = (data, loginMethod, openAddInfoPopup) => {
       }
     });
     setTimeout(() => {
-      if (getState().customizer.appId !== AppId.ELITE_APP) {
-        window.location.href = getExternalAppUrl(AppId.ELITE_APP, '/');
-      } else {
-        history.push('/');
-      }
+      dispatch(goBackHomePage());
     }, 500);
   };
 };
@@ -915,7 +911,7 @@ const goToGuestApp = () => {
     dispatch({
       type: GOTO_GUEST_APP
     });
-    redirectMainApp(true, appId);
+    redirectMainApp(true);
   };
 };
 const goToAgencyApp = () => {
@@ -926,7 +922,7 @@ const goToAgencyApp = () => {
     dispatch({
       type: GOTO_AGENCY_APP
     });
-    redirectMainApp(false, appId);
+    redirectMainApp(false);
   };
 };
 const createPassword = password => {
@@ -1145,10 +1141,10 @@ const redirectMainApp = (isGuest, appId) => {
   setTimeout(() => {
     const mainApp = isGuest ? AppId.ELITE_APP : AppId.APP_NO1;
 
-    if (appId !== mainApp) {
-      window.location.href = getExternalAppUrl(mainApp, '/');
+    if (mainApp === AppId.ELITE_APP) {
+      history.push('/home');
     } else {
-      history.push('/');
+      history.push('/app/home');
     }
   }, 500);
 };
@@ -1341,13 +1337,13 @@ const LOAD_USER_ROLE$1 = 'LOAD_USER_ROLE';
 const goBackHomePage$1 = () => {
   return async (dispatch, getState) => {
     const {
-      appId
-    } = getState().customizer;
+      authToken
+    } = getState().auth;
 
-    if (appId === AppId.APP_NO1) {
-      history.push('/');
+    if (authToken) {
+      history.push('/home');
     } else {
-      window.location.href = getExternalAppUrl(appId === AppId.ELITE_APP ? AppId.ELITE_APP : AppId.APP_NO1, '/');
+      history.push('/app/home');
     }
   };
 };
@@ -1871,7 +1867,7 @@ const UserDropdown = () => {
   }, /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/account-info')
+    onClick: e => handleNavigation(e, '/app/account-info')
   }, /*#__PURE__*/React.createElement(User, {
     size: 14,
     className: "mr-50"
@@ -1882,7 +1878,7 @@ const UserDropdown = () => {
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/change-password')
+    onClick: e => handleNavigation(e, '/app/change-password')
   }, /*#__PURE__*/React.createElement(Lock, {
     size: 14,
     className: "mr-50"
@@ -1893,7 +1889,7 @@ const UserDropdown = () => {
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/share-with-friends')
+    onClick: e => handleNavigation(e, '/app/share-with-friends')
   }, /*#__PURE__*/React.createElement(Link, {
     size: 14,
     className: "mr-50"
@@ -1919,7 +1915,7 @@ const UserDropdown = () => {
   }), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/terms-and-condition')
+    onClick: e => handleNavigation(e, '/app/terms-and-condition')
   }, /*#__PURE__*/React.createElement(FileText, {
     size: 14,
     className: "mr-50"
@@ -1930,7 +1926,7 @@ const UserDropdown = () => {
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/privacy-policy')
+    onClick: e => handleNavigation(e, '/app/privacy-policy')
   }, /*#__PURE__*/React.createElement(Shield, {
     size: 14,
     className: "mr-50"
@@ -1941,7 +1937,7 @@ const UserDropdown = () => {
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/language')
+    onClick: e => handleNavigation(e, '/app/language')
   }, /*#__PURE__*/React.createElement(Globe, {
     size: 14,
     className: "mr-50"
@@ -1952,7 +1948,7 @@ const UserDropdown = () => {
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/contact')
+    onClick: e => handleNavigation(e, '/app/contact')
   }, /*#__PURE__*/React.createElement(MessageSquare, {
     size: 14,
     className: "mr-50"
@@ -9815,6 +9811,32 @@ const ConfirmAlert = () => {
   }, otherConfigs), content);
 };
 
+const CheckLocationChange = () => {
+  const history = useHistory();
+  const dispatch = useDispatch();
+  const {
+    appId
+  } = useSelector(state => state.customizer);
+  useEffect(() => {
+    let id;
+
+    if (window.location.href.includes('/app/')) {
+      id = AppId.APP_NO1;
+    } else if (window.location.href.includes('/insurance/')) {
+      id = AppId.INSURANCE_APP;
+    } else if (window.location.href.includes('/supplement/')) {
+      id = AppId.SUPPLEMENT_APP;
+    } else {
+      id = AppId.ELITE_APP;
+    }
+
+    if (appId !== id) {
+      dispatch(setAppId(id));
+    }
+  }, [history.location.pathname]);
+  return /*#__PURE__*/React.createElement("span", null);
+};
+
 const AppRouter = props => {
   const {
     checkLoginStatus,
@@ -9946,7 +9968,7 @@ const AppRouter = props => {
       from: "/",
       to: "/"
     }))
-  }))), /*#__PURE__*/React.createElement(ToastContainer, {
+  })), /*#__PURE__*/React.createElement(CheckLocationChange, null)), /*#__PURE__*/React.createElement(ToastContainer, {
     hideProgressBar: true,
     position: "top-right",
     autoClose: 5000,
@@ -10005,13 +10027,77 @@ RippleButton.propTypes = { ...Button.propTypes,
 Button.Ripple = RippleButton;
 
 const isLocalhost = Boolean(window.location.hostname === 'localhost' || window.location.hostname === '[::1]' || window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/));
+function register$3(config) {
+  if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
+    const publicUrl = new URL(process.env.PUBLIC_URL, window.location.href);
 
-function unregister() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.ready.then(registration => {
-      registration.unregister();
+    if (publicUrl.origin !== window.location.origin) {
+      return;
+    }
+
+    window.addEventListener('load', () => {
+      const swUrl = `${process.env.PUBLIC_URL}/service-worker.js`;
+
+      if (isLocalhost) {
+        checkValidServiceWorker(swUrl, config);
+        navigator.serviceWorker.ready.then(() => {
+          console.log('This web app is being served cache-first by a service ' + 'worker. To learn more, visit https://bit.ly/CRA-PWA');
+        });
+      } else {
+        registerValidSW(swUrl, config);
+      }
     });
   }
+}
+
+function registerValidSW(swUrl, config) {
+  navigator.serviceWorker.register(swUrl).then(registration => {
+    registration.onupdatefound = () => {
+      const installingWorker = registration.installing;
+
+      if (installingWorker == null) {
+        return;
+      }
+
+      installingWorker.onstatechange = () => {
+        if (installingWorker.state === 'installed') {
+          if (navigator.serviceWorker.controller) {
+            console.log('New content is available and will be used when all ' + 'tabs for this page are closed. See https://bit.ly/CRA-PWA.');
+
+            if (config && config.onUpdate) {
+              config.onUpdate(registration);
+            }
+          } else {
+            console.log('Content is cached for offline use.');
+
+            if (config && config.onSuccess) {
+              config.onSuccess(registration);
+            }
+          }
+        }
+      };
+    };
+  }).catch(error => {
+    console.error('Error during service worker registration:', error);
+  });
+}
+
+function checkValidServiceWorker(swUrl, config) {
+  fetch(swUrl).then(response => {
+    const contentType = response.headers.get('content-type');
+
+    if (response.status === 404 || contentType != null && contentType.indexOf('javascript') === -1) {
+      navigator.serviceWorker.ready.then(registration => {
+        registration.unregister().then(() => {
+          window.location.reload();
+        });
+      });
+    } else {
+      registerValidSW(swUrl, config);
+    }
+  }).catch(() => {
+    console.log('No internet connection found. App is running in offline mode.');
+  });
 }
 
 const App = ({
@@ -10042,7 +10128,7 @@ const App = ({
   })));
 };
 
-unregister();
+register$3();
 
 class FallbackSpinner extends React.Component {
   render() {
