@@ -902,10 +902,7 @@ const changeIsGuest = isGuest => {
   };
 };
 const goToGuestApp = () => {
-  return (dispatch, getState) => {
-    const {
-      appId
-    } = getState().customizer;
+  return dispatch => {
     dispatch({
       type: GOTO_GUEST_APP
     });
@@ -913,10 +910,7 @@ const goToGuestApp = () => {
   };
 };
 const goToAgencyApp = () => {
-  return (dispatch, getState) => {
-    const {
-      appId
-    } = getState().customizer;
+  return dispatch => {
     dispatch({
       type: GOTO_AGENCY_APP
     });
@@ -1137,7 +1131,7 @@ const verifyPhoneNumber = values => {
 
 const redirectMainApp = isGuest => {
   if (isGuest) {
-    history.push('/home');
+    history.push('/');
   } else {
     history.push('/app/home');
   }
@@ -9931,15 +9925,9 @@ const AppRouter = props => {
       render: () => /*#__PURE__*/React.createElement(LandingPage, {
         activeTab: item.path
       })
-    })), appId === AppId.ELITE_APP ? /*#__PURE__*/React.createElement(Route, {
+    })), /*#__PURE__*/React.createElement(Route, {
       path: "/",
       render: () => children
-    }) : /*#__PURE__*/React.createElement(Redirect, {
-      from: "/",
-      to: "/login"
-    }), /*#__PURE__*/React.createElement(Route, {
-      path: "/social-login",
-      component: SocialLogin
     }), /*#__PURE__*/React.createElement(Redirect, {
       from: "/",
       to: "/"

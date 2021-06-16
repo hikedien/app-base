@@ -1034,8 +1034,7 @@ var changeIsGuest = function changeIsGuest(isGuest) {
   };
 };
 var goToGuestApp = function goToGuestApp() {
-  return function (dispatch, getState) {
-    var appId = getState().customizer.appId;
+  return function (dispatch) {
     dispatch({
       type: GOTO_GUEST_APP
     });
@@ -1043,8 +1042,7 @@ var goToGuestApp = function goToGuestApp() {
   };
 };
 var goToAgencyApp = function goToAgencyApp() {
-  return function (dispatch, getState) {
-    var appId = getState().customizer.appId;
+  return function (dispatch) {
     dispatch({
       type: GOTO_AGENCY_APP
     });
@@ -1329,7 +1327,7 @@ var verifyPhoneNumber = function verifyPhoneNumber(values) {
 
 var redirectMainApp = function redirectMainApp(isGuest) {
   if (isGuest) {
-    history.push('/home');
+    history.push('/');
   } else {
     history.push('/app/home');
   }
@@ -10610,17 +10608,11 @@ var AppRouter = function AppRouter(props) {
             });
           }
         });
-      }), appId === AppId.ELITE_APP ? /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
+      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
         path: "/",
         render: function render() {
           return children;
         }
-      }) : /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
-        from: "/",
-        to: "/login"
-      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
-        path: "/social-login",
-        component: SocialLogin
       }), /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
         from: "/",
         to: "/"
