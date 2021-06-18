@@ -1150,7 +1150,7 @@ const redirectMainApp = (isGuest, appId) => {
     } else {
       history.push('/');
     }
-  }, 500);
+  }, 200);
 };
 
 const themeConfig = {
@@ -2982,8 +2982,7 @@ class Sidebar extends Component {
       activePath: activePath
     }), /*#__PURE__*/React.createElement(ScrollbarTag, Object.assign({
       className: classnames("main-menu-content", {
-        "overflow-hidden": ScrollbarTag !== "div",
-        "overflow-scroll": ScrollbarTag === "div"
+        "overflow-hidden": ScrollbarTag !== "div"
       })
     }, ScrollbarTag !== "div" && {
       options: {

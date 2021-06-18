@@ -1339,7 +1339,7 @@ var redirectMainApp = function redirectMainApp(isGuest, appId) {
     } else {
       history.push('/');
     }
-  }, 500);
+  }, 200);
 };
 
 var themeConfig = {
@@ -3321,8 +3321,7 @@ var Sidebar = /*#__PURE__*/function (_Component) {
       activePath: activePath
     }), /*#__PURE__*/React__default.createElement(ScrollbarTag, _extends({
       className: classnames("main-menu-content", {
-        "overflow-hidden": ScrollbarTag !== "div",
-        "overflow-scroll": ScrollbarTag === "div"
+        "overflow-hidden": ScrollbarTag !== "div"
       })
     }, ScrollbarTag !== "div" && {
       options: {
