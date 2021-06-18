@@ -1339,7 +1339,7 @@ var redirectMainApp = function redirectMainApp(isGuest, appId) {
     } else {
       history.push('/');
     }
-  }, 200);
+  }, 0);
 };
 
 var themeConfig = {

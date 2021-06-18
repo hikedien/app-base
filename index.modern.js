@@ -1150,7 +1150,7 @@ const redirectMainApp = (isGuest, appId) => {
     } else {
       history.push('/');
     }
-  }, 200);
+  }, 0);
 };
 
 const themeConfig = {
