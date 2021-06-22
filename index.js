@@ -129,7 +129,7 @@ var AppId = {
 };
 
 var API_BASE_URL = 'https://apisit.inon.vn';
-var RESOURCE_URL = 'https://sit2.inon.vn/resources/images/';
+var RESOURCE_URL = 'https://x.inon.vn/resources/images/';
 var FB_APP_ID = '2651185198505964';
 var GOOGLE_APP_ID = '400818618331-k9ptcdcgr99po0g5q5mh8e5ekodgj61n.apps.googleusercontent.com';
 var API_LOGIN_URL = '/api/authenticate';
@@ -10968,4 +10968,3 @@ exports.useDistrictList = useDistrictList;
 exports.usePageAuthorities = usePageAuthorities;
 exports.useWardList = useWardList;
 exports.useWindowDimensions = useWindowDimensions;
-//# sourceMappingURL=index.js.map

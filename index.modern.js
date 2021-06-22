@@ -55,7 +55,7 @@ const AppId = {
 };
 
 const API_BASE_URL = 'https://apisit.inon.vn';
-const RESOURCE_URL = 'https://sit2.inon.vn/resources/images/';
+const RESOURCE_URL = 'https://x.inon.vn/resources/images/';
 const FB_APP_ID = '2651185198505964';
 const GOOGLE_APP_ID = '400818618331-k9ptcdcgr99po0g5q5mh8e5ekodgj61n.apps.googleusercontent.com';
 const API_LOGIN_URL = '/api/authenticate';
@@ -10211,4 +10211,3 @@ const usePageAuthorities = () => {
 };
 
 export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, Radio, ReactTable, Select, changeIsGuest, goBackHomePage, goToAgencyApp, hideConfirmAlert, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
-//# sourceMappingURL=index.modern.js.map
