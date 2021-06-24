@@ -10579,7 +10579,7 @@ var AppRouter = function AppRouter(props) {
         }
       }), /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
         from: "/",
-        to: "/"
+        to: "/login"
       }));
     }
   })), /*#__PURE__*/React__default.createElement(CheckLocationChange, null)), /*#__PURE__*/React__default.createElement(reactToastify.ToastContainer, {
