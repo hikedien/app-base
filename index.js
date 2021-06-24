@@ -31,10 +31,10 @@ var ReactSelect = _interopDefault(require('react-select'));
 var AsyncSelect = _interopDefault(require('react-select/async'));
 var CreatableSelect = _interopDefault(require('react-select/creatable'));
 var QRCode = _interopDefault(require('easyqrcodejs'));
-require('react-facebook-login/dist/facebook-login-render-props');
-require('react-google-login');
+var FacebookLogin = _interopDefault(require('react-facebook-login/dist/facebook-login-render-props'));
+var GoogleLogin = _interopDefault(require('react-google-login'));
 var firebase = _interopDefault(require('firebase'));
-require('react-otp-input');
+var OtpInput = _interopDefault(require('react-otp-input'));
 var styled = _interopDefault(require('styled-components'));
 var SweetAlert = _interopDefault(require('react-bootstrap-sweetalert'));
 var TopBarProgress = _interopDefault(require('react-topbar-progress-indicator'));
@@ -990,6 +990,41 @@ var loginAction = function loginAction(user) {
     }
   };
 };
+var socialLogin = function socialLogin(data, loginMethod, openAddInfoPopup) {
+  return function (dispatch, getState) {
+    try {
+      return Promise.resolve(AuthService.guestSocialLogin(data)).then(function (res) {
+        if (!res || !res.data) {
+          return;
+        }
+
+        if (res.data.data && !res.data.idToken) {
+          openAddInfoPopup(res.data.data);
+          return;
+        }
+
+        var authToken = res.data.idToken;
+        return Promise.resolve(AuthService.getUserInfo(res.data.username, authToken)).then(function (_AuthService$getUserI3) {
+          res = _AuthService$getUserI3;
+          dispatch({
+            type: LOGIN_ACTION,
+            payload: {
+              guest: {
+                authToken: authToken,
+                loginMethod: loginMethod,
+                type: 'PASSWORD',
+                user: res.data || {}
+              }
+            }
+          });
+          dispatch(goBackHomePage());
+        });
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+};
 var changeIsGuest = function changeIsGuest(isGuest) {
   return function (dispatch) {
     dispatch({
@@ -1004,6 +1039,163 @@ var goToAgencyApp = function goToAgencyApp() {
       type: GOTO_AGENCY_APP
     });
     redirectMainApp(false);
+  };
+};
+var createPassword = function createPassword(password) {
+  return function (dispatch, getState) {
+    try {
+      var _temp5 = _catch(function () {
+        return Promise.resolve(AuthService.createPassword(password, getState().auth.register.token)).then(function (response) {
+          if (response.status === 200 && response.data) {
+            history.push('/complete-information');
+          }
+        });
+      }, function () {});
+
+      return Promise.resolve(_temp5 && _temp5.then ? _temp5.then(function () {}) : void 0);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+};
+var register = function register(values, isGuest) {
+  return function () {
+    try {
+      var _temp7 = _catch(function () {
+        return Promise.resolve(AuthService.register(trimObjectValues(values))).then(function (res) {
+          if (res.status === 200 && res.data) {
+            if (!isGuest) {
+              toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+                id: "register.registerSuccess"
+              }));
+              history.push('/login');
+            }
+          }
+        });
+      }, function () {});
+
+      return Promise.resolve(_temp7 && _temp7.then ? _temp7.then(function () {}) : void 0);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+};
+var compeleteInfo = function compeleteInfo(user) {
+  return function (dispatch, getState) {
+    try {
+      var _temp9 = _catch(function () {
+        user.registerToken = getState().auth.register.token;
+        return Promise.resolve(AuthService.compeleteInfo(user)).then(function (response) {
+          if (response.status === 200 && response.data) {
+            toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+              id: "completeInformation.success"
+            }));
+            history.push('/login');
+          }
+        });
+      }, function (error) {
+        console.log(error);
+      });
+
+      return Promise.resolve(_temp9 && _temp9.then ? _temp9.then(function () {}) : void 0);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+};
+var saveRegisterToken = function saveRegisterToken(registerToken) {
+  return function (dispatch) {
+    try {
+      return Promise.resolve(AuthService.getUserByRegisterToken(registerToken)).then(function (response) {
+        if (response.status === 200 && response.data) {
+          dispatch({
+            type: SAVE_REGISTER_TOKEN,
+            payload: {
+              token: registerToken,
+              user: response.data
+            }
+          });
+        } else {
+          history.push('/login');
+        }
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+};
+var saveRegisterInfo = function saveRegisterInfo(values) {
+  return function (dispatch) {
+    try {
+      dispatch({
+        type: SAVE_REGISTER_TOKEN,
+        payload: {
+          token: '',
+          user: values
+        }
+      });
+      return Promise.resolve();
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+};
+var saveResetPasswordToken = function saveResetPasswordToken(token) {
+  return function (dispatch) {
+    dispatch({
+      type: SAVE_RESET_PASSWORD_TOKEN,
+      payload: token
+    });
+  };
+};
+var forgotPassword = function forgotPassword(_ref2) {
+  var username = _ref2.username,
+      email = _ref2.email;
+  return function (dispatch, getState) {
+    try {
+      var _temp11 = _catch(function () {
+        return Promise.resolve(AuthService.forgotPassword(username, email)).then(function (response) {
+          if (response.status === 200 && response.data) {
+            toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+              id: "forgotPassword.successfull"
+            }));
+            dispatch({
+              type: SAVE_RESET_PASSWORD_TOKEN,
+              payload: ''
+            });
+            history.push('/login');
+          }
+        });
+      }, function () {});
+
+      return Promise.resolve(_temp11 && _temp11.then ? _temp11.then(function () {}) : void 0);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+};
+var resetPassword = function resetPassword(password) {
+  return function (dispatch, getState) {
+    try {
+      var _temp13 = _catch(function () {
+        return Promise.resolve(AuthService.resetPassword(password, getState().auth.resetPasswordToken)).then(function (response) {
+          if (response.status === 200 && response.data) {
+            toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+              id: "createPassword.resetSuccessFul"
+            }));
+            dispatch({
+              type: SAVE_RESET_PASSWORD_TOKEN,
+              payload: ''
+            });
+            history.push('/login');
+          }
+        });
+      }, function () {});
+
+      return Promise.resolve(_temp13 && _temp13.then ? _temp13.then(function () {}) : void 0);
+    } catch (e) {
+      return Promise.reject(e);
+    }
   };
 };
 var logoutAction = function logoutAction() {
@@ -1106,6 +1298,22 @@ var changeActionExpireTime = function changeActionExpireTime() {
     dispatch({
       type: CHANGE_SESSION_EXPIRE_TIME
     });
+  };
+};
+var verifyPhoneNumber = function verifyPhoneNumber(values) {
+  return function (dispatch) {
+    try {
+      return Promise.resolve(AuthService.verifyPhoneNumber(values)).then(function (res) {
+        if (res.status === 200) {
+          toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+            id: "verifyAccount.otp.registerSuccess"
+          }));
+          history.push('/login');
+        }
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
   };
 };
 
@@ -3431,8 +3639,8 @@ var IntlProviderWrapper = /*#__PURE__*/function (_React$Component) {
 }(React__default.Component);
 
 var login = "Login";
-var register = "Register";
-var forgotPassword = "Forgot password";
+var register$1 = "Register";
+var forgotPassword$1 = "Forgot password";
 var setting = "Setting";
 var messages_en = {
 	"commom.error.requireField": "You must enter {fieldName}",
@@ -3476,7 +3684,7 @@ var messages_en = {
 	"login.notMe": "Not me",
 	"login.fail": "Username or password was incorrect",
 	"login.sayHi": "Hi, {name}",
-	register: register,
+	register: register$1,
 	"register.fullname": "Full name *",
 	"register.fullname.required": "You must enter your full name",
 	"register.fullname.invalid": "Your full name can not enter special charater",
@@ -3493,7 +3701,7 @@ var messages_en = {
 	"register.agreeWith": "I agree to",
 	"register.policyAndCondition": "Terms and Condition",
 	"register.useService": "use service",
-	forgotPassword: forgotPassword,
+	forgotPassword: forgotPassword$1,
 	"forgotPassword.verify": "Verify",
 	"forgotPassword.username": "Username*",
 	"forgotPassword.username.required": "You must enter username",
@@ -3800,8 +4008,8 @@ var messages_en = {
 };
 
 var login$1 = "Đăng nhập";
-var register$1 = "Đăng ký";
-var forgotPassword$1 = "Quên mật khẩu";
+var register$2 = "Đăng ký";
+var forgotPassword$2 = "Quên mật khẩu";
 var setting$1 = "Cài đặt";
 var messages_vi = {
 	"commom.error.requireField": "Bạn phải nhập {fieldName}",
@@ -3845,7 +4053,7 @@ var messages_vi = {
 	"login.notMe": "Không phải tôi",
 	"login.fail": "Tài khoản hoặc mật khẩu của bạn không chính xác",
 	"login.sayHi": "Xin chào, {name}",
-	register: register$1,
+	register: register$2,
 	"register.fullname": "Họ và tên *",
 	"register.email": "Email*",
 	"register.fullname.invalid": "Tên của bạn không thể chứa ký tự đặc biệt",
@@ -3862,7 +4070,7 @@ var messages_vi = {
 	"register.agreeWith": "Tôi đồng ý với",
 	"register.policyAndCondition": "Điều khoản và Điều kiện",
 	"register.useService": "sử dụng dịch vụ.",
-	forgotPassword: forgotPassword$1,
+	forgotPassword: forgotPassword$2,
 	"forgotPassword.verify": "Xác thực",
 	"forgotPassword.username": "Tên tài khoản *",
 	"forgotPassword.username.required": "Bạn phải nhập tên tài khoản",
@@ -8841,6 +9049,293 @@ var CheckBox = /*#__PURE__*/function (_React$Component) {
   return CheckBox;
 }(React__default.Component);
 
+var SocialLogin = function SocialLogin(_ref) {
+  var isLogin = _ref.isLogin;
+
+  var _useState = React.useState(false),
+      isOpenModal = _useState[0],
+      setIsOpenModal = _useState[1];
+
+  var _useState2 = React.useState({}),
+      userInfo = _useState2[0],
+      setUserInfo = _useState2[1];
+
+  var dispatch = reactRedux.useDispatch();
+
+  var openAddInfoModal = function openAddInfoModal(userInfo) {
+    toggleModal();
+    setUserInfo(userInfo);
+  };
+
+  var handleFBLogin = function handleFBLogin(data) {
+    if (data.accessToken) {
+      dispatch(socialLogin({
+        socialId: data.id,
+        email: data.email,
+        picture: data.picture.data.url,
+        name: data.name,
+        provider: LOGIN_METHODS.FACEBOOK
+      }, LOGIN_METHODS.FACEBOOK, openAddInfoModal));
+    }
+  };
+
+  var handleGoogleLogin = function handleGoogleLogin(data) {
+    var profileObj = data.profileObj;
+    dispatch(socialLogin({
+      socialId: profileObj.googleId,
+      email: profileObj.email,
+      picture: profileObj.imageUrl,
+      name: profileObj.name,
+      provider: LOGIN_METHODS.GOOGLE
+    }, LOGIN_METHODS.GOOGLE, openAddInfoModal));
+  };
+
+  var toggleModal = function toggleModal() {
+    setIsOpenModal(function (prevState) {
+      return !prevState;
+    });
+  };
+
+  var onSubmit = function onSubmit(values, validateForm) {
+    try {
+      return Promise.resolve(validateForm()).then(function (errors) {
+        if (Object.keys(errors).length) {
+          return;
+        }
+
+        dispatch(socialLogin(_extends({}, userInfo, {
+          email: values.email,
+          phoneNumber: values.phoneNumber
+        }), LOGIN_METHODS.FACEBOOK, openAddInfoModal));
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
+  var onClickCancel = function onClickCancel() {
+    toggleModal();
+  };
+
+  var validationSchema = Yup.object().shape({
+    email: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "register.email.required"
+    })).email( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "register.email.invalid"
+    })),
+    phoneNumber: Yup.string().matches(PHONE_REGEX, function () {
+      return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "register.phoneNumber.invalid"
+      });
+    }).required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "register.phoneNumber.required"
+    }))
+  });
+  return /*#__PURE__*/React__default.createElement("div", {
+    className: "social-login"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "social-login-btn"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: isLogin ? 'socialLogin.loginWith' : 'socialLogin.registerWith'
+  }), /*#__PURE__*/React__default.createElement("div", {
+    className: "d-flex justify-content-center mt-2"
+  }, /*#__PURE__*/React__default.createElement(FacebookLogin, {
+    type: "button",
+    appId: FB_APP_ID,
+    cssClass: "fb-login-button",
+    disableMobileRedirect: true,
+    render: function render(_ref2) {
+      var onClick = _ref2.onClick;
+      return /*#__PURE__*/React__default.createElement("div", {
+        onClick: onClick,
+        className: "cursor-pointer"
+      }, /*#__PURE__*/React__default.createElement("img", {
+        alt: "facebook",
+        src: IMAGE.FB_LOGO
+      }));
+    },
+    fields: "name,email,picture",
+    callback: handleFBLogin
+  }), /*#__PURE__*/React__default.createElement("div", {
+    className: "ml-2"
+  }, /*#__PURE__*/React__default.createElement(GoogleLogin, {
+    clientId: GOOGLE_APP_ID,
+    onSuccess: handleGoogleLogin,
+    render: function render(_ref3) {
+      var onClick = _ref3.onClick;
+      return /*#__PURE__*/React__default.createElement("div", {
+        onClick: onClick,
+        className: "cursor-pointer"
+      }, /*#__PURE__*/React__default.createElement("img", {
+        alt: "google",
+        src: IMAGE.GOOGLE_LOGO
+      }));
+    },
+    cookiePolicy: 'single_host_origin'
+  })))), /*#__PURE__*/React__default.createElement(formik.Formik, {
+    initialValues: {
+      email: userInfo.email || '',
+      phoneNumber: userInfo.phoneNumber || ''
+    },
+    enableReinitialize: true,
+    onSubmit: onSubmit,
+    validationSchema: validationSchema
+  }, function (_ref4) {
+    var errors = _ref4.errors,
+        touched = _ref4.touched,
+        validateForm = _ref4.validateForm,
+        values = _ref4.values;
+    return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement(reactstrap.Modal, {
+      isOpen: isOpenModal,
+      className: "modal-dialog-centered"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.ModalHeader, {
+      toggle: toggleModal
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "socialLogin.addInfo"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.ModalBody, null, /*#__PURE__*/React__default.createElement("div", {
+      className: "mb-2"
+    }, /*#__PURE__*/React__default.createElement("i", null, /*#__PURE__*/React__default.createElement("small", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "socialLogin.addInfo.info"
+    })))), /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      fieldName: "email",
+      disabled: userInfo.email,
+      errors: errors,
+      touched: touched,
+      messageId: "register.email"
+    }), /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      fieldName: "phoneNumber",
+      disabled: userInfo.phoneNumber,
+      errors: errors,
+      touched: touched,
+      messageId: "register.phoneNumber"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.ModalFooter, null, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      type: "button",
+      color: "secondary",
+      onClick: onClickCancel
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "common.cancel"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+      color: "primary",
+      onClick: function onClick() {
+        return onSubmit(values, validateForm);
+      }
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "common.ok"
+    })))));
+  }));
+};
+
+var AppSelection = function AppSelection(_ref) {
+  var isLogin = _ref.isLogin;
+
+  var _useSelector = reactRedux.useSelector(function (state) {
+    return state.auth;
+  }),
+      isGuest = _useSelector.isGuest;
+
+  var dispatch = reactRedux.useDispatch();
+
+  var onClickChangeAppType = function onClickChangeAppType(value) {
+    dispatch(changeIsGuest(value));
+  };
+
+  return /*#__PURE__*/React__default.createElement("div", {
+    className: "text-center mt-2 mb-3"
+  }, /*#__PURE__*/React__default.createElement("p", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: isLogin ? 'socialLogin.youLoginAs' : 'socialLogin.youRegisterAs'
+  })), /*#__PURE__*/React__default.createElement(reactstrap.ButtonGroup, {
+    className: "w-100"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
+    className: "btn-app-selection left",
+    active: !isGuest,
+    type: "button",
+    onClick: function onClick() {
+      return onClickChangeAppType(false);
+    }
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "icon mr-1"
+  }, /*#__PURE__*/React__default.createElement("svg", {
+    width: "40",
+    height: "40",
+    viewBox: "0 0 40 40",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, /*#__PURE__*/React__default.createElement("path", {
+    d: "M20 25C22.7614 25 25 22.7614 25 20C25 17.2386 22.7614 15 20 15C17.2386 15 15 17.2386 15 20C15 22.7614 17.2386 25 20 25Z",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M20 35V35.0167",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M5 15V15.0167",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M35 15V15.0167",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M13.3333 33.4999C11.0589 32.3906 9.1021 30.7238 7.64506 28.6548C6.18802 26.5858 5.2781 24.1818 5 21.6666",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M26.6663 33.4999C28.9407 32.3906 30.8975 30.7238 32.3545 28.6548C33.8116 26.5858 34.7215 24.1818 34.9996 21.6666",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M10.333 8.33345C13.0132 6.14004 16.3697 4.94164 19.833 4.94164C23.2963 4.94164 26.6529 6.14004 29.333 8.33345",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }))), /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "socialLogin.agent"
+  })), /*#__PURE__*/React__default.createElement(reactstrap.Button, {
+    className: "btn-app-selection right",
+    active: isGuest,
+    onClick: function onClick() {
+      return onClickChangeAppType(true);
+    },
+    type: "button"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "icon mr-1"
+  }, /*#__PURE__*/React__default.createElement("svg", {
+    width: "40",
+    height: "40",
+    viewBox: "0 0 40 40",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, /*#__PURE__*/React__default.createElement("path", {
+    d: "M20.0005 18.4999C23.3143 18.4999 26.0007 15.8136 26.0007 12.4997C26.0007 9.1859 23.3143 6.49951 20.0005 6.49951C16.6866 6.49951 14.0002 9.1859 14.0002 12.4997C14.0002 15.8136 16.6866 18.4999 20.0005 18.4999Z",
+    stroke: isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M10.9993 33.5004V30.5003C10.9993 28.9089 11.6314 27.3828 12.7567 26.2575C13.8819 25.1322 15.4081 24.5001 16.9995 24.5001H22.9997C24.5911 24.5001 26.1172 25.1322 27.2425 26.2575C28.3678 27.3828 28.9999 28.9089 28.9999 30.5003V33.5004",
+    stroke: isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }))), /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "socialLogin.personal"
+  }))));
+};
+
 var formSchema$1 = Yup.object().shape({
   username: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "login.username.required"
@@ -8853,6 +9348,140 @@ var formSchema$1 = Yup.object().shape({
     });
   })
 });
+
+var Login = function Login() {
+  var _useState = React.useState(null),
+      rememberMe = _useState[0],
+      setRememberMe = _useState[1];
+
+  var _useState2 = React.useState(false),
+      isRemeberMe = _useState2[0],
+      setIsRemeberMe = _useState2[1];
+
+  var dispatch = reactRedux.useDispatch();
+
+  var _useSelector = reactRedux.useSelector(function (state) {
+    return state.auth;
+  }),
+      isGuest = _useSelector.isGuest;
+
+  var loginStatus = reactRedux.useSelector(function (state) {
+    return state.auth.loginStatus;
+  });
+  React.useEffect(function () {
+    var user = JSON.parse(localStorage.getItem(REMEMBER_ME_TOKEN));
+
+    if (user) {
+      setRememberMe(user);
+    }
+  }, []);
+
+  var onSubmit = function onSubmit(values, actions) {
+    dispatch(loginAction({
+      username: trimValue(values.username),
+      password: values.password,
+      isGuest: isGuest,
+      isRemeberMe: isRemeberMe
+    }));
+    actions.setSubmitting(false);
+  };
+
+  var onClickNotMe = function onClickNotMe() {
+    localStorage.removeItem(REMEMBER_ME_TOKEN);
+    setRememberMe(null);
+  };
+
+  return /*#__PURE__*/React__default.createElement(formik.Formik, {
+    enableReinitialize: true,
+    initialValues: {
+      username: rememberMe ? rememberMe.username : '',
+      password: ''
+    },
+    onSubmit: onSubmit,
+    validationSchema: formSchema$1
+  }, function (_ref) {
+    var errors = _ref.errors,
+        touched = _ref.touched;
+    return /*#__PURE__*/React__default.createElement(formik.Form, null, rememberMe ? /*#__PURE__*/React__default.createElement("h4", {
+      className: "text-center mb-2"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "login.sayHi",
+      values: {
+        name: rememberMe.name
+      }
+    })) : /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      messageId: "login.username",
+      fieldName: "username",
+      errors: errors,
+      touched: touched
+    }), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+      className: "form-label-group position-relative"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "login.password"
+    }, function (msg) {
+      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.FastField, {
+        name: "password"
+      }, function (_ref2) {
+        var field = _ref2.field,
+            form = _ref2.form;
+        return /*#__PURE__*/React__default.createElement(reactstrap.Input, _extends({
+          type: "password",
+          className: "form-control " + (errors.password && touched.password && 'is-invalid'),
+          placeholder: msg
+        }, field, {
+          onChange: function onChange(e) {
+            return form.setFieldValue('password', e.target.value);
+          }
+        }));
+      }), errors.password && touched.password ? /*#__PURE__*/React__default.createElement("div", {
+        className: "text-danger"
+      }, errors.password) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+      className: "d-flex justify-content-between align-items-center"
+    }, rememberMe ? /*#__PURE__*/React__default.createElement("a", {
+      className: "text-dark-green",
+      onClick: onClickNotMe
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "login.notMe"
+    })) : /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "login.rememberMe"
+      }),
+      onChange: function onChange(e) {
+        return setIsRemeberMe(e.target.checked);
+      },
+      defaultChecked: isRemeberMe
+    }), /*#__PURE__*/React__default.createElement("div", {
+      className: "divider",
+      style: {
+        height: '30px'
+      }
+    }), /*#__PURE__*/React__default.createElement("div", {
+      className: "float-right"
+    }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
+      to: "/forgot-password",
+      className: "text-secondary font-weight-bold"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "forgotPassword"
+    })))), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex justify-content-center"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
+      color: "primary",
+      type: "submit"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "login"
+    }))), isGuest ? /*#__PURE__*/React__default.createElement("div", {
+      className: "mt-2"
+    }, /*#__PURE__*/React__default.createElement(SocialLogin, {
+      isLogin: true
+    })) : null);
+  });
+};
 
 var formSchema$2 = Yup.object().shape({
   fullName: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -8885,6 +9514,142 @@ var formSchema$2 = Yup.object().shape({
   })
 });
 
+var Register = function Register() {
+  var _guest$user, _guest$user2, _guest$user3;
+
+  var _useState = React.useState(false),
+      isAppcepted = _useState[0],
+      setIsAppcepted = _useState[1];
+
+  var _useState2 = React.useState(false),
+      isNotApccepted = _useState2[0],
+      setIsNotAccepted = _useState2[1];
+
+  var _useSelector = reactRedux.useSelector(function (state) {
+    return state.auth;
+  }),
+      isGuest = _useSelector.isGuest,
+      registerInfo = _useSelector.register,
+      guest = _useSelector.guest;
+
+  var dispatch = reactRedux.useDispatch();
+  var history = reactRouterDom.useHistory();
+  React.useEffect(function () {
+    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier("recaptcha-container", {
+      size: "invisible",
+      callback: function callback(recaptchaToken) {
+        dispatch(register(_extends({}, registerInfo.user, {
+          recaptchaToken: recaptchaToken
+        }), true));
+      }
+    });
+  }, []);
+
+  var onSubmit = function onSubmit(values) {
+    try {
+      if (!isAppcepted) {
+        setIsNotAccepted(true);
+        return Promise.resolve();
+      }
+
+      var data = _extends({}, values, {
+        isGuest: isGuest
+      });
+
+      if (isGuest) {
+        dispatch(saveRegisterInfo(data));
+        window.recaptchaVerifier.verify();
+        history.push('/verify-otp');
+      } else {
+        dispatch(register(data));
+      }
+
+      return Promise.resolve();
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
+  var ontoggleAccepted = function ontoggleAccepted(checked) {
+    setIsAppcepted(checked);
+    setIsNotAccepted(!checked);
+  };
+
+  var onChangeFullName = function onChangeFullName(e, form) {
+    var value = e.target.value.replace(/[^\w\s]/gi, '');
+    form.setFieldValue('fullName', value);
+  };
+
+  return /*#__PURE__*/React__default.createElement(formik.Formik, {
+    initialValues: {
+      fullName: isGuest ? '' : guest === null || guest === void 0 ? void 0 : (_guest$user = guest.user) === null || _guest$user === void 0 ? void 0 : _guest$user.fullName,
+      email: isGuest ? '' : guest === null || guest === void 0 ? void 0 : (_guest$user2 = guest.user) === null || _guest$user2 === void 0 ? void 0 : _guest$user2.email,
+      phoneNumber: isGuest ? '' : guest === null || guest === void 0 ? void 0 : (_guest$user3 = guest.user) === null || _guest$user3 === void 0 ? void 0 : _guest$user3.phoneNumber,
+      refCode: ''
+    },
+    onSubmit: onSubmit,
+    validationSchema: formSchema$2
+  }, function (_ref) {
+    var errors = _ref.errors,
+        touched = _ref.touched;
+    return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement(AppSelection, null), /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      fieldName: "fullName",
+      errors: errors,
+      touched: touched,
+      onChange: onChangeFullName,
+      messageId: "register.fullname"
+    }), /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      fieldName: "email",
+      errors: errors,
+      touched: touched,
+      messageId: "register.email"
+    }), /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      fieldName: "phoneNumber",
+      errors: errors,
+      touched: touched,
+      messageId: "register.phoneNumber"
+    }), /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      fieldName: "refCode",
+      errors: errors,
+      touched: touched,
+      messageId: "register.refCode"
+    }), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, null, /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex align-items-center"
+    }, /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      onChange: function onChange(e) {
+        return ontoggleAccepted(e.target.checked);
+      },
+      defaultChecked: isAppcepted
+    }), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "register.agreeWith"
+    }), ' ', /*#__PURE__*/React__default.createElement("a", {
+      className: "text-primary"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "register.policyAndCondition"
+    })), ' ', /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "register.useService"
+    }))), isNotApccepted ? /*#__PURE__*/React__default.createElement("div", {
+      className: "text-danger"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "register.mustAppcepted"
+    })) : null, /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex justify-content-center mt-2"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
+      color: "primary",
+      type: "submit"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "register"
+    })))), isGuest ? /*#__PURE__*/React__default.createElement("div", {
+      className: "mt-2"
+    }, /*#__PURE__*/React__default.createElement(SocialLogin, null)) : null);
+  });
+};
+
 var formSchema$3 = Yup.object().shape({
   username: Yup.string().matches(PHONE_REGEX, function () {
     return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -8900,6 +9665,124 @@ var formSchema$3 = Yup.object().shape({
   }))
 });
 
+var ForgotPassword = function ForgotPassword() {
+  var _useState = React.useState(false),
+      isModalOpen = _useState[0],
+      setIsOpenModal = _useState[1];
+
+  var _useState2 = React.useState(''),
+      emailSuggestion = _useState2[0],
+      setEmailSuggestion = _useState2[1];
+
+  var dispatch = reactRedux.useDispatch();
+
+  var onSubmit = function onSubmit(values, actions) {
+    dispatch(forgotPassword(values));
+  };
+
+  var onClickSuggestion = function onClickSuggestion(username) {
+    try {
+      return Promise.resolve(AuthService.getSuggestionEmail(username)).then(function (res) {
+        if (res.status === 200) {
+          setEmailSuggestion(res.data);
+          toggleModal();
+        }
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
+  var toggleModal = function toggleModal() {
+    setIsOpenModal(!isModalOpen);
+  };
+
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.Formik, {
+    initialValues: {
+      username: '',
+      email: ''
+    },
+    onSubmit: onSubmit,
+    validationSchema: formSchema$3
+  }, function (_ref) {
+    var errors = _ref.errors,
+        touched = _ref.touched,
+        values = _ref.values;
+    return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement("h1", {
+      className: "landing-page-title"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "forgotPassword"
+    })), /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      messageId: "forgotPassword.username",
+      fieldName: "username",
+      errors: errors,
+      touched: touched
+    }), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+      className: "form-label-group position-relative"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "forgotPassword.email"
+    }, function (msg) {
+      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.Field, {
+        name: "email"
+      }, function (_ref2) {
+        var field = _ref2.field,
+            form = _ref2.form;
+        return /*#__PURE__*/React__default.createElement(reactstrap.Input, _extends({
+          className: "" + (errors.email && touched.email && 'is-invalid not-show-icon'),
+          placeholder: msg
+        }, field, {
+          onChange: function onChange(e) {
+            return form.setFieldValue('email', e.target.value ? e.target.value.trim() : '');
+          }
+        }));
+      }), errors.email && touched.email ? /*#__PURE__*/React__default.createElement("div", {
+        className: "text-danger"
+      }, errors.email) : null, values.username ? /*#__PURE__*/React__default.createElement("div", {
+        className: "form-control-position text-primary cursor-pointer",
+        onClick: function onClick() {
+          return onClickSuggestion(values.username);
+        }
+      }, /*#__PURE__*/React__default.createElement(Icon.Sun, {
+        size: 15
+      })) : '', /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
+    })), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex justify-content-center"
+    }, /*#__PURE__*/React__default.createElement("div", {
+      className: "col-md-4"
+    }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
+      to: '/'
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
+      className: "btn-second"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "common.back"
+    })))), /*#__PURE__*/React__default.createElement("div", {
+      className: "col-md-4"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
+      color: "primary",
+      type: "submit"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "forgotPassword.verify"
+    })))));
+  }), /*#__PURE__*/React__default.createElement(reactstrap.Modal, {
+    isOpen: isModalOpen,
+    toggle: toggleModal,
+    className: "modal-dialog-centered"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.ModalBody, {
+    className: "modal-dialog-centered"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "w-100"
+  }, /*#__PURE__*/React__default.createElement("div", null, !emailSuggestion ? /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "forgotPassword.notFoundEmailSuggestion"
+  }) : /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "forgotPassword.yourEmailIs"
+  }), ":", ' ', /*#__PURE__*/React__default.createElement("b", null, emailSuggestion))), /*#__PURE__*/React__default.createElement("br", null), /*#__PURE__*/React__default.createElement("div", {
+    className: "d-flex justify-content-end"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+    color: "primary",
+    onClick: toggleModal
+  }, "OK"), ' ')))));
+};
+
 var formSchema$4 = Yup.object().shape({
   password: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "createPassword.password.required"
@@ -8914,6 +9797,218 @@ var formSchema$4 = Yup.object().shape({
     id: "createPassword.password.required"
   }))
 });
+
+var CreatePassword = function CreatePassword(_ref) {
+  var _ref$isCreatePassword = _ref.isCreatePassword,
+      isCreatePassword = _ref$isCreatePassword === void 0 ? false : _ref$isCreatePassword;
+  var history = reactRouterDom.useHistory();
+  var dispatch = reactRedux.useDispatch();
+  React.useEffect(function () {
+    isCreatePassword ? setRegisterToken() : setResetPassword();
+  }, []);
+
+  var onClickContinue = function onClickContinue(values) {
+    if (isCreatePassword) {
+      dispatch(createPassword(values.password));
+    } else {
+      dispatch(resetPassword(values.password));
+    }
+  };
+
+  var setRegisterToken = function setRegisterToken() {
+    var code = new URLSearchParams(document.location.search).get('registerToken');
+
+    if (code) {
+      dispatch(saveRegisterToken(code));
+      history.replace(history.location.pathname);
+    }
+  };
+
+  var setResetPassword = function setResetPassword() {
+    var code = new URLSearchParams(document.location.search).get('resetToken');
+
+    if (code) {
+      dispatch(saveResetPasswordToken(code));
+      history.replace(history.location.pathname);
+    }
+  };
+
+  return /*#__PURE__*/React__default.createElement(formik.Formik, {
+    initialValues: {
+      password: '',
+      passwordConfirmation: ''
+    },
+    onSubmit: onClickContinue,
+    validationSchema: formSchema$4
+  }, function (_ref2) {
+    var errors = _ref2.errors,
+        touched = _ref2.touched;
+    return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement("div", {
+      className: "text-center mb-3"
+    }, /*#__PURE__*/React__default.createElement("h1", {
+      className: "landing-page-title"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "createPassword.title"
+    }))), /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      type: "password",
+      messageId: "login.password",
+      fieldName: "password",
+      errors: errors,
+      touched: touched
+    }), /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      type: "password",
+      messageId: "createPassword.enterThePassword",
+      fieldName: "passwordConfirmation",
+      errors: errors,
+      touched: touched
+    }), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "createPassword.condition.1"
+    })), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "createPassword.condition.2"
+    })), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "createPassword.condition.3"
+    })), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex justify-content-center mt-2"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
+      color: "primary",
+      type: "submit"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: isCreatePassword ? 'createPassword.continutes' : 'createPassword.done'
+    }))));
+  });
+};
+
+var VerifyOtp = function VerifyOtp() {
+  var _useState = React.useState(''),
+      otp = _useState[0],
+      setOtp = _useState[1];
+
+  var registerInfo = reactRedux.useSelector(function (state) {
+    return state.auth.register;
+  });
+  var dispatch = reactRedux.useDispatch();
+  var history = reactRouterDom.useHistory();
+  var intl = reactIntl.useIntl();
+  var NUM_INPUTS = 6;
+  React.useEffect(function () {}, []);
+
+  var onChangeOtp = function onChangeOtp(value) {
+    setOtp(value);
+  };
+
+  var onClickVerify = function onClickVerify() {
+    dispatch(verifyPhoneNumber(_extends({}, registerInfo.user, {
+      code: otp
+    })));
+  };
+
+  var onClickGetOtp = function onClickGetOtp() {
+    window.recaptchaVerifier.verify().then(function (value) {
+      if (value === registerInfo.user.recaptchaToken) {
+        toastError("Mã Otp đã được gửi đến điện thoại của bạn!");
+      }
+    });
+  };
+
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("div", {
+    className: "text-center"
+  }, /*#__PURE__*/React__default.createElement("h1", {
+    className: "landing-page-title"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "verifyAccount.phoneNumberVerification"
+  })), /*#__PURE__*/React__default.createElement("p", {
+    className: "mt-2 text-dark-green-2",
+    dangerouslySetInnerHTML: {
+      __html: intl.formatMessage({
+        id: 'verifyAccount.otp.info'
+      }, {
+        phoneNumber: registerInfo.user.phoneNumber
+      })
+    }
+  }), /*#__PURE__*/React__default.createElement("div", {
+    className: "w-100 d-flex justify-content-center my-2"
+  }, /*#__PURE__*/React__default.createElement(OtpInput, {
+    inputStyle: "otp-input",
+    value: otp,
+    onChange: onChangeOtp,
+    isInputNum: true,
+    shouldAutoFocus: true,
+    numInputs: NUM_INPUTS,
+    separator: /*#__PURE__*/React__default.createElement("span", {
+      className: "ml-2"
+    })
+  })), /*#__PURE__*/React__default.createElement("div", {
+    className: "mt-4"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
+    className: "w-100",
+    color: 'primary',
+    onClick: onClickVerify,
+    disabled: otp.length !== NUM_INPUTS
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "verifyAccount.otp.verify"
+  }))), /*#__PURE__*/React__default.createElement("div", {
+    className: "mt-3"
+  }, /*#__PURE__*/React__default.createElement("span", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "verifyAccount.didNotReceiveCode"
+  })), /*#__PURE__*/React__default.createElement("span", {
+    className: "text-secondary font-weight-bold cursor-pointer",
+    onClick: onClickGetOtp,
+    style: {
+      marginLeft: '3px'
+    }
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "verifyAccount.tryAgain"
+  })))));
+};
+
+var LandingPageHeader = function LandingPageHeader() {
+  return /*#__PURE__*/React__default.createElement(Context.Consumer, null, function (context) {
+    return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex justify-content-between align-items-center"
+    }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
+      to: '/login'
+    }, /*#__PURE__*/React__default.createElement("span", {
+      className: "d-block d-lg-none"
+    }, /*#__PURE__*/React__default.createElement("img", {
+      src: IMAGE.LOGO,
+      alt: "logo"
+    }))), /*#__PURE__*/React__default.createElement("div", {
+      className: "languages d-flex align-items-center"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledButtonDropdown, {
+      direction: "left"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
+      color: "primary",
+      tag: "div",
+      className: "cursor-pointer"
+    }, context.state.locale === 'en' ? /*#__PURE__*/React__default.createElement("img", {
+      alt: "usa-icon",
+      className: "cursor-pointer",
+      src: "https://img.icons8.com/color/48/000000/usa.png"
+    }) : /*#__PURE__*/React__default.createElement("img", {
+      alt: "vn-icon",
+      src: "https://img.icons8.com/color/48/000000/vietnam.png"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.DropdownMenu, null, /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+      tag: "div",
+      className: "text-center",
+      onClick: function onClick() {
+        return context.switchLanguage('en');
+      }
+    }, /*#__PURE__*/React__default.createElement("img", {
+      alt: "usa-icon",
+      className: "cursor-pointer",
+      src: "https://img.icons8.com/color/48/000000/usa.png"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+      tag: "div",
+      className: "d-flex justify-content-center",
+      onClick: function onClick() {
+        return context.switchLanguage('vi');
+      }
+    }, /*#__PURE__*/React__default.createElement("img", {
+      alt: "vn-icon",
+      src: "https://img.icons8.com/color/48/000000/vietnam.png"
+    })))))));
+  });
+};
 
 var CompleteInforValidate = Yup.object().shape({
   icNumber: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -8971,6 +10066,186 @@ var CompleteInforValidate = Yup.object().shape({
   })
 });
 
+var CompleteInformation = function CompleteInformation() {
+  var user = reactRedux.useSelector(function (state) {
+    return state.auth.register.user;
+  });
+
+  var _useCityList = useCityList(VN_COUNTRY_CODE),
+      cities = _useCityList.cities;
+
+  var _useDistrictList = useDistrictList(cities[0] ? cities[0].id : null),
+      districts = _useDistrictList.districts,
+      loadDitrictsByCity = _useDistrictList.loadDitrictsByCity;
+
+  var _useWardList = useWardList(districts[0] ? districts[0].id : null),
+      wards = _useWardList.wards,
+      loadWardsByDistrict = _useWardList.loadWardsByDistrict;
+
+  var _useBankList = useBankList(),
+      banks = _useBankList.banks;
+
+  var dispatch = reactRedux.useDispatch();
+
+  var onSubmit = function onSubmit(values) {
+    dispatch(compeleteInfo(trimObjectValues(values)));
+  };
+
+  return /*#__PURE__*/React__default.createElement("div", {
+    className: "complete-info"
+  }, /*#__PURE__*/React__default.createElement(formik.Formik, {
+    enableReinitialize: true,
+    initialValues: {
+      icType: 'CMND',
+      icNumber: '',
+      dateOfBirth: '',
+      gender: 'MALE',
+      city: '',
+      district: '',
+      ward: '',
+      address: '',
+      bankName: '',
+      bankBranch: '',
+      bankNumber: '',
+      refCode: user.refByUser
+    },
+    validationSchema: CompleteInforValidate,
+    onSubmit: onSubmit
+  }, function (_ref) {
+    var errors = _ref.errors,
+        touched = _ref.touched;
+    return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement("h1", {
+      className: "landing-page-title"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "completeInformation.title"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "6",
+      className: "mb-1"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect, {
+      messageId: "completeInformation.idType",
+      fieldName: "icType",
+      options: IC_TYPES_OPTIONS,
+      errors: errors,
+      touched: touched
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "6",
+      className: "mb-1"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      messageId: "completeInformation.nbrPer",
+      fieldName: "icNumber",
+      errors: errors,
+      touched: touched
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "6",
+      className: "mb-1"
+    }, /*#__PURE__*/React__default.createElement(BaseFormDatePicker, {
+      messageId: "completeInformation.dateOfBirth",
+      fieldName: "dateOfBirth",
+      errors: errors,
+      touched: touched
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "6"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect, {
+      messageId: "completeInformation.gender",
+      fieldName: "gender",
+      defaultValue: GENDER_OPTIONS[0],
+      options: GENDER_OPTIONS,
+      errors: errors,
+      touched: touched
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "4",
+      className: "mb-1"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect, {
+      messageId: "completeInformation.province",
+      fieldName: "city",
+      options: cities,
+      onChange: function onChange(_ref2) {
+        var id = _ref2.id;
+        return loadDitrictsByCity(id);
+      },
+      errors: errors,
+      touched: touched
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "4",
+      className: "mb-1"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect, {
+      messageId: "completeInformation.district",
+      fieldName: "district",
+      options: districts,
+      onChange: function onChange(_ref3) {
+        var id = _ref3.id;
+        return loadWardsByDistrict(id);
+      },
+      errors: errors,
+      touched: touched
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "4",
+      className: "mb-1"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect, {
+      messageId: "completeInformation.ward",
+      fieldName: "ward",
+      options: wards,
+      errors: errors,
+      touched: touched
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "8",
+      className: "mb-1"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      messageId: "completeInformation.address",
+      fieldName: "address",
+      errors: errors,
+      touched: touched
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "4",
+      className: "mb-1"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      messageId: "completeInformation.gif",
+      fieldName: "refCode",
+      isRequired: false
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "4"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroupSelect, {
+      messageId: "completeInformation.bank",
+      fieldName: "bankName",
+      options: banks,
+      errors: errors,
+      touched: touched
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "4"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      messageId: "completeInformation.branch",
+      fieldName: "bankBranch",
+      errors: errors,
+      touched: touched
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+      sm: "4"
+    }, /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      messageId: "completeInformation.accountNbr",
+      fieldName: "bankNumber",
+      errors: errors,
+      touched: touched
+    }))), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex justify-content-center mt-4"
+    }, /*#__PURE__*/React__default.createElement("div", {
+      className: "col-sm-5 col-md-4"
+    }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
+      to: "/create-password"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
+      className: "btn-second",
+      type: "button"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "completeInformation.back"
+    })))), /*#__PURE__*/React__default.createElement("div", {
+      className: "col-sm-5 col-md-4"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
+      color: "primary",
+      type: "submit"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "completeInformation.done"
+    })))));
+  }));
+};
+
 function _templateObject() {
   var data = _taggedTemplateLiteralLoose(["\n\n  .landing-page-bg {\n    background-image: url('", "');\n    background-size: cover;\n    background-position: center;\n  }\n"]);
 
@@ -8981,6 +10256,135 @@ function _templateObject() {
   return data;
 }
 var PageStyle = styled.div(_templateObject(), IMAGE.LANDING_PAGE_BG);
+
+var LandingPage = function LandingPage(props) {
+  var _useState = React.useState(''),
+      activeTab = _useState[0],
+      setActiveTab = _useState[1];
+
+  var history = reactRouterDom.useHistory();
+  React.useEffect(function () {
+    setActiveTab(props.activeTab || 'login');
+  }, [props.activeTab]);
+
+  var TabView = function TabView() {
+    switch (activeTab) {
+      case 'login':
+        return /*#__PURE__*/React__default.createElement(Login, null);
+
+      case 'register':
+        return /*#__PURE__*/React__default.createElement(Register, null);
+
+      case 'forgot-password':
+        return /*#__PURE__*/React__default.createElement(ForgotPassword, null);
+
+      case 'reset-password':
+      case 'provide-new-password':
+        return /*#__PURE__*/React__default.createElement(CreatePassword, null);
+
+      case 'create-password':
+        return /*#__PURE__*/React__default.createElement(CreatePassword, {
+          isCreatePassword: true
+        });
+
+      case 'verify-otp':
+        return /*#__PURE__*/React__default.createElement(VerifyOtp, null);
+
+      case 'complete-information':
+        return /*#__PURE__*/React__default.createElement(CompleteInformation, null);
+
+      default:
+        return '';
+    }
+  };
+
+  var goToLink = function goToLink(link) {
+    return history.push(link);
+  };
+
+  return /*#__PURE__*/React__default.createElement(PageStyle, null, /*#__PURE__*/React__default.createElement("div", {
+    className: "landing-page"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Row, {
+    className: "w-100 m-0",
+    style: {
+      height: '100vh'
+    }
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    lg: 5,
+    className: "d-none d-lg-block landing-page-bg"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "logo mx-auto"
+  }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
+    to: '/'
+  }, /*#__PURE__*/React__default.createElement("img", {
+    src: IMAGE.LOGO,
+    alt: "logo"
+  }))), /*#__PURE__*/React__default.createElement("div", {
+    className: "info-text"
+  }, /*#__PURE__*/React__default.createElement("h3", {
+    className: "text-white"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "landingPage.welcomeText"
+  })), /*#__PURE__*/React__default.createElement("p", {
+    className: "text-white mt-2"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "landingPage.slogan"
+  })), /*#__PURE__*/React__default.createElement("small", {
+    className: "d-flex align-items-center justify-content-center"
+  }, /*#__PURE__*/React__default.createElement("svg", {
+    width: "16",
+    height: "16",
+    viewBox: "0 0 16 16",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, /*#__PURE__*/React__default.createElement("path", {
+    d: "M10.1611 9.32831L11.3406 10.4239L10.7463 10.9441C10.0018 11.5954 9.05084 11.9543 8.06866 11.9543C5.86182 11.9543 4.06641 10.1959 4.06641 8.03464C4.06641 5.87835 5.86182 4.12402 8.06866 4.12402C9.05164 4.12402 9.99942 4.47951 10.7372 5.12504L11.3098 5.62613L10.1794 6.75711L9.67753 6.3137C9.24575 5.93239 8.67448 5.72235 8.06866 5.72235C6.74313 5.72235 5.66473 6.75966 5.66473 8.03457C5.66473 9.31457 6.74313 10.3559 8.06866 10.3559C8.66779 10.3559 9.23913 10.1426 9.67753 9.7553L10.1611 9.32831Z",
+    fill: "#E7EBEB"
+  }), /*#__PURE__*/React__default.createElement("circle", {
+    cx: "8",
+    cy: "8",
+    r: "6.5",
+    stroke: "#E7EBEB"
+  })), /*#__PURE__*/React__default.createElement("span", {
+    style: {
+      marginLeft: '2px'
+    }
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "landingPage.copyRight"
+  }))))), /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    className: "mx-auto",
+    sm: 12,
+    lg: 7
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: activeTab === 'complete-information' ? 'main-content wider' : 'main-content'
+  }, /*#__PURE__*/React__default.createElement(LandingPageHeader, null), activeTab === 'login' || activeTab === 'register' ? /*#__PURE__*/React__default.createElement("div", {
+    className: "lg-content-header d-flex cursor-pointer mt-3"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    onClick: function onClick() {
+      return goToLink('/login');
+    },
+    className: classnames('col-6 text-center tab-control', {
+      active: activeTab === 'login'
+    })
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "login"
+  })), /*#__PURE__*/React__default.createElement("div", {
+    onClick: function onClick() {
+      return goToLink('/register');
+    },
+    className: classnames('col-6 text-center tab-control', {
+      active: activeTab === 'register'
+    })
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "register"
+  }))) : null, /*#__PURE__*/React__default.createElement("div", {
+    className: activeTab === 'login' || activeTab === 'register' ? '' : 'lg-content'
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "w-100"
+  }, /*#__PURE__*/React__default.createElement(TabView, null))), /*#__PURE__*/React__default.createElement("div", {
+    id: "recaptcha-container"
+  }))))));
+};
 
 var ConfirmAlert = function ConfirmAlert() {
   var _useSelector = reactRedux.useSelector(function (state) {
@@ -9114,6 +10518,25 @@ var AppRouter = function AppRouter(props) {
     path: 'contact',
     component: GeneralInfo
   }];
+  var landingPageRoutes = [{
+    path: 'login'
+  }, {
+    path: 'register'
+  }, {
+    path: 'forgot-password'
+  }, {
+    path: 'provide-new-password'
+  }, {
+    path: 'reset-password'
+  }, {
+    path: 'verify-account'
+  }, {
+    path: 'verify-otp'
+  }, {
+    path: 'create-password'
+  }, {
+    path: 'complete-information'
+  }];
   return /*#__PURE__*/React__default.createElement(IntlProviderWrapper, {
     locale: user && user.userSettings ? user.userSettings.language.toLowerCase() : localStorage.getItem('language'),
     appMessage: appMessage
@@ -9139,7 +10562,17 @@ var AppRouter = function AppRouter(props) {
         render: function render() {
           return children;
         }
-      }))) : /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
+      }))) : /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, landingPageRoutes.map(function (item) {
+        return /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
+          key: item.path,
+          path: "/" + item.path,
+          render: function render() {
+            return /*#__PURE__*/React__default.createElement(LandingPage, {
+              activeTab: item.path
+            });
+          }
+        });
+      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
         from: "/",
         to: "/login"
       }));
@@ -9208,7 +10641,7 @@ RippleButton.propTypes = _extends({}, reactstrap.Button.propTypes, {
 reactstrap.Button.Ripple = RippleButton;
 
 var isLocalhost = Boolean(window.location.hostname === 'localhost' || window.location.hostname === '[::1]' || window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/));
-function register$2(config) {
+function register$3(config) {
   if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
     var publicUrl = new URL(process.env.PUBLIC_URL, window.location.href);
 
@@ -9308,7 +10741,7 @@ var App = function App(_ref) {
   })));
 };
 
-register$2();
+register$3();
 
 var FallbackSpinner = /*#__PURE__*/function (_React$Component) {
   _inheritsLoose(FallbackSpinner, _React$Component);
