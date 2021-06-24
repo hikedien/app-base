@@ -5,7 +5,7 @@ import { createBrowserHistory } from 'history';
 import Axios from 'axios';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
 import * as Icon from 'react-feather';
-import { AlertTriangle, Check, User, Lock, Link, Users, FileText, Shield, Globe, MessageSquare, Power, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, Download, Clipboard, ChevronDown, Sun } from 'react-feather';
+import { AlertTriangle, Check, User, Lock, Link, FileText, Shield, Globe, MessageSquare, Power, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, Download, Clipboard, ChevronDown, Sun } from 'react-feather';
 import { toast, ToastContainer } from 'react-toastify';
 export { toast } from 'react-toastify';
 import moment from 'moment';
@@ -899,14 +899,6 @@ const changeIsGuest = isGuest => {
       type: CHANGE_IS_GUEST,
       payload: isGuest
     });
-  };
-};
-const goToGuestApp = () => {
-  return dispatch => {
-    dispatch({
-      type: GOTO_GUEST_APP
-    });
-    redirectMainApp(true);
   };
 };
 const goToAgencyApp = () => {
@@ -1832,11 +1824,6 @@ const UserDropdown = () => {
     history.push(path);
   };
 
-  const onClickGoToGuestApp = e => {
-    e.preventDefault();
-    dispatch(goToGuestApp());
-  };
-
   const onClickLogout = () => {
     dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -1887,19 +1874,6 @@ const UserDropdown = () => {
     className: "align-middle"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "setting.shareWithFriends"
-  }))), /*#__PURE__*/React.createElement(DropdownItem, {
-    divider: true
-  }), /*#__PURE__*/React.createElement(DropdownItem, {
-    tag: "a",
-    href: "#",
-    onClick: e => onClickGoToGuestApp(e)
-  }, /*#__PURE__*/React.createElement(Users, {
-    size: 14,
-    className: "mr-50"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "align-middle"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "setting.goToGuestApp"
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     divider: true
   }), /*#__PURE__*/React.createElement(DropdownItem, {
@@ -8848,9 +8822,7 @@ const Login = () => {
   }, ({
     errors,
     touched
-  }) => /*#__PURE__*/React.createElement(Form, null, /*#__PURE__*/React.createElement(AppSelection, {
-    isLogin: true
-  }), rememberMe ? /*#__PURE__*/React.createElement("h4", {
+  }) => /*#__PURE__*/React.createElement(Form, null, rememberMe ? /*#__PURE__*/React.createElement("h4", {
     className: "text-center mb-2"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "login.sayHi",
@@ -9351,7 +9323,7 @@ const VerifyOtp = () => {
 const LandingPageHeader = () => /*#__PURE__*/React.createElement(Context.Consumer, null, context => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
   className: "d-flex justify-content-between align-items-center"
 }, /*#__PURE__*/React.createElement(Link$1, {
-  to: '/'
+  to: '/login'
 }, /*#__PURE__*/React.createElement("span", {
   className: "d-block d-lg-none"
 }, /*#__PURE__*/React.createElement("img", {

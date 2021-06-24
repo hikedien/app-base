@@ -1033,14 +1033,6 @@ var changeIsGuest = function changeIsGuest(isGuest) {
     });
   };
 };
-var goToGuestApp = function goToGuestApp() {
-  return function (dispatch) {
-    dispatch({
-      type: GOTO_GUEST_APP
-    });
-    redirectMainApp(true);
-  };
-};
 var goToAgencyApp = function goToAgencyApp() {
   return function (dispatch) {
     dispatch({
@@ -2062,11 +2054,6 @@ var UserDropdown = function UserDropdown() {
     history.push(path);
   };
 
-  var onClickGoToGuestApp = function onClickGoToGuestApp(e) {
-    e.preventDefault();
-    dispatch(goToGuestApp());
-  };
-
   var onClickLogout = function onClickLogout() {
     dispatch(showConfirmAlert({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -2123,21 +2110,6 @@ var UserDropdown = function UserDropdown() {
     className: "align-middle"
   }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "setting.shareWithFriends"
-  }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
-    divider: true
-  }), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
-    tag: "a",
-    href: "#",
-    onClick: function onClick(e) {
-      return onClickGoToGuestApp(e);
-    }
-  }, /*#__PURE__*/React__default.createElement(Icon.Users, {
-    size: 14,
-    className: "mr-50"
-  }), /*#__PURE__*/React__default.createElement("span", {
-    className: "align-middle"
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "setting.goToGuestApp"
   }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
     divider: true
   }), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
@@ -9430,9 +9402,7 @@ var Login = function Login() {
   }, function (_ref) {
     var errors = _ref.errors,
         touched = _ref.touched;
-    return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement(AppSelection, {
-      isLogin: true
-    }), rememberMe ? /*#__PURE__*/React__default.createElement("h4", {
+    return /*#__PURE__*/React__default.createElement(formik.Form, null, rememberMe ? /*#__PURE__*/React__default.createElement("h4", {
       className: "text-center mb-2"
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "login.sayHi",
@@ -9996,7 +9966,7 @@ var LandingPageHeader = function LandingPageHeader() {
     return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("div", {
       className: "d-flex justify-content-between align-items-center"
     }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
-      to: '/'
+      to: '/login'
     }, /*#__PURE__*/React__default.createElement("span", {
       className: "d-block d-lg-none"
     }, /*#__PURE__*/React__default.createElement("img", {
