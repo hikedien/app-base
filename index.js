@@ -959,7 +959,18 @@ var loginAction = function loginAction(user) {
                 });
               } else {
                 if (groupId === USER_ROLE.KHCN) {
-                  toastError('Bạn phải đăng ký để trở thành đại lý !');
+                  dispatch(showConfirmAlert({
+                    title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+                      id: "login.registerPartner"
+                    }),
+                    isShow: true,
+                    content: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+                      id: "login.needRegisterPartner"
+                    }),
+                    onConfirm: function onConfirm() {
+                      history.push('/register');
+                    }
+                  }));
                   return;
                 }
 
@@ -3728,6 +3739,8 @@ var messages_en = {
 	"login.notMe": "Not me",
 	"login.fail": "Username or password was incorrect",
 	"login.sayHi": "Hi, {name}",
+	"login.registerPartner": "Partner Registration",
+	"login.needRegisterPartner": "Your account cannot use this function. Please register as a partner or log in as an individual customer.",
 	register: register$1,
 	"register.fullname": "Full name *",
 	"register.fullname.required": "You must enter your full name",
@@ -4097,6 +4110,8 @@ var messages_vi = {
 	"login.notMe": "Không phải tôi",
 	"login.fail": "Tài khoản hoặc mật khẩu của bạn không chính xác",
 	"login.sayHi": "Xin chào, {name}",
+	"login.registerPartner": "Đăng ký đối tác",
+	"login.needRegisterPartner": "Tài khoản của bạn không sử dụng được chức năng này. Vui lòng đăng ký đối tác hoặc đăng nhập với tư cách khách hàng cá nhân.",
 	register: register$2,
 	"register.fullname": "Họ và tên *",
 	"register.email": "Email*",
@@ -4206,7 +4221,7 @@ var messages_vi = {
 	"setting.gender.F": "Nữ",
 	"setting.gender.O": "Khác",
 	"setting.goToGuestApp": "Về trang KHCN",
-	"setting.goToAgencyApp": "Về trang đại lý",
+	"setting.goToAgencyApp": "Về trang đối tác",
 	"setting.call": "Gọi điện",
 	"setting.call.confirmMessage": "Bạn có muốn gọi đến số {phoneNumber}?",
 	"setting.sendEmail": "Gửi mail",
@@ -4401,7 +4416,7 @@ var messages_vi = {
 	"completeInformation.success": "Hoàn tất đăng ký thành công!",
 	"socialLogin.addInfo": "Bổ sung thông tin",
 	"socialLogin.addInfo.info": "InOn cần bạn bổ sung các thông tin bên dưới để hoàn tất đăng ký tài khoản.",
-	"socialLogin.agent": "Đại lý",
+	"socialLogin.agent": "Đối tác",
 	"socialLogin.personal": "Cá nhân",
 	"socialLogin.loginWith": "Hoặc đăng nhập với",
 	"socialLogin.registerWith": "Hoặc đăng ký với",
@@ -10492,7 +10507,6 @@ var AppRouter = function AppRouter(props) {
       authToken = props.authToken,
       children = props.children,
       loadNavtigation = props.loadNavtigation,
-      changeIsGuest = props.changeIsGuest,
       loadUserRoles = props.loadUserRoles,
       setAppId = props.setAppId,
       history = props.history,
@@ -10510,10 +10524,6 @@ var AppRouter = function AppRouter(props) {
     if (code) {
       loadNavtigation(appId);
       loadUserRoles();
-    }
-
-    if (appId === AppId.ELITE_APP) {
-      changeIsGuest(true);
     }
   }, [authToken]);
 
@@ -10916,4 +10926,3 @@ exports.useDistrictList = useDistrictList;
 exports.usePageAuthorities = usePageAuthorities;
 exports.useWardList = useWardList;
 exports.useWindowDimensions = useWindowDimensions;
-//# sourceMappingURL=index.js.map
