@@ -1218,6 +1218,7 @@ var logoutAction = function logoutAction() {
         dispatch({
           type: LOGOUT_ACTION
         });
+        history.push('/login');
       });
     } catch (e) {
       return Promise.reject(e);
@@ -10492,11 +10493,11 @@ var AppRouter = function AppRouter(props) {
         render: function render() {
           return children;
         }
+      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
+        from: "/",
+        to: "/login"
       }));
     }
-  }), /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
-    from: "/",
-    to: "/login"
   })), /*#__PURE__*/React__default.createElement(CheckLocationChange, null)), /*#__PURE__*/React__default.createElement(reactToastify.ToastContainer, {
     hideProgressBar: true,
     position: "top-right",

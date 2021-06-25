@@ -1049,6 +1049,7 @@ const logoutAction = () => {
     dispatch({
       type: LOGOUT_ACTION
     });
+    history.push('/login');
   };
 };
 const updateUserInfo = (user, avatarImage) => {
@@ -9815,10 +9816,10 @@ const AppRouter = props => {
     })), /*#__PURE__*/React.createElement(Route, {
       path: "/",
       render: () => children
+    }), /*#__PURE__*/React.createElement(Redirect, {
+      from: "/",
+      to: "/login"
     }))
-  }), /*#__PURE__*/React.createElement(Redirect, {
-    from: "/",
-    to: "/login"
   })), /*#__PURE__*/React.createElement(CheckLocationChange, null)), /*#__PURE__*/React.createElement(ToastContainer, {
     hideProgressBar: true,
     position: "top-right",
