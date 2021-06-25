@@ -842,7 +842,18 @@ const loginAction = user => {
         });
       } else {
         if (groupId === USER_ROLE.KHCN) {
-          toastError('Bạn phải đăng ký để trở thành đại lý !');
+          dispatch(showConfirmAlert({
+            title: /*#__PURE__*/React.createElement(FormattedMessage, {
+              id: "login.registerPartner"
+            }),
+            isShow: true,
+            content: /*#__PURE__*/React.createElement(FormattedMessage, {
+              id: "login.needRegisterPartner"
+            }),
+            onConfirm: () => {
+              history.push('/register');
+            }
+          }));
           return;
         }
 
@@ -9801,7 +9812,10 @@ const AppRouter = props => {
       render: () => /*#__PURE__*/React.createElement(LandingPage, {
         activeTab: item.path
       })
-    })), /*#__PURE__*/React.createElement(Redirect, {
+    })), /*#__PURE__*/React.createElement(Route, {
+      path: "/",
+      render: () => children
+    }), /*#__PURE__*/React.createElement(Redirect, {
       from: "/",
       to: "/login"
     }))

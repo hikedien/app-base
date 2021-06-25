@@ -962,7 +962,18 @@ var loginAction = function loginAction(user) {
                 });
               } else {
                 if (groupId === USER_ROLE.KHCN) {
-                  toastError('Bạn phải đăng ký để trở thành đại lý !');
+                  dispatch(showConfirmAlert({
+                    title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+                      id: "login.registerPartner"
+                    }),
+                    isShow: true,
+                    content: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+                      id: "login.needRegisterPartner"
+                    }),
+                    onConfirm: function onConfirm() {
+                      history.push('/register');
+                    }
+                  }));
                   return;
                 }
 
@@ -10476,6 +10487,11 @@ var AppRouter = function AppRouter(props) {
             });
           }
         });
+      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
+        path: "/",
+        render: function render() {
+          return children;
+        }
       }), /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
         from: "/",
         to: "/login"
