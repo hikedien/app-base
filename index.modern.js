@@ -9815,10 +9815,10 @@ const AppRouter = props => {
     })), /*#__PURE__*/React.createElement(Route, {
       path: "/",
       render: () => children
-    }), /*#__PURE__*/React.createElement(Redirect, {
-      from: "/",
-      to: "/login"
     }))
+  }), /*#__PURE__*/React.createElement(Redirect, {
+    from: "/",
+    to: "/login"
   })), /*#__PURE__*/React.createElement(CheckLocationChange, null)), /*#__PURE__*/React.createElement(ToastContainer, {
     hideProgressBar: true,
     position: "top-right",
