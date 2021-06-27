@@ -2299,7 +2299,7 @@ const Footer = props => {
   })))), /*#__PURE__*/React.createElement("div", {
     className: "w-25"
   }, /*#__PURE__*/React.createElement("span", {
-    onClick: e => history.push('/contact')
+    onClick: e => history.push('/app/contact')
   }, /*#__PURE__*/React.createElement(MessageSquare, null), /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -7711,7 +7711,7 @@ const AccountSettings = props => {
       active: activeTab === 'account-info'
     }),
     onClick: () => {
-      history.push('/account-info');
+      history.push('/app/account-info');
     }
   }, /*#__PURE__*/React.createElement(User, {
     size: 16
@@ -7724,7 +7724,7 @@ const AccountSettings = props => {
       active: activeTab === 'change-password'
     }),
     onClick: () => {
-      history.push('/change-password');
+      history.push('/app/change-password');
     }
   }, /*#__PURE__*/React.createElement(Lock, {
     size: 16
@@ -7737,7 +7737,7 @@ const AccountSettings = props => {
       active: activeTab === 'share-with-friends'
     }),
     onClick: () => {
-      history.push('/share-with-friends');
+      history.push('/app/share-with-friends');
     }
   }, /*#__PURE__*/React.createElement(Link, {
     size: 16
@@ -8436,7 +8436,7 @@ const GeneralInfo = props => {
       active: activeTab === 'terms-and-condition'
     }),
     onClick: () => {
-      history.push('/terms-and-condition');
+      history.push('/app/terms-and-condition');
     }
   }, /*#__PURE__*/React.createElement(FileText, {
     size: 16
@@ -8449,7 +8449,7 @@ const GeneralInfo = props => {
       active: activeTab === 'privacy-policy'
     }),
     onClick: () => {
-      history.push('/privacy-policy');
+      history.push('/app/privacy-policy');
     }
   }, /*#__PURE__*/React.createElement(Shield, {
     size: 16
@@ -8462,7 +8462,7 @@ const GeneralInfo = props => {
       active: activeTab === 'language'
     }),
     onClick: () => {
-      history.push('/language');
+      history.push('/app/language');
     }
   }, /*#__PURE__*/React.createElement(Globe, {
     size: 16
@@ -8475,7 +8475,7 @@ const GeneralInfo = props => {
       active: activeTab === 'contact'
     }),
     onClick: () => {
-      history.push('/contact');
+      history.push('/app/contact');
     }
   }, /*#__PURE__*/React.createElement(MessageSquare, {
     size: 16
