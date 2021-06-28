@@ -787,7 +787,6 @@ const checkLoginStatus = (authToken, redirectUrl) => {
           type: LOGIN_ACTION,
           payload
         });
-        dispatch(goBackHomePage());
       } else {
         dispatch({
           type: LOGOUT_ACTION
@@ -9337,7 +9336,7 @@ const VerifyOtp = () => {
 const LandingPageHeader = () => /*#__PURE__*/React.createElement(Context.Consumer, null, context => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
   className: "d-flex justify-content-between align-items-center"
 }, /*#__PURE__*/React.createElement(Link$1, {
-  to: '/login'
+  to: '/'
 }, /*#__PURE__*/React.createElement("span", {
   className: "d-block d-lg-none"
 }, /*#__PURE__*/React.createElement("img", {
@@ -9910,7 +9909,7 @@ const AppRouter = props => {
       render: () => children
     }), /*#__PURE__*/React.createElement(Redirect, {
       from: "/",
-      to: "/"
+      to: "/intro"
     }))
   })), /*#__PURE__*/React.createElement(CheckLocationChange, null)), /*#__PURE__*/React.createElement(ToastContainer, {
     hideProgressBar: true,
