@@ -5,7 +5,7 @@ import { createBrowserHistory } from 'history';
 import Axios from 'axios';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
 import * as Icon from 'react-feather';
-import { AlertTriangle, Check, User, Lock, Link, FileText, Shield, Globe, MessageSquare, Power, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, Download, Clipboard, ChevronDown, Sun } from 'react-feather';
+import { AlertTriangle, Check, User, Lock, Link, Users, FileText, Shield, Globe, MessageSquare, Power, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, Download, Clipboard, ChevronDown, Sun } from 'react-feather';
 import { toast, ToastContainer } from 'react-toastify';
 export { toast } from 'react-toastify';
 import moment from 'moment';
@@ -54,8 +54,8 @@ const AppId = {
   DIVAY_APP: 'DIVAY_APP'
 };
 
-const API_BASE_URL = 'https://apisit.inon.vn';
-const RESOURCE_URL = 'https://x.inon.vn/resources/images/';
+const API_BASE_URL = 'https://api.inon.vn';
+const RESOURCE_URL = 'https://sit2.inon.vn/resources/images/';
 const FB_APP_ID = '2651185198505964';
 const GOOGLE_APP_ID = '400818618331-k9ptcdcgr99po0g5q5mh8e5ekodgj61n.apps.googleusercontent.com';
 const API_LOGIN_URL = '/api/authenticate';
@@ -909,6 +909,14 @@ const changeIsGuest = isGuest => {
       type: CHANGE_IS_GUEST,
       payload: isGuest
     });
+  };
+};
+const goToGuestApp = () => {
+  return dispatch => {
+    dispatch({
+      type: GOTO_GUEST_APP
+    });
+    redirectMainApp(true);
   };
 };
 const goToAgencyApp = () => {
@@ -1835,6 +1843,11 @@ const UserDropdown = () => {
     history.push(path);
   };
 
+  const onClickGoToGuestApp = e => {
+    e.preventDefault();
+    dispatch(goToGuestApp());
+  };
+
   const onClickLogout = () => {
     dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -1885,6 +1898,19 @@ const UserDropdown = () => {
     className: "align-middle"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "setting.shareWithFriends"
+  }))), /*#__PURE__*/React.createElement(DropdownItem, {
+    divider: true
+  }), /*#__PURE__*/React.createElement(DropdownItem, {
+    tag: "a",
+    href: "#",
+    onClick: e => onClickGoToGuestApp(e)
+  }, /*#__PURE__*/React.createElement(Users, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "setting.goToGuestApp"
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     divider: true
   }), /*#__PURE__*/React.createElement(DropdownItem, {
@@ -8901,11 +8927,7 @@ const Login = () => {
     type: "submit"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "login"
-  }))), isGuest ? /*#__PURE__*/React.createElement("div", {
-    className: "mt-2"
-  }, /*#__PURE__*/React.createElement(SocialLogin, {
-    isLogin: true
-  })) : null));
+  })))));
 };
 
 const formSchema$2 = object().shape({
