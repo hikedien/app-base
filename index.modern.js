@@ -426,6 +426,14 @@ const setUpHttpClient = (store, apiBaseUrl) => {
 
   HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
   HttpClient.interceptors.request.use(config => {
+    const token = store.getState().auth.guest.authToken || store.getState().auth.authToken;
+    language = localStorage.getItem('language');
+
+    if (token) {
+      store.dispatch(changeActionExpireTime());
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
     config.headers.appId = store.getState().customizer.appId;
     config.headers.appVersion = 'v1';
     config.headers.latitude = localStorage.getItem('latitude');
@@ -1099,6 +1107,13 @@ const changeLanguageSetting = (lang, callBack) => {
       }));
       dispatch(goBackHomePage());
     }
+  };
+};
+const changeActionExpireTime = () => {
+  return dispatch => {
+    dispatch({
+      type: CHANGE_SESSION_EXPIRE_TIME
+    });
   };
 };
 const verifyPhoneNumber = values => {
