@@ -54,8 +54,8 @@ const AppId = {
   DIVAY_APP: 'DIVAY_APP'
 };
 
-const API_BASE_URL = 'https://api.inon.vn';
-const RESOURCE_URL = 'https://sit2.inon.vn/resources/images/';
+const API_BASE_URL = 'https://apisit.inon.vn';
+const RESOURCE_URL = 'https://x.inon.vn/resources/images/';
 const FB_APP_ID = '2651185198505964';
 const GOOGLE_APP_ID = '400818618331-k9ptcdcgr99po0g5q5mh8e5ekodgj61n.apps.googleusercontent.com';
 const API_LOGIN_URL = '/api/authenticate';
@@ -426,31 +426,12 @@ const setUpHttpClient = (store, apiBaseUrl) => {
 
   HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
   HttpClient.interceptors.request.use(config => {
-    const token = store.getState().auth.guest.authToken || store.getState().auth.authToken;
-    const sessionExpireTime = store.getState().auth.sessionExpireTime;
-    language = localStorage.getItem('language');
-
-    if (token) {
-      store.dispatch(changeActionExpireTime());
-      config.headers.Authorization = `Bearer ${token}`;
-      const isSessionExpired = moment().isAfter(moment(sessionExpireTime));
-
-      if (sessionExpireTime && isSessionExpired) {
-        toastError( /*#__PURE__*/React.createElement(FormattedMessage, {
-          id: "common.sessionExpired"
-        }));
-        store.dispatch({
-          type: LOGOUT_ACTION
-        });
-        return;
-      }
-    }
-
     config.headers.appId = store.getState().customizer.appId;
     config.headers.appVersion = 'v1';
     config.headers.latitude = localStorage.getItem('latitude');
     config.headers.longitude = localStorage.getItem('longitude');
     config.headers.deviceId = deviceId;
+    config.headers.isMobileApp = true;
     config.headers['Accept-Language'] = language;
 
     if (!config.isBackgroundRequest) {
@@ -1118,13 +1099,6 @@ const changeLanguageSetting = (lang, callBack) => {
       }));
       dispatch(goBackHomePage());
     }
-  };
-};
-const changeActionExpireTime = () => {
-  return dispatch => {
-    dispatch({
-      type: CHANGE_SESSION_EXPIRE_TIME
-    });
   };
 };
 const verifyPhoneNumber = values => {
