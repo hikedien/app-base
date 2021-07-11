@@ -10521,7 +10521,7 @@ var AppRouter = function AppRouter(props) {
       checkLoginStatus(code, redirectUrl);
     }
 
-    if (code) {
+    if (code && appId !== AppId.ELITE_APP) {
       loadNavtigation(appId);
       loadUserRoles();
     }
@@ -10926,3 +10926,4 @@ exports.useDistrictList = useDistrictList;
 exports.usePageAuthorities = usePageAuthorities;
 exports.useWardList = useWardList;
 exports.useWindowDimensions = useWindowDimensions;
+//# sourceMappingURL=index.js.map
