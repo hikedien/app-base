@@ -234,7 +234,8 @@ const IMAGE = {
   DOWNLOAD_APP_IOS: RESOURCE_URL + 'app-store.svg',
   DOWNLOAD_APP_ANDROID: RESOURCE_URL + 'google-store.svg',
   CHECK_ICON: RESOURCE_URL + 'check_icon.png',
-  FAIL_ICON: RESOURCE_URL + 'fail_icon.png'
+  FAIL_ICON: RESOURCE_URL + 'fail_icon.png',
+  TPBANK_LOADER: RESOURCE_URL + 'tpbank-loader.gif'
 };
 
 var appConfigs = {
@@ -9940,6 +9941,19 @@ var AppRouter$1 = connect(mapStateToProps$3, {
   setAppId
 })(AppRouter);
 
+class FallbackSpinner extends React.Component {
+  render() {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "app-loading"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "loading"
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "fade"
+    }));
+  }
+
+}
+
 TopBarProgress.config({
   shadowBlur: 5,
   barThickness: 5
@@ -9949,7 +9963,7 @@ const LoadingSpinner = () => {
   const {
     isLoading
   } = useSelector(state => state.ui);
-  return isLoading ? /*#__PURE__*/React.createElement(TopBarProgress, null) : null;
+  return isLoading ? /*#__PURE__*/React.createElement(FallbackSpinner, null) : null;
 };
 
 const RippleButton = ({
@@ -10008,27 +10022,6 @@ const App = ({
 };
 
 unregister();
-
-class FallbackSpinner extends React.Component {
-  render() {
-    return /*#__PURE__*/React.createElement("div", {
-      className: "fallback-spinner"
-    }, /*#__PURE__*/React.createElement("img", {
-      className: "fallback-logo",
-      src: IMAGE.INON_LOGO,
-      alt: "logo"
-    }), /*#__PURE__*/React.createElement("div", {
-      className: "loading"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "effect-1 effects"
-    }), /*#__PURE__*/React.createElement("div", {
-      className: "effect-2 effects"
-    }), /*#__PURE__*/React.createElement("div", {
-      className: "effect-3 effects"
-    })));
-  }
-
-}
 
 const defaultMaskOptions = {
   prefix: '',

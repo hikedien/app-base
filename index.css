@@ -1024,6 +1024,27 @@ span.flatpickr-day.selected {
 .sweet-alert p {
   color: #626262 !important; }
 
+.app-loading .loading {
+  background: url("https://sit2.inon.vn/resources/images/tpbank-loader.gif") 50% no-repeat;
+  background-size: contain;
+  height: 100px;
+  display: block;
+  left: calc(50% - 50px);
+  position: fixed;
+  top: calc(50% - 50px);
+  width: 100px;
+  z-index: 1000; }
+
+.app-loading .fade {
+  background: rgba(1, 18, 34, 0.5);
+  height: 100%;
+  left: 0;
+  top: 0;
+  opacity: 1;
+  width: 100%;
+  z-index: 999;
+  position: fixed; }
+
 /**
  * prism.js tomorrow night eighties for JavaScript, CoffeeScript, CSS and HTML
  * Based on https://github.com/chriskempson/tomorrow-theme
@@ -11854,76 +11875,26 @@ body .vertical-layout.fixed-footer .main-menu.menu-fixed {
 .bg-yahoo {
   background-color: #720e9e; }
 
-.loading {
-  position: absolute;
-  left: calc(50% - 35px);
-  top: 50%;
-  width: 55px;
-  height: 55px;
-  border-radius: 50%;
-  box-sizing: border-box;
-  border: 3px solid transparent; }
-  .loading.component-loader {
-    margin-top: -60px; }
-  .loading .effect-1,
-  .loading .effect-2 {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border: 3px solid transparent;
-    border-left: 3px solid #338955;
-    border-radius: 50%;
-    box-sizing: border-box; }
-  .loading .effect-1 {
-    -webkit-animation: rotate 1s ease infinite;
-            animation: rotate 1s ease infinite; }
-  .loading .effect-2 {
-    -webkit-animation: rotateOpacity 1s ease infinite 0.1s;
-            animation: rotateOpacity 1s ease infinite 0.1s; }
-  .loading .effect-3 {
-    width: 100%;
-    height: 100%;
-    border: 3px solid transparent;
-    border-left: 3px solid #338955;
-    -webkit-animation: rotateOpacity 1s ease infinite 0.2s;
-    animation: rotateOpacity 1s ease infinite 0.2s;
-    border-radius: 50%;
-    box-sizing: border-box; }
-  .loading .loading .effects {
-    transition: all 0.3s ease; }
+.app-loading .loading {
+  background: url("https://sit2.inon.vn/resources/images/tpbank-loader.gif") 50% no-repeat;
+  background-size: contain;
+  height: 100px;
+  display: block;
+  left: calc(50% - 50px);
+  position: fixed;
+  top: calc(50% - 50px);
+  width: 100px;
+  z-index: 1000; }
 
-.fallback-logo {
-  position: absolute;
-  left: calc(50% - 80px);
-  top: 40%; }
-
-@-webkit-keyframes rotate {
-  0% {
-    transform: rotate(0deg); }
-  100% {
-    transform: rotate(1turn); } }
-
-@keyframes rotate {
-  0% {
-    transform: rotate(0deg); }
-  100% {
-    transform: rotate(1turn); } }
-
-@-webkit-keyframes rotateOpacity {
-  0% {
-    transform: rotate(0deg);
-    opacity: 0.1; }
-  100% {
-    transform: rotate(1turn);
-    opacity: 1; } }
-
-@keyframes rotateOpacity {
-  0% {
-    transform: rotate(0deg);
-    opacity: 0.1; }
-  100% {
-    transform: rotate(1turn);
-    opacity: 1; } }
+.app-loading .fade {
+  background: rgba(1, 18, 34, 0.5);
+  height: 100%;
+  left: 0;
+  top: 0;
+  opacity: 1;
+  width: 100%;
+  z-index: 999;
+  position: fixed; }
 
 .vx-autocomplete-container {
   position: relative; }
@@ -23650,74 +23621,3 @@ html[dir="rtl"] body .ps__rail-y {
   border-radius: 10px;
   -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
   background-color: #aaa; }
-
-.loading {
-  position: absolute;
-  left: calc(50% - 35px);
-  top: 50%;
-  width: 55px;
-  height: 55px;
-  border-radius: 50%;
-  box-sizing: border-box;
-  border: 3px solid transparent; }
-  .loading.component-loader {
-    margin-top: -60px; }
-  .loading .effect-1,
-  .loading .effect-2 {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border: 3px solid transparent;
-    border-left: 3px solid #338955;
-    border-radius: 50%;
-    box-sizing: border-box; }
-  .loading .effect-1 {
-    -webkit-animation: rotate 1s ease infinite;
-            animation: rotate 1s ease infinite; }
-  .loading .effect-2 {
-    -webkit-animation: rotateOpacity 1s ease infinite 0.1s;
-            animation: rotateOpacity 1s ease infinite 0.1s; }
-  .loading .effect-3 {
-    width: 100%;
-    height: 100%;
-    border: 3px solid transparent;
-    border-left: 3px solid #338955;
-    -webkit-animation: rotateOpacity 1s ease infinite 0.2s;
-    animation: rotateOpacity 1s ease infinite 0.2s;
-    border-radius: 50%;
-    box-sizing: border-box; }
-  .loading .loading .effects {
-    transition: all 0.3s ease; }
-
-.fallback-logo {
-  position: absolute;
-  left: calc(50% - 80px);
-  top: 40%; }
-
-@-webkit-keyframes rotate {
-  0% {
-    transform: rotate(0deg); }
-  100% {
-    transform: rotate(1turn); } }
-
-@keyframes rotate {
-  0% {
-    transform: rotate(0deg); }
-  100% {
-    transform: rotate(1turn); } }
-
-@-webkit-keyframes rotateOpacity {
-  0% {
-    transform: rotate(0deg);
-    opacity: 0.1; }
-  100% {
-    transform: rotate(1turn);
-    opacity: 1; } }
-
-@keyframes rotateOpacity {
-  0% {
-    transform: rotate(0deg);
-    opacity: 0.1; }
-  100% {
-    transform: rotate(1turn);
-    opacity: 1; } }
