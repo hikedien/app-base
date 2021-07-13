@@ -124,8 +124,7 @@ var AppId = {
   APP_NO1: 'APP_NO1',
   INSURANCE_APP: 'INSURANCE_APP',
   SUPPLEMENT_APP: 'SUPPLEMENT_APP',
-  ELITE_APP: 'ELITE_APP',
-  DIVAY_APP: 'DIVAY_APP'
+  TP_BANK_APP: 'TP_BANK_APP'
 };
 
 var API_BASE_URL = 'https://apisit.inon.vn';
@@ -243,7 +242,7 @@ var getExternalAppUrl = function getExternalAppUrl(appId, url) {
     case AppId.SUPPLEMENT_APP:
       return window.location.origin + "/supplement" + url + "?redirectUrl=" + url;
 
-    case AppId.ELITE_APP:
+    case AppId.TP_BANK_APP:
       return "" + window.location.origin + url + "?redirectUrl=" + url;
   }
 };
@@ -258,7 +257,7 @@ var getContextPath = function getContextPath(appId) {
     case AppId.SUPPLEMENT_APP:
       return 'supplement';
 
-    case AppId.ELITE_APP:
+    case AppId.TP_BANK_APP:
       return '';
   }
 };
@@ -517,7 +516,7 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
   HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
   HttpClient.interceptors.request.use(function (config) {
     var appId = store.getState().customizer.appId;
-    var token = appId === AppId.ELITE_APP ? store.getState().auth.guest.authToken : store.getState().auth.authToken;
+    var token = appId === AppId.TP_BANK_APP ? store.getState().auth.guest.authToken : store.getState().auth.authToken;
     var sessionExpireTime = store.getState().auth.sessionExpireTime;
     language = localStorage.getItem('language');
 
@@ -846,7 +845,7 @@ var goBackHomePage = function goBackHomePage() {
       if (appId === AppId.APP_NO1) {
         history.push('/');
       } else {
-        window.location.href = getExternalAppUrl(appId === AppId.ELITE_APP ? AppId.ELITE_APP : AppId.APP_NO1, '/');
+        window.location.href = getExternalAppUrl(appId === AppId.TP_BANK_APP ? AppId.TP_BANK_APP : AppId.APP_NO1, '/');
       }
 
       return Promise.resolve();
@@ -875,14 +874,14 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
         return Promise.resolve(AuthService.checkLoginByToken()).then(function (response) {
           var appId = getState().customizer.appId;
 
-          var _ref = appId === AppId.ELITE_APP ? getState().auth.guest.user : getState().auth.user,
+          var _ref = appId === AppId.TP_BANK_APP ? getState().auth.guest.user : getState().auth.user,
               username = _ref.username;
 
           var _temp = function () {
             if (response.status === API_R_200 && username) {
               return Promise.resolve(AuthService.getUserInfo(username, authToken)).then(function (_AuthService$getUserI) {
                 response = _AuthService$getUserI;
-                var payload = appId === AppId.ELITE_APP ? {
+                var payload = appId === AppId.TP_BANK_APP ? {
                   guest: {
                     authToken: authToken,
                     user: response.data || {}
@@ -1026,8 +1025,8 @@ var socialLogin = function socialLogin(data, loginMethod, openAddInfoPopup) {
             }
           });
           setTimeout(function () {
-            if (getState().customizer.appId !== AppId.ELITE_APP) {
-              window.location.href = getExternalAppUrl(AppId.ELITE_APP, '/');
+            if (getState().customizer.appId !== AppId.TP_BANK_APP) {
+              window.location.href = getExternalAppUrl(AppId.TP_BANK_APP, '/');
             } else {
               history.push('/');
             }
@@ -1295,7 +1294,7 @@ var changeLanguageSetting = function changeLanguageSetting(lang, callBack) {
     try {
       var appId = getState().customizer.appId;
 
-      var _ref4 = appId === AppId.ELITE_APP ? getState().auth.guest.user : getState().auth.user,
+      var _ref4 = appId === AppId.TP_BANK_APP ? getState().auth.guest.user : getState().auth.user,
           _ref4$userSettings = _ref4.userSettings,
           userSettings = _ref4$userSettings === void 0 ? {} : _ref4$userSettings;
 
@@ -1343,7 +1342,7 @@ var verifyPhoneNumber = function verifyPhoneNumber(values) {
 
 var redirectMainApp = function redirectMainApp(isGuest, appId) {
   setTimeout(function () {
-    var mainApp = isGuest ? AppId.ELITE_APP : AppId.APP_NO1;
+    var mainApp = isGuest ? AppId.TP_BANK_APP : AppId.APP_NO1;
 
     if (appId !== mainApp) {
       window.location.href = getExternalAppUrl(mainApp, '/');
@@ -1548,7 +1547,7 @@ var goBackHomePage$1 = function goBackHomePage() {
       if (appId === AppId.APP_NO1) {
         history.push('/');
       } else {
-        window.location.href = getExternalAppUrl(appId === AppId.ELITE_APP ? AppId.ELITE_APP : AppId.APP_NO1, '/');
+        window.location.href = getExternalAppUrl(appId === AppId.TP_BANK_APP ? AppId.TP_BANK_APP : AppId.APP_NO1, '/');
       }
 
       return Promise.resolve();
@@ -3631,7 +3630,7 @@ var mapStateToProps$2 = function mapStateToProps(state) {
   };
 };
 
-var Layout$1 = reactRedux.connect(mapStateToProps$2, {
+reactRedux.connect(mapStateToProps$2, {
   changeTheme: changeTheme,
   collapseSidebar: collapseSidebar,
   changeNavbarColor: changeNavbarColor,
@@ -7705,7 +7704,7 @@ var UserAccountTab = function UserAccountTab() {
       appId = _useSelector.appId;
 
   var _useSelector2 = reactRedux.useSelector(function (state) {
-    return appId !== AppId.ELITE_APP ? state.auth.user : state.auth.guest.user;
+    return appId !== AppId.TP_BANK_APP ? state.auth.user : state.auth.guest.user;
   }),
       _useSelector2$userDet = _useSelector2.userDetails,
       userDetails = _useSelector2$userDet === void 0 ? {} : _useSelector2$userDet,
@@ -8159,7 +8158,7 @@ var ChangePassword = function ChangePassword() {
 
 var ShareWithFriends = function ShareWithFriends() {
   var _useSelector = reactRedux.useSelector(function (state) {
-    return state.customizer.appId === AppId.ELITE_APP ? state.auth.guest : state.auth;
+    return state.customizer.appId === AppId.TP_BANK_APP ? state.auth.guest : state.auth;
   }),
       user = _useSelector.user;
 
@@ -10502,28 +10501,20 @@ var AppRouter = function AppRouter(props) {
       appId = props.appId,
       user = props.user,
       loginStatus = props.loginStatus,
-      isAuthentication = props.isAuthentication,
       guest = props.guest,
       authToken = props.authToken,
       children = props.children,
-      loadNavtigation = props.loadNavtigation,
-      loadUserRoles = props.loadUserRoles,
       setAppId = props.setAppId,
       history = props.history,
       message = props.message;
   React.useEffect(function () {
     setAppId(appId);
     var urlParams = new URLSearchParams(document.location.search);
-    var code = urlParams.get('code') || (appId === AppId.ELITE_APP ? guest.authToken : authToken);
+    var code = urlParams.get('code') || (appId === AppId.TP_BANK_APP ? guest.authToken : authToken);
     var redirectUrl = urlParams.get('redirectUrl');
 
     if (code && loginStatus !== LOGIN_STATUS.SUCCESS) {
       checkLoginStatus(code, redirectUrl);
-    }
-
-    if (code && appId !== AppId.ELITE_APP) {
-      loadNavtigation(appId);
-      loadUserRoles();
     }
   }, [authToken]);
 
@@ -10543,28 +10534,6 @@ var AppRouter = function AppRouter(props) {
     en: _extends({}, messages_en, setMessages(message.en)),
     vi: _extends({}, messages_vi, setMessages(message.vi))
   };
-  var settingRoutes = [{
-    path: 'account-info',
-    component: AccountSettings
-  }, {
-    path: 'change-password',
-    component: AccountSettings
-  }, {
-    path: 'share-with-friends',
-    component: AccountSettings
-  }, {
-    path: 'terms-and-condition',
-    component: GeneralInfo
-  }, {
-    path: 'privacy-policy',
-    component: GeneralInfo
-  }, {
-    path: 'language',
-    component: GeneralInfo
-  }, {
-    path: 'contact',
-    component: GeneralInfo
-  }];
   var landingPageRoutes = [{
     path: 'login'
   }, {
@@ -10592,24 +10561,7 @@ var AppRouter = function AppRouter(props) {
   }, /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
     path: "/",
     render: function render(props) {
-      return isAuthentication && appId !== AppId.ELITE_APP ? /*#__PURE__*/React__default.createElement(Layout$1, _extends({}, props, {
-        appId: appId
-      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, settingRoutes.map(function (item) {
-        return /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
-          key: item.path,
-          path: "/" + item.path,
-          render: function render() {
-            return /*#__PURE__*/React__default.createElement(item.component, {
-              activeTab: item.path
-            });
-          }
-        });
-      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
-        path: "/",
-        render: function render() {
-          return children;
-        }
-      }))) : /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, landingPageRoutes.map(function (item) {
+      return /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, landingPageRoutes.map(function (item) {
         return /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
           key: item.path,
           path: "/" + item.path,
@@ -10619,17 +10571,11 @@ var AppRouter = function AppRouter(props) {
             });
           }
         });
-      }), appId === AppId.ELITE_APP ? /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
+      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
         path: "/",
         render: function render() {
           return children;
         }
-      }) : /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
-        from: "/",
-        to: "/login"
-      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
-        path: "/social-login",
-        component: SocialLogin
       }), /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
         from: "/",
         to: "/"

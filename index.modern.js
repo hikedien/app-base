@@ -50,8 +50,7 @@ const AppId = {
   APP_NO1: 'APP_NO1',
   INSURANCE_APP: 'INSURANCE_APP',
   SUPPLEMENT_APP: 'SUPPLEMENT_APP',
-  ELITE_APP: 'ELITE_APP',
-  DIVAY_APP: 'DIVAY_APP'
+  TP_BANK_APP: 'TP_BANK_APP'
 };
 
 const API_BASE_URL = 'https://apisit.inon.vn';
@@ -169,7 +168,7 @@ const getExternalAppUrl = (appId, url) => {
     case AppId.SUPPLEMENT_APP:
       return `${window.location.origin}/supplement${url}?redirectUrl=${url}`;
 
-    case AppId.ELITE_APP:
+    case AppId.TP_BANK_APP:
       return `${window.location.origin}${url}?redirectUrl=${url}`;
   }
 };
@@ -184,7 +183,7 @@ const getContextPath = appId => {
     case AppId.SUPPLEMENT_APP:
       return 'supplement';
 
-    case AppId.ELITE_APP:
+    case AppId.TP_BANK_APP:
       return '';
   }
 };
@@ -429,7 +428,7 @@ const setUpHttpClient = (store, apiBaseUrl) => {
     const {
       appId
     } = store.getState().customizer;
-    const token = appId === AppId.ELITE_APP ? store.getState().auth.guest.authToken : store.getState().auth.authToken;
+    const token = appId === AppId.TP_BANK_APP ? store.getState().auth.guest.authToken : store.getState().auth.authToken;
     const sessionExpireTime = store.getState().auth.sessionExpireTime;
     language = localStorage.getItem('language');
 
@@ -744,7 +743,7 @@ const goBackHomePage = () => {
     if (appId === AppId.APP_NO1) {
       history.push('/');
     } else {
-      window.location.href = getExternalAppUrl(appId === AppId.ELITE_APP ? AppId.ELITE_APP : AppId.APP_NO1, '/');
+      window.location.href = getExternalAppUrl(appId === AppId.TP_BANK_APP ? AppId.TP_BANK_APP : AppId.APP_NO1, '/');
     }
   };
 };
@@ -770,11 +769,11 @@ const checkLoginStatus = (authToken, redirectUrl) => {
       } = getState().customizer;
       const {
         username
-      } = appId === AppId.ELITE_APP ? getState().auth.guest.user : getState().auth.user;
+      } = appId === AppId.TP_BANK_APP ? getState().auth.guest.user : getState().auth.user;
 
       if (response.status === API_R_200 && username) {
         response = await AuthService.getUserInfo(username, authToken);
-        const payload = appId === AppId.ELITE_APP ? {
+        const payload = appId === AppId.TP_BANK_APP ? {
           guest: {
             authToken,
             user: response.data || {}
@@ -902,8 +901,8 @@ const socialLogin = (data, loginMethod, openAddInfoPopup) => {
       }
     });
     setTimeout(() => {
-      if (getState().customizer.appId !== AppId.ELITE_APP) {
-        window.location.href = getExternalAppUrl(AppId.ELITE_APP, '/');
+      if (getState().customizer.appId !== AppId.TP_BANK_APP) {
+        window.location.href = getExternalAppUrl(AppId.TP_BANK_APP, '/');
       } else {
         history.push('/');
       }
@@ -1117,7 +1116,7 @@ const changeLanguageSetting = (lang, callBack) => {
     } = getState().customizer;
     const {
       userSettings = {}
-    } = appId === AppId.ELITE_APP ? getState().auth.guest.user : getState().auth.user;
+    } = appId === AppId.TP_BANK_APP ? getState().auth.guest.user : getState().auth.user;
     const value = { ...userSettings,
       language: lang.toUpperCase()
     };
@@ -1154,7 +1153,7 @@ const verifyPhoneNumber = values => {
 
 const redirectMainApp = (isGuest, appId) => {
   setTimeout(() => {
-    const mainApp = isGuest ? AppId.ELITE_APP : AppId.APP_NO1;
+    const mainApp = isGuest ? AppId.TP_BANK_APP : AppId.APP_NO1;
 
     if (appId !== mainApp) {
       window.location.href = getExternalAppUrl(mainApp, '/');
@@ -1358,7 +1357,7 @@ const goBackHomePage$1 = () => {
     if (appId === AppId.APP_NO1) {
       history.push('/');
     } else {
-      window.location.href = getExternalAppUrl(appId === AppId.ELITE_APP ? AppId.ELITE_APP : AppId.APP_NO1, '/');
+      window.location.href = getExternalAppUrl(appId === AppId.TP_BANK_APP ? AppId.TP_BANK_APP : AppId.APP_NO1, '/');
     }
   };
 };
@@ -3278,7 +3277,7 @@ const mapStateToProps$2 = state => {
   };
 };
 
-var Layout$1 = connect(mapStateToProps$2, {
+connect(mapStateToProps$2, {
   changeTheme,
   collapseSidebar,
   changeNavbarColor,
@@ -7270,7 +7269,7 @@ const UserAccountTab = () => {
     userDetails = {},
     userSettings = {},
     ...user
-  } = useSelector(state => appId !== AppId.ELITE_APP ? state.auth.user : state.auth.guest.user);
+  } = useSelector(state => appId !== AppId.TP_BANK_APP ? state.auth.user : state.auth.guest.user);
   const dispatch = useDispatch();
   const {
     cities
@@ -7691,7 +7690,7 @@ const ChangePassword = () => {
 const ShareWithFriends = () => {
   const {
     user
-  } = useSelector(state => state.customizer.appId === AppId.ELITE_APP ? state.auth.guest : state.auth);
+  } = useSelector(state => state.customizer.appId === AppId.TP_BANK_APP ? state.auth.guest : state.auth);
   const qrCode = useRef();
   const shareUrl = `${document.location.origin}/home?refId=${user.username}`;
   useEffect(() => {
@@ -9849,16 +9848,11 @@ const AppRouter = props => {
   useEffect(() => {
     setAppId(appId);
     const urlParams = new URLSearchParams(document.location.search);
-    const code = urlParams.get('code') || (appId === AppId.ELITE_APP ? guest.authToken : authToken);
+    const code = urlParams.get('code') || (appId === AppId.TP_BANK_APP ? guest.authToken : authToken);
     const redirectUrl = urlParams.get('redirectUrl');
 
     if (code && loginStatus !== LOGIN_STATUS.SUCCESS) {
       checkLoginStatus(code, redirectUrl);
-    }
-
-    if (code && appId !== AppId.ELITE_APP) {
-      loadNavtigation(appId);
-      loadUserRoles();
     }
   }, [authToken]);
 
@@ -9878,28 +9872,6 @@ const AppRouter = props => {
       ...setMessages(message.vi)
     }
   };
-  const settingRoutes = [{
-    path: 'account-info',
-    component: AccountSettings
-  }, {
-    path: 'change-password',
-    component: AccountSettings
-  }, {
-    path: 'share-with-friends',
-    component: AccountSettings
-  }, {
-    path: 'terms-and-condition',
-    component: GeneralInfo
-  }, {
-    path: 'privacy-policy',
-    component: GeneralInfo
-  }, {
-    path: 'language',
-    component: GeneralInfo
-  }, {
-    path: 'contact',
-    component: GeneralInfo
-  }];
   const landingPageRoutes = [{
     path: 'login'
   }, {
@@ -9926,32 +9898,15 @@ const AppRouter = props => {
     history: history
   }, /*#__PURE__*/React.createElement(Switch, null, /*#__PURE__*/React.createElement(Route, {
     path: "/",
-    render: props => isAuthentication && appId !== AppId.ELITE_APP ? /*#__PURE__*/React.createElement(Layout$1, { ...props,
-      appId
-    }, /*#__PURE__*/React.createElement(Switch, null, settingRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
-      key: item.path,
-      path: `/${item.path}`,
-      render: () => /*#__PURE__*/React.createElement(item.component, {
-        activeTab: item.path
-      })
-    })), /*#__PURE__*/React.createElement(Route, {
-      path: "/",
-      render: () => children
-    }))) : /*#__PURE__*/React.createElement(Switch, null, landingPageRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
+    render: props => /*#__PURE__*/React.createElement(Switch, null, landingPageRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
       key: item.path,
       path: `/${item.path}`,
       render: () => /*#__PURE__*/React.createElement(LandingPage, {
         activeTab: item.path
       })
-    })), appId === AppId.ELITE_APP ? /*#__PURE__*/React.createElement(Route, {
+    })), /*#__PURE__*/React.createElement(Route, {
       path: "/",
       render: () => children
-    }) : /*#__PURE__*/React.createElement(Redirect, {
-      from: "/",
-      to: "/login"
-    }), /*#__PURE__*/React.createElement(Route, {
-      path: "/social-login",
-      component: SocialLogin
     }), /*#__PURE__*/React.createElement(Redirect, {
       from: "/",
       to: "/"
