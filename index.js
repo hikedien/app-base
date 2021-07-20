@@ -166,6 +166,8 @@ var PERSONAL_ID_REGEX = /^(\d{9}|\d{12})$/;
 var CITIZEN_INDENTIFY_REGEX = /^(\d{12})$/;
 var PASSPORT_REGEX = /^(?!^0+$)[a-zA-Z0-9]{3,20}$/;
 var NAME_REGEX = /^([ÀÁÂÃÈÉÊẾÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêếềìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹý0-9A-Za-z_. ])+$/g;
+var TERMS_PDF = 'https://sit2.inon.vn/resources/pdf/terms-and-conditions.pdf';
+var POLICY_PDF = 'https://sit2.inon.vn/resources/pdf/privacy-policy.pdf';
 var FIRE_BASE_CONFIGS = {
   apiKey: "AIzaSyCvWX-pLEPOxjwp2AJq3_t11JQjRMKtaT8",
   authDomain: "inonvn.firebaseapp.com",
@@ -353,6 +355,8 @@ var appConfigs = {
   CITIZEN_INDENTIFY_REGEX: CITIZEN_INDENTIFY_REGEX,
   PASSPORT_REGEX: PASSPORT_REGEX,
   NAME_REGEX: NAME_REGEX,
+  TERMS_PDF: TERMS_PDF,
+  POLICY_PDF: POLICY_PDF,
   FIRE_BASE_CONFIGS: FIRE_BASE_CONFIGS,
   AUTHORITIES: AUTHORITIES,
   LOGIN_METHODS: LOGIN_METHODS,
@@ -2159,10 +2163,8 @@ var UserDropdown = function UserDropdown() {
     divider: true
   }), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
     tag: "a",
-    href: "#",
-    onClick: function onClick(e) {
-      return handleNavigation(e, '/terms-and-condition');
-    }
+    target: '_blank',
+    href: TERMS_PDF
   }, /*#__PURE__*/React__default.createElement(Icon.FileText, {
     size: 14,
     className: "mr-50"
@@ -2172,10 +2174,8 @@ var UserDropdown = function UserDropdown() {
     id: "setting.termAndCondition"
   }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
     tag: "a",
-    href: "#",
-    onClick: function onClick(e) {
-      return handleNavigation(e, '/privacy-policy');
-    }
+    target: '_blank',
+    href: POLICY_PDF
   }, /*#__PURE__*/React__default.createElement(Icon.Shield, {
     size: 14,
     className: "mr-50"
@@ -3942,8 +3942,8 @@ var messages_en = {
 	"generalInfo.policy.11.1.2": "11.1.2  Gửi thư điện tử cho chúng tôi theo địa chỉ: <b>lienhe@inon.vn</b>",
 	"generalInfo.policy.11.1.3": "11.1.3  Hoặc liên hệ trực tiếp với chúng tôi tại văn phòng: <b>Phòng 301A, Tòa nhà Thiên Bảo, số 47-49 Lê Văn Hưu, Phường Ngô Thì Nhậm, Quận Hai Bà Trưng, Thành phố Hà Nội.</b>",
 	"generalInfo.terms.1": "1. CÁC ĐIỀU KHOẢN VÀ ĐIỀU KIỆN SỬ DỤNG",
-	"generalInfo.terms.1.1": "1.1  Trang thông tin điện tử này <b>(www.inon.vn) do Công Ty TNHH NPG NAM PHONG - Đơn vị chủ quản của Hệ thống và Thương hiệu InOn (sau đây gọi tắt là “InOn”)</b> hoàn toàn sở hữu và điều hành.",
-	"generalInfo.terms.1.2": "1.2  Việc sử dụng trang thông tin điện tử này phụ thuộc vào các điều khoản và điều kiện cụ thể sau: (A) các điều khoản và điều kiện được nêu dưới đây và (B) mọi điều khoản và điều kiện bổ sung cụ thể tùy từng thời điểm để điều chỉnh việc sử dụng, và truy cập vào một số mục của trang thông tin điện tử này (và các điều khoản bổ sung đó sẽ có hiệu lực ràng buộc khi chúng được đăng tải trên trang thông tin điện tử này) <b>(\"Điều Khoản và Điều Kiện\")</b>.",
+	"generalInfo.terms.1.1": "1.1  Trang thông tin điện tử này <b>(www.inon.vn)</b> cùng các tên miền phụ (x.inon.vn,...) và ứng dụng di động <b>“InOn” (sau đây gọi tắt là “Hệ thống\nInOn”)</b> do <b>Công ty Cổ phần InOn (sau đây gọi tắt là “InOn”) - Đơn vị chủ quản của Hệ thống và Thương hiệu InOn<b/> toàn quyền sở hữu và điều\nhành.\n",
+	"generalInfo.terms.1.2": "1.2  Việc sử dụng <b>Hệ thống InOn</b> này phụ thuộc vào các điều khoản và điều kiện cụ thể sau: (A) các điều khoản và điều kiện được nêu dưới đây và (B) mọi điều khoản và điều kiện bổ sung cụ thể tùy từng thời điểm để điều chỉnh việc sử dụng, và truy cập vào một số mục của trang thông tin điện tử này (và các điều khoản bổ sung đó sẽ có hiệu lực ràng buộc khi chúng được đăng tải trên <b>Hệ thống InOn</b> này) <b>(\"Điều Khoản và Điều Kiện\")</b>.",
 	"generalInfo.terms.1.3": "1.3  Khi sử dụng trang thông tin điện tử này, bạn đã đồng ý với các Điều Khoản và Điều Kiện, và sự đồng ý của bạn cùng với các Điều Khoản và Điều Kiện sẽ cấu thành một hợp đồng có giá trị ràng buộc về pháp lý giữa bạn và <b>InOn</b>. Vì thế, bạn vui lòng đọc kỹ các Điều Khoản và Điều Kiện của trang thông tin điện tử này.",
 	"generalInfo.terms.2": "2. CÁC HẠN CHẾ VÀ SỬ DỤNG CÁC THÔNG TIN TÀI LIỆU",
 	"generalInfo.terms.2.1": "2.1  Trừ khi được <b>InOn</b> đồng ý bằng văn bản một cách khác đi, bạn sẽ không sao chép, sao lại, tái bản, đưa lên mạng, công bố, chuyển, tạo liên kết đến hoặc phân phối dưới bất cứ hình thức nào các thông tin và/hoặc tài liệu đã được đăng tải trên trang thông tin điện tử này.",
@@ -4313,8 +4313,8 @@ var messages_vi = {
 	"generalInfo.policy.11.1.2": "11.1.2  Gửi thư điện tử cho chúng tôi theo địa chỉ: <b>lienhe@inon.vn</b>",
 	"generalInfo.policy.11.1.3": "11.1.3  Hoặc liên hệ trực tiếp với chúng tôi tại văn phòng: <b>Phòng 301A, Tòa nhà Thiên Bảo, số 47-49 Lê Văn Hưu, Phường Ngô Thì Nhậm, Quận Hai Bà Trưng, Thành phố Hà Nội.</b>",
 	"generalInfo.terms.1": "1. CÁC ĐIỀU KHOẢN VÀ ĐIỀU KIỆN SỬ DỤNG",
-	"generalInfo.terms.1.1": "1.1  Trang thông tin điện tử này <b>(www.inon.vn) do Công Ty TNHH NPG NAM PHONG - Đơn vị chủ quản của Hệ thống và Thương hiệu InOn (sau đây gọi tắt là “InOn”)</b> hoàn toàn sở hữu và điều hành.",
-	"generalInfo.terms.1.2": "1.2  Việc sử dụng trang thông tin điện tử này phụ thuộc vào các điều khoản và điều kiện cụ thể sau: (A) các điều khoản và điều kiện được nêu dưới đây và (B) mọi điều khoản và điều kiện bổ sung cụ thể tùy từng thời điểm để điều chỉnh việc sử dụng, và truy cập vào một số mục của trang thông tin điện tử này (và các điều khoản bổ sung đó sẽ có hiệu lực ràng buộc khi chúng được đăng tải trên trang thông tin điện tử này) <b>(\"Điều Khoản và Điều Kiện\")</b>.",
+	"generalInfo.terms.1.1": "1.1  Trang thông tin điện tử này <b>(www.inon.vn)</b> cùng các tên miền phụ (x.inon.vn,...) và ứng dụng di động <b>“InOn” (sau đây gọi tắt là “Hệ thống\nInOn”)</b> do <b>Công ty Cổ phần InOn (sau đây gọi tắt là “InOn”) - Đơn vị chủ quản của Hệ thống và Thương hiệu InOn<b/> toàn quyền sở hữu và điều\nhành.\n",
+	"generalInfo.terms.1.2": "1.2  Việc sử dụng <b>Hệ thống InOn</b> này phụ thuộc vào các điều khoản và điều kiện cụ thể sau: (A) các điều khoản và điều kiện được nêu dưới đây và (B) mọi điều khoản và điều kiện bổ sung cụ thể tùy từng thời điểm để điều chỉnh việc sử dụng, và truy cập vào một số mục của trang thông tin điện tử này (và các điều khoản bổ sung đó sẽ có hiệu lực ràng buộc khi chúng được đăng tải trên <b>Hệ thống InOn</b> này) <b>(\"Điều Khoản và Điều Kiện\")</b>.",
 	"generalInfo.terms.1.3": "1.3  Khi sử dụng trang thông tin điện tử này, bạn đã đồng ý với các Điều Khoản và Điều Kiện, và sự đồng ý của bạn cùng với các Điều Khoản và Điều Kiện sẽ cấu thành một hợp đồng có giá trị ràng buộc về pháp lý giữa bạn và <b>InOn</b>. Vì thế, bạn vui lòng đọc kỹ các Điều Khoản và Điều Kiện của trang thông tin điện tử này.",
 	"generalInfo.terms.2": "2. CÁC HẠN CHẾ VÀ SỬ DỤNG CÁC THÔNG TIN TÀI LIỆU",
 	"generalInfo.terms.2.1": "2.1  Trừ khi được <b>InOn</b> đồng ý bằng văn bản một cách khác đi, bạn sẽ không sao chép, sao lại, tái bản, đưa lên mạng, công bố, chuyển, tạo liên kết đến hoặc phân phối dưới bất cứ hình thức nào các thông tin và/hoặc tài liệu đã được đăng tải trên trang thông tin điện tử này.",
@@ -8298,280 +8298,6 @@ var AccountSettings = function AccountSettings(props) {
   }, /*#__PURE__*/React__default.createElement(ShareWithFriends, null))))))));
 };
 
-var TERMS = [{
-  id: '1',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }]
-}, {
-  id: '2',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }]
-}, {
-  id: '3',
-  items: [{
-    id: '1'
-  }]
-}, {
-  id: '4',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }]
-}, {
-  id: '5',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }, {
-    id: '4'
-  }, {
-    id: '5'
-  }]
-}, {
-  id: '6',
-  items: [{
-    id: '1'
-  }]
-}, {
-  id: '7',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }]
-}, {
-  id: '8',
-  items: [{
-    id: '1',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }, {
-      id: '3'
-    }, {
-      id: '4'
-    }]
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }, {
-    id: '4'
-  }]
-}, {
-  id: '9',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }, {
-      id: '3'
-    }, {
-      id: '4'
-    }]
-  }]
-}, {
-  id: '10',
-  items: [{
-    id: '1',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }, {
-      id: '3'
-    }]
-  }]
-}, {
-  id: '11',
-  items: [{
-    id: '1'
-  }]
-}, {
-  id: '12',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }]
-}, {
-  id: '13',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }]
-}, {
-  id: '14',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }]
-}];
-
-var InfoItems = function InfoItems(_ref) {
-  var data = _ref.data,
-      type = _ref.type;
-  var intl = reactIntl.useIntl();
-
-  var _useState = React.useState({
-    collapseID: '',
-    status: 'Closed'
-  }),
-      state = _useState[0],
-      setState = _useState[1];
-
-  var toggleCollapse = function toggleCollapse(collapseID) {
-    collapseID = state.collapseID !== collapseID ? collapseID : '';
-    setState(_extends({}, state, {
-      collapseID: collapseID
-    }));
-  };
-
-  var _onEntered = function onEntered(id) {
-    if (id === state.collapseID) setState(_extends({}, state, {
-      status: 'Opened'
-    }));
-  };
-
-  var _onEntering = function onEntering(id) {
-    if (id === state.collapseID) setState(_extends({}, state, {
-      status: 'Opening...'
-    }));
-  };
-
-  var _onExited = function onExited(id) {
-    if (id === state.collapseID) setState(_extends({}, state, {
-      status: 'Closed'
-    }));
-  };
-
-  var _onExiting = function onExiting(id) {
-    if (id === state.collapseID) setState(_extends({}, state, {
-      status: 'Closing...'
-    }));
-  };
-
-  return data.map(function (item1) {
-    return /*#__PURE__*/React__default.createElement("div", {
-      className: "collapse-margin",
-      key: item1.id
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Card, {
-      onClick: function onClick() {
-        return toggleCollapse(item1.id);
-      },
-      className: classnames({
-        'collapse-collapsed': state.status === 'Closed' && state.collapseID === item1.id,
-        'collapse-shown': state.status === 'Opened' && state.collapseID === item1.id,
-        closing: state.status === 'Closing...' && state.collapseID === item1.id,
-        opening: state.status === 'Opening...' && state.collapseID === item1.id
-      })
-    }, /*#__PURE__*/React__default.createElement(reactstrap.CardHeader, {
-      className: "p-1"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.CardTitle, {
-      className: "lead collapse-title collapsed col-11 p-0\""
-    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "generalInfo." + type + "." + item1.id
-    })), /*#__PURE__*/React__default.createElement(Icon.ChevronDown, {
-      size: 15,
-      className: "collapse-icon"
-    })), /*#__PURE__*/React__default.createElement(reactstrap.Collapse, {
-      isOpen: item1.id === state.collapseID,
-      onEntering: function onEntering() {
-        return _onEntering(item1.id);
-      },
-      onEntered: function onEntered() {
-        return _onEntered(item1.id);
-      },
-      onExiting: function onExiting() {
-        return _onExiting(item1.id);
-      },
-      onExited: function onExited() {
-        return _onExited(item1.id);
-      }
-    }, /*#__PURE__*/React__default.createElement(reactstrap.CardBody, null, item1.items.map(function (item2) {
-      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("p", {
-        className: "ml-1",
-        key: item2.id,
-        dangerouslySetInnerHTML: {
-          __html: intl.formatMessage({
-            id: "generalInfo." + type + "." + item1.id + "." + item2.id
-          })
-        }
-      }), item2.items ? item2.items.map(function (item3) {
-        return /*#__PURE__*/React__default.createElement("p", {
-          className: "ml-2",
-          key: item3.id,
-          dangerouslySetInnerHTML: {
-            __html: intl.formatMessage({
-              id: "generalInfo." + type + "." + item1.id + "." + item2.id + "." + item3.id
-            })
-          }
-        });
-      }) : '');
-    })))));
-  });
-};
-
-var Terms = function Terms() {
-  var dispatch = reactRedux.useDispatch();
-
-  var onClickBackHome = function onClickBackHome() {
-    dispatch(showConfirmAlert$1({
-      title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-        id: "common.home"
-      }),
-      isShow: true,
-      content: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-        id: "common.backHome.confirmMessage"
-      }),
-      onConfirm: function onConfirm() {
-        dispatch(goBackHomePage$1());
-      }
-    }));
-  };
-
-  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Card, null, /*#__PURE__*/React__default.createElement(reactstrap.CardBody, null, /*#__PURE__*/React__default.createElement("div", {
-    className: "vx-collapse"
-  }, /*#__PURE__*/React__default.createElement(InfoItems, {
-    data: TERMS,
-    type: "terms"
-  })), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-    className: "d-flex justify-content-end flex-wrap mt-2",
-    sm: "12"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-    type: "button",
-    color: "secondary",
-    onClick: onClickBackHome
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "common.home"
-  })))))));
-};
-
 var Radio = /*#__PURE__*/function (_React$Component) {
   _inheritsLoose(Radio, _React$Component);
 
@@ -8695,197 +8421,6 @@ var LanguageTab = function LanguageTab() {
       id: "common.saveChanges"
     }))));
   });
-};
-
-var POLICIES = [{
-  id: '1',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }, {
-    id: '4'
-  }, {
-    id: '5'
-  }, {
-    id: '6'
-  }, {
-    id: '7'
-  }]
-}, {
-  id: '2',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }, {
-    id: '4'
-  }, {
-    id: '5'
-  }, {
-    id: '6'
-  }, {
-    id: '7'
-  }, {
-    id: '8'
-  }, {
-    id: '9'
-  }]
-}, {
-  id: '3',
-  items: [{
-    id: '1'
-  }, {
-    id: '2',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }]
-  }, {
-    id: '3'
-  }, {
-    id: '4'
-  }]
-}, {
-  id: '4',
-  items: [{
-    id: '1',
-    items: [{
-      id: '1'
-    }]
-  }, {
-    id: '2'
-  }, {
-    id: '3',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }]
-  }, {
-    id: '4',
-    items: [{
-      id: '1'
-    }]
-  }]
-}, {
-  id: '5',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }]
-}, {
-  id: '6',
-  items: [{
-    id: '1'
-  }]
-}, {
-  id: '7',
-  items: [{
-    id: '1'
-  }]
-}, {
-  id: '8',
-  items: [{
-    id: '1'
-  }, {
-    id: '2',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }, {
-      id: '3'
-    }, {
-      id: '4'
-    }, {
-      id: '5'
-    }, {
-      id: '6'
-    }, {
-      id: '7'
-    }]
-  }, {
-    id: '3'
-  }, {
-    id: '4'
-  }]
-}, {
-  id: '9',
-  items: [{
-    id: '1',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }]
-  }, {
-    id: '2'
-  }]
-}, {
-  id: '10',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }]
-}, {
-  id: '11',
-  items: [{
-    id: '1',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }, {
-      id: '3'
-    }]
-  }]
-}];
-
-var Policies = function Policies() {
-  var dispatch = reactRedux.useDispatch();
-
-  var onClickBackHome = function onClickBackHome() {
-    dispatch(showConfirmAlert$1({
-      title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-        id: "common.home"
-      }),
-      isShow: true,
-      content: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-        id: "common.backHome.confirmMessage"
-      }),
-      onConfirm: function onConfirm() {
-        dispatch(goBackHomePage$1());
-      }
-    }));
-  };
-
-  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Card, null, /*#__PURE__*/React__default.createElement(reactstrap.CardBody, null, /*#__PURE__*/React__default.createElement("div", {
-    className: "vx-collapse"
-  }, /*#__PURE__*/React__default.createElement(InfoItems, {
-    data: POLICIES,
-    type: "policy"
-  })), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-    className: "d-flex justify-content-end flex-wrap mt-2",
-    sm: "12"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-    type: "button",
-    color: "secondary",
-    onClick: onClickBackHome
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "common.home"
-  })))))));
 };
 
 function useDeviceDetect() {
@@ -9015,32 +8550,6 @@ var GeneralInfo = function GeneralInfo(props) {
     tabs: true
   }, /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
     className: classnames({
-      active: activeTab === 'terms-and-condition'
-    }),
-    onClick: function onClick() {
-      history.push('/terms-and-condition');
-    }
-  }, /*#__PURE__*/React__default.createElement(Icon.FileText, {
-    size: 16
-  }), /*#__PURE__*/React__default.createElement("span", {
-    className: "align-middle ml-50"
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "setting.termAndCondition"
-  })))), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
-    className: classnames({
-      active: activeTab === 'privacy-policy'
-    }),
-    onClick: function onClick() {
-      history.push('/privacy-policy');
-    }
-  }, /*#__PURE__*/React__default.createElement(Icon.Shield, {
-    size: 16
-  }), /*#__PURE__*/React__default.createElement("span", {
-    className: "align-middle ml-50"
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "setting.privacyPolicy"
-  })))), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
-    className: classnames({
       active: activeTab === 'language'
     }),
     onClick: function onClick() {
@@ -9068,10 +8577,6 @@ var GeneralInfo = function GeneralInfo(props) {
   }))))), /*#__PURE__*/React__default.createElement(reactstrap.TabContent, {
     activeTab: activeTab
   }, /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
-    tabId: "terms-and-condition"
-  }, /*#__PURE__*/React__default.createElement(Terms, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
-    tabId: "privacy-policy"
-  }, /*#__PURE__*/React__default.createElement(Policies, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
     tabId: "language"
   }, /*#__PURE__*/React__default.createElement(LanguageTab, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
     tabId: "contact"
@@ -9424,15 +8929,14 @@ var Login = function Login() {
   }),
       isGuest = _useSelector.isGuest;
 
-  var loginStatus = reactRedux.useSelector(function (state) {
-    return state.auth.loginStatus;
-  });
   React.useEffect(function () {
     var user = JSON.parse(localStorage.getItem(REMEMBER_ME_TOKEN));
 
     if (user) {
       setRememberMe(user);
     }
+
+    dispatch(logoutAction());
   }, []);
 
   var onSubmit = function onSubmit(values, actions) {
@@ -10485,7 +9989,8 @@ var ConfirmAlert = function ConfirmAlert() {
     showCancel: true,
     reverseButtons: true,
     btnSize: "md",
-    cancelBtnBsStyle: "secondary",
+    cancelBtnCssClass: "custom-cancel-btn",
+    confirmBtnCssClass: "custom-confirm-btn",
     confirmBtnText: confirmBtnText || intl.formatMessage({
       id: 'common.ok'
     }),
@@ -10494,7 +9999,9 @@ var ConfirmAlert = function ConfirmAlert() {
     }),
     onConfirm: onClickConfirm,
     onCancel: onClickCancel
-  }, otherConfigs), content);
+  }, otherConfigs), /*#__PURE__*/React__default.createElement("div", {
+    className: "content-custom-color"
+  }, content), content);
 };
 
 var AppRouter = function AppRouter(props) {
