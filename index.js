@@ -925,6 +925,9 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
 var loginAction = function loginAction(user) {
   return function (dispatch, getState) {
     try {
+      dispatch({
+        type: LOGOUT_ACTION
+      });
       user.rememberMe = user.isRemeberMe;
       return Promise.resolve(AuthService.login(user)).then(function (response) {
         var isGuest = getState().auth.isGuest;
@@ -8935,8 +8938,6 @@ var Login = function Login() {
     if (user) {
       setRememberMe(user);
     }
-
-    dispatch(logoutAction());
   }, []);
 
   var onSubmit = function onSubmit(values, actions) {
@@ -9141,7 +9142,7 @@ var Register = function Register() {
   };
 
   var onChangeFullName = function onChangeFullName(e, form) {
-    var value = e.target.value.replace(/[^\w\s]/gi, '');
+    var value = e.target.value.replace(/[^0-9a-zàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ\s]/gi, '');
     form.setFieldValue('fullName', value);
   };
 

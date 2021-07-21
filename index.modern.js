@@ -806,6 +806,9 @@ const checkLoginStatus = (authToken, redirectUrl) => {
 };
 const loginAction = user => {
   return async (dispatch, getState) => {
+    dispatch({
+      type: LOGOUT_ACTION
+    });
     user.rememberMe = user.isRemeberMe;
     let response = await AuthService.login(user);
     const {
@@ -8385,8 +8388,6 @@ const Login = () => {
     if (user) {
       setRememberMe(user);
     }
-
-    dispatch(logoutAction());
   }, []);
 
   const onSubmit = (values, actions) => {
@@ -8561,7 +8562,7 @@ const Register = () => {
   };
 
   const onChangeFullName = (e, form) => {
-    const value = e.target.value.replace(/[^\w\s]/gi, '');
+    const value = e.target.value.replace(/[^0-9a-zàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ\s]/gi, '');
     form.setFieldValue('fullName', value);
   };
 
