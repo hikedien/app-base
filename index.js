@@ -167,6 +167,8 @@ var PERSONAL_ID_REGEX = /^(\d{9}|\d{12})$/;
 var CITIZEN_INDENTIFY_REGEX = /^(\d{12})$/;
 var PASSPORT_REGEX = /^(?!^0+$)[a-zA-Z0-9]{3,20}$/;
 var NAME_REGEX = /^([ÀÁÂÃÈÉÊẾÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêếềìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹý0-9A-Za-z_. ])+$/g;
+var TERMS_PDF = 'https://sit2.inon.vn/resources/pdf/terms-and-conditions.pdf';
+var POLICY_PDF = 'https://sit2.inon.vn/resources/pdf/privacy-policy.pdf';
 var FIRE_BASE_CONFIGS = {
   apiKey: "AIzaSyCvWX-pLEPOxjwp2AJq3_t11JQjRMKtaT8",
   authDomain: "inonvn.firebaseapp.com",
@@ -353,6 +355,8 @@ var appConfigs = {
   CITIZEN_INDENTIFY_REGEX: CITIZEN_INDENTIFY_REGEX,
   PASSPORT_REGEX: PASSPORT_REGEX,
   NAME_REGEX: NAME_REGEX,
+  TERMS_PDF: TERMS_PDF,
+  POLICY_PDF: POLICY_PDF,
   FIRE_BASE_CONFIGS: FIRE_BASE_CONFIGS,
   AUTHORITIES: AUTHORITIES,
   LOGIN_METHODS: LOGIN_METHODS,
@@ -921,6 +925,9 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
 var loginAction = function loginAction(user) {
   return function (dispatch, getState) {
     try {
+      dispatch({
+        type: LOGOUT_ACTION
+      });
       user.rememberMe = user.isRemeberMe;
       return Promise.resolve(AuthService.login(user)).then(function (response) {
         var isGuest = getState().auth.isGuest;
@@ -2159,10 +2166,8 @@ var UserDropdown = function UserDropdown() {
     divider: true
   }), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
     tag: "a",
-    href: "#",
-    onClick: function onClick(e) {
-      return handleNavigation(e, '/terms-and-condition');
-    }
+    target: '_blank',
+    href: TERMS_PDF
   }, /*#__PURE__*/React__default.createElement(Icon.FileText, {
     size: 14,
     className: "mr-50"
@@ -2172,10 +2177,8 @@ var UserDropdown = function UserDropdown() {
     id: "setting.termAndCondition"
   }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
     tag: "a",
-    href: "#",
-    onClick: function onClick(e) {
-      return handleNavigation(e, '/privacy-policy');
-    }
+    target: '_blank',
+    href: POLICY_PDF
   }, /*#__PURE__*/React__default.createElement(Icon.Shield, {
     size: 14,
     className: "mr-50"
@@ -3942,8 +3945,8 @@ var messages_en = {
 	"generalInfo.policy.11.1.2": "11.1.2  Gửi thư điện tử cho chúng tôi theo địa chỉ: <b>lienhe@inon.vn</b>",
 	"generalInfo.policy.11.1.3": "11.1.3  Hoặc liên hệ trực tiếp với chúng tôi tại văn phòng: <b>Phòng 301A, Tòa nhà Thiên Bảo, số 47-49 Lê Văn Hưu, Phường Ngô Thì Nhậm, Quận Hai Bà Trưng, Thành phố Hà Nội.</b>",
 	"generalInfo.terms.1": "1. CÁC ĐIỀU KHOẢN VÀ ĐIỀU KIỆN SỬ DỤNG",
-	"generalInfo.terms.1.1": "1.1  Trang thông tin điện tử này <b>(www.inon.vn) do Công Ty TNHH NPG NAM PHONG - Đơn vị chủ quản của Hệ thống và Thương hiệu InOn (sau đây gọi tắt là “InOn”)</b> hoàn toàn sở hữu và điều hành.",
-	"generalInfo.terms.1.2": "1.2  Việc sử dụng trang thông tin điện tử này phụ thuộc vào các điều khoản và điều kiện cụ thể sau: (A) các điều khoản và điều kiện được nêu dưới đây và (B) mọi điều khoản và điều kiện bổ sung cụ thể tùy từng thời điểm để điều chỉnh việc sử dụng, và truy cập vào một số mục của trang thông tin điện tử này (và các điều khoản bổ sung đó sẽ có hiệu lực ràng buộc khi chúng được đăng tải trên trang thông tin điện tử này) <b>(\"Điều Khoản và Điều Kiện\")</b>.",
+	"generalInfo.terms.1.1": "1.1  Trang thông tin điện tử này <b>(www.inon.vn)</b> cùng các tên miền phụ (x.inon.vn,...) và ứng dụng di động <b>“InOn” (sau đây gọi tắt là “Hệ thống\nInOn”)</b> do <b>Công ty Cổ phần InOn (sau đây gọi tắt là “InOn”) - Đơn vị chủ quản của Hệ thống và Thương hiệu InOn<b/> toàn quyền sở hữu và điều\nhành.\n",
+	"generalInfo.terms.1.2": "1.2  Việc sử dụng <b>Hệ thống InOn</b> này phụ thuộc vào các điều khoản và điều kiện cụ thể sau: (A) các điều khoản và điều kiện được nêu dưới đây và (B) mọi điều khoản và điều kiện bổ sung cụ thể tùy từng thời điểm để điều chỉnh việc sử dụng, và truy cập vào một số mục của trang thông tin điện tử này (và các điều khoản bổ sung đó sẽ có hiệu lực ràng buộc khi chúng được đăng tải trên <b>Hệ thống InOn</b> này) <b>(\"Điều Khoản và Điều Kiện\")</b>.",
 	"generalInfo.terms.1.3": "1.3  Khi sử dụng trang thông tin điện tử này, bạn đã đồng ý với các Điều Khoản và Điều Kiện, và sự đồng ý của bạn cùng với các Điều Khoản và Điều Kiện sẽ cấu thành một hợp đồng có giá trị ràng buộc về pháp lý giữa bạn và <b>InOn</b>. Vì thế, bạn vui lòng đọc kỹ các Điều Khoản và Điều Kiện của trang thông tin điện tử này.",
 	"generalInfo.terms.2": "2. CÁC HẠN CHẾ VÀ SỬ DỤNG CÁC THÔNG TIN TÀI LIỆU",
 	"generalInfo.terms.2.1": "2.1  Trừ khi được <b>InOn</b> đồng ý bằng văn bản một cách khác đi, bạn sẽ không sao chép, sao lại, tái bản, đưa lên mạng, công bố, chuyển, tạo liên kết đến hoặc phân phối dưới bất cứ hình thức nào các thông tin và/hoặc tài liệu đã được đăng tải trên trang thông tin điện tử này.",
@@ -4313,8 +4316,8 @@ var messages_vi = {
 	"generalInfo.policy.11.1.2": "11.1.2  Gửi thư điện tử cho chúng tôi theo địa chỉ: <b>lienhe@inon.vn</b>",
 	"generalInfo.policy.11.1.3": "11.1.3  Hoặc liên hệ trực tiếp với chúng tôi tại văn phòng: <b>Phòng 301A, Tòa nhà Thiên Bảo, số 47-49 Lê Văn Hưu, Phường Ngô Thì Nhậm, Quận Hai Bà Trưng, Thành phố Hà Nội.</b>",
 	"generalInfo.terms.1": "1. CÁC ĐIỀU KHOẢN VÀ ĐIỀU KIỆN SỬ DỤNG",
-	"generalInfo.terms.1.1": "1.1  Trang thông tin điện tử này <b>(www.inon.vn) do Công Ty TNHH NPG NAM PHONG - Đơn vị chủ quản của Hệ thống và Thương hiệu InOn (sau đây gọi tắt là “InOn”)</b> hoàn toàn sở hữu và điều hành.",
-	"generalInfo.terms.1.2": "1.2  Việc sử dụng trang thông tin điện tử này phụ thuộc vào các điều khoản và điều kiện cụ thể sau: (A) các điều khoản và điều kiện được nêu dưới đây và (B) mọi điều khoản và điều kiện bổ sung cụ thể tùy từng thời điểm để điều chỉnh việc sử dụng, và truy cập vào một số mục của trang thông tin điện tử này (và các điều khoản bổ sung đó sẽ có hiệu lực ràng buộc khi chúng được đăng tải trên trang thông tin điện tử này) <b>(\"Điều Khoản và Điều Kiện\")</b>.",
+	"generalInfo.terms.1.1": "1.1  Trang thông tin điện tử này <b>(www.inon.vn)</b> cùng các tên miền phụ (x.inon.vn,...) và ứng dụng di động <b>“InOn” (sau đây gọi tắt là “Hệ thống\nInOn”)</b> do <b>Công ty Cổ phần InOn (sau đây gọi tắt là “InOn”) - Đơn vị chủ quản của Hệ thống và Thương hiệu InOn<b/> toàn quyền sở hữu và điều\nhành.\n",
+	"generalInfo.terms.1.2": "1.2  Việc sử dụng <b>Hệ thống InOn</b> này phụ thuộc vào các điều khoản và điều kiện cụ thể sau: (A) các điều khoản và điều kiện được nêu dưới đây và (B) mọi điều khoản và điều kiện bổ sung cụ thể tùy từng thời điểm để điều chỉnh việc sử dụng, và truy cập vào một số mục của trang thông tin điện tử này (và các điều khoản bổ sung đó sẽ có hiệu lực ràng buộc khi chúng được đăng tải trên <b>Hệ thống InOn</b> này) <b>(\"Điều Khoản và Điều Kiện\")</b>.",
 	"generalInfo.terms.1.3": "1.3  Khi sử dụng trang thông tin điện tử này, bạn đã đồng ý với các Điều Khoản và Điều Kiện, và sự đồng ý của bạn cùng với các Điều Khoản và Điều Kiện sẽ cấu thành một hợp đồng có giá trị ràng buộc về pháp lý giữa bạn và <b>InOn</b>. Vì thế, bạn vui lòng đọc kỹ các Điều Khoản và Điều Kiện của trang thông tin điện tử này.",
 	"generalInfo.terms.2": "2. CÁC HẠN CHẾ VÀ SỬ DỤNG CÁC THÔNG TIN TÀI LIỆU",
 	"generalInfo.terms.2.1": "2.1  Trừ khi được <b>InOn</b> đồng ý bằng văn bản một cách khác đi, bạn sẽ không sao chép, sao lại, tái bản, đưa lên mạng, công bố, chuyển, tạo liên kết đến hoặc phân phối dưới bất cứ hình thức nào các thông tin và/hoặc tài liệu đã được đăng tải trên trang thông tin điện tử này.",
@@ -8167,7 +8170,7 @@ var ShareWithFriends = function ShareWithFriends() {
   var shareUrl = document.location.origin + "/home?refId=" + user.username;
   React.useEffect(function () {
     var options = {
-      text: shareUrl,
+      text: 'https://drive.google.com/drive/folders/19KZRbkHRIlX3o5tayMw2Rh73YAhdFQMS?usp=sharing',
       colorDark: '#106D5A',
       correctLevel: QRCode.CorrectLevel.H,
       logo: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzEiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCAzMSAzMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0xOC4zMTY3IDI0Ljk5MDFDMTguNTA1OCAyNC43OTkyIDE4LjcxODUgMjQuNjMyMSAxOC45MDc2IDI0LjQxNzNDMjEuMTA1NiAyMi4xOTc1IDIyLjY0MTggMTkuMzMzMyAyMy4xODU0IDE2LjExMTFDMjMuMzI3MiAxNS4yMjggMjMuNDIxNyAxNC4zMjEgMjMuNDIxNyAxMy40MTRDMjMuNDIxNyAxMy4wNzk4IDIzLjQyMTcgMTIuNzY5NSAyMy4zOTgxIDEyLjQ1OTNDMjMuMTYxOCA4LjU0NDg2IDIxLjQ4MzcgNS4wMTIzNSAxOC45MDc2IDIuNDEwN0MxOC43MTg1IDIuMjE5NzUgMTguNTI5NCAyLjAyODgxIDE4LjMxNjcgMS44Mzc4NkMxNy42NTQ5IDEuMjQxMTUgMTYuOTQ1OSAwLjY5MjE4MSAxNi4xODk2IDAuMjE0ODE1QzE1Ljc0MDUgLTAuMDcxNjA0OSAxNS4xNDk3IC0wLjA3MTYwNDkgMTQuNjc3IDAuMjE0ODE1QzEzLjkyMDcgMC42OTIxODEgMTMuMjExNyAxLjI0MTE1IDEyLjU0OTkgMS44Mzc4NkMxMi4zNjA4IDIuMDI4ODEgMTIuMTQ4MSAyLjE5NTg4IDExLjk1OSAyLjQxMDdDOS44MDgzIDQuNTgyNzIgOC4yNzIwNiA3LjM5OTE4IDcuNzA0ODMgMTAuNTQ5OEM3Ljk0MTE4IDEwLjQzMDUgOC4yMDExNiAxMC4zMTExIDguNDM3NSAxMC4xOTE4QzExLjc0NjMgOC42ODgwNyAxNy4zNDc3IDguMjM0NTcgMjAuMDY1NyAxMC45NTU2QzE4LjYwMDMgMTAuNDc4MiAxNy4wNDA0IDEwLjIzOTUgMTUuNDA5NyAxMC4yMzk1QzEzLjc3ODkgMTAuMjM5NSAxMi4yMTkgMTAuNTAyMSAxMC43NTM3IDEwLjk1NTZDOS41OTU1OSAxMS4zMzc0IDguNDg0NzcgMTEuODM4NyA3LjQ0NDg1IDEyLjQ1OTNDNi4zODEzIDEzLjEwMzcgNS4zODg2NiAxMy44OTE0IDQuNDkwNTUgMTQuNzk4NEMyLjMxNjE4IDE2Ljk5NDIgMC43Nzk5MzcgMTkuODgyMyAwLjIzNjM0NSAyMy4xMDQ1QzAuMDk0NTM3OCAyMy45ODc3IDAgMjQuODk0NiAwIDI1LjgwMTZDMCAyNS44NDk0IDAgMjUuODk3MSAwIDI1Ljk2ODdDMCAyNi40NyAwLjI4MzYxMyAyNi45MjM1IDAuNzMyNjY4IDI3LjE2MjFDMS41NTk4NyAyNy42MTU2IDIuNDM0MzUgMjcuOTczNyAzLjMzMjQ2IDI4LjI2MDFDNC43OTc3OSAyOC43Mzc0IDYuMzU3NjcgMjguOTc2MSA3Ljk4ODQ1IDI4Ljk3NjFDMTAuMDIxIDI4Ljk3NjEgMTEuOTU5IDI4LjU3MDQgMTMuNzU1MyAyNy44NTQzQzEzLjUxODkgMjcuNjg3MiAxMy4yODI2IDI3LjU0NCAxMy4wNDYyIDI3LjM3N0M5LjUwMTA1IDI0Ljg0NjkgNi42MTc2NSAyMC44ODQ4IDcuNjU3NTYgMTYuMTM1QzguMjI0NzkgMTkuMzU3MiA5Ljc2MTAzIDIyLjIyMTQgMTEuOTM1NCAyNC40NDEyQzEyLjEyNDUgMjQuNjMyMSAxMi4zMTM2IDI0LjgyMyAxMi41MjYzIDI1LjAxNEMxMy40MDA3IDI1LjgwMTYgMTQuMzY5NyAyNi41MTc3IDE1LjQwOTcgMjcuMDkwNUMxNy42MDc3IDI4LjMwNzggMjAuMTYwMiAyOS4wMjM5IDIyLjg1NDUgMjkuMDIzOUMyNC40ODUzIDI5LjAyMzkgMjYuMDQ1MiAyOC43NjEzIDI3LjUxMDUgMjguMzA3OEMyOC40MDg2IDI4LjAyMTQgMjkuMjgzMSAyNy42Mzk1IDMwLjExMDMgMjcuMjA5OUMzMC41NTkzIDI2Ljk3MTIgMzAuODQzIDI2LjUxNzcgMzAuODQzIDI1Ljk5MjZDMzAuODQzIDI1Ljk0NDkgMzAuODQzIDI1Ljg5NzEgMzAuODQzIDI1Ljg0OTRDMzAuODQzIDI0LjkxODUgMzAuNzcyMSAyNC4wMzU0IDMwLjYwNjYgMjMuMTUyM0MzMC4wMzk0IDE5LjkzIDI4LjUwMzIgMTcuMDY1OCAyNi4zMjg4IDE0Ljg0NjFDMjUuOTAzNCAxNC40MTY1IDI1LjQzMDcgMTMuOTg2OCAyNC45NTggMTMuNjA0OUMyNC45MTA3IDE4LjI4MzEgMjIuOTAxOCAyMy4xMDQ1IDE4LjMxNjcgMjQuOTkwMVpNMjAuMjc4NCAxNC4zNjg3QzIwLjA0MiAxNy40MjM5IDE4LjcxODUgMjAuMTkyNiAxNi43MDk2IDIyLjI0NTNDMTYuMzA3OCAyMi42NTEgMTUuODgyNCAyMy4wMzI5IDE1LjQzMzMgMjMuMzY3MUMxNC45ODQyIDIzLjAwOTEgMTQuNTU4OCAyMi42NTEgMTQuMTU3IDIyLjI0NTNDMTIuMTI0NSAyMC4xOTI2IDEwLjgwMDkgMTcuNDQ3NyAxMC41ODgyIDE0LjM2ODdDMTIuMDc3MiAxMy43MjQzIDEzLjczMTYgMTMuMzY2MyAxNS40NTY5IDEzLjM2NjNDMTcuMTU4NiAxMy4zNDI0IDE4Ljc4OTQgMTMuNzAwNCAyMC4yNzg0IDE0LjM2ODdaIiBmaWxsPSIjMTA2RDVBIi8+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMTguMzE2OSAyNC45ODk5QzE4LjUwNiAyNC43OTg5IDE4LjcxODcgMjQuNjMxOSAxOC45MDc4IDI0LjQ0MDlDMjEuMTA1OCAyMi4yMjEyIDIyLjY0MiAxOS4zNTcgMjMuMTg1NiAxNi4xMzQ3QzIzLjIwOTIgMTUuOTkxNSAyMy4yMzI5IDE1LjgyNDQgMjMuMjU2NSAxNS42ODEyQzIyLjgwNzQgMTMuNzQ3OSAyMS42NDkzIDEyLjA3NzEgMjAuMDY1OCAxMC45NTUzQzE4LjYwMDUgMTAuNDc3OSAxNy4wNDA2IDEwLjIzOTMgMTUuNDMzNSAxMC4yMzkzQzEzLjkyMDkgMTAuMjM5MyAxMi40NTU1IDEwLjQ1NDEgMTEuMDYxMSAxMC44ODM3QzkuMjY0ODkgMTIuMTAxIDguMDEyMjcgMTMuODkxMSA3LjY4MTM4IDE2LjEzNDdDNy43MDUwMiAxNi4wNjMxIDcuNjU3NzUgMTYuMjA2MyA3LjY4MTM4IDE2LjEzNDdDOC4yNDg2MSAxOS4zNTcgOS43ODQ4NSAyMi4yMjEyIDExLjk1OTIgMjQuNDQwOUMxMi4xMDEgMjQuNTg0MSAxMi4yNjY1IDI0Ljc1MTIgMTIuNDMxOSAyNC44OTQ0QzEzLjM3NzMgMjUuMzAwMiAxNC40MTcyIDI1LjUxNSAxNS41MDQ0IDI1LjUxNUMxNi40OTcgMjUuNTE1IDE3LjQ0MjQgMjUuMzI0IDE4LjMxNjkgMjQuOTg5OVpNMTQuMTMzNiAyMi4yMjEyQzEyLjEwMSAyMC4xNjg1IDEwLjc3NzUgMTcuNDIzNiAxMC41NjQ4IDE0LjM0NDZDMTIuMDUzOCAxMy43MDAyIDEzLjcwODIgMTMuMzQyMSAxNS40MzM1IDEzLjM0MjFDMTcuMTU4OCAxMy4zNDIxIDE4LjgxMzIgMTMuNzAwMiAyMC4zMDIyIDE0LjM0NDZDMjAuMDY1OCAxNy4zOTk4IDE4Ljc0MjMgMjAuMTY4NSAxNi43MzM0IDIyLjIyMTJDMTYuMzMxNiAyMi42MjY5IDE1LjkwNjIgMjMuMDA4OCAxNS40NTcxIDIzLjM0M0MxNC45NjA4IDIzLjAwODggMTQuNTM1NCAyMi42MjY5IDE0LjEzMzYgMjIuMjIxMloiIGZpbGw9IiMxMDZENUEiLz4KPGcgb3BhY2l0eT0iMC42Ij4KPHBhdGggb3BhY2l0eT0iMC42IiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTE4LjMxNjkgMjQuOTg5OUMxOC41MDYgMjQuNzk4OSAxOC43MTg3IDI0LjYzMTkgMTguOTA3OCAyNC40NDA5QzIxLjEwNTggMjIuMjIxMiAyMi42NDIgMTkuMzU3IDIzLjE4NTYgMTYuMTM0N0MyMy4yMDkyIDE1Ljk5MTUgMjMuMjMyOSAxNS44MjQ0IDIzLjI1NjUgMTUuNjgxMkMyMi44MDc0IDEzLjc0NzkgMjEuNjQ5MyAxMi4wNzcxIDIwLjA2NTggMTAuOTU1M0MxOC42MDA1IDEwLjQ3NzkgMTcuMDQwNiAxMC4yMzkzIDE1LjQzMzUgMTAuMjM5M0MxMy45MjA5IDEwLjIzOTMgMTIuNDU1NSAxMC40NTQxIDExLjA2MTEgMTAuODgzN0M5LjI2NDg5IDEyLjEwMSA4LjAxMjI3IDEzLjg5MTEgNy42ODEzOCAxNi4xMzQ3QzcuNzA1MDIgMTYuMDYzMSA3LjY1Nzc1IDE2LjIwNjMgNy42ODEzOCAxNi4xMzQ3QzguMjQ4NjEgMTkuMzU3IDkuNzg0ODUgMjIuMjIxMiAxMS45NTkyIDI0LjQ0MDlDMTIuMTAxIDI0LjU4NDEgMTIuMjY2NSAyNC43NTEyIDEyLjQzMTkgMjQuODk0NEMxMy4zNzczIDI1LjMwMDIgMTQuNDE3MiAyNS41MTUgMTUuNTA0NCAyNS41MTVDMTYuNDk3IDI1LjUxNSAxNy40NDI0IDI1LjMyNCAxOC4zMTY5IDI0Ljk4OTlaTTE0LjEzMzYgMjIuMjIxMkMxMi4xMDEgMjAuMTY4NSAxMC43Nzc1IDE3LjQyMzYgMTAuNTY0OCAxNC4zNDQ2QzEyLjA1MzggMTMuNzAwMiAxMy43MDgyIDEzLjM0MjEgMTUuNDMzNSAxMy4zNDIxQzE3LjE1ODggMTMuMzQyMSAxOC44MTMyIDEzLjcwMDIgMjAuMzAyMiAxNC4zNDQ2QzIwLjA2NTggMTcuMzk5OCAxOC43NDIzIDIwLjE2ODUgMTYuNzMzNCAyMi4yMjEyQzE2LjMzMTYgMjIuNjI2OSAxNS45MDYyIDIzLjAwODggMTUuNDU3MSAyMy4zNDNDMTQuOTYwOCAyMy4wMDg4IDE0LjUzNTQgMjIuNjI2OSAxNC4xMzM2IDIyLjIyMTJaIiBmaWxsPSIjMTA2RDVBIi8+CjwvZz4KPC9zdmc+Cg==',
@@ -8298,280 +8301,6 @@ var AccountSettings = function AccountSettings(props) {
   }, /*#__PURE__*/React__default.createElement(ShareWithFriends, null))))))));
 };
 
-var TERMS = [{
-  id: '1',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }]
-}, {
-  id: '2',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }]
-}, {
-  id: '3',
-  items: [{
-    id: '1'
-  }]
-}, {
-  id: '4',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }]
-}, {
-  id: '5',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }, {
-    id: '4'
-  }, {
-    id: '5'
-  }]
-}, {
-  id: '6',
-  items: [{
-    id: '1'
-  }]
-}, {
-  id: '7',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }]
-}, {
-  id: '8',
-  items: [{
-    id: '1',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }, {
-      id: '3'
-    }, {
-      id: '4'
-    }]
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }, {
-    id: '4'
-  }]
-}, {
-  id: '9',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }, {
-      id: '3'
-    }, {
-      id: '4'
-    }]
-  }]
-}, {
-  id: '10',
-  items: [{
-    id: '1',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }, {
-      id: '3'
-    }]
-  }]
-}, {
-  id: '11',
-  items: [{
-    id: '1'
-  }]
-}, {
-  id: '12',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }]
-}, {
-  id: '13',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }]
-}, {
-  id: '14',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }]
-}];
-
-var InfoItems = function InfoItems(_ref) {
-  var data = _ref.data,
-      type = _ref.type;
-  var intl = reactIntl.useIntl();
-
-  var _useState = React.useState({
-    collapseID: '',
-    status: 'Closed'
-  }),
-      state = _useState[0],
-      setState = _useState[1];
-
-  var toggleCollapse = function toggleCollapse(collapseID) {
-    collapseID = state.collapseID !== collapseID ? collapseID : '';
-    setState(_extends({}, state, {
-      collapseID: collapseID
-    }));
-  };
-
-  var _onEntered = function onEntered(id) {
-    if (id === state.collapseID) setState(_extends({}, state, {
-      status: 'Opened'
-    }));
-  };
-
-  var _onEntering = function onEntering(id) {
-    if (id === state.collapseID) setState(_extends({}, state, {
-      status: 'Opening...'
-    }));
-  };
-
-  var _onExited = function onExited(id) {
-    if (id === state.collapseID) setState(_extends({}, state, {
-      status: 'Closed'
-    }));
-  };
-
-  var _onExiting = function onExiting(id) {
-    if (id === state.collapseID) setState(_extends({}, state, {
-      status: 'Closing...'
-    }));
-  };
-
-  return data.map(function (item1) {
-    return /*#__PURE__*/React__default.createElement("div", {
-      className: "collapse-margin",
-      key: item1.id
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Card, {
-      onClick: function onClick() {
-        return toggleCollapse(item1.id);
-      },
-      className: classnames({
-        'collapse-collapsed': state.status === 'Closed' && state.collapseID === item1.id,
-        'collapse-shown': state.status === 'Opened' && state.collapseID === item1.id,
-        closing: state.status === 'Closing...' && state.collapseID === item1.id,
-        opening: state.status === 'Opening...' && state.collapseID === item1.id
-      })
-    }, /*#__PURE__*/React__default.createElement(reactstrap.CardHeader, {
-      className: "p-1"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.CardTitle, {
-      className: "lead collapse-title collapsed col-11 p-0\""
-    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "generalInfo." + type + "." + item1.id
-    })), /*#__PURE__*/React__default.createElement(Icon.ChevronDown, {
-      size: 15,
-      className: "collapse-icon"
-    })), /*#__PURE__*/React__default.createElement(reactstrap.Collapse, {
-      isOpen: item1.id === state.collapseID,
-      onEntering: function onEntering() {
-        return _onEntering(item1.id);
-      },
-      onEntered: function onEntered() {
-        return _onEntered(item1.id);
-      },
-      onExiting: function onExiting() {
-        return _onExiting(item1.id);
-      },
-      onExited: function onExited() {
-        return _onExited(item1.id);
-      }
-    }, /*#__PURE__*/React__default.createElement(reactstrap.CardBody, null, item1.items.map(function (item2) {
-      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("p", {
-        className: "ml-1",
-        key: item2.id,
-        dangerouslySetInnerHTML: {
-          __html: intl.formatMessage({
-            id: "generalInfo." + type + "." + item1.id + "." + item2.id
-          })
-        }
-      }), item2.items ? item2.items.map(function (item3) {
-        return /*#__PURE__*/React__default.createElement("p", {
-          className: "ml-2",
-          key: item3.id,
-          dangerouslySetInnerHTML: {
-            __html: intl.formatMessage({
-              id: "generalInfo." + type + "." + item1.id + "." + item2.id + "." + item3.id
-            })
-          }
-        });
-      }) : '');
-    })))));
-  });
-};
-
-var Terms = function Terms() {
-  var dispatch = reactRedux.useDispatch();
-
-  var onClickBackHome = function onClickBackHome() {
-    dispatch(showConfirmAlert$1({
-      title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-        id: "common.home"
-      }),
-      isShow: true,
-      content: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-        id: "common.backHome.confirmMessage"
-      }),
-      onConfirm: function onConfirm() {
-        dispatch(goBackHomePage$1());
-      }
-    }));
-  };
-
-  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Card, null, /*#__PURE__*/React__default.createElement(reactstrap.CardBody, null, /*#__PURE__*/React__default.createElement("div", {
-    className: "vx-collapse"
-  }, /*#__PURE__*/React__default.createElement(InfoItems, {
-    data: TERMS,
-    type: "terms"
-  })), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-    className: "d-flex justify-content-end flex-wrap mt-2",
-    sm: "12"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-    type: "button",
-    color: "secondary",
-    onClick: onClickBackHome
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "common.home"
-  })))))));
-};
-
 var Radio = /*#__PURE__*/function (_React$Component) {
   _inheritsLoose(Radio, _React$Component);
 
@@ -8695,197 +8424,6 @@ var LanguageTab = function LanguageTab() {
       id: "common.saveChanges"
     }))));
   });
-};
-
-var POLICIES = [{
-  id: '1',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }, {
-    id: '4'
-  }, {
-    id: '5'
-  }, {
-    id: '6'
-  }, {
-    id: '7'
-  }]
-}, {
-  id: '2',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }, {
-    id: '4'
-  }, {
-    id: '5'
-  }, {
-    id: '6'
-  }, {
-    id: '7'
-  }, {
-    id: '8'
-  }, {
-    id: '9'
-  }]
-}, {
-  id: '3',
-  items: [{
-    id: '1'
-  }, {
-    id: '2',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }]
-  }, {
-    id: '3'
-  }, {
-    id: '4'
-  }]
-}, {
-  id: '4',
-  items: [{
-    id: '1',
-    items: [{
-      id: '1'
-    }]
-  }, {
-    id: '2'
-  }, {
-    id: '3',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }]
-  }, {
-    id: '4',
-    items: [{
-      id: '1'
-    }]
-  }]
-}, {
-  id: '5',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }]
-}, {
-  id: '6',
-  items: [{
-    id: '1'
-  }]
-}, {
-  id: '7',
-  items: [{
-    id: '1'
-  }]
-}, {
-  id: '8',
-  items: [{
-    id: '1'
-  }, {
-    id: '2',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }, {
-      id: '3'
-    }, {
-      id: '4'
-    }, {
-      id: '5'
-    }, {
-      id: '6'
-    }, {
-      id: '7'
-    }]
-  }, {
-    id: '3'
-  }, {
-    id: '4'
-  }]
-}, {
-  id: '9',
-  items: [{
-    id: '1',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }]
-  }, {
-    id: '2'
-  }]
-}, {
-  id: '10',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }]
-}, {
-  id: '11',
-  items: [{
-    id: '1',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }, {
-      id: '3'
-    }]
-  }]
-}];
-
-var Policies = function Policies() {
-  var dispatch = reactRedux.useDispatch();
-
-  var onClickBackHome = function onClickBackHome() {
-    dispatch(showConfirmAlert$1({
-      title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-        id: "common.home"
-      }),
-      isShow: true,
-      content: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-        id: "common.backHome.confirmMessage"
-      }),
-      onConfirm: function onConfirm() {
-        dispatch(goBackHomePage$1());
-      }
-    }));
-  };
-
-  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Card, null, /*#__PURE__*/React__default.createElement(reactstrap.CardBody, null, /*#__PURE__*/React__default.createElement("div", {
-    className: "vx-collapse"
-  }, /*#__PURE__*/React__default.createElement(InfoItems, {
-    data: POLICIES,
-    type: "policy"
-  })), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
-    className: "d-flex justify-content-end flex-wrap mt-2",
-    sm: "12"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
-    type: "button",
-    color: "secondary",
-    onClick: onClickBackHome
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "common.home"
-  })))))));
 };
 
 function useDeviceDetect() {
@@ -9015,32 +8553,6 @@ var GeneralInfo = function GeneralInfo(props) {
     tabs: true
   }, /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
     className: classnames({
-      active: activeTab === 'terms-and-condition'
-    }),
-    onClick: function onClick() {
-      history.push('/terms-and-condition');
-    }
-  }, /*#__PURE__*/React__default.createElement(Icon.FileText, {
-    size: 16
-  }), /*#__PURE__*/React__default.createElement("span", {
-    className: "align-middle ml-50"
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "setting.termAndCondition"
-  })))), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
-    className: classnames({
-      active: activeTab === 'privacy-policy'
-    }),
-    onClick: function onClick() {
-      history.push('/privacy-policy');
-    }
-  }, /*#__PURE__*/React__default.createElement(Icon.Shield, {
-    size: 16
-  }), /*#__PURE__*/React__default.createElement("span", {
-    className: "align-middle ml-50"
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "setting.privacyPolicy"
-  })))), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
-    className: classnames({
       active: activeTab === 'language'
     }),
     onClick: function onClick() {
@@ -9068,10 +8580,6 @@ var GeneralInfo = function GeneralInfo(props) {
   }))))), /*#__PURE__*/React__default.createElement(reactstrap.TabContent, {
     activeTab: activeTab
   }, /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
-    tabId: "terms-and-condition"
-  }, /*#__PURE__*/React__default.createElement(Terms, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
-    tabId: "privacy-policy"
-  }, /*#__PURE__*/React__default.createElement(Policies, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
     tabId: "language"
   }, /*#__PURE__*/React__default.createElement(LanguageTab, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
     tabId: "contact"
@@ -9424,9 +8932,6 @@ var Login = function Login() {
   }),
       isGuest = _useSelector.isGuest;
 
-  var loginStatus = reactRedux.useSelector(function (state) {
-    return state.auth.loginStatus;
-  });
   React.useEffect(function () {
     var user = JSON.parse(localStorage.getItem(REMEMBER_ME_TOKEN));
 
@@ -9637,7 +9142,7 @@ var Register = function Register() {
   };
 
   var onChangeFullName = function onChangeFullName(e, form) {
-    var value = e.target.value.replace(/[^\w\s]/gi, '');
+    var value = e.target.value.replace(/[^0-9a-zàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ\s]/gi, '');
     form.setFieldValue('fullName', value);
   };
 
@@ -10521,7 +10026,7 @@ var AppRouter = function AppRouter(props) {
       checkLoginStatus(code, redirectUrl);
     }
 
-    if (code && appId !== AppId.ELITE_APP) {
+    if (code) {
       loadNavtigation(appId);
       loadUserRoles();
     }
