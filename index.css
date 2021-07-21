@@ -13766,22 +13766,103 @@ select.form-control:not([multiple="multiple"]) {
   .form-label-group > input,
   .form-label-group textarea {
     padding: 0.6rem; }
+    .light .form-label-group > input, .light
+    .form-label-group textarea {
+      color: #42236A;
+      border-color: #E2D8EE; }
+    .dark .form-label-group > input, .dark
+    .form-label-group textarea {
+      color: #F6F3F8;
+      border-color: #564962; }
+    .premier .form-label-group > input, .premier
+    .form-label-group textarea {
+      color: #2C1E45;
+      border-color: #E0DCD8; }
+    .light .form-label-group > input::-moz-placeholder, .light
+    .form-label-group textarea::-moz-placeholder {
+      color: #E2D8EE; }
+    .light .form-label-group > input:-ms-input-placeholder, .light
+    .form-label-group textarea:-ms-input-placeholder {
+      color: #E2D8EE; }
+    .light .form-label-group > input::placeholder, .light
+    .form-label-group textarea::placeholder {
+      color: #E2D8EE; }
+    .dark .form-label-group > input::-moz-placeholder, .dark
+    .form-label-group textarea::-moz-placeholder {
+      color: #564962; }
+    .dark .form-label-group > input:-ms-input-placeholder, .dark
+    .form-label-group textarea:-ms-input-placeholder {
+      color: #564962; }
+    .dark .form-label-group > input::placeholder, .dark
+    .form-label-group textarea::placeholder {
+      color: #564962; }
+    .premier .form-label-group > input::-moz-placeholder, .premier
+    .form-label-group textarea::-moz-placeholder {
+      color: #E0DCD8; }
+    .premier .form-label-group > input:-ms-input-placeholder, .premier
+    .form-label-group textarea:-ms-input-placeholder {
+      color: #E0DCD8; }
+    .premier .form-label-group > input::placeholder, .premier
+    .form-label-group textarea::placeholder {
+      color: #E0DCD8; }
+    .light .form-label-group > input:focus, .light
+    .form-label-group textarea:focus {
+      border-color: #AD8AD8; }
+    .dark .form-label-group > input:focus, .dark
+    .form-label-group textarea:focus {
+      border-color: #AD8AD8; }
+    .premier .form-label-group > input:focus, .premier
+    .form-label-group textarea:focus {
+      border-color: #7E6EAA; }
     .form-label-group > input:focus:not(:-moz-placeholder-shown) ~ label, .form-label-group > input:not(:active):not(:-moz-placeholder-shown) ~ label, .form-label-group textarea:focus:not(:-moz-placeholder-shown) ~ label, .form-label-group textarea:not(:active):not(:-moz-placeholder-shown) ~ label {
-      color: #338955;
       -moz-transition: all 0.25s ease-in-out;
       transition: all 0.25s ease-in-out;
       opacity: 1; }
     .form-label-group > input:focus:not(:-ms-input-placeholder) ~ label, .form-label-group > input:not(:active):not(:-ms-input-placeholder) ~ label, .form-label-group textarea:focus:not(:-ms-input-placeholder) ~ label, .form-label-group textarea:not(:active):not(:-ms-input-placeholder) ~ label {
-      color: #338955;
       -ms-transition: all 0.25s ease-in-out;
       transition: all 0.25s ease-in-out;
       opacity: 1; }
     .form-label-group > input:focus:not(:placeholder-shown) ~ label, .form-label-group > input:not(:active):not(:placeholder-shown) ~ label,
     .form-label-group textarea:focus:not(:placeholder-shown) ~ label,
     .form-label-group textarea:not(:active):not(:placeholder-shown) ~ label {
-      color: #338955;
       transition: all 0.25s ease-in-out;
       opacity: 1; }
+      .light .form-label-group > input:focus:not(:-moz-placeholder-shown) ~ label, .light .form-label-group > input:not(:active):not(:-moz-placeholder-shown) ~ label, .light
+      .form-label-group textarea:focus:not(:-moz-placeholder-shown) ~ label, .light
+      .form-label-group textarea:not(:active):not(:-moz-placeholder-shown) ~ label {
+        color: #42236A; }
+      .light .form-label-group > input:focus:not(:-ms-input-placeholder) ~ label, .light .form-label-group > input:not(:active):not(:-ms-input-placeholder) ~ label, .light
+      .form-label-group textarea:focus:not(:-ms-input-placeholder) ~ label, .light
+      .form-label-group textarea:not(:active):not(:-ms-input-placeholder) ~ label {
+        color: #42236A; }
+      .light .form-label-group > input:focus:not(:placeholder-shown) ~ label, .light .form-label-group > input:not(:active):not(:placeholder-shown) ~ label, .light
+      .form-label-group textarea:focus:not(:placeholder-shown) ~ label, .light
+      .form-label-group textarea:not(:active):not(:placeholder-shown) ~ label {
+        color: #42236A; }
+      .dark .form-label-group > input:focus:not(:-moz-placeholder-shown) ~ label, .dark .form-label-group > input:not(:active):not(:-moz-placeholder-shown) ~ label, .dark
+      .form-label-group textarea:focus:not(:-moz-placeholder-shown) ~ label, .dark
+      .form-label-group textarea:not(:active):not(:-moz-placeholder-shown) ~ label {
+        color: #F6F3F8; }
+      .dark .form-label-group > input:focus:not(:-ms-input-placeholder) ~ label, .dark .form-label-group > input:not(:active):not(:-ms-input-placeholder) ~ label, .dark
+      .form-label-group textarea:focus:not(:-ms-input-placeholder) ~ label, .dark
+      .form-label-group textarea:not(:active):not(:-ms-input-placeholder) ~ label {
+        color: #F6F3F8; }
+      .dark .form-label-group > input:focus:not(:placeholder-shown) ~ label, .dark .form-label-group > input:not(:active):not(:placeholder-shown) ~ label, .dark
+      .form-label-group textarea:focus:not(:placeholder-shown) ~ label, .dark
+      .form-label-group textarea:not(:active):not(:placeholder-shown) ~ label {
+        color: #F6F3F8; }
+      .premier .form-label-group > input:focus:not(:-moz-placeholder-shown) ~ label, .premier .form-label-group > input:not(:active):not(:-moz-placeholder-shown) ~ label, .premier
+      .form-label-group textarea:focus:not(:-moz-placeholder-shown) ~ label, .premier
+      .form-label-group textarea:not(:active):not(:-moz-placeholder-shown) ~ label {
+        color: #2C1E45; }
+      .premier .form-label-group > input:focus:not(:-ms-input-placeholder) ~ label, .premier .form-label-group > input:not(:active):not(:-ms-input-placeholder) ~ label, .premier
+      .form-label-group textarea:focus:not(:-ms-input-placeholder) ~ label, .premier
+      .form-label-group textarea:not(:active):not(:-ms-input-placeholder) ~ label {
+        color: #2C1E45; }
+      .premier .form-label-group > input:focus:not(:placeholder-shown) ~ label, .premier .form-label-group > input:not(:active):not(:placeholder-shown) ~ label, .premier
+      .form-label-group textarea:focus:not(:placeholder-shown) ~ label, .premier
+      .form-label-group textarea:not(:active):not(:placeholder-shown) ~ label {
+        color: #2C1E45; }
     .form-label-group > input:not(:focus):not(:-moz-placeholder-shown) ~ label, .form-label-group textarea:not(:focus):not(:-moz-placeholder-shown) ~ label {
       color: rgba(34, 41, 47, 0.4); }
     .form-label-group > input:not(:focus):not(:-ms-input-placeholder) ~ label, .form-label-group textarea:not(:focus):not(:-ms-input-placeholder) ~ label {
@@ -13823,6 +13904,21 @@ select.form-control:not([multiple="multiple"]) {
     box-shadow: 0 0 0 1px #338955; }
   .form-label-group.has-icon-left > label {
     left: 36px; }
+  .light .form-label-group .css-4je539-control {
+    color: #42236A;
+    border-color: #E2D8EE; }
+  .dark .form-label-group .css-4je539-control {
+    color: #F6F3F8;
+    border-color: #564962; }
+  .premier .form-label-group .css-4je539-control {
+    color: #2C1E45;
+    border-color: #E0DCD8; }
+  .light .form-label-group .css-4je539-control .css-1uccc91-singleValue {
+    color: #42236A; }
+  .dark .form-label-group .css-4je539-control .css-1uccc91-singleValue {
+    color: #F6F3F8; }
+  .premier .form-label-group .css-4je539-control .css-1uccc91-singleValue {
+    color: #2C1E45; }
 
 /* Vuexy Custom Checkbox */
 .vx-checkbox-con {
@@ -36374,22 +36470,103 @@ select.form-control:not([multiple="multiple"]) {
   .form-label-group > input,
   .form-label-group textarea {
     padding: 0.6rem; }
+    .light .form-label-group > input, .light
+    .form-label-group textarea {
+      color: #42236A;
+      border-color: #E2D8EE; }
+    .dark .form-label-group > input, .dark
+    .form-label-group textarea {
+      color: #F6F3F8;
+      border-color: #564962; }
+    .premier .form-label-group > input, .premier
+    .form-label-group textarea {
+      color: #2C1E45;
+      border-color: #E0DCD8; }
+    .light .form-label-group > input::-moz-placeholder, .light
+    .form-label-group textarea::-moz-placeholder {
+      color: #E2D8EE; }
+    .light .form-label-group > input:-ms-input-placeholder, .light
+    .form-label-group textarea:-ms-input-placeholder {
+      color: #E2D8EE; }
+    .light .form-label-group > input::placeholder, .light
+    .form-label-group textarea::placeholder {
+      color: #E2D8EE; }
+    .dark .form-label-group > input::-moz-placeholder, .dark
+    .form-label-group textarea::-moz-placeholder {
+      color: #564962; }
+    .dark .form-label-group > input:-ms-input-placeholder, .dark
+    .form-label-group textarea:-ms-input-placeholder {
+      color: #564962; }
+    .dark .form-label-group > input::placeholder, .dark
+    .form-label-group textarea::placeholder {
+      color: #564962; }
+    .premier .form-label-group > input::-moz-placeholder, .premier
+    .form-label-group textarea::-moz-placeholder {
+      color: #E0DCD8; }
+    .premier .form-label-group > input:-ms-input-placeholder, .premier
+    .form-label-group textarea:-ms-input-placeholder {
+      color: #E0DCD8; }
+    .premier .form-label-group > input::placeholder, .premier
+    .form-label-group textarea::placeholder {
+      color: #E0DCD8; }
+    .light .form-label-group > input:focus, .light
+    .form-label-group textarea:focus {
+      border-color: #AD8AD8; }
+    .dark .form-label-group > input:focus, .dark
+    .form-label-group textarea:focus {
+      border-color: #AD8AD8; }
+    .premier .form-label-group > input:focus, .premier
+    .form-label-group textarea:focus {
+      border-color: #7E6EAA; }
     .form-label-group > input:focus:not(:-moz-placeholder-shown) ~ label, .form-label-group > input:not(:active):not(:-moz-placeholder-shown) ~ label, .form-label-group textarea:focus:not(:-moz-placeholder-shown) ~ label, .form-label-group textarea:not(:active):not(:-moz-placeholder-shown) ~ label {
-      color: #338955;
       -moz-transition: all 0.25s ease-in-out;
       transition: all 0.25s ease-in-out;
       opacity: 1; }
     .form-label-group > input:focus:not(:-ms-input-placeholder) ~ label, .form-label-group > input:not(:active):not(:-ms-input-placeholder) ~ label, .form-label-group textarea:focus:not(:-ms-input-placeholder) ~ label, .form-label-group textarea:not(:active):not(:-ms-input-placeholder) ~ label {
-      color: #338955;
       -ms-transition: all 0.25s ease-in-out;
       transition: all 0.25s ease-in-out;
       opacity: 1; }
     .form-label-group > input:focus:not(:placeholder-shown) ~ label, .form-label-group > input:not(:active):not(:placeholder-shown) ~ label,
     .form-label-group textarea:focus:not(:placeholder-shown) ~ label,
     .form-label-group textarea:not(:active):not(:placeholder-shown) ~ label {
-      color: #338955;
       transition: all 0.25s ease-in-out;
       opacity: 1; }
+      .light .form-label-group > input:focus:not(:-moz-placeholder-shown) ~ label, .light .form-label-group > input:not(:active):not(:-moz-placeholder-shown) ~ label, .light
+      .form-label-group textarea:focus:not(:-moz-placeholder-shown) ~ label, .light
+      .form-label-group textarea:not(:active):not(:-moz-placeholder-shown) ~ label {
+        color: #42236A; }
+      .light .form-label-group > input:focus:not(:-ms-input-placeholder) ~ label, .light .form-label-group > input:not(:active):not(:-ms-input-placeholder) ~ label, .light
+      .form-label-group textarea:focus:not(:-ms-input-placeholder) ~ label, .light
+      .form-label-group textarea:not(:active):not(:-ms-input-placeholder) ~ label {
+        color: #42236A; }
+      .light .form-label-group > input:focus:not(:placeholder-shown) ~ label, .light .form-label-group > input:not(:active):not(:placeholder-shown) ~ label, .light
+      .form-label-group textarea:focus:not(:placeholder-shown) ~ label, .light
+      .form-label-group textarea:not(:active):not(:placeholder-shown) ~ label {
+        color: #42236A; }
+      .dark .form-label-group > input:focus:not(:-moz-placeholder-shown) ~ label, .dark .form-label-group > input:not(:active):not(:-moz-placeholder-shown) ~ label, .dark
+      .form-label-group textarea:focus:not(:-moz-placeholder-shown) ~ label, .dark
+      .form-label-group textarea:not(:active):not(:-moz-placeholder-shown) ~ label {
+        color: #F6F3F8; }
+      .dark .form-label-group > input:focus:not(:-ms-input-placeholder) ~ label, .dark .form-label-group > input:not(:active):not(:-ms-input-placeholder) ~ label, .dark
+      .form-label-group textarea:focus:not(:-ms-input-placeholder) ~ label, .dark
+      .form-label-group textarea:not(:active):not(:-ms-input-placeholder) ~ label {
+        color: #F6F3F8; }
+      .dark .form-label-group > input:focus:not(:placeholder-shown) ~ label, .dark .form-label-group > input:not(:active):not(:placeholder-shown) ~ label, .dark
+      .form-label-group textarea:focus:not(:placeholder-shown) ~ label, .dark
+      .form-label-group textarea:not(:active):not(:placeholder-shown) ~ label {
+        color: #F6F3F8; }
+      .premier .form-label-group > input:focus:not(:-moz-placeholder-shown) ~ label, .premier .form-label-group > input:not(:active):not(:-moz-placeholder-shown) ~ label, .premier
+      .form-label-group textarea:focus:not(:-moz-placeholder-shown) ~ label, .premier
+      .form-label-group textarea:not(:active):not(:-moz-placeholder-shown) ~ label {
+        color: #2C1E45; }
+      .premier .form-label-group > input:focus:not(:-ms-input-placeholder) ~ label, .premier .form-label-group > input:not(:active):not(:-ms-input-placeholder) ~ label, .premier
+      .form-label-group textarea:focus:not(:-ms-input-placeholder) ~ label, .premier
+      .form-label-group textarea:not(:active):not(:-ms-input-placeholder) ~ label {
+        color: #2C1E45; }
+      .premier .form-label-group > input:focus:not(:placeholder-shown) ~ label, .premier .form-label-group > input:not(:active):not(:placeholder-shown) ~ label, .premier
+      .form-label-group textarea:focus:not(:placeholder-shown) ~ label, .premier
+      .form-label-group textarea:not(:active):not(:placeholder-shown) ~ label {
+        color: #2C1E45; }
     .form-label-group > input:not(:focus):not(:-moz-placeholder-shown) ~ label, .form-label-group textarea:not(:focus):not(:-moz-placeholder-shown) ~ label {
       color: rgba(34, 41, 47, 0.4); }
     .form-label-group > input:not(:focus):not(:-ms-input-placeholder) ~ label, .form-label-group textarea:not(:focus):not(:-ms-input-placeholder) ~ label {
@@ -36431,6 +36608,21 @@ select.form-control:not([multiple="multiple"]) {
     box-shadow: 0 0 0 1px #338955; }
   .form-label-group.has-icon-left > label {
     left: 36px; }
+  .light .form-label-group .css-4je539-control {
+    color: #42236A;
+    border-color: #E2D8EE; }
+  .dark .form-label-group .css-4je539-control {
+    color: #F6F3F8;
+    border-color: #564962; }
+  .premier .form-label-group .css-4je539-control {
+    color: #2C1E45;
+    border-color: #E0DCD8; }
+  .light .form-label-group .css-4je539-control .css-1uccc91-singleValue {
+    color: #42236A; }
+  .dark .form-label-group .css-4je539-control .css-1uccc91-singleValue {
+    color: #F6F3F8; }
+  .premier .form-label-group .css-4je539-control .css-1uccc91-singleValue {
+    color: #2C1E45; }
 
 /* Vuexy Custom Checkbox */
 .vx-checkbox-con {

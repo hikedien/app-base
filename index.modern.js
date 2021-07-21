@@ -1351,22 +1351,6 @@ const authReducers = (state = { ...authInitialState
   }
 };
 
-const LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
-const LOAD_USER_ROLE$1 = 'LOAD_USER_ROLE';
-const goBackHomePage$1 = () => {
-  return async (dispatch, getState) => {
-    const {
-      appId
-    } = getState().customizer;
-
-    if (appId === AppId.APP_NO1) {
-      history.push('/');
-    } else {
-      window.location.href = getExternalAppUrl(appId === AppId.TP_BANK_APP ? AppId.TP_BANK_APP : AppId.APP_NO1, '/');
-    }
-  };
-};
-
 const initialState = {
   navConfigs: [],
   roles: [],
@@ -1375,13 +1359,13 @@ const initialState = {
 
 const navbarReducer = (state = initialState, action) => {
   switch (action.type) {
-    case LOAD_NATIVGATION$1:
+    case LOAD_NATIVGATION:
       return { ...state,
         navConfigs: action.payload.navConfigs,
         roles: action.payload.roles
       };
 
-    case LOAD_USER_ROLE$1:
+    case LOAD_USER_ROLE:
       return { ...state,
         userRoles: action.payload
       };
@@ -1389,22 +1373,6 @@ const navbarReducer = (state = initialState, action) => {
     default:
       return state;
   }
-};
-
-const SHOW_LOADING_BAR$1 = 'SHOW_LOADING_BAR';
-const HIDE_LOADING_BAR$1 = 'HIDE_LOADING_BAR';
-const SHOW_CONFIRM_ALERT$1 = 'SHOW_CONFIRM_ALERT';
-const HIDE_CONFIRM_ALERT$1 = 'HIDE_CONFIRM_ALERT';
-const showConfirmAlert$1 = configs => {
-  return dispatch => dispatch({
-    type: SHOW_CONFIRM_ALERT$1,
-    payload: configs
-  });
-};
-const hideConfirmAlert$1 = () => {
-  return dispatch => dispatch({
-    type: HIDE_CONFIRM_ALERT$1
-  });
 };
 
 const DEFAULT_CONFIRM_ALERT = {
@@ -1423,19 +1391,19 @@ const initialState$1 = {
 
 const uiReducer = (state = initialState$1, action) => {
   switch (action.type) {
-    case SHOW_LOADING_BAR$1:
+    case SHOW_LOADING_BAR:
       return { ...state,
         isLoading: true,
         loading: state.loading.add(action.payload)
       };
 
-    case HIDE_LOADING_BAR$1:
+    case HIDE_LOADING_BAR:
       state.loading.delete(action.payload);
       return { ...state,
         isLoading: !!state.loading.size
       };
 
-    case SHOW_CONFIRM_ALERT$1:
+    case SHOW_CONFIRM_ALERT:
       return { ...state,
         confirmAlert: {
           isShow: true,
@@ -1444,7 +1412,7 @@ const uiReducer = (state = initialState$1, action) => {
         }
       };
 
-    case HIDE_CONFIRM_ALERT$1:
+    case HIDE_CONFIRM_ALERT:
       return { ...state,
         confirmAlert: { ...DEFAULT_CONFIRM_ALERT
         }
@@ -2270,7 +2238,7 @@ const Footer = props => {
 
   const onClickBackHome = e => {
     e.preventDefault();
-    dispatch(goBackHomePage$1());
+    dispatch(goBackHomePage());
   };
 
   return /*#__PURE__*/React.createElement("footer", null, /*#__PURE__*/React.createElement("div", {
@@ -2428,7 +2396,7 @@ const SidebarHeader = props => {
   const dispatch = useDispatch();
 
   const onClickHome = () => {
-    dispatch(goBackHomePage$1());
+    dispatch(goBackHomePage());
   };
 
   return /*#__PURE__*/React.createElement("div", {
@@ -7613,7 +7581,7 @@ const ChangePassword = () => {
   const dispatch = useDispatch();
 
   const onClickSubmit = values => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.changePassword"
       }),
@@ -7628,7 +7596,7 @@ const ChangePassword = () => {
   };
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -7637,7 +7605,7 @@ const ChangePassword = () => {
         id: "common.backHome.confirmMessage"
       }),
       onConfirm: () => {
-        dispatch(goBackHomePage$1());
+        dispatch(goBackHomePage());
       }
     }));
   };
@@ -7860,7 +7828,7 @@ const LanguageTab = () => {
   const [lang, setLang] = useState(localStorage.getItem('language'));
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -7869,13 +7837,13 @@ const LanguageTab = () => {
         id: "common.backHome.confirmMessage"
       }),
       onConfirm: () => {
-        dispatch(goBackHomePage$1());
+        dispatch(goBackHomePage());
       }
     }));
   };
 
   const onClickSaveChange = context => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.language"
       }),
@@ -7948,7 +7916,7 @@ const ContactTab = () => {
   const dispatch = useDispatch();
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -7957,13 +7925,13 @@ const ContactTab = () => {
         id: "common.backHome.confirmMessage"
       }),
       onConfirm: () => {
-        dispatch(goBackHomePage$1());
+        dispatch(goBackHomePage());
       }
     }));
   };
 
   const onClickCall = () => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.call"
       }),
@@ -8390,6 +8358,8 @@ const Login = () => {
     if (user) {
       setRememberMe(user);
     }
+
+    dispatch(logoutAction());
   }, []);
 
   const onSubmit = (values, actions) => {
@@ -9331,7 +9301,7 @@ const ConfirmAlert = () => {
       onConfirm();
     }
 
-    dispatch(hideConfirmAlert$1());
+    dispatch(hideConfirmAlert());
   };
 
   const onClickCancel = () => {
@@ -9339,7 +9309,7 @@ const ConfirmAlert = () => {
       onCancel();
     }
 
-    dispatch(hideConfirmAlert$1());
+    dispatch(hideConfirmAlert());
   };
 
   return /*#__PURE__*/React.createElement(SweetAlert, Object.assign({

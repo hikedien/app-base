@@ -1542,26 +1542,6 @@ var authReducers = function authReducers(state, action) {
   }
 };
 
-var LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
-var LOAD_USER_ROLE$1 = 'LOAD_USER_ROLE';
-var goBackHomePage$1 = function goBackHomePage() {
-  return function (dispatch, getState) {
-    try {
-      var appId = getState().customizer.appId;
-
-      if (appId === AppId.APP_NO1) {
-        history.push('/');
-      } else {
-        window.location.href = getExternalAppUrl(appId === AppId.TP_BANK_APP ? AppId.TP_BANK_APP : AppId.APP_NO1, '/');
-      }
-
-      return Promise.resolve();
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
-};
-
 var initialState = {
   navConfigs: [],
   roles: [],
@@ -1574,13 +1554,13 @@ var navbarReducer = function navbarReducer(state, action) {
   }
 
   switch (action.type) {
-    case LOAD_NATIVGATION$1:
+    case LOAD_NATIVGATION:
       return _extends({}, state, {
         navConfigs: action.payload.navConfigs,
         roles: action.payload.roles
       });
 
-    case LOAD_USER_ROLE$1:
+    case LOAD_USER_ROLE:
       return _extends({}, state, {
         userRoles: action.payload
       });
@@ -1588,26 +1568,6 @@ var navbarReducer = function navbarReducer(state, action) {
     default:
       return state;
   }
-};
-
-var SHOW_LOADING_BAR$1 = 'SHOW_LOADING_BAR';
-var HIDE_LOADING_BAR$1 = 'HIDE_LOADING_BAR';
-var SHOW_CONFIRM_ALERT$1 = 'SHOW_CONFIRM_ALERT';
-var HIDE_CONFIRM_ALERT$1 = 'HIDE_CONFIRM_ALERT';
-var showConfirmAlert$1 = function showConfirmAlert(configs) {
-  return function (dispatch) {
-    return dispatch({
-      type: SHOW_CONFIRM_ALERT$1,
-      payload: configs
-    });
-  };
-};
-var hideConfirmAlert$1 = function hideConfirmAlert() {
-  return function (dispatch) {
-    return dispatch({
-      type: HIDE_CONFIRM_ALERT$1
-    });
-  };
 };
 
 var DEFAULT_CONFIRM_ALERT = {
@@ -1629,26 +1589,26 @@ var uiReducer = function uiReducer(state, action) {
   }
 
   switch (action.type) {
-    case SHOW_LOADING_BAR$1:
+    case SHOW_LOADING_BAR:
       return _extends({}, state, {
         isLoading: true,
         loading: state.loading.add(action.payload)
       });
 
-    case HIDE_LOADING_BAR$1:
+    case HIDE_LOADING_BAR:
       state.loading["delete"](action.payload);
       return _extends({}, state, {
         isLoading: !!state.loading.size
       });
 
-    case SHOW_CONFIRM_ALERT$1:
+    case SHOW_CONFIRM_ALERT:
       return _extends({}, state, {
         confirmAlert: _extends({
           isShow: true
         }, state.confirmAlert, action.payload)
       });
 
-    case HIDE_CONFIRM_ALERT$1:
+    case HIDE_CONFIRM_ALERT:
       return _extends({}, state, {
         confirmAlert: _extends({}, DEFAULT_CONFIRM_ALERT)
       });
@@ -2534,7 +2494,7 @@ var Footer = function Footer(props) {
 
   var onClickBackHome = function onClickBackHome(e) {
     e.preventDefault();
-    dispatch(goBackHomePage$1());
+    dispatch(goBackHomePage());
   };
 
   return /*#__PURE__*/React__default.createElement("footer", null, /*#__PURE__*/React__default.createElement("div", {
@@ -2712,7 +2672,7 @@ var SidebarHeader = function SidebarHeader(props) {
   var dispatch = reactRedux.useDispatch();
 
   var onClickHome = function onClickHome() {
-    dispatch(goBackHomePage$1());
+    dispatch(goBackHomePage());
   };
 
   return /*#__PURE__*/React__default.createElement("div", {
@@ -8079,7 +8039,7 @@ var ChangePassword = function ChangePassword() {
   var dispatch = reactRedux.useDispatch();
 
   var onClickSubmit = function onClickSubmit(values) {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "setting.changePassword"
       }),
@@ -8094,7 +8054,7 @@ var ChangePassword = function ChangePassword() {
   };
 
   var onClickBackHome = function onClickBackHome() {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "common.home"
       }),
@@ -8103,7 +8063,7 @@ var ChangePassword = function ChangePassword() {
         id: "common.backHome.confirmMessage"
       }),
       onConfirm: function onConfirm() {
-        dispatch(goBackHomePage$1());
+        dispatch(goBackHomePage());
       }
     }));
   };
@@ -8351,7 +8311,7 @@ var LanguageTab = function LanguageTab() {
       setLang = _useState[1];
 
   var onClickBackHome = function onClickBackHome() {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "common.home"
       }),
@@ -8360,13 +8320,13 @@ var LanguageTab = function LanguageTab() {
         id: "common.backHome.confirmMessage"
       }),
       onConfirm: function onConfirm() {
-        dispatch(goBackHomePage$1());
+        dispatch(goBackHomePage());
       }
     }));
   };
 
   var onClickSaveChange = function onClickSaveChange(context) {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "setting.language"
       }),
@@ -8452,7 +8412,7 @@ var ContactTab = function ContactTab() {
   var dispatch = reactRedux.useDispatch();
 
   var onClickBackHome = function onClickBackHome() {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "common.home"
       }),
@@ -8461,13 +8421,13 @@ var ContactTab = function ContactTab() {
         id: "common.backHome.confirmMessage"
       }),
       onConfirm: function onConfirm() {
-        dispatch(goBackHomePage$1());
+        dispatch(goBackHomePage());
       }
     }));
   };
 
   var onClickCall = function onClickCall() {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "setting.call"
       }),
@@ -8942,6 +8902,8 @@ var Login = function Login() {
     if (user) {
       setRememberMe(user);
     }
+
+    dispatch(logoutAction());
   }, []);
 
   var onSubmit = function onSubmit(values, actions) {
@@ -9977,7 +9939,7 @@ var ConfirmAlert = function ConfirmAlert() {
       onConfirm();
     }
 
-    dispatch(hideConfirmAlert$1());
+    dispatch(hideConfirmAlert());
   };
 
   var onClickCancel = function onClickCancel() {
@@ -9985,7 +9947,7 @@ var ConfirmAlert = function ConfirmAlert() {
       onCancel();
     }
 
-    dispatch(hideConfirmAlert$1());
+    dispatch(hideConfirmAlert());
   };
 
   return /*#__PURE__*/React__default.createElement(SweetAlert, _extends({
