@@ -7375,13 +7375,13 @@ var Select = function Select(props) {
         })
       });
     },
-    styles: _extends({}, styles, {
+    styles: {
       control: function control(base, state) {
         return _extends({}, base, {
-          borderColor: 'orange'
+          borderColor: state.isFocused ? '#E2D8EE' : ''
         });
       }
-    })
+    }
   })), props.required && props.isShowErrorMessage ? getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React__default.createElement("div", {
     className: "text-danger"
   }, getPropObject(props.errors, props.fieldName)) : null : '', /*#__PURE__*/React__default.createElement("input", {
@@ -8942,8 +8942,6 @@ var Login = function Login() {
     if (user) {
       setRememberMe(user);
     }
-
-    dispatch(logoutAction());
   }, []);
 
   var onSubmit = function onSubmit(values, actions) {

@@ -6993,9 +6993,9 @@ const Select = props => {
         primary: '#AD8AD8'
       }
     }),
-    styles: { ...styles,
+    styles: {
       control: (base, state) => ({ ...base,
-        borderColor: 'orange'
+        borderColor: state.isFocused ? '#E2D8EE' : ''
       })
     }
   })), props.required && props.isShowErrorMessage ? getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React.createElement("div", {
@@ -8390,8 +8390,6 @@ const Login = () => {
     if (user) {
       setRememberMe(user);
     }
-
-    dispatch(logoutAction());
   }, []);
 
   const onSubmit = (values, actions) => {
