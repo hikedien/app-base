@@ -13820,7 +13820,6 @@ select.form-control:not([multiple="multiple"]) {
     border: none !important;
     box-shadow: none !important; }
   .form-label-group .css-1pahdxg-control {
-    border-color: #338955 !important;
     box-shadow: 0 0 0 1px #338955; }
   .form-label-group.has-icon-left > label {
     left: 36px; }
@@ -36429,7 +36428,6 @@ select.form-control:not([multiple="multiple"]) {
     border: none !important;
     box-shadow: none !important; }
   .form-label-group .css-1pahdxg-control {
-    border-color: #338955 !important;
     box-shadow: 0 0 0 1px #338955; }
   .form-label-group.has-icon-left > label {
     left: 36px; }

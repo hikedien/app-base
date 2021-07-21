@@ -6990,9 +6990,14 @@ const Select = props => {
     onFocus: onFocus,
     theme: theme => ({ ...theme,
       colors: { ...theme.colors,
-        primary: '#338955'
+        primary: '#AD8AD8'
       }
-    })
+    }),
+    styles: { ...styles,
+      control: (base, state) => ({ ...base,
+        borderColor: 'orange'
+      })
+    }
   })), props.required && props.isShowErrorMessage ? getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
   }, getPropObject(props.errors, props.fieldName)) : null : '', /*#__PURE__*/React.createElement("input", {
@@ -9357,7 +9362,7 @@ const ConfirmAlert = () => {
     onCancel: onClickCancel
   }, otherConfigs), /*#__PURE__*/React.createElement("div", {
     className: "content-custom-color"
-  }, content), content);
+  }, content));
 };
 
 const AppRouter = props => {

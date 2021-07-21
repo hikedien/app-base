@@ -7371,10 +7371,17 @@ var Select = function Select(props) {
     theme: function theme(_theme) {
       return _extends({}, _theme, {
         colors: _extends({}, _theme.colors, {
-          primary: '#338955'
+          primary: '#AD8AD8'
         })
       });
-    }
+    },
+    styles: _extends({}, styles, {
+      control: function control(base, state) {
+        return _extends({}, base, {
+          borderColor: 'orange'
+        });
+      }
+    })
   })), props.required && props.isShowErrorMessage ? getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React__default.createElement("div", {
     className: "text-danger"
   }, getPropObject(props.errors, props.fieldName)) : null : '', /*#__PURE__*/React__default.createElement("input", {
@@ -10001,7 +10008,7 @@ var ConfirmAlert = function ConfirmAlert() {
     onCancel: onClickCancel
   }, otherConfigs), /*#__PURE__*/React__default.createElement("div", {
     className: "content-custom-color"
-  }, content), content);
+  }, content));
 };
 
 var AppRouter = function AppRouter(props) {
