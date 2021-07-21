@@ -764,6 +764,7 @@ const CHANGE_VERIFY_ACCOUNT_STATUS = 'CHANGE_VERIFY_ACCOUNT_STATUS';
 const CHANGE_IS_GUEST = 'CHANGE_IS_GUEST';
 const GOTO_GUEST_APP = 'GOTO_GUEST_APP';
 const GOTO_AGENCY_APP = 'GOTO_AGENCY_APP';
+const RESET_AUTH_TOKEN = 'RESET_AUTH_TOKEN';
 var sessionTimeout = null;
 const checkLoginStatus = (authToken, redirectUrl) => {
   return async (dispatch, getState) => {
@@ -807,7 +808,7 @@ const checkLoginStatus = (authToken, redirectUrl) => {
 const loginAction = user => {
   return async (dispatch, getState) => {
     dispatch({
-      type: LOGOUT_ACTION
+      type: RESET_AUTH_TOKEN
     });
     user.rememberMe = user.isRemeberMe;
     let response = await AuthService.login(user);
@@ -1267,6 +1268,13 @@ const authReducers = (state = { ...authInitialState
     case LOGOUT_ACTION:
       {
         return { ...authInitialState
+        };
+      }
+
+    case RESET_AUTH_TOKEN:
+      {
+        return { ...state,
+          authToken: ''
         };
       }
 

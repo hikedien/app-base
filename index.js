@@ -871,6 +871,7 @@ var CHANGE_VERIFY_ACCOUNT_STATUS = 'CHANGE_VERIFY_ACCOUNT_STATUS';
 var CHANGE_IS_GUEST = 'CHANGE_IS_GUEST';
 var GOTO_GUEST_APP = 'GOTO_GUEST_APP';
 var GOTO_AGENCY_APP = 'GOTO_AGENCY_APP';
+var RESET_AUTH_TOKEN = 'RESET_AUTH_TOKEN';
 var sessionTimeout = null;
 var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
   return function (dispatch, getState) {
@@ -926,7 +927,7 @@ var loginAction = function loginAction(user) {
   return function (dispatch, getState) {
     try {
       dispatch({
-        type: LOGOUT_ACTION
+        type: RESET_AUTH_TOKEN
       });
       user.rememberMe = user.isRemeberMe;
       return Promise.resolve(AuthService.login(user)).then(function (response) {
@@ -1461,6 +1462,13 @@ var authReducers = function authReducers(state, action) {
     case LOGOUT_ACTION:
       {
         return _extends({}, authInitialState);
+      }
+
+    case RESET_AUTH_TOKEN:
+      {
+        return _extends({}, state, {
+          authToken: ''
+        });
       }
 
     case LOGIN_FAIL_ACTION:
