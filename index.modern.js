@@ -50,11 +50,10 @@ const AppId = {
   APP_NO1: 'APP_NO1',
   INSURANCE_APP: 'INSURANCE_APP',
   SUPPLEMENT_APP: 'SUPPLEMENT_APP',
-  ELITE_APP: 'ELITE_APP',
-  DIVAY_APP: 'DIVAY_APP'
+  TP_BANK_APP: 'TP_BANK_APP'
 };
 
-const API_BASE_URL = 'https://api.inon.vn';
+const API_BASE_URL = 'https://apisit.inon.vn';
 const RESOURCE_URL = 'https://sit2.inon.vn/resources/images/';
 const FB_APP_ID = '2651185198505964';
 const GOOGLE_APP_ID = '400818618331-k9ptcdcgr99po0g5q5mh8e5ekodgj61n.apps.googleusercontent.com';
@@ -171,7 +170,7 @@ const getExternalAppUrl = (appId, url) => {
     case AppId.SUPPLEMENT_APP:
       return `${window.location.origin}/supplement${url}?redirectUrl=${url}`;
 
-    case AppId.ELITE_APP:
+    case AppId.TP_BANK_APP:
       return `${window.location.origin}${url}?redirectUrl=${url}`;
   }
 };
@@ -186,7 +185,7 @@ const getContextPath = appId => {
     case AppId.SUPPLEMENT_APP:
       return 'supplement';
 
-    case AppId.ELITE_APP:
+    case AppId.TP_BANK_APP:
       return '';
   }
 };
@@ -237,7 +236,8 @@ const IMAGE = {
   DOWNLOAD_APP_IOS: RESOURCE_URL + 'app-store.svg',
   DOWNLOAD_APP_ANDROID: RESOURCE_URL + 'google-store.svg',
   CHECK_ICON: RESOURCE_URL + 'check_icon.png',
-  FAIL_ICON: RESOURCE_URL + 'fail_icon.png'
+  FAIL_ICON: RESOURCE_URL + 'fail_icon.png',
+  TPBANK_LOADER: RESOURCE_URL + 'tpbank-loader.gif'
 };
 
 var appConfigs = {
@@ -433,7 +433,7 @@ const setUpHttpClient = (store, apiBaseUrl) => {
     const {
       appId
     } = store.getState().customizer;
-    const token = appId === AppId.ELITE_APP ? store.getState().auth.guest.authToken : store.getState().auth.authToken;
+    const token = appId === AppId.TP_BANK_APP ? store.getState().auth.guest.authToken : store.getState().auth.authToken;
     const sessionExpireTime = store.getState().auth.sessionExpireTime;
     language = localStorage.getItem('language');
 
@@ -748,7 +748,7 @@ const goBackHomePage = () => {
     if (appId === AppId.APP_NO1) {
       history.push('/');
     } else {
-      window.location.href = getExternalAppUrl(appId === AppId.ELITE_APP ? AppId.ELITE_APP : AppId.APP_NO1, '/');
+      window.location.href = getExternalAppUrl(appId === AppId.TP_BANK_APP ? AppId.TP_BANK_APP : AppId.APP_NO1, '/');
     }
   };
 };
@@ -764,7 +764,6 @@ const CHANGE_VERIFY_ACCOUNT_STATUS = 'CHANGE_VERIFY_ACCOUNT_STATUS';
 const CHANGE_IS_GUEST = 'CHANGE_IS_GUEST';
 const GOTO_GUEST_APP = 'GOTO_GUEST_APP';
 const GOTO_AGENCY_APP = 'GOTO_AGENCY_APP';
-const RESET_AUTH_TOKEN = 'RESET_AUTH_TOKEN';
 var sessionTimeout = null;
 const checkLoginStatus = (authToken, redirectUrl) => {
   return async (dispatch, getState) => {
@@ -775,11 +774,11 @@ const checkLoginStatus = (authToken, redirectUrl) => {
       } = getState().customizer;
       const {
         username
-      } = appId === AppId.ELITE_APP ? getState().auth.guest.user : getState().auth.user;
+      } = appId === AppId.TP_BANK_APP ? getState().auth.guest.user : getState().auth.user;
 
       if (response.status === API_R_200 && username) {
         response = await AuthService.getUserInfo(username, authToken);
-        const payload = appId === AppId.ELITE_APP ? {
+        const payload = appId === AppId.TP_BANK_APP ? {
           guest: {
             authToken,
             user: response.data || {}
@@ -807,9 +806,6 @@ const checkLoginStatus = (authToken, redirectUrl) => {
 };
 const loginAction = user => {
   return async (dispatch, getState) => {
-    dispatch({
-      type: RESET_AUTH_TOKEN
-    });
     user.rememberMe = user.isRemeberMe;
     let response = await AuthService.login(user);
     const {
@@ -910,8 +906,8 @@ const socialLogin = (data, loginMethod, openAddInfoPopup) => {
       }
     });
     setTimeout(() => {
-      if (getState().customizer.appId !== AppId.ELITE_APP) {
-        window.location.href = getExternalAppUrl(AppId.ELITE_APP, '/');
+      if (getState().customizer.appId !== AppId.TP_BANK_APP) {
+        window.location.href = getExternalAppUrl(AppId.TP_BANK_APP, '/');
       } else {
         history.push('/');
       }
@@ -1125,7 +1121,7 @@ const changeLanguageSetting = (lang, callBack) => {
     } = getState().customizer;
     const {
       userSettings = {}
-    } = appId === AppId.ELITE_APP ? getState().auth.guest.user : getState().auth.user;
+    } = appId === AppId.TP_BANK_APP ? getState().auth.guest.user : getState().auth.user;
     const value = { ...userSettings,
       language: lang.toUpperCase()
     };
@@ -1162,7 +1158,7 @@ const verifyPhoneNumber = values => {
 
 const redirectMainApp = (isGuest, appId) => {
   setTimeout(() => {
-    const mainApp = isGuest ? AppId.ELITE_APP : AppId.APP_NO1;
+    const mainApp = isGuest ? AppId.TP_BANK_APP : AppId.APP_NO1;
 
     if (appId !== mainApp) {
       window.location.href = getExternalAppUrl(mainApp, '/');
@@ -1271,13 +1267,6 @@ const authReducers = (state = { ...authInitialState
         };
       }
 
-    case RESET_AUTH_TOKEN:
-      {
-        return { ...state,
-          authToken: ''
-        };
-      }
-
     case LOGIN_FAIL_ACTION:
       {
         return { ...state,
@@ -1362,22 +1351,6 @@ const authReducers = (state = { ...authInitialState
   }
 };
 
-const LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
-const LOAD_USER_ROLE$1 = 'LOAD_USER_ROLE';
-const goBackHomePage$1 = () => {
-  return async (dispatch, getState) => {
-    const {
-      appId
-    } = getState().customizer;
-
-    if (appId === AppId.APP_NO1) {
-      history.push('/');
-    } else {
-      window.location.href = getExternalAppUrl(appId === AppId.ELITE_APP ? AppId.ELITE_APP : AppId.APP_NO1, '/');
-    }
-  };
-};
-
 const initialState = {
   navConfigs: [],
   roles: [],
@@ -1386,13 +1359,13 @@ const initialState = {
 
 const navbarReducer = (state = initialState, action) => {
   switch (action.type) {
-    case LOAD_NATIVGATION$1:
+    case LOAD_NATIVGATION:
       return { ...state,
         navConfigs: action.payload.navConfigs,
         roles: action.payload.roles
       };
 
-    case LOAD_USER_ROLE$1:
+    case LOAD_USER_ROLE:
       return { ...state,
         userRoles: action.payload
       };
@@ -1400,22 +1373,6 @@ const navbarReducer = (state = initialState, action) => {
     default:
       return state;
   }
-};
-
-const SHOW_LOADING_BAR$1 = 'SHOW_LOADING_BAR';
-const HIDE_LOADING_BAR$1 = 'HIDE_LOADING_BAR';
-const SHOW_CONFIRM_ALERT$1 = 'SHOW_CONFIRM_ALERT';
-const HIDE_CONFIRM_ALERT$1 = 'HIDE_CONFIRM_ALERT';
-const showConfirmAlert$1 = configs => {
-  return dispatch => dispatch({
-    type: SHOW_CONFIRM_ALERT$1,
-    payload: configs
-  });
-};
-const hideConfirmAlert$1 = () => {
-  return dispatch => dispatch({
-    type: HIDE_CONFIRM_ALERT$1
-  });
 };
 
 const DEFAULT_CONFIRM_ALERT = {
@@ -1434,19 +1391,19 @@ const initialState$1 = {
 
 const uiReducer = (state = initialState$1, action) => {
   switch (action.type) {
-    case SHOW_LOADING_BAR$1:
+    case SHOW_LOADING_BAR:
       return { ...state,
         isLoading: true,
         loading: state.loading.add(action.payload)
       };
 
-    case HIDE_LOADING_BAR$1:
+    case HIDE_LOADING_BAR:
       state.loading.delete(action.payload);
       return { ...state,
         isLoading: !!state.loading.size
       };
 
-    case SHOW_CONFIRM_ALERT$1:
+    case SHOW_CONFIRM_ALERT:
       return { ...state,
         confirmAlert: {
           isShow: true,
@@ -1455,7 +1412,7 @@ const uiReducer = (state = initialState$1, action) => {
         }
       };
 
-    case HIDE_CONFIRM_ALERT$1:
+    case HIDE_CONFIRM_ALERT:
       return { ...state,
         confirmAlert: { ...DEFAULT_CONFIRM_ALERT
         }
@@ -2281,7 +2238,7 @@ const Footer = props => {
 
   const onClickBackHome = e => {
     e.preventDefault();
-    dispatch(goBackHomePage$1());
+    dispatch(goBackHomePage());
   };
 
   return /*#__PURE__*/React.createElement("footer", null, /*#__PURE__*/React.createElement("div", {
@@ -2439,7 +2396,7 @@ const SidebarHeader = props => {
   const dispatch = useDispatch();
 
   const onClickHome = () => {
-    dispatch(goBackHomePage$1());
+    dispatch(goBackHomePage());
   };
 
   return /*#__PURE__*/React.createElement("div", {
@@ -3293,7 +3250,7 @@ const mapStateToProps$2 = state => {
   };
 };
 
-var Layout$1 = connect(mapStateToProps$2, {
+connect(mapStateToProps$2, {
   changeTheme,
   collapseSidebar,
   changeNavbarColor,
@@ -7001,9 +6958,14 @@ const Select = props => {
     onFocus: onFocus,
     theme: theme => ({ ...theme,
       colors: { ...theme.colors,
-        primary: '#338955'
+        primary: '#AD8AD8'
       }
-    })
+    }),
+    styles: {
+      control: (base, state) => ({ ...base,
+        borderColor: state.isFocused ? '#E2D8EE' : ''
+      })
+    }
   })), props.required && props.isShowErrorMessage ? getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
   }, getPropObject(props.errors, props.fieldName)) : null : '', /*#__PURE__*/React.createElement("input", {
@@ -7285,7 +7247,7 @@ const UserAccountTab = () => {
     userDetails = {},
     userSettings = {},
     ...user
-  } = useSelector(state => appId !== AppId.ELITE_APP ? state.auth.user : state.auth.guest.user);
+  } = useSelector(state => appId !== AppId.TP_BANK_APP ? state.auth.user : state.auth.guest.user);
   const dispatch = useDispatch();
   const {
     cities
@@ -7619,7 +7581,7 @@ const ChangePassword = () => {
   const dispatch = useDispatch();
 
   const onClickSubmit = values => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.changePassword"
       }),
@@ -7634,7 +7596,7 @@ const ChangePassword = () => {
   };
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -7643,7 +7605,7 @@ const ChangePassword = () => {
         id: "common.backHome.confirmMessage"
       }),
       onConfirm: () => {
-        dispatch(goBackHomePage$1());
+        dispatch(goBackHomePage());
       }
     }));
   };
@@ -7706,12 +7668,12 @@ const ChangePassword = () => {
 const ShareWithFriends = () => {
   const {
     user
-  } = useSelector(state => state.customizer.appId === AppId.ELITE_APP ? state.auth.guest : state.auth);
+  } = useSelector(state => state.customizer.appId === AppId.TP_BANK_APP ? state.auth.guest : state.auth);
   const qrCode = useRef();
   const shareUrl = `${document.location.origin}/home?refId=${user.username}`;
   useEffect(() => {
     const options = {
-      text: 'https://drive.google.com/drive/folders/19KZRbkHRIlX3o5tayMw2Rh73YAhdFQMS?usp=sharing',
+      text: shareUrl,
       colorDark: '#106D5A',
       correctLevel: QRCode.CorrectLevel.H,
       logo: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzEiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCAzMSAzMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0xOC4zMTY3IDI0Ljk5MDFDMTguNTA1OCAyNC43OTkyIDE4LjcxODUgMjQuNjMyMSAxOC45MDc2IDI0LjQxNzNDMjEuMTA1NiAyMi4xOTc1IDIyLjY0MTggMTkuMzMzMyAyMy4xODU0IDE2LjExMTFDMjMuMzI3MiAxNS4yMjggMjMuNDIxNyAxNC4zMjEgMjMuNDIxNyAxMy40MTRDMjMuNDIxNyAxMy4wNzk4IDIzLjQyMTcgMTIuNzY5NSAyMy4zOTgxIDEyLjQ1OTNDMjMuMTYxOCA4LjU0NDg2IDIxLjQ4MzcgNS4wMTIzNSAxOC45MDc2IDIuNDEwN0MxOC43MTg1IDIuMjE5NzUgMTguNTI5NCAyLjAyODgxIDE4LjMxNjcgMS44Mzc4NkMxNy42NTQ5IDEuMjQxMTUgMTYuOTQ1OSAwLjY5MjE4MSAxNi4xODk2IDAuMjE0ODE1QzE1Ljc0MDUgLTAuMDcxNjA0OSAxNS4xNDk3IC0wLjA3MTYwNDkgMTQuNjc3IDAuMjE0ODE1QzEzLjkyMDcgMC42OTIxODEgMTMuMjExNyAxLjI0MTE1IDEyLjU0OTkgMS44Mzc4NkMxMi4zNjA4IDIuMDI4ODEgMTIuMTQ4MSAyLjE5NTg4IDExLjk1OSAyLjQxMDdDOS44MDgzIDQuNTgyNzIgOC4yNzIwNiA3LjM5OTE4IDcuNzA0ODMgMTAuNTQ5OEM3Ljk0MTE4IDEwLjQzMDUgOC4yMDExNiAxMC4zMTExIDguNDM3NSAxMC4xOTE4QzExLjc0NjMgOC42ODgwNyAxNy4zNDc3IDguMjM0NTcgMjAuMDY1NyAxMC45NTU2QzE4LjYwMDMgMTAuNDc4MiAxNy4wNDA0IDEwLjIzOTUgMTUuNDA5NyAxMC4yMzk1QzEzLjc3ODkgMTAuMjM5NSAxMi4yMTkgMTAuNTAyMSAxMC43NTM3IDEwLjk1NTZDOS41OTU1OSAxMS4zMzc0IDguNDg0NzcgMTEuODM4NyA3LjQ0NDg1IDEyLjQ1OTNDNi4zODEzIDEzLjEwMzcgNS4zODg2NiAxMy44OTE0IDQuNDkwNTUgMTQuNzk4NEMyLjMxNjE4IDE2Ljk5NDIgMC43Nzk5MzcgMTkuODgyMyAwLjIzNjM0NSAyMy4xMDQ1QzAuMDk0NTM3OCAyMy45ODc3IDAgMjQuODk0NiAwIDI1LjgwMTZDMCAyNS44NDk0IDAgMjUuODk3MSAwIDI1Ljk2ODdDMCAyNi40NyAwLjI4MzYxMyAyNi45MjM1IDAuNzMyNjY4IDI3LjE2MjFDMS41NTk4NyAyNy42MTU2IDIuNDM0MzUgMjcuOTczNyAzLjMzMjQ2IDI4LjI2MDFDNC43OTc3OSAyOC43Mzc0IDYuMzU3NjcgMjguOTc2MSA3Ljk4ODQ1IDI4Ljk3NjFDMTAuMDIxIDI4Ljk3NjEgMTEuOTU5IDI4LjU3MDQgMTMuNzU1MyAyNy44NTQzQzEzLjUxODkgMjcuNjg3MiAxMy4yODI2IDI3LjU0NCAxMy4wNDYyIDI3LjM3N0M5LjUwMTA1IDI0Ljg0NjkgNi42MTc2NSAyMC44ODQ4IDcuNjU3NTYgMTYuMTM1QzguMjI0NzkgMTkuMzU3MiA5Ljc2MTAzIDIyLjIyMTQgMTEuOTM1NCAyNC40NDEyQzEyLjEyNDUgMjQuNjMyMSAxMi4zMTM2IDI0LjgyMyAxMi41MjYzIDI1LjAxNEMxMy40MDA3IDI1LjgwMTYgMTQuMzY5NyAyNi41MTc3IDE1LjQwOTcgMjcuMDkwNUMxNy42MDc3IDI4LjMwNzggMjAuMTYwMiAyOS4wMjM5IDIyLjg1NDUgMjkuMDIzOUMyNC40ODUzIDI5LjAyMzkgMjYuMDQ1MiAyOC43NjEzIDI3LjUxMDUgMjguMzA3OEMyOC40MDg2IDI4LjAyMTQgMjkuMjgzMSAyNy42Mzk1IDMwLjExMDMgMjcuMjA5OUMzMC41NTkzIDI2Ljk3MTIgMzAuODQzIDI2LjUxNzcgMzAuODQzIDI1Ljk5MjZDMzAuODQzIDI1Ljk0NDkgMzAuODQzIDI1Ljg5NzEgMzAuODQzIDI1Ljg0OTRDMzAuODQzIDI0LjkxODUgMzAuNzcyMSAyNC4wMzU0IDMwLjYwNjYgMjMuMTUyM0MzMC4wMzk0IDE5LjkzIDI4LjUwMzIgMTcuMDY1OCAyNi4zMjg4IDE0Ljg0NjFDMjUuOTAzNCAxNC40MTY1IDI1LjQzMDcgMTMuOTg2OCAyNC45NTggMTMuNjA0OUMyNC45MTA3IDE4LjI4MzEgMjIuOTAxOCAyMy4xMDQ1IDE4LjMxNjcgMjQuOTkwMVpNMjAuMjc4NCAxNC4zNjg3QzIwLjA0MiAxNy40MjM5IDE4LjcxODUgMjAuMTkyNiAxNi43MDk2IDIyLjI0NTNDMTYuMzA3OCAyMi42NTEgMTUuODgyNCAyMy4wMzI5IDE1LjQzMzMgMjMuMzY3MUMxNC45ODQyIDIzLjAwOTEgMTQuNTU4OCAyMi42NTEgMTQuMTU3IDIyLjI0NTNDMTIuMTI0NSAyMC4xOTI2IDEwLjgwMDkgMTcuNDQ3NyAxMC41ODgyIDE0LjM2ODdDMTIuMDc3MiAxMy43MjQzIDEzLjczMTYgMTMuMzY2MyAxNS40NTY5IDEzLjM2NjNDMTcuMTU4NiAxMy4zNDI0IDE4Ljc4OTQgMTMuNzAwNCAyMC4yNzg0IDE0LjM2ODdaIiBmaWxsPSIjMTA2RDVBIi8+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMTguMzE2OSAyNC45ODk5QzE4LjUwNiAyNC43OTg5IDE4LjcxODcgMjQuNjMxOSAxOC45MDc4IDI0LjQ0MDlDMjEuMTA1OCAyMi4yMjEyIDIyLjY0MiAxOS4zNTcgMjMuMTg1NiAxNi4xMzQ3QzIzLjIwOTIgMTUuOTkxNSAyMy4yMzI5IDE1LjgyNDQgMjMuMjU2NSAxNS42ODEyQzIyLjgwNzQgMTMuNzQ3OSAyMS42NDkzIDEyLjA3NzEgMjAuMDY1OCAxMC45NTUzQzE4LjYwMDUgMTAuNDc3OSAxNy4wNDA2IDEwLjIzOTMgMTUuNDMzNSAxMC4yMzkzQzEzLjkyMDkgMTAuMjM5MyAxMi40NTU1IDEwLjQ1NDEgMTEuMDYxMSAxMC44ODM3QzkuMjY0ODkgMTIuMTAxIDguMDEyMjcgMTMuODkxMSA3LjY4MTM4IDE2LjEzNDdDNy43MDUwMiAxNi4wNjMxIDcuNjU3NzUgMTYuMjA2MyA3LjY4MTM4IDE2LjEzNDdDOC4yNDg2MSAxOS4zNTcgOS43ODQ4NSAyMi4yMjEyIDExLjk1OTIgMjQuNDQwOUMxMi4xMDEgMjQuNTg0MSAxMi4yNjY1IDI0Ljc1MTIgMTIuNDMxOSAyNC44OTQ0QzEzLjM3NzMgMjUuMzAwMiAxNC40MTcyIDI1LjUxNSAxNS41MDQ0IDI1LjUxNUMxNi40OTcgMjUuNTE1IDE3LjQ0MjQgMjUuMzI0IDE4LjMxNjkgMjQuOTg5OVpNMTQuMTMzNiAyMi4yMjEyQzEyLjEwMSAyMC4xNjg1IDEwLjc3NzUgMTcuNDIzNiAxMC41NjQ4IDE0LjM0NDZDMTIuMDUzOCAxMy43MDAyIDEzLjcwODIgMTMuMzQyMSAxNS40MzM1IDEzLjM0MjFDMTcuMTU4OCAxMy4zNDIxIDE4LjgxMzIgMTMuNzAwMiAyMC4zMDIyIDE0LjM0NDZDMjAuMDY1OCAxNy4zOTk4IDE4Ljc0MjMgMjAuMTY4NSAxNi43MzM0IDIyLjIyMTJDMTYuMzMxNiAyMi42MjY5IDE1LjkwNjIgMjMuMDA4OCAxNS40NTcxIDIzLjM0M0MxNC45NjA4IDIzLjAwODggMTQuNTM1NCAyMi42MjY5IDE0LjEzMzYgMjIuMjIxMloiIGZpbGw9IiMxMDZENUEiLz4KPGcgb3BhY2l0eT0iMC42Ij4KPHBhdGggb3BhY2l0eT0iMC42IiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTE4LjMxNjkgMjQuOTg5OUMxOC41MDYgMjQuNzk4OSAxOC43MTg3IDI0LjYzMTkgMTguOTA3OCAyNC40NDA5QzIxLjEwNTggMjIuMjIxMiAyMi42NDIgMTkuMzU3IDIzLjE4NTYgMTYuMTM0N0MyMy4yMDkyIDE1Ljk5MTUgMjMuMjMyOSAxNS44MjQ0IDIzLjI1NjUgMTUuNjgxMkMyMi44MDc0IDEzLjc0NzkgMjEuNjQ5MyAxMi4wNzcxIDIwLjA2NTggMTAuOTU1M0MxOC42MDA1IDEwLjQ3NzkgMTcuMDQwNiAxMC4yMzkzIDE1LjQzMzUgMTAuMjM5M0MxMy45MjA5IDEwLjIzOTMgMTIuNDU1NSAxMC40NTQxIDExLjA2MTEgMTAuODgzN0M5LjI2NDg5IDEyLjEwMSA4LjAxMjI3IDEzLjg5MTEgNy42ODEzOCAxNi4xMzQ3QzcuNzA1MDIgMTYuMDYzMSA3LjY1Nzc1IDE2LjIwNjMgNy42ODEzOCAxNi4xMzQ3QzguMjQ4NjEgMTkuMzU3IDkuNzg0ODUgMjIuMjIxMiAxMS45NTkyIDI0LjQ0MDlDMTIuMTAxIDI0LjU4NDEgMTIuMjY2NSAyNC43NTEyIDEyLjQzMTkgMjQuODk0NEMxMy4zNzczIDI1LjMwMDIgMTQuNDE3MiAyNS41MTUgMTUuNTA0NCAyNS41MTVDMTYuNDk3IDI1LjUxNSAxNy40NDI0IDI1LjMyNCAxOC4zMTY5IDI0Ljk4OTlaTTE0LjEzMzYgMjIuMjIxMkMxMi4xMDEgMjAuMTY4NSAxMC43Nzc1IDE3LjQyMzYgMTAuNTY0OCAxNC4zNDQ2QzEyLjA1MzggMTMuNzAwMiAxMy43MDgyIDEzLjM0MjEgMTUuNDMzNSAxMy4zNDIxQzE3LjE1ODggMTMuMzQyMSAxOC44MTMyIDEzLjcwMDIgMjAuMzAyMiAxNC4zNDQ2QzIwLjA2NTggMTcuMzk5OCAxOC43NDIzIDIwLjE2ODUgMTYuNzMzNCAyMi4yMjEyQzE2LjMzMTYgMjIuNjI2OSAxNS45MDYyIDIzLjAwODggMTUuNDU3MSAyMy4zNDNDMTQuOTYwOCAyMy4wMDg4IDE0LjUzNTQgMjIuNjI2OSAxNC4xMzM2IDIyLjIyMTJaIiBmaWxsPSIjMTA2RDVBIi8+CjwvZz4KPC9zdmc+Cg==',
@@ -7866,7 +7828,7 @@ const LanguageTab = () => {
   const [lang, setLang] = useState(localStorage.getItem('language'));
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -7875,13 +7837,13 @@ const LanguageTab = () => {
         id: "common.backHome.confirmMessage"
       }),
       onConfirm: () => {
-        dispatch(goBackHomePage$1());
+        dispatch(goBackHomePage());
       }
     }));
   };
 
   const onClickSaveChange = context => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.language"
       }),
@@ -7954,7 +7916,7 @@ const ContactTab = () => {
   const dispatch = useDispatch();
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -7963,13 +7925,13 @@ const ContactTab = () => {
         id: "common.backHome.confirmMessage"
       }),
       onConfirm: () => {
-        dispatch(goBackHomePage$1());
+        dispatch(goBackHomePage());
       }
     }));
   };
 
   const onClickCall = () => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.call"
       }),
@@ -8570,7 +8532,7 @@ const Register = () => {
   };
 
   const onChangeFullName = (e, form) => {
-    const value = e.target.value.replace(/[^0-9a-zàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ\s]/gi, '');
+    const value = e.target.value.replace(/[^\w\s]/gi, '');
     form.setFieldValue('fullName', value);
   };
 
@@ -9337,7 +9299,7 @@ const ConfirmAlert = () => {
       onConfirm();
     }
 
-    dispatch(hideConfirmAlert$1());
+    dispatch(hideConfirmAlert());
   };
 
   const onClickCancel = () => {
@@ -9345,7 +9307,7 @@ const ConfirmAlert = () => {
       onCancel();
     }
 
-    dispatch(hideConfirmAlert$1());
+    dispatch(hideConfirmAlert());
   };
 
   return /*#__PURE__*/React.createElement(SweetAlert, Object.assign({
@@ -9354,7 +9316,8 @@ const ConfirmAlert = () => {
     showCancel: true,
     reverseButtons: true,
     btnSize: "md",
-    cancelBtnBsStyle: "secondary",
+    cancelBtnCssClass: "custom-cancel-btn",
+    confirmBtnCssClass: "custom-confirm-btn",
     confirmBtnText: confirmBtnText || intl.formatMessage({
       id: 'common.ok'
     }),
@@ -9363,7 +9326,9 @@ const ConfirmAlert = () => {
     }),
     onConfirm: onClickConfirm,
     onCancel: onClickCancel
-  }, otherConfigs), content);
+  }, otherConfigs), /*#__PURE__*/React.createElement("div", {
+    className: "content-custom-color"
+  }, content));
 };
 
 const AppRouter = props => {
@@ -9386,16 +9351,11 @@ const AppRouter = props => {
   useEffect(() => {
     setAppId(appId);
     const urlParams = new URLSearchParams(document.location.search);
-    const code = urlParams.get('code') || (appId === AppId.ELITE_APP ? guest.authToken : authToken);
+    const code = urlParams.get('code') || (appId === AppId.TP_BANK_APP ? guest.authToken : authToken);
     const redirectUrl = urlParams.get('redirectUrl');
 
     if (code && loginStatus !== LOGIN_STATUS.SUCCESS) {
       checkLoginStatus(code, redirectUrl);
-    }
-
-    if (code) {
-      loadNavtigation(appId);
-      loadUserRoles();
     }
   }, [authToken]);
 
@@ -9415,28 +9375,6 @@ const AppRouter = props => {
       ...setMessages(message.vi)
     }
   };
-  const settingRoutes = [{
-    path: 'account-info',
-    component: AccountSettings
-  }, {
-    path: 'change-password',
-    component: AccountSettings
-  }, {
-    path: 'share-with-friends',
-    component: AccountSettings
-  }, {
-    path: 'terms-and-condition',
-    component: GeneralInfo
-  }, {
-    path: 'privacy-policy',
-    component: GeneralInfo
-  }, {
-    path: 'language',
-    component: GeneralInfo
-  }, {
-    path: 'contact',
-    component: GeneralInfo
-  }];
   const landingPageRoutes = [{
     path: 'login'
   }, {
@@ -9463,32 +9401,15 @@ const AppRouter = props => {
     history: history
   }, /*#__PURE__*/React.createElement(Switch, null, /*#__PURE__*/React.createElement(Route, {
     path: "/",
-    render: props => isAuthentication && appId !== AppId.ELITE_APP ? /*#__PURE__*/React.createElement(Layout$1, { ...props,
-      appId
-    }, /*#__PURE__*/React.createElement(Switch, null, settingRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
-      key: item.path,
-      path: `/${item.path}`,
-      render: () => /*#__PURE__*/React.createElement(item.component, {
-        activeTab: item.path
-      })
-    })), /*#__PURE__*/React.createElement(Route, {
-      path: "/",
-      render: () => children
-    }))) : /*#__PURE__*/React.createElement(Switch, null, landingPageRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
+    render: props => /*#__PURE__*/React.createElement(Switch, null, landingPageRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
       key: item.path,
       path: `/${item.path}`,
       render: () => /*#__PURE__*/React.createElement(LandingPage, {
         activeTab: item.path
       })
-    })), appId === AppId.ELITE_APP ? /*#__PURE__*/React.createElement(Route, {
+    })), /*#__PURE__*/React.createElement(Route, {
       path: "/",
       render: () => children
-    }) : /*#__PURE__*/React.createElement(Redirect, {
-      from: "/",
-      to: "/login"
-    }), /*#__PURE__*/React.createElement(Route, {
-      path: "/social-login",
-      component: SocialLogin
     }), /*#__PURE__*/React.createElement(Redirect, {
       from: "/",
       to: "/"
@@ -9522,6 +9443,19 @@ var AppRouter$1 = connect(mapStateToProps$3, {
   setAppId
 })(AppRouter);
 
+class FallbackSpinner extends React.Component {
+  render() {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "app-loading"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "loading"
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "fade"
+    }));
+  }
+
+}
+
 TopBarProgress.config({
   shadowBlur: 5,
   barThickness: 5
@@ -9531,7 +9465,7 @@ const LoadingSpinner = () => {
   const {
     isLoading
   } = useSelector(state => state.ui);
-  return isLoading ? /*#__PURE__*/React.createElement(TopBarProgress, null) : null;
+  return isLoading ? /*#__PURE__*/React.createElement(FallbackSpinner, null) : null;
 };
 
 const RippleButton = ({
@@ -9590,27 +9524,6 @@ const App = ({
 };
 
 unregister();
-
-class FallbackSpinner extends React.Component {
-  render() {
-    return /*#__PURE__*/React.createElement("div", {
-      className: "fallback-spinner"
-    }, /*#__PURE__*/React.createElement("img", {
-      className: "fallback-logo",
-      src: IMAGE.INON_LOGO,
-      alt: "logo"
-    }), /*#__PURE__*/React.createElement("div", {
-      className: "loading"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "effect-1 effects"
-    }), /*#__PURE__*/React.createElement("div", {
-      className: "effect-2 effects"
-    }), /*#__PURE__*/React.createElement("div", {
-      className: "effect-3 effects"
-    })));
-  }
-
-}
 
 const defaultMaskOptions = {
   prefix: '',
