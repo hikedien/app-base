@@ -57,7 +57,7 @@ const API_BASE_URL = 'https://apisit.inon.vn';
 const RESOURCE_URL = 'https://sit2.inon.vn/resources/images/';
 const FB_APP_ID = '2651185198505964';
 const GOOGLE_APP_ID = '400818618331-k9ptcdcgr99po0g5q5mh8e5ekodgj61n.apps.googleusercontent.com';
-const API_LOGIN_URL = '/api/authenticate';
+const API_LOGIN_URL = '/api/tpbank-authenticate';
 const API_LOGOUT_URL = '/api/logout';
 const API_GUEST_SOCIAL_LOGIN = '/api/social-login/guest';
 const API_CHANGE_PASSWORD = '/api/change-password';
@@ -513,8 +513,10 @@ const setUpHttpClient = (store, apiBaseUrl) => {
 
 class AuthService {}
 
-AuthService.login = user => {
-  return HttpClient.post(API_LOGIN_URL, user);
+AuthService.login = userToken => {
+  return HttpClient.post(API_LOGIN_URL, {
+    userToken
+  });
 };
 
 AuthService.guestSocialLogin = data => {
@@ -804,74 +806,22 @@ const checkLoginStatus = (authToken, redirectUrl) => {
     }
   };
 };
-const loginAction = user => {
-  return async (dispatch, getState) => {
-    user.rememberMe = user.isRemeberMe;
-    let response = await AuthService.login(user);
-    const {
-      isGuest
-    } = getState().auth;
+const loginAction = userToken => {
+  return async dispatch => {
+    let response = await AuthService.login(userToken);
 
     if (response.status === API_R_200) {
       const authToken = response.data.id_token;
-      response = await AuthService.getUserInfo(user.username, authToken);
-
-      if (user.isRemeberMe) {
-        localStorage.setItem(REMEMBER_ME_TOKEN, JSON.stringify({
-          username: user.username,
-          name: response.data.fullName
-        }));
-      }
-
-      const {
-        userSettings,
-        groupId
-      } = response.data;
-
-      if (userSettings) {
-        localStorage.setItem('language', userSettings.language.toLowerCase());
-      }
-
-      if (isGuest) {
-        dispatch({
-          type: LOGIN_ACTION,
-          payload: {
-            guest: {
-              authToken,
-              loginMethod: LOGIN_METHODS.PASSWORD,
-              type: 'PASSWORD',
-              user: response.data || {}
-            }
-          }
-        });
-      } else {
-        if (groupId === USER_ROLE.KHCN) {
-          dispatch(showConfirmAlert({
-            title: /*#__PURE__*/React.createElement(FormattedMessage, {
-              id: "login.registerPartner"
-            }),
-            isShow: true,
-            content: /*#__PURE__*/React.createElement(FormattedMessage, {
-              id: "login.needRegisterPartner"
-            }),
-            onConfirm: () => {
-              history.push('/register');
-            }
-          }));
-          return;
+      const username = response.data.username;
+      response = await AuthService.getUserInfo(username, authToken);
+      dispatch({
+        type: LOGIN_ACTION,
+        payload: {
+          authToken,
+          type: 'PASSWORD',
+          user: response.data || []
         }
-
-        dispatch({
-          type: LOGIN_ACTION,
-          payload: {
-            authToken,
-            type: 'PASSWORD',
-            user: response.data || []
-          }
-        });
-      }
-
-      redirectMainApp(isGuest, getState().customizer.appId);
+      });
     } else {
       dispatch({
         type: LOGOUT_ACTION
@@ -8358,6 +8308,8 @@ const Login = () => {
     if (user) {
       setRememberMe(user);
     }
+
+    dispatch(logoutAction());
   }, []);
 
   const onSubmit = (values, actions) => {
@@ -9625,5 +9577,5 @@ const usePageAuthorities = () => {
   return authorities;
 };
 
-export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, Radio, ReactTable, Select, changeIsGuest, goBackHomePage, goToAgencyApp, hideConfirmAlert, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
+export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, Radio, ReactTable, Select, changeIsGuest, goBackHomePage, goToAgencyApp, hideConfirmAlert, loginAction, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
 //# sourceMappingURL=index.modern.js.map

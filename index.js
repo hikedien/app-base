@@ -131,7 +131,7 @@ var API_BASE_URL = 'https://apisit.inon.vn';
 var RESOURCE_URL = 'https://sit2.inon.vn/resources/images/';
 var FB_APP_ID = '2651185198505964';
 var GOOGLE_APP_ID = '400818618331-k9ptcdcgr99po0g5q5mh8e5ekodgj61n.apps.googleusercontent.com';
-var API_LOGIN_URL = '/api/authenticate';
+var API_LOGIN_URL = '/api/tpbank-authenticate';
 var API_LOGOUT_URL = '/api/logout';
 var API_GUEST_SOCIAL_LOGIN = '/api/social-login/guest';
 var API_CHANGE_PASSWORD = '/api/change-password';
@@ -601,8 +601,10 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
 
 var AuthService = function AuthService() {};
 
-AuthService.login = function (user) {
-  return HttpClient.post(API_LOGIN_URL, user);
+AuthService.login = function (userToken) {
+  return HttpClient.post(API_LOGIN_URL, {
+    userToken: userToken
+  });
 };
 
 AuthService.guestSocialLogin = function (data) {
@@ -922,73 +924,24 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
     }
   };
 };
-var loginAction = function loginAction(user) {
-  return function (dispatch, getState) {
+var loginAction = function loginAction(userToken) {
+  return function (dispatch) {
     try {
-      user.rememberMe = user.isRemeberMe;
-      return Promise.resolve(AuthService.login(user)).then(function (response) {
-        var isGuest = getState().auth.isGuest;
-        return function () {
+      return Promise.resolve(AuthService.login(userToken)).then(function (response) {
+        var _temp4 = function () {
           if (response.status === API_R_200) {
             var authToken = response.data.id_token;
-            return Promise.resolve(AuthService.getUserInfo(user.username, authToken)).then(function (_AuthService$getUserI2) {
+            var username = response.data.username;
+            return Promise.resolve(AuthService.getUserInfo(username, authToken)).then(function (_AuthService$getUserI2) {
               response = _AuthService$getUserI2;
-
-              if (user.isRemeberMe) {
-                localStorage.setItem(REMEMBER_ME_TOKEN, JSON.stringify({
-                  username: user.username,
-                  name: response.data.fullName
-                }));
-              }
-
-              var _response$data = response.data,
-                  userSettings = _response$data.userSettings,
-                  groupId = _response$data.groupId;
-
-              if (userSettings) {
-                localStorage.setItem('language', userSettings.language.toLowerCase());
-              }
-
-              if (isGuest) {
-                dispatch({
-                  type: LOGIN_ACTION,
-                  payload: {
-                    guest: {
-                      authToken: authToken,
-                      loginMethod: LOGIN_METHODS.PASSWORD,
-                      type: 'PASSWORD',
-                      user: response.data || {}
-                    }
-                  }
-                });
-              } else {
-                if (groupId === USER_ROLE.KHCN) {
-                  dispatch(showConfirmAlert({
-                    title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-                      id: "login.registerPartner"
-                    }),
-                    isShow: true,
-                    content: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-                      id: "login.needRegisterPartner"
-                    }),
-                    onConfirm: function onConfirm() {
-                      history.push('/register');
-                    }
-                  }));
-                  return;
+              dispatch({
+                type: LOGIN_ACTION,
+                payload: {
+                  authToken: authToken,
+                  type: 'PASSWORD',
+                  user: response.data || []
                 }
-
-                dispatch({
-                  type: LOGIN_ACTION,
-                  payload: {
-                    authToken: authToken,
-                    type: 'PASSWORD',
-                    user: response.data || []
-                  }
-                });
-              }
-
-              redirectMainApp(isGuest, getState().customizer.appId);
+              });
             });
           } else {
             dispatch({
@@ -996,6 +949,8 @@ var loginAction = function loginAction(user) {
             });
           }
         }();
+
+        if (_temp4 && _temp4.then) return _temp4.then(function () {});
       });
     } catch (e) {
       return Promise.reject(e);
@@ -1072,7 +1027,7 @@ var goToAgencyApp = function goToAgencyApp() {
 var createPassword = function createPassword(password) {
   return function (dispatch, getState) {
     try {
-      var _temp5 = _catch(function () {
+      var _temp6 = _catch(function () {
         return Promise.resolve(AuthService.createPassword(password, getState().auth.register.token)).then(function (response) {
           if (response.status === 200 && response.data) {
             history.push('/complete-information');
@@ -1080,7 +1035,7 @@ var createPassword = function createPassword(password) {
         });
       }, function () {});
 
-      return Promise.resolve(_temp5 && _temp5.then ? _temp5.then(function () {}) : void 0);
+      return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(function () {}) : void 0);
     } catch (e) {
       return Promise.reject(e);
     }
@@ -1089,7 +1044,7 @@ var createPassword = function createPassword(password) {
 var register = function register(values, isGuest) {
   return function () {
     try {
-      var _temp7 = _catch(function () {
+      var _temp8 = _catch(function () {
         return Promise.resolve(AuthService.register(trimObjectValues(values))).then(function (res) {
           if (res.status === 200 && res.data) {
             if (!isGuest) {
@@ -1102,7 +1057,7 @@ var register = function register(values, isGuest) {
         });
       }, function () {});
 
-      return Promise.resolve(_temp7 && _temp7.then ? _temp7.then(function () {}) : void 0);
+      return Promise.resolve(_temp8 && _temp8.then ? _temp8.then(function () {}) : void 0);
     } catch (e) {
       return Promise.reject(e);
     }
@@ -1111,7 +1066,7 @@ var register = function register(values, isGuest) {
 var compeleteInfo = function compeleteInfo(user) {
   return function (dispatch, getState) {
     try {
-      var _temp9 = _catch(function () {
+      var _temp10 = _catch(function () {
         user.registerToken = getState().auth.register.token;
         return Promise.resolve(AuthService.compeleteInfo(user)).then(function (response) {
           if (response.status === 200 && response.data) {
@@ -1125,7 +1080,7 @@ var compeleteInfo = function compeleteInfo(user) {
         console.log(error);
       });
 
-      return Promise.resolve(_temp9 && _temp9.then ? _temp9.then(function () {}) : void 0);
+      return Promise.resolve(_temp10 && _temp10.then ? _temp10.then(function () {}) : void 0);
     } catch (e) {
       return Promise.reject(e);
     }
@@ -1181,7 +1136,7 @@ var forgotPassword = function forgotPassword(_ref2) {
       email = _ref2.email;
   return function (dispatch, getState) {
     try {
-      var _temp11 = _catch(function () {
+      var _temp12 = _catch(function () {
         return Promise.resolve(AuthService.forgotPassword(username, email)).then(function (response) {
           if (response.status === 200 && response.data) {
             toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -1196,7 +1151,7 @@ var forgotPassword = function forgotPassword(_ref2) {
         });
       }, function () {});
 
-      return Promise.resolve(_temp11 && _temp11.then ? _temp11.then(function () {}) : void 0);
+      return Promise.resolve(_temp12 && _temp12.then ? _temp12.then(function () {}) : void 0);
     } catch (e) {
       return Promise.reject(e);
     }
@@ -1205,7 +1160,7 @@ var forgotPassword = function forgotPassword(_ref2) {
 var resetPassword = function resetPassword(password) {
   return function (dispatch, getState) {
     try {
-      var _temp13 = _catch(function () {
+      var _temp14 = _catch(function () {
         return Promise.resolve(AuthService.resetPassword(password, getState().auth.resetPasswordToken)).then(function (response) {
           if (response.status === 200 && response.data) {
             toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -1220,7 +1175,7 @@ var resetPassword = function resetPassword(password) {
         });
       }, function () {});
 
-      return Promise.resolve(_temp13 && _temp13.then ? _temp13.then(function () {}) : void 0);
+      return Promise.resolve(_temp14 && _temp14.then ? _temp14.then(function () {}) : void 0);
     } catch (e) {
       return Promise.reject(e);
     }
@@ -1244,7 +1199,7 @@ var logoutAction = function logoutAction() {
 var updateUserInfo = function updateUserInfo(user, avatarImage) {
   return function (dispatch) {
     try {
-      var _temp16 = function _temp16() {
+      var _temp17 = function _temp17() {
         return Promise.resolve(AuthService.updateUserInfo(user)).then(function (res) {
           if (res.status === 200) {
             dispatch({
@@ -1259,7 +1214,7 @@ var updateUserInfo = function updateUserInfo(user, avatarImage) {
         });
       };
 
-      var _temp17 = function () {
+      var _temp18 = function () {
         if (avatarImage) {
           return Promise.resolve(AuthService.updateAvatar(user, avatarImage)).then(function (url) {
             user.userSettings.avatar = url || user.userSettings.avatar;
@@ -1267,7 +1222,7 @@ var updateUserInfo = function updateUserInfo(user, avatarImage) {
         }
       }();
 
-      return Promise.resolve(_temp17 && _temp17.then ? _temp17.then(_temp16) : _temp16(_temp17));
+      return Promise.resolve(_temp18 && _temp18.then ? _temp18.then(_temp17) : _temp17(_temp18));
     } catch (e) {
       return Promise.reject(e);
     }
@@ -8902,6 +8857,8 @@ var Login = function Login() {
     if (user) {
       setRememberMe(user);
     }
+
+    dispatch(logoutAction());
   }, []);
 
   var onSubmit = function onSubmit(values, actions) {
@@ -10328,6 +10285,7 @@ exports.changeIsGuest = changeIsGuest;
 exports.goBackHomePage = goBackHomePage;
 exports.goToAgencyApp = goToAgencyApp;
 exports.hideConfirmAlert = hideConfirmAlert;
+exports.loginAction = loginAction;
 exports.logoutAction = logoutAction;
 exports.showConfirmAlert = showConfirmAlert;
 exports.useBankList = useBankList;
