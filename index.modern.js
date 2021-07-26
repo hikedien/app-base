@@ -817,9 +817,11 @@ const loginAction = userToken => {
       dispatch({
         type: LOGIN_ACTION,
         payload: {
-          authToken,
-          type: 'PASSWORD',
-          user: response.data || []
+          guest: {
+            authToken,
+            type: 'PASSWORD',
+            user: response.data || {}
+          }
         }
       });
     } else {

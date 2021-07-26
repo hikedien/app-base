@@ -937,9 +937,11 @@ var loginAction = function loginAction(userToken) {
               dispatch({
                 type: LOGIN_ACTION,
                 payload: {
-                  authToken: authToken,
-                  type: 'PASSWORD',
-                  user: response.data || []
+                  guest: {
+                    authToken: authToken,
+                    type: 'PASSWORD',
+                    user: response.data || {}
+                  }
                 }
               });
             });
