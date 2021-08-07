@@ -1357,7 +1357,7 @@ var redirectMainApp = function redirectMainApp(isGuest, appId) {
     } else {
       history.push('/');
     }
-  }, 0);
+  }, 200);
 };
 
 var themeConfig = {

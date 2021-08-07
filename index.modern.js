@@ -1168,7 +1168,7 @@ const redirectMainApp = (isGuest, appId) => {
     } else {
       history.push('/');
     }
-  }, 0);
+  }, 200);
 };
 
 const themeConfig = {
