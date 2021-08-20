@@ -13897,6 +13897,8 @@ select.form-control:not([multiple="multiple"]) {
       z-index: 2; }
   .form-label-group .is-invalid .Select__control {
     border-color: #ea5455 !important; }
+  .form-label-group input.is-invalid {
+    border-color: #ea5455 !important; }
   .form-label-group .Select__input input {
     border: none !important;
     box-shadow: none !important; }
@@ -36600,6 +36602,8 @@ select.form-control:not([multiple="multiple"]) {
     .form-label-group textarea .select__menu {
       z-index: 2; }
   .form-label-group .is-invalid .Select__control {
+    border-color: #ea5455 !important; }
+  .form-label-group input.is-invalid {
     border-color: #ea5455 !important; }
   .form-label-group .Select__input input {
     border: none !important;
