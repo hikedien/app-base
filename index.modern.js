@@ -163,7 +163,7 @@ const IC_TYPES_OPTIONS = [{
 const getExternalAppUrl = (appId, url) => {
   switch (appId) {
     case AppId.APP_NO1:
-      return `${window.location.origin}/app${url}?redirectUrl=${url}`;
+      return `${window.location.origin}/app${url}?r edirectUrl=${url}`;
 
     case AppId.INSURANCE_APP:
       return `${window.location.origin}/insurance${url}?redirectUrl=${url}`;
@@ -3429,7 +3429,7 @@ var messages_en = {
 	"menu.customerFee": "Customer Fee",
 	"menu.allFee": "All Fee",
 	"menu.feeApproval": "Fee Approval",
-	"menu.bonusManagement": "Bonus Mangement",
+	"menu.bonusManagement": "Bonus Management",
 	"menu.systemBonus": "System Bonus",
 	"menu.personalBonus": "Personal Bonus",
 	"menu.partnerBonus": "Partner Bonus",
@@ -3461,6 +3461,9 @@ var messages_en = {
 	"menu.personalBonusHistory": "Personal Bonus History",
 	"menu.partnerBonusHistory": "Partner Bonus History",
 	"menu.allBonusHistory": "All Bonus History",
+	"menu.notification": "Notification",
+	"menu.notificationManagement": "Notification Management",
+	"menu.notificationApproval": "Notification Management",
 	"navbar.language.vi": "Tiếng việt",
 	"navbar.language.en": "English",
 	"navbar.logout": "Logout",
@@ -3832,6 +3835,9 @@ var messages_vi = {
 	"menu.personalBonusHistory": "Lịch sử điểm thưởng cá nhân",
 	"menu.partnerBonusHistory": "Lịch sử điểm thưởng đối tác",
 	"menu.allBonusHistory": "Lịch sử điểm thưởng tất cả",
+	"menu.notification": "Thông báo",
+	"menu.notificationManagement": "Quản lý thông báo",
+	"menu.notificationApproval": "Duyệt thông báo",
 	"navbar.language.vi": "Tiếng Việt",
 	"navbar.language.en": "English",
 	"navbar.logout": "Đăng xuất",
@@ -6939,7 +6945,9 @@ const Select = props => {
   const [inputValue, setInputValue] = useState(props.value);
   const [isFocused, setIsFocused] = useState(false);
   useEffect(() => {
-    setInputValue(props.value);
+    if (props.value !== undefined) {
+      setInputValue(props.value);
+    }
   }, [props.value]);
 
   const onChange = (e, actions) => {
