@@ -7322,10 +7322,9 @@ var Select = function Select(props) {
       isFocused = _useState2[0],
       setIsFocused = _useState2[1];
 
+  console.log(props.placeholder, props.value);
   React.useEffect(function () {
-    if (typeof props.value !== 'undefined') {
-      setInputValue(props.value);
-    }
+    setInputValue(props.value);
   }, [props.value]);
 
   var onChange = function onChange(e, actions) {
@@ -7361,17 +7360,25 @@ var Select = function Select(props) {
   };
 
   var SelectComponent = React.useCallback(function (componentProps) {
+    var newProps = _extends({}, componentProps);
+
+    if (props.isMulti) {
+      newProps.value = props.options.filter(function (item) {
+        return (props.value || []).includes(item.value);
+      });
+    }
+
     switch (props.type) {
       case 'creatable':
-        return /*#__PURE__*/React__default.createElement(CreatableSelect, componentProps);
+        return /*#__PURE__*/React__default.createElement(CreatableSelect, newProps);
 
       case 'async':
-        return /*#__PURE__*/React__default.createElement(AsyncSelect, componentProps);
+        return /*#__PURE__*/React__default.createElement(AsyncSelect, newProps);
 
       default:
-        return /*#__PURE__*/React__default.createElement(ReactSelect, componentProps);
+        return /*#__PURE__*/React__default.createElement(ReactSelect, newProps);
     }
-  }, [props]);
+  }, [props.options]);
   return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
     className: "form-label-group position-relative"
   }, /*#__PURE__*/React__default.createElement(SelectComponent, _extends({}, props, {

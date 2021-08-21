@@ -6944,10 +6944,9 @@ const BaseFormDatePicker = ({
 const Select = props => {
   const [inputValue, setInputValue] = useState(props.value);
   const [isFocused, setIsFocused] = useState(false);
+  console.log(props.placeholder, props.value);
   useEffect(() => {
-    if (typeof props.value !== 'undefined') {
-      setInputValue(props.value);
-    }
+    setInputValue(props.value);
   }, [props.value]);
 
   const onChange = (e, actions) => {
@@ -6981,17 +6980,24 @@ const Select = props => {
   };
 
   const SelectComponent = useCallback(componentProps => {
+    const newProps = { ...componentProps
+    };
+
+    if (props.isMulti) {
+      newProps.value = props.options.filter(item => (props.value || []).includes(item.value));
+    }
+
     switch (props.type) {
       case 'creatable':
-        return /*#__PURE__*/React.createElement(CreatableSelect, componentProps);
+        return /*#__PURE__*/React.createElement(CreatableSelect, newProps);
 
       case 'async':
-        return /*#__PURE__*/React.createElement(AsyncSelect, componentProps);
+        return /*#__PURE__*/React.createElement(AsyncSelect, newProps);
 
       default:
-        return /*#__PURE__*/React.createElement(ReactSelect, componentProps);
+        return /*#__PURE__*/React.createElement(ReactSelect, newProps);
     }
-  }, [props]);
+  }, [props.options]);
   return /*#__PURE__*/React.createElement(FormGroup, {
     className: "form-label-group position-relative"
   }, /*#__PURE__*/React.createElement(SelectComponent, Object.assign({}, props, {
