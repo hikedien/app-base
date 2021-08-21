@@ -7378,7 +7378,7 @@ var Select = function Select(props) {
       default:
         return /*#__PURE__*/React__default.createElement(ReactSelect, newProps);
     }
-  }, [props.options]);
+  }, [props.options, props.value]);
   return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
     className: "form-label-group position-relative"
   }, /*#__PURE__*/React__default.createElement(SelectComponent, _extends({}, props, {

@@ -6997,7 +6997,7 @@ const Select = props => {
       default:
         return /*#__PURE__*/React.createElement(ReactSelect, newProps);
     }
-  }, [props.options]);
+  }, [props.options, props.value]);
   return /*#__PURE__*/React.createElement(FormGroup, {
     className: "form-label-group position-relative"
   }, /*#__PURE__*/React.createElement(SelectComponent, Object.assign({}, props, {
