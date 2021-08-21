@@ -7323,7 +7323,7 @@ var Select = function Select(props) {
       setIsFocused = _useState2[1];
 
   React.useEffect(function () {
-    if (props.value !== undefined) {
+    if (typeof props.value !== 'undefined') {
       setInputValue(props.value);
     }
   }, [props.value]);

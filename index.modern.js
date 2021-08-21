@@ -6945,7 +6945,7 @@ const Select = props => {
   const [inputValue, setInputValue] = useState(props.value);
   const [isFocused, setIsFocused] = useState(false);
   useEffect(() => {
-    if (props.value !== undefined) {
+    if (typeof props.value !== 'undefined') {
       setInputValue(props.value);
     }
   }, [props.value]);
