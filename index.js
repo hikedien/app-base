@@ -150,6 +150,8 @@ var API_COMPLETE_INFO = '/nth/onboarding/api/authenticate/complete-info';
 var API_FORGOT_PASSWORD = '/api/authenticate/forgot-password';
 var API_RESET_PASSWORD = '/api/authenticate/reset-password';
 var API_EMAIL_SUGGESTION = '/nth/user/api/authenticate/email-suggestion';
+var API_GET_MY_NOTIFICATIONS = '/nth/notification/api/my-notification';
+var API_CHECK_NEW_NOTIFICATIONS = '/nth/notification/api/notifications-es';
 var API_R_200 = 200;
 var API_GET_CITIES_BY_COUNTRY = '/nth/datacollection/api/citiesbycountry';
 var API_GET_DISTRICTS_BY_CITY = '/nth/datacollection/api/districtsbycity';
@@ -237,7 +239,7 @@ var IC_TYPES_OPTIONS = [{
 var getExternalAppUrl = function getExternalAppUrl(appId, url) {
   switch (appId) {
     case AppId.APP_NO1:
-      return window.location.origin + "/app" + url + "?redirectUrl=" + url;
+      return window.location.origin + "/app" + url + "?r edirectUrl=" + url;
 
     case AppId.INSURANCE_APP:
       return window.location.origin + "/insurance" + url + "?redirectUrl=" + url;
@@ -338,6 +340,8 @@ var appConfigs = {
   API_FORGOT_PASSWORD: API_FORGOT_PASSWORD,
   API_RESET_PASSWORD: API_RESET_PASSWORD,
   API_EMAIL_SUGGESTION: API_EMAIL_SUGGESTION,
+  API_GET_MY_NOTIFICATIONS: API_GET_MY_NOTIFICATIONS,
+  API_CHECK_NEW_NOTIFICATIONS: API_CHECK_NEW_NOTIFICATIONS,
   API_R_200: API_R_200,
   API_GET_CITIES_BY_COUNTRY: API_GET_CITIES_BY_COUNTRY,
   API_GET_DISTRICTS_BY_CITY: API_GET_DISTRICTS_BY_CITY,
@@ -1661,6 +1665,35 @@ var uiReducer = function uiReducer(state, action) {
   }
 };
 
+var LOAD_MY_NOTIFICATIONS = 'LOAD_MY_NOTIFICATIONS';
+var RECEIVE_NEW_NOTIFICATIONS = 'RECEIVE_NEW_NOTIFICATIONS';
+
+var initialState$2 = {
+  notifications: [],
+  newNotifications: []
+};
+
+var notificationReducer = function notificationReducer(state, action) {
+  if (state === void 0) {
+    state = _extends({}, initialState$2);
+  }
+
+  switch (action.type) {
+    case LOAD_MY_NOTIFICATIONS:
+      return _extends({}, state, {
+        notifications: action.payload
+      });
+
+    case RECEIVE_NEW_NOTIFICATIONS:
+      return _extends({}, state, {
+        newNotifications: action.payload
+      });
+
+    default:
+      return state;
+  }
+};
+
 var rootReducer = function rootReducer(appReducer) {
   return redux.combineReducers({
     customizer: customizerReducer,
@@ -1671,6 +1704,7 @@ var rootReducer = function rootReducer(appReducer) {
       blacklist: ['loginStatus']
     }, authReducers),
     navbar: navbarReducer,
+    notifications: notificationReducer,
     app: appReducer
   });
 };
@@ -2227,188 +2261,159 @@ var UserDropdown = function UserDropdown() {
   }))));
 };
 
-var NavbarUser = /*#__PURE__*/function (_React$PureComponent) {
-  _inheritsLoose(NavbarUser, _React$PureComponent);
+var NavbarUser = function NavbarUser(props) {
+  var _useSelector = reactRedux.useSelector(function (state) {
+    return state.auth.user;
+  }),
+      userSettings = _useSelector.userSettings,
+      user = _objectWithoutPropertiesLoose(_useSelector, ["userSettings", "userDetails"]);
 
-  function NavbarUser() {
-    var _this;
+  var _useSelector2 = reactRedux.useSelector(function (state) {
+    return state.customizer;
+  }),
+      appId = _useSelector2.appId;
 
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
+  var _useSelector3 = reactRedux.useSelector(function (state) {
+    return state.navbar;
+  }),
+      _useSelector3$roles = _useSelector3.roles,
+      roles = _useSelector3$roles === void 0 ? [] : _useSelector3$roles;
 
-    _this = _React$PureComponent.call.apply(_React$PureComponent, [this].concat(args)) || this;
-    _this.state = {
-      navbarSearch: false,
-      suggestions: []
-    };
+  var _useState = React.useState(false),
+      navbarSearch = _useState[0],
+      setNavbarSearch = _useState[1];
 
-    _this.handleNavbarSearch = function () {
-      _this.setState({
-        navbarSearch: !_this.state.navbarSearch
+  var _useState2 = React.useState([]),
+      suggestions = _useState2[0],
+      setSuggestions = _useState2[1];
+
+  var intl = reactIntl.useIntl();
+  userSettings = userSettings || {};
+  React.useEffect(function () {
+    var newSuggestions = roles.map(function (item) {
+      item.name = intl.formatMessage({
+        id: "menu." + item.keyLang
       });
-    };
+      item.isExternalApp = item.appId !== appId;
+      item.navLinkExternal = getExternalAppUrl(item.appId, item.menuPath);
+      return item;
+    });
+    setSuggestions(newSuggestions);
+  }, [roles]);
 
-    _this.getCountryCode = function (locale) {
-      var countryCode = {
-        en: 'us',
-        vi: 'vn'
-      };
-      return countryCode[locale];
-    };
+  var handleNavbarSearch = function handleNavbarSearch() {
+    setNavbarSearch(function (prevState) {
+      return !prevState;
+    });
+  };
 
-    _this.onSuggestionItemClick = function (item) {
-      if (!item.isExternalApp) {
-        history.push("" + item.menuPath);
-      } else {
-        window.location.href = item.navLinkExternal;
-      }
-    };
-
-    return _this;
-  }
-
-  var _proto = NavbarUser.prototype;
-
-  _proto.componentDidUpdate = function componentDidUpdate(prevProps) {
-    var _this2 = this;
-
-    if (prevProps.roles !== this.props.roles) {
-      var suggestions = this.props.roles.map(function (item) {
-        item.name = _this2.props.intl.formatMessage({
-          id: "menu." + item.keyLang
-        });
-        item.isExternalApp = item.appId !== _this2.props.appId;
-        item.navLinkExternal = getExternalAppUrl(item.appId, item.menuPath);
-        return item;
-      });
-      this.setState({
-        suggestions: suggestions
-      });
+  var onSuggestionItemClick = function onSuggestionItemClick(item) {
+    if (!item.isExternalApp) {
+      history.push("" + item.menuPath);
+    } else {
+      window.location.href = item.navLinkExternal;
     }
   };
 
-  _proto.render = function render() {
-    var _this3 = this;
-
-    var _this$props$user = this.props.user,
-        userSettings = _this$props$user.userSettings,
-        user = _objectWithoutPropertiesLoose(_this$props$user, ["userSettings", "userDetails"]);
-
-    userSettings = userSettings || {};
-    return /*#__PURE__*/React__default.createElement("ul", {
-      className: "nav navbar-nav navbar-nav-user float-right"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.NavItem, {
-      className: "nav-search",
-      onClick: this.handleNavbarSearch
-    }, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
-      className: "nav-link-search pt-2"
-    }, /*#__PURE__*/React__default.createElement(Icon.Search, {
-      size: 21,
-      "data-tour": "search"
-    })), /*#__PURE__*/React__default.createElement("div", {
-      className: classnames('search-input', {
-        open: this.state.navbarSearch,
-        'd-none': this.state.navbarSearch === false
-      })
-    }, /*#__PURE__*/React__default.createElement("div", {
-      className: "search-input-icon"
-    }, /*#__PURE__*/React__default.createElement(Icon.Search, {
-      size: 17,
-      className: "primary"
-    })), /*#__PURE__*/React__default.createElement(Autocomplete, {
-      className: "form-control",
-      suggestions: this.state.suggestions,
-      filterKey: "name",
-      onSuggestionClick: this.onSuggestionItemClick,
-      autoFocus: true,
-      clearInput: this.state.navbarSearch,
-      externalClick: function externalClick() {
-        _this3.setState({
-          navbarSearch: false
-        });
-      },
-      onKeyDown: function onKeyDown(e) {
-        if (e.keyCode === 27 || e.keyCode === 13) {
-          _this3.setState({
-            navbarSearch: false
-          });
-
-          _this3.props.handleAppOverlay('');
-        }
-      },
-      customRender: function customRender(item, i, filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover) {
-        var IconTag = Icon[item.icon ? item.icon : 'X'];
-        return /*#__PURE__*/React__default.createElement("li", {
-          className: classnames('suggestion-item', {
-            active: filteredData.indexOf(item) === activeSuggestion
-          }),
-          key: i,
-          onClick: function onClick(e) {
-            return onSuggestionItemClick(item, e);
-          },
-          onMouseEnter: function onMouseEnter() {
-            return onSuggestionItemHover(filteredData.indexOf(item));
-          }
-        }, /*#__PURE__*/React__default.createElement("div", {
-          className: "d-flex align-items-center"
-        }, /*#__PURE__*/React__default.createElement(IconTag, {
-          size: 17
-        }), /*#__PURE__*/React__default.createElement("div", {
-          className: "ml-2"
-        }, item.name)));
-      },
-      onSuggestionsShown: function onSuggestionsShown(userInput) {
-        if (_this3.state.navbarSearch) {
-          _this3.props.handleAppOverlay(userInput);
-        }
+  return /*#__PURE__*/React__default.createElement("ul", {
+    className: "nav navbar-nav navbar-nav-user float-right"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.NavItem, {
+    className: "nav-search",
+    onClick: handleNavbarSearch
+  }, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
+    className: "nav-link-search pt-2"
+  }, /*#__PURE__*/React__default.createElement(Icon.Search, {
+    size: 21,
+    "data-tour": "search"
+  })), /*#__PURE__*/React__default.createElement("div", {
+    className: classnames('search-input', {
+      open: navbarSearch,
+      'd-none': navbarSearch === false
+    })
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "search-input-icon"
+  }, /*#__PURE__*/React__default.createElement(Icon.Search, {
+    size: 17,
+    className: "primary"
+  })), /*#__PURE__*/React__default.createElement(Autocomplete, {
+    className: "form-control",
+    suggestions: suggestions,
+    filterKey: "name",
+    onSuggestionClick: onSuggestionItemClick,
+    autoFocus: true,
+    clearInput: navbarSearch,
+    externalClick: function externalClick() {
+      setNavbarSearch(false);
+    },
+    onKeyDown: function onKeyDown(e) {
+      if (e.keyCode === 27 || e.keyCode === 13) {
+        setNavbarSearch(false);
+        props.handleAppOverlay('');
       }
-    }), /*#__PURE__*/React__default.createElement("div", {
-      className: "search-input-close"
-    }, /*#__PURE__*/React__default.createElement(Icon.X, {
-      size: 24,
-      onClick: function onClick(e) {
-        e.stopPropagation();
-
-        _this3.setState({
-          navbarSearch: false
-        });
-
-        _this3.props.handleAppOverlay('');
+    },
+    customRender: function customRender(item, i, filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover) {
+      var IconTag = Icon[item.icon ? item.icon : 'X'];
+      return /*#__PURE__*/React__default.createElement("li", {
+        className: classnames('suggestion-item', {
+          active: filteredData.indexOf(item) === activeSuggestion
+        }),
+        key: i,
+        onClick: function onClick(e) {
+          return onSuggestionItemClick(item, e);
+        },
+        onMouseEnter: function onMouseEnter() {
+          return onSuggestionItemHover(filteredData.indexOf(item));
+        }
+      }, /*#__PURE__*/React__default.createElement("div", {
+        className: "d-flex align-items-center"
+      }, /*#__PURE__*/React__default.createElement(IconTag, {
+        size: 17
+      }), /*#__PURE__*/React__default.createElement("div", {
+        className: "ml-2"
+      }, item.name)));
+    },
+    onSuggestionsShown: function onSuggestionsShown(userInput) {
+      if (navbarSearch) {
+        props.handleAppOverlay(userInput);
       }
-    })))), /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledDropdown, {
-      tag: "li",
-      className: "dropdown-notification nav-item"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
-      tag: "a",
-      className: "nav-link nav-link-label"
-    }, /*#__PURE__*/React__default.createElement(Icon.Bell, {
-      size: 21
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledDropdown, {
-      tag: "li",
-      className: "dropdown-user nav-item"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
-      tag: "a",
-      className: "nav-link dropdown-user-link"
-    }, /*#__PURE__*/React__default.createElement("div", {
-      className: "user-nav d-sm-flex d-none"
-    }, /*#__PURE__*/React__default.createElement("span", {
-      className: "user-name text-bold-600 mb-0"
-    }, user.fullName)), /*#__PURE__*/React__default.createElement("span", {
-      "data-tour": "user"
-    }, /*#__PURE__*/React__default.createElement("img", {
-      src: userSettings.avatar || '',
-      className: "round",
-      height: "40",
-      width: "40",
-      alt: "avatar"
-    }))), /*#__PURE__*/React__default.createElement(UserDropdown, null)));
-  };
-
-  return NavbarUser;
-}(React__default.PureComponent);
-
-var NavbarUser$1 = reactIntl.injectIntl(NavbarUser);
+    }
+  }), /*#__PURE__*/React__default.createElement("div", {
+    className: "search-input-close"
+  }, /*#__PURE__*/React__default.createElement(Icon.X, {
+    size: 24,
+    onClick: function onClick(e) {
+      e.stopPropagation();
+      setNavbarSearch(false);
+      props.handleAppOverlay('');
+    }
+  })))), /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledDropdown, {
+    tag: "li",
+    className: "dropdown-notification nav-item"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
+    tag: "a",
+    className: "nav-link nav-link-label"
+  }, /*#__PURE__*/React__default.createElement(Icon.Bell, {
+    size: 21
+  }))), /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledDropdown, {
+    tag: "li",
+    className: "dropdown-user nav-item"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
+    tag: "a",
+    className: "nav-link dropdown-user-link"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "user-nav d-sm-flex d-none"
+  }, /*#__PURE__*/React__default.createElement("span", {
+    className: "user-name text-bold-600 mb-0"
+  }, user.fullName)), /*#__PURE__*/React__default.createElement("span", {
+    "data-tour": "user"
+  }, /*#__PURE__*/React__default.createElement("img", {
+    src: userSettings.avatar || '',
+    className: "round",
+    height: "40",
+    width: "40",
+    alt: "avatar"
+  }))), /*#__PURE__*/React__default.createElement(UserDropdown, null)));
+};
 
 var ThemeNavbar = function ThemeNavbar(props) {
   var colorsArr = ['primary', 'danger', 'success', 'info', 'warning', 'dark'];
@@ -2462,15 +2467,8 @@ var ThemeNavbar = function ThemeNavbar(props) {
       className: "img-fluid",
       src: IMAGE["NAV_ICON_" + (index + 1)]
     }));
-  })))), /*#__PURE__*/React__default.createElement(NavbarUser$1, {
-    handleAppOverlay: props.handleAppOverlay,
-    changeCurrentLang: props.changeCurrentLang,
-    appId: props.appId,
-    authToken: props.authToken,
-    user: props.user,
-    roles: props.roles,
-    isAuthenticated: props.isAuthenticated,
-    logoutAction: props.logoutAction
+  })))), /*#__PURE__*/React__default.createElement(NavbarUser, {
+    handleAppOverlay: props.handleAppOverlay
   }))))));
 };
 
@@ -3790,7 +3788,7 @@ var messages_en = {
 	"menu.customerFee": "Customer Fee",
 	"menu.allFee": "All Fee",
 	"menu.feeApproval": "Fee Approval",
-	"menu.bonusManagement": "Bonus Mangement",
+	"menu.bonusManagement": "Bonus Management",
 	"menu.systemBonus": "System Bonus",
 	"menu.personalBonus": "Personal Bonus",
 	"menu.partnerBonus": "Partner Bonus",
@@ -3822,6 +3820,10 @@ var messages_en = {
 	"menu.personalBonusHistory": "Personal Bonus History",
 	"menu.partnerBonusHistory": "Partner Bonus History",
 	"menu.allBonusHistory": "All Bonus History",
+	"menu.notification": "Notification",
+	"menu.notificationManagement": "Notification Management",
+	"menu.createNotification": "Create Notification",
+	"menu.notificationApproval": "Notification Management",
 	"navbar.language.vi": "Tiếng việt",
 	"navbar.language.en": "English",
 	"navbar.logout": "Logout",
@@ -4193,6 +4195,10 @@ var messages_vi = {
 	"menu.personalBonusHistory": "Lịch sử điểm thưởng cá nhân",
 	"menu.partnerBonusHistory": "Lịch sử điểm thưởng đối tác",
 	"menu.allBonusHistory": "Lịch sử điểm thưởng tất cả",
+	"menu.notification": "Thông báo",
+	"menu.notificationManagement": "Quản lý thông báo",
+	"menu.createNotification": "Tạo mới thông báo",
+	"menu.notificationApproval": "Duyệt thông báo",
 	"navbar.language.vi": "Tiếng Việt",
 	"navbar.language.en": "English",
 	"navbar.logout": "Đăng xuất",
@@ -7316,6 +7322,7 @@ var Select = function Select(props) {
       isFocused = _useState2[0],
       setIsFocused = _useState2[1];
 
+  console.log(props.placeholder, props.value);
   React.useEffect(function () {
     setInputValue(props.value);
   }, [props.value]);
@@ -7353,17 +7360,25 @@ var Select = function Select(props) {
   };
 
   var SelectComponent = React.useCallback(function (componentProps) {
+    var newProps = _extends({}, componentProps);
+
+    if (props.isMulti) {
+      newProps.value = props.options.filter(function (item) {
+        return (props.value || []).includes(item.value);
+      });
+    }
+
     switch (props.type) {
       case 'creatable':
-        return /*#__PURE__*/React__default.createElement(CreatableSelect, componentProps);
+        return /*#__PURE__*/React__default.createElement(CreatableSelect, newProps);
 
       case 'async':
-        return /*#__PURE__*/React__default.createElement(AsyncSelect, componentProps);
+        return /*#__PURE__*/React__default.createElement(AsyncSelect, newProps);
 
       default:
-        return /*#__PURE__*/React__default.createElement(ReactSelect, componentProps);
+        return /*#__PURE__*/React__default.createElement(ReactSelect, newProps);
     }
-  }, [props]);
+  }, [props.options, props.value]);
   return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
     className: "form-label-group position-relative"
   }, /*#__PURE__*/React__default.createElement(SelectComponent, _extends({}, props, {

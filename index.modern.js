@@ -1,4 +1,4 @@
-import { FormattedMessage, injectIntl, IntlProvider, useIntl } from 'react-intl';
+import { FormattedMessage, useIntl, IntlProvider } from 'react-intl';
 export { FormattedMessage } from 'react-intl';
 import React, { useState, useEffect, Component, PureComponent, useCallback, useRef } from 'react';
 import { createBrowserHistory } from 'history';
@@ -9,7 +9,7 @@ import { AlertTriangle, Check, User, Lock, Link, Users, FileText, Shield, Globe,
 import { toast, ToastContainer } from 'react-toastify';
 export { toast } from 'react-toastify';
 import moment from 'moment';
-import { useDispatch, connect, useSelector, Provider } from 'react-redux';
+import { useDispatch, useSelector, connect, Provider } from 'react-redux';
 import { combineReducers, createStore, applyMiddleware, compose } from 'redux';
 import createDebounce from 'redux-debounced';
 import thunk from 'redux-thunk';
@@ -76,6 +76,8 @@ const API_COMPLETE_INFO = '/nth/onboarding/api/authenticate/complete-info';
 const API_FORGOT_PASSWORD = '/api/authenticate/forgot-password';
 const API_RESET_PASSWORD = '/api/authenticate/reset-password';
 const API_EMAIL_SUGGESTION = '/nth/user/api/authenticate/email-suggestion';
+const API_GET_MY_NOTIFICATIONS = '/nth/notification/api/my-notification';
+const API_CHECK_NEW_NOTIFICATIONS = '/nth/notification/api/notifications-es';
 const API_R_200 = 200;
 const API_GET_CITIES_BY_COUNTRY = '/nth/datacollection/api/citiesbycountry';
 const API_GET_DISTRICTS_BY_CITY = '/nth/datacollection/api/districtsbycity';
@@ -163,7 +165,7 @@ const IC_TYPES_OPTIONS = [{
 const getExternalAppUrl = (appId, url) => {
   switch (appId) {
     case AppId.APP_NO1:
-      return `${window.location.origin}/app${url}?redirectUrl=${url}`;
+      return `${window.location.origin}/app${url}?r edirectUrl=${url}`;
 
     case AppId.INSURANCE_APP:
       return `${window.location.origin}/insurance${url}?redirectUrl=${url}`;
@@ -264,6 +266,8 @@ var appConfigs = {
     API_FORGOT_PASSWORD: API_FORGOT_PASSWORD,
     API_RESET_PASSWORD: API_RESET_PASSWORD,
     API_EMAIL_SUGGESTION: API_EMAIL_SUGGESTION,
+    API_GET_MY_NOTIFICATIONS: API_GET_MY_NOTIFICATIONS,
+    API_CHECK_NEW_NOTIFICATIONS: API_CHECK_NEW_NOTIFICATIONS,
     API_R_200: API_R_200,
     API_GET_CITIES_BY_COUNTRY: API_GET_CITIES_BY_COUNTRY,
     API_GET_DISTRICTS_BY_CITY: API_GET_DISTRICTS_BY_CITY,
@@ -1458,6 +1462,32 @@ const uiReducer = (state = initialState$1, action) => {
   }
 };
 
+const LOAD_MY_NOTIFICATIONS = 'LOAD_MY_NOTIFICATIONS';
+const RECEIVE_NEW_NOTIFICATIONS = 'RECEIVE_NEW_NOTIFICATIONS';
+
+const initialState$2 = {
+  notifications: [],
+  newNotifications: []
+};
+
+const notificationReducer = (state = { ...initialState$2
+}, action) => {
+  switch (action.type) {
+    case LOAD_MY_NOTIFICATIONS:
+      return { ...state,
+        notifications: action.payload
+      };
+
+    case RECEIVE_NEW_NOTIFICATIONS:
+      return { ...state,
+        newNotifications: action.payload
+      };
+
+    default:
+      return state;
+  }
+};
+
 const rootReducer = appReducer => combineReducers({
   customizer: customizerReducer,
   ui: uiReducer,
@@ -1467,6 +1497,7 @@ const rootReducer = appReducer => combineReducers({
     blacklist: ['loginStatus']
   }, authReducers),
   navbar: navbarReducer,
+  notifications: notificationReducer,
   app: appReducer
 });
 
@@ -1993,166 +2024,142 @@ const UserDropdown = () => {
   }))));
 };
 
-class NavbarUser extends React.PureComponent {
-  constructor(...args) {
-    super(...args);
-    this.state = {
-      navbarSearch: false,
-      suggestions: []
-    };
-
-    this.handleNavbarSearch = () => {
-      this.setState({
-        navbarSearch: !this.state.navbarSearch
+const NavbarUser = props => {
+  let {
+    userSettings,
+    userDetails,
+    ...user
+  } = useSelector(state => state.auth.user);
+  let {
+    appId
+  } = useSelector(state => state.customizer);
+  let {
+    roles = []
+  } = useSelector(state => state.navbar);
+  const [navbarSearch, setNavbarSearch] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const intl = useIntl();
+  userSettings = userSettings || {};
+  userDetails = userDetails || {};
+  useEffect(() => {
+    const newSuggestions = roles.map(item => {
+      item.name = intl.formatMessage({
+        id: `menu.${item.keyLang}`
       });
-    };
+      item.isExternalApp = item.appId !== appId;
+      item.navLinkExternal = getExternalAppUrl(item.appId, item.menuPath);
+      return item;
+    });
+    setSuggestions(newSuggestions);
+  }, [roles]);
 
-    this.getCountryCode = locale => {
-      const countryCode = {
-        en: 'us',
-        vi: 'vn'
-      };
-      return countryCode[locale];
-    };
+  const handleNavbarSearch = () => {
+    setNavbarSearch(prevState => !prevState);
+  };
 
-    this.onSuggestionItemClick = item => {
-      if (!item.isExternalApp) {
-        history.push(`${item.menuPath}`);
-      } else {
-        window.location.href = item.navLinkExternal;
-      }
-    };
-  }
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.roles !== this.props.roles) {
-      const suggestions = this.props.roles.map(item => {
-        item.name = this.props.intl.formatMessage({
-          id: `menu.${item.keyLang}`
-        });
-        item.isExternalApp = item.appId !== this.props.appId;
-        item.navLinkExternal = getExternalAppUrl(item.appId, item.menuPath);
-        return item;
-      });
-      this.setState({
-        suggestions
-      });
+  const onSuggestionItemClick = item => {
+    if (!item.isExternalApp) {
+      history.push(`${item.menuPath}`);
+    } else {
+      window.location.href = item.navLinkExternal;
     }
-  }
+  };
 
-  render() {
-    let {
-      userSettings,
-      userDetails,
-      ...user
-    } = this.props.user;
-    userSettings = userSettings || {};
-    userDetails = userDetails || {};
-    return /*#__PURE__*/React.createElement("ul", {
-      className: "nav navbar-nav navbar-nav-user float-right"
-    }, /*#__PURE__*/React.createElement(NavItem, {
-      className: "nav-search",
-      onClick: this.handleNavbarSearch
-    }, /*#__PURE__*/React.createElement(NavLink, {
-      className: "nav-link-search pt-2"
-    }, /*#__PURE__*/React.createElement(Search, {
-      size: 21,
-      "data-tour": "search"
-    })), /*#__PURE__*/React.createElement("div", {
-      className: classnames('search-input', {
-        open: this.state.navbarSearch,
-        'd-none': this.state.navbarSearch === false
-      })
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "search-input-icon"
-    }, /*#__PURE__*/React.createElement(Search, {
-      size: 17,
-      className: "primary"
-    })), /*#__PURE__*/React.createElement(Autocomplete, {
-      className: "form-control",
-      suggestions: this.state.suggestions,
-      filterKey: "name",
-      onSuggestionClick: this.onSuggestionItemClick,
-      autoFocus: true,
-      clearInput: this.state.navbarSearch,
-      externalClick: () => {
-        this.setState({
-          navbarSearch: false
-        });
-      },
-      onKeyDown: e => {
-        if (e.keyCode === 27 || e.keyCode === 13) {
-          this.setState({
-            navbarSearch: false
-          });
-          this.props.handleAppOverlay('');
-        }
-      },
-      customRender: (item, i, filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover) => {
-        const IconTag = Icon[item.icon ? item.icon : 'X'];
-        return /*#__PURE__*/React.createElement("li", {
-          className: classnames('suggestion-item', {
-            active: filteredData.indexOf(item) === activeSuggestion
-          }),
-          key: i,
-          onClick: e => onSuggestionItemClick(item, e),
-          onMouseEnter: () => onSuggestionItemHover(filteredData.indexOf(item))
-        }, /*#__PURE__*/React.createElement("div", {
-          className: "d-flex align-items-center"
-        }, /*#__PURE__*/React.createElement(IconTag, {
-          size: 17
-        }), /*#__PURE__*/React.createElement("div", {
-          className: "ml-2"
-        }, item.name)));
-      },
-      onSuggestionsShown: userInput => {
-        if (this.state.navbarSearch) {
-          this.props.handleAppOverlay(userInput);
-        }
+  return /*#__PURE__*/React.createElement("ul", {
+    className: "nav navbar-nav navbar-nav-user float-right"
+  }, /*#__PURE__*/React.createElement(NavItem, {
+    className: "nav-search",
+    onClick: handleNavbarSearch
+  }, /*#__PURE__*/React.createElement(NavLink, {
+    className: "nav-link-search pt-2"
+  }, /*#__PURE__*/React.createElement(Search, {
+    size: 21,
+    "data-tour": "search"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: classnames('search-input', {
+      open: navbarSearch,
+      'd-none': navbarSearch === false
+    })
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "search-input-icon"
+  }, /*#__PURE__*/React.createElement(Search, {
+    size: 17,
+    className: "primary"
+  })), /*#__PURE__*/React.createElement(Autocomplete, {
+    className: "form-control",
+    suggestions: suggestions,
+    filterKey: "name",
+    onSuggestionClick: onSuggestionItemClick,
+    autoFocus: true,
+    clearInput: navbarSearch,
+    externalClick: () => {
+      setNavbarSearch(false);
+    },
+    onKeyDown: e => {
+      if (e.keyCode === 27 || e.keyCode === 13) {
+        setNavbarSearch(false);
+        props.handleAppOverlay('');
       }
-    }), /*#__PURE__*/React.createElement("div", {
-      className: "search-input-close"
-    }, /*#__PURE__*/React.createElement(X, {
-      size: 24,
-      onClick: e => {
-        e.stopPropagation();
-        this.setState({
-          navbarSearch: false
-        });
-        this.props.handleAppOverlay('');
+    },
+    customRender: (item, i, filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover) => {
+      const IconTag = Icon[item.icon ? item.icon : 'X'];
+      return /*#__PURE__*/React.createElement("li", {
+        className: classnames('suggestion-item', {
+          active: filteredData.indexOf(item) === activeSuggestion
+        }),
+        key: i,
+        onClick: e => onSuggestionItemClick(item, e),
+        onMouseEnter: () => onSuggestionItemHover(filteredData.indexOf(item))
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "d-flex align-items-center"
+      }, /*#__PURE__*/React.createElement(IconTag, {
+        size: 17
+      }), /*#__PURE__*/React.createElement("div", {
+        className: "ml-2"
+      }, item.name)));
+    },
+    onSuggestionsShown: userInput => {
+      if (navbarSearch) {
+        props.handleAppOverlay(userInput);
       }
-    })))), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
-      tag: "li",
-      className: "dropdown-notification nav-item"
-    }, /*#__PURE__*/React.createElement(DropdownToggle, {
-      tag: "a",
-      className: "nav-link nav-link-label"
-    }, /*#__PURE__*/React.createElement(Bell, {
-      size: 21
-    }))), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
-      tag: "li",
-      className: "dropdown-user nav-item"
-    }, /*#__PURE__*/React.createElement(DropdownToggle, {
-      tag: "a",
-      className: "nav-link dropdown-user-link"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "user-nav d-sm-flex d-none"
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "user-name text-bold-600 mb-0"
-    }, user.fullName)), /*#__PURE__*/React.createElement("span", {
-      "data-tour": "user"
-    }, /*#__PURE__*/React.createElement("img", {
-      src: userSettings.avatar || '',
-      className: "round",
-      height: "40",
-      width: "40",
-      alt: "avatar"
-    }))), /*#__PURE__*/React.createElement(UserDropdown, null)));
-  }
-
-}
-
-var NavbarUser$1 = injectIntl(NavbarUser);
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "search-input-close"
+  }, /*#__PURE__*/React.createElement(X, {
+    size: 24,
+    onClick: e => {
+      e.stopPropagation();
+      setNavbarSearch(false);
+      props.handleAppOverlay('');
+    }
+  })))), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
+    tag: "li",
+    className: "dropdown-notification nav-item"
+  }, /*#__PURE__*/React.createElement(DropdownToggle, {
+    tag: "a",
+    className: "nav-link nav-link-label"
+  }, /*#__PURE__*/React.createElement(Bell, {
+    size: 21
+  }))), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
+    tag: "li",
+    className: "dropdown-user nav-item"
+  }, /*#__PURE__*/React.createElement(DropdownToggle, {
+    tag: "a",
+    className: "nav-link dropdown-user-link"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "user-nav d-sm-flex d-none"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "user-name text-bold-600 mb-0"
+  }, user.fullName)), /*#__PURE__*/React.createElement("span", {
+    "data-tour": "user"
+  }, /*#__PURE__*/React.createElement("img", {
+    src: userSettings.avatar || '',
+    className: "round",
+    height: "40",
+    width: "40",
+    alt: "avatar"
+  }))), /*#__PURE__*/React.createElement(UserDropdown, null)));
+};
 
 const ThemeNavbar = props => {
   const colorsArr = ['primary', 'danger', 'success', 'info', 'warning', 'dark'];
@@ -2204,15 +2211,8 @@ const ThemeNavbar = props => {
   }, /*#__PURE__*/React.createElement("img", {
     className: "img-fluid",
     src: IMAGE[`NAV_ICON_${index + 1}`]
-  })))))), /*#__PURE__*/React.createElement(NavbarUser$1, {
-    handleAppOverlay: props.handleAppOverlay,
-    changeCurrentLang: props.changeCurrentLang,
-    appId: props.appId,
-    authToken: props.authToken,
-    user: props.user,
-    roles: props.roles,
-    isAuthenticated: props.isAuthenticated,
-    logoutAction: props.logoutAction
+  })))))), /*#__PURE__*/React.createElement(NavbarUser, {
+    handleAppOverlay: props.handleAppOverlay
   }))))));
 };
 
@@ -3429,7 +3429,7 @@ var messages_en = {
 	"menu.customerFee": "Customer Fee",
 	"menu.allFee": "All Fee",
 	"menu.feeApproval": "Fee Approval",
-	"menu.bonusManagement": "Bonus Mangement",
+	"menu.bonusManagement": "Bonus Management",
 	"menu.systemBonus": "System Bonus",
 	"menu.personalBonus": "Personal Bonus",
 	"menu.partnerBonus": "Partner Bonus",
@@ -3461,6 +3461,10 @@ var messages_en = {
 	"menu.personalBonusHistory": "Personal Bonus History",
 	"menu.partnerBonusHistory": "Partner Bonus History",
 	"menu.allBonusHistory": "All Bonus History",
+	"menu.notification": "Notification",
+	"menu.notificationManagement": "Notification Management",
+	"menu.createNotification": "Create Notification",
+	"menu.notificationApproval": "Notification Management",
 	"navbar.language.vi": "Tiếng việt",
 	"navbar.language.en": "English",
 	"navbar.logout": "Logout",
@@ -3832,6 +3836,10 @@ var messages_vi = {
 	"menu.personalBonusHistory": "Lịch sử điểm thưởng cá nhân",
 	"menu.partnerBonusHistory": "Lịch sử điểm thưởng đối tác",
 	"menu.allBonusHistory": "Lịch sử điểm thưởng tất cả",
+	"menu.notification": "Thông báo",
+	"menu.notificationManagement": "Quản lý thông báo",
+	"menu.createNotification": "Tạo mới thông báo",
+	"menu.notificationApproval": "Duyệt thông báo",
 	"navbar.language.vi": "Tiếng Việt",
 	"navbar.language.en": "English",
 	"navbar.logout": "Đăng xuất",
@@ -6938,6 +6946,7 @@ const BaseFormDatePicker = ({
 const Select = props => {
   const [inputValue, setInputValue] = useState(props.value);
   const [isFocused, setIsFocused] = useState(false);
+  console.log(props.placeholder, props.value);
   useEffect(() => {
     setInputValue(props.value);
   }, [props.value]);
@@ -6973,17 +6982,24 @@ const Select = props => {
   };
 
   const SelectComponent = useCallback(componentProps => {
+    const newProps = { ...componentProps
+    };
+
+    if (props.isMulti) {
+      newProps.value = props.options.filter(item => (props.value || []).includes(item.value));
+    }
+
     switch (props.type) {
       case 'creatable':
-        return /*#__PURE__*/React.createElement(CreatableSelect, componentProps);
+        return /*#__PURE__*/React.createElement(CreatableSelect, newProps);
 
       case 'async':
-        return /*#__PURE__*/React.createElement(AsyncSelect, componentProps);
+        return /*#__PURE__*/React.createElement(AsyncSelect, newProps);
 
       default:
-        return /*#__PURE__*/React.createElement(ReactSelect, componentProps);
+        return /*#__PURE__*/React.createElement(ReactSelect, newProps);
     }
-  }, [props]);
+  }, [props.options, props.value]);
   return /*#__PURE__*/React.createElement(FormGroup, {
     className: "form-label-group position-relative"
   }, /*#__PURE__*/React.createElement(SelectComponent, Object.assign({}, props, {
