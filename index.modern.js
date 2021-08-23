@@ -1,15 +1,15 @@
-import { FormattedMessage, injectIntl, IntlProvider, useIntl } from 'react-intl';
+import { FormattedMessage, useIntl, IntlProvider } from 'react-intl';
 export { FormattedMessage } from 'react-intl';
-import React, { useState, useEffect, Component, PureComponent, useCallback, useRef } from 'react';
+import React, { useEffect, useState, Component, PureComponent, useCallback, useRef } from 'react';
 import { createBrowserHistory } from 'history';
 import Axios from 'axios';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
 import * as Icon from 'react-feather';
-import { AlertTriangle, Check, User, Lock, Link, Users, FileText, Shield, Globe, MessageSquare, Power, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, Download, Clipboard, Sun } from 'react-feather';
+import { AlertTriangle, Check, User, Lock, Link, Users, FileText, Shield, Globe, MessageSquare, Power, PlusSquare, DownloadCloud, CheckCircle, File, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, Download, Clipboard, Sun } from 'react-feather';
 import { toast, ToastContainer } from 'react-toastify';
 export { toast } from 'react-toastify';
 import moment from 'moment';
-import { useDispatch, connect, useSelector, Provider } from 'react-redux';
+import { useDispatch, useSelector, connect, Provider } from 'react-redux';
 import { combineReducers, createStore, applyMiddleware, compose } from 'redux';
 import createDebounce from 'redux-debounced';
 import thunk from 'redux-thunk';
@@ -18,7 +18,7 @@ import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/es/storage';
 import { useHistory, Link as Link$1, Router, Switch, Route, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
-import { FormGroup, Label, DropdownMenu, DropdownItem, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Navbar as Navbar$1, Button, Badge, Input, Row, Col, Media, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, Modal, ModalHeader, ModalBody, ModalFooter, ButtonGroup, UncontrolledButtonDropdown } from 'reactstrap';
+import { FormGroup, Label, DropdownMenu, DropdownItem, Media, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Navbar as Navbar$1, Button, Badge, Input, Row, Col, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, Modal, ModalHeader, ModalBody, ModalFooter, ButtonGroup, UncontrolledButtonDropdown } from 'reactstrap';
 export { Button } from 'reactstrap';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
@@ -76,6 +76,8 @@ const API_COMPLETE_INFO = '/nth/onboarding/api/authenticate/complete-info';
 const API_FORGOT_PASSWORD = '/api/authenticate/forgot-password';
 const API_RESET_PASSWORD = '/api/authenticate/reset-password';
 const API_EMAIL_SUGGESTION = '/nth/user/api/authenticate/email-suggestion';
+const API_GET_MY_NOTIFICATIONS = '/nth/notification/api/my-notification';
+const API_CHECK_NEW_NOTIFICATIONS = '/nth/notification/api/notifications-es';
 const API_R_200 = 200;
 const API_GET_CITIES_BY_COUNTRY = '/nth/datacollection/api/citiesbycountry';
 const API_GET_DISTRICTS_BY_CITY = '/nth/datacollection/api/districtsbycity';
@@ -264,6 +266,8 @@ var appConfigs = {
     API_FORGOT_PASSWORD: API_FORGOT_PASSWORD,
     API_RESET_PASSWORD: API_RESET_PASSWORD,
     API_EMAIL_SUGGESTION: API_EMAIL_SUGGESTION,
+    API_GET_MY_NOTIFICATIONS: API_GET_MY_NOTIFICATIONS,
+    API_CHECK_NEW_NOTIFICATIONS: API_CHECK_NEW_NOTIFICATIONS,
     API_R_200: API_R_200,
     API_GET_CITIES_BY_COUNTRY: API_GET_CITIES_BY_COUNTRY,
     API_GET_DISTRICTS_BY_CITY: API_GET_DISTRICTS_BY_CITY,
@@ -1458,6 +1462,66 @@ const uiReducer = (state = initialState$1, action) => {
   }
 };
 
+class NotificationService {}
+
+NotificationService.getMyNotifications = () => {
+  return HttpClient.get(API_GET_MY_NOTIFICATIONS, {
+    params: {
+      uuid: generateUUID()
+    },
+    isBackgroundRequest: true
+  });
+};
+
+NotificationService.checkNewNotification = () => {
+  return HttpClient.get(API_CHECK_NEW_NOTIFICATIONS, {
+    params: {
+      uuid: generateUUID()
+    },
+    isBackgroundRequest: true
+  });
+};
+
+const LOAD_MY_NOTIFICATIONS = 'LOAD_MY_NOTIFICATIONS';
+const RECEIVE_NEW_NOTIFICATIONS = 'RECEIVE_NEW_NOTIFICATIONS';
+const getMyNotification = notifications => {
+  return async dispatch => {
+    const res = await NotificationService.getMyNotifications();
+
+    if (!res || res.status !== 200) {
+      return;
+    }
+
+    dispatch({
+      type: LOAD_MY_NOTIFICATIONS,
+      payload: res.data
+    });
+  };
+};
+
+const initialState$2 = {
+  notifications: [],
+  newNotifications: []
+};
+
+const notificationReducer = (state = { ...initialState$2
+}, action) => {
+  switch (action.type) {
+    case LOAD_MY_NOTIFICATIONS:
+      return { ...state,
+        notifications: action.payload
+      };
+
+    case RECEIVE_NEW_NOTIFICATIONS:
+      return { ...state,
+        newNotifications: action.payload
+      };
+
+    default:
+      return state;
+  }
+};
+
 const rootReducer = appReducer => combineReducers({
   customizer: customizerReducer,
   ui: uiReducer,
@@ -1467,6 +1531,7 @@ const rootReducer = appReducer => combineReducers({
     blacklist: ['loginStatus']
   }, authReducers),
   navbar: navbarReducer,
+  notifications: notificationReducer,
   app: appReducer
 });
 
@@ -1993,166 +2058,282 @@ const UserDropdown = () => {
   }))));
 };
 
-class NavbarUser extends React.PureComponent {
-  constructor(...args) {
-    super(...args);
-    this.state = {
-      navbarSearch: false,
-      suggestions: []
-    };
-
-    this.handleNavbarSearch = () => {
-      this.setState({
-        navbarSearch: !this.state.navbarSearch
-      });
-    };
-
-    this.getCountryCode = locale => {
-      const countryCode = {
-        en: 'us',
-        vi: 'vn'
-      };
-      return countryCode[locale];
-    };
-
-    this.onSuggestionItemClick = item => {
-      if (!item.isExternalApp) {
-        history.push(`${item.menuPath}`);
-      } else {
-        window.location.href = item.navLinkExternal;
-      }
-    };
-  }
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.roles !== this.props.roles) {
-      const suggestions = this.props.roles.map(item => {
-        item.name = this.props.intl.formatMessage({
-          id: `menu.${item.keyLang}`
-        });
-        item.isExternalApp = item.appId !== this.props.appId;
-        item.navLinkExternal = getExternalAppUrl(item.appId, item.menuPath);
-        return item;
-      });
-      this.setState({
-        suggestions
-      });
+const Notifications = () => {
+  const {
+    notifications
+  } = useSelector(state => state.notifications);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(getMyNotification());
+  }, []);
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("li", {
+    className: "dropdown-menu-header"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "dropdown-header mt-0"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "text-white"
+  }, "5 New"), /*#__PURE__*/React.createElement("span", {
+    className: "notification-title"
+  }, "App Notifications"))), /*#__PURE__*/React.createElement(PerfectScrollbar, {
+    className: "media-list overflow-hidden position-relative",
+    options: {
+      wheelPropagation: false
     }
-  }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "d-flex justify-content-between"
+  }, /*#__PURE__*/React.createElement(Media, {
+    className: "d-flex align-items-start"
+  }, /*#__PURE__*/React.createElement(Media, {
+    left: true,
+    href: "#"
+  }, /*#__PURE__*/React.createElement(PlusSquare, {
+    className: "font-medium-5 primary",
+    size: 21
+  })), /*#__PURE__*/React.createElement(Media, {
+    body: true
+  }, /*#__PURE__*/React.createElement(Media, {
+    heading: true,
+    className: "primary media-heading",
+    tag: "h6"
+  }, "You have new order!"), /*#__PURE__*/React.createElement("p", {
+    className: "notification-text"
+  }, "Are your going to meet me tonight?")), /*#__PURE__*/React.createElement("small", null, /*#__PURE__*/React.createElement("time", {
+    className: "media-meta",
+    dateTime: "2015-06-11T18:29:20+08:00"
+  }, "9 hours ago")))), /*#__PURE__*/React.createElement("div", {
+    className: "d-flex justify-content-between"
+  }, /*#__PURE__*/React.createElement(Media, {
+    className: "d-flex align-items-start"
+  }, /*#__PURE__*/React.createElement(Media, {
+    left: true,
+    href: "#"
+  }, /*#__PURE__*/React.createElement(DownloadCloud, {
+    className: "font-medium-5 success",
+    size: 21
+  })), /*#__PURE__*/React.createElement(Media, {
+    body: true
+  }, /*#__PURE__*/React.createElement(Media, {
+    heading: true,
+    className: "success media-heading",
+    tag: "h6"
+  }, "99% Server load"), /*#__PURE__*/React.createElement("p", {
+    className: "notification-text"
+  }, "You got new order of goods?")), /*#__PURE__*/React.createElement("small", null, /*#__PURE__*/React.createElement("time", {
+    className: "media-meta",
+    dateTime: "2015-06-11T18:29:20+08:00"
+  }, "5 hours ago")))), /*#__PURE__*/React.createElement("div", {
+    className: "d-flex justify-content-between"
+  }, /*#__PURE__*/React.createElement(Media, {
+    className: "d-flex align-items-start"
+  }, /*#__PURE__*/React.createElement(Media, {
+    left: true,
+    href: "#"
+  }, /*#__PURE__*/React.createElement(AlertTriangle, {
+    className: "font-medium-5 danger",
+    size: 21
+  })), /*#__PURE__*/React.createElement(Media, {
+    body: true
+  }, /*#__PURE__*/React.createElement(Media, {
+    heading: true,
+    className: "danger media-heading",
+    tag: "h6"
+  }, "Warning Notification"), /*#__PURE__*/React.createElement("p", {
+    className: "notification-text"
+  }, "Server has used 99% of CPU")), /*#__PURE__*/React.createElement("small", null, /*#__PURE__*/React.createElement("time", {
+    className: "media-meta",
+    dateTime: "2015-06-11T18:29:20+08:00"
+  }, "Today")))), /*#__PURE__*/React.createElement("div", {
+    className: "d-flex justify-content-between"
+  }, /*#__PURE__*/React.createElement(Media, {
+    className: "d-flex align-items-start"
+  }, /*#__PURE__*/React.createElement(Media, {
+    left: true,
+    href: "#"
+  }, /*#__PURE__*/React.createElement(CheckCircle, {
+    className: "font-medium-5 info",
+    size: 21
+  })), /*#__PURE__*/React.createElement(Media, {
+    body: true
+  }, /*#__PURE__*/React.createElement(Media, {
+    heading: true,
+    className: "info media-heading",
+    tag: "h6"
+  }, "Complete the task"), /*#__PURE__*/React.createElement("p", {
+    className: "notification-text"
+  }, "One of your task is pending.")), /*#__PURE__*/React.createElement("small", null, /*#__PURE__*/React.createElement("time", {
+    className: "media-meta",
+    dateTime: "2015-06-11T18:29:20+08:00"
+  }, "Last week")))), /*#__PURE__*/React.createElement("div", {
+    className: "d-flex justify-content-between"
+  }, /*#__PURE__*/React.createElement(Media, {
+    className: "d-flex align-items-start"
+  }, /*#__PURE__*/React.createElement(Media, {
+    left: true,
+    href: "#"
+  }, /*#__PURE__*/React.createElement(File, {
+    className: "font-medium-5 warning",
+    size: 21
+  })), /*#__PURE__*/React.createElement(Media, {
+    body: true
+  }, /*#__PURE__*/React.createElement(Media, {
+    heading: true,
+    className: "warning media-heading",
+    tag: "h6"
+  }, "Generate monthly report"), /*#__PURE__*/React.createElement("p", {
+    className: "notification-text"
+  }, "Reminder to generate monthly report")), /*#__PURE__*/React.createElement("small", null, /*#__PURE__*/React.createElement("time", {
+    className: "media-meta",
+    dateTime: "2015-06-11T18:29:20+08:00"
+  }, "Last month"))))), /*#__PURE__*/React.createElement("li", {
+    className: "dropdown-menu-footer"
+  }, /*#__PURE__*/React.createElement(DropdownItem, {
+    tag: "a",
+    className: "p-1 text-center"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "align-middle"
+  }, "Read all notifications"))));
+};
 
-  render() {
-    let {
-      userSettings,
-      userDetails,
-      ...user
-    } = this.props.user;
-    userSettings = userSettings || {};
-    userDetails = userDetails || {};
-    return /*#__PURE__*/React.createElement("ul", {
-      className: "nav navbar-nav navbar-nav-user float-right"
-    }, /*#__PURE__*/React.createElement(NavItem, {
-      className: "nav-search",
-      onClick: this.handleNavbarSearch
-    }, /*#__PURE__*/React.createElement(NavLink, {
-      className: "nav-link-search pt-2"
-    }, /*#__PURE__*/React.createElement(Search, {
-      size: 21,
-      "data-tour": "search"
-    })), /*#__PURE__*/React.createElement("div", {
-      className: classnames('search-input', {
-        open: this.state.navbarSearch,
-        'd-none': this.state.navbarSearch === false
-      })
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "search-input-icon"
-    }, /*#__PURE__*/React.createElement(Search, {
-      size: 17,
-      className: "primary"
-    })), /*#__PURE__*/React.createElement(Autocomplete, {
-      className: "form-control",
-      suggestions: this.state.suggestions,
-      filterKey: "name",
-      onSuggestionClick: this.onSuggestionItemClick,
-      autoFocus: true,
-      clearInput: this.state.navbarSearch,
-      externalClick: () => {
-        this.setState({
-          navbarSearch: false
-        });
-      },
-      onKeyDown: e => {
-        if (e.keyCode === 27 || e.keyCode === 13) {
-          this.setState({
-            navbarSearch: false
-          });
-          this.props.handleAppOverlay('');
-        }
-      },
-      customRender: (item, i, filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover) => {
-        const IconTag = Icon[item.icon ? item.icon : 'X'];
-        return /*#__PURE__*/React.createElement("li", {
-          className: classnames('suggestion-item', {
-            active: filteredData.indexOf(item) === activeSuggestion
-          }),
-          key: i,
-          onClick: e => onSuggestionItemClick(item, e),
-          onMouseEnter: () => onSuggestionItemHover(filteredData.indexOf(item))
-        }, /*#__PURE__*/React.createElement("div", {
-          className: "d-flex align-items-center"
-        }, /*#__PURE__*/React.createElement(IconTag, {
-          size: 17
-        }), /*#__PURE__*/React.createElement("div", {
-          className: "ml-2"
-        }, item.name)));
-      },
-      onSuggestionsShown: userInput => {
-        if (this.state.navbarSearch) {
-          this.props.handleAppOverlay(userInput);
-        }
+const NavbarUser = props => {
+  let {
+    userSettings,
+    userDetails,
+    ...user
+  } = useSelector(state => state.auth.user);
+  let {
+    appId
+  } = useSelector(state => state.customizer);
+  let {
+    roles
+  } = useSelector(state => state.navbar);
+  const [navbarSearch, setNavbarSearch] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const intl = useIntl();
+  userSettings = userSettings || {};
+  userDetails = userDetails || {};
+  useEffect(() => {
+    const newSuggestions = roles.map(item => {
+      item.name = intl.formatMessage({
+        id: `menu.${item.keyLang}`
+      });
+      item.isExternalApp = item.appId !== appId;
+      item.navLinkExternal = getExternalAppUrl(item.appId, item.menuPath);
+      return item;
+    });
+    setSuggestions(newSuggestions);
+  }, [roles]);
+
+  const handleNavbarSearch = () => {
+    setNavbarSearch(prevState => !prevState);
+  };
+
+  const onSuggestionItemClick = item => {
+    if (!item.isExternalApp) {
+      history.push(`${item.menuPath}`);
+    } else {
+      window.location.href = item.navLinkExternal;
+    }
+  };
+
+  return /*#__PURE__*/React.createElement("ul", {
+    className: "nav navbar-nav navbar-nav-user float-right"
+  }, /*#__PURE__*/React.createElement(NavItem, {
+    className: "nav-search",
+    onClick: handleNavbarSearch
+  }, /*#__PURE__*/React.createElement(NavLink, {
+    className: "nav-link-search pt-2"
+  }, /*#__PURE__*/React.createElement(Search, {
+    size: 21,
+    "data-tour": "search"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: classnames('search-input', {
+      open: navbarSearch,
+      'd-none': navbarSearch === false
+    })
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "search-input-icon"
+  }, /*#__PURE__*/React.createElement(Search, {
+    size: 17,
+    className: "primary"
+  })), /*#__PURE__*/React.createElement(Autocomplete, {
+    className: "form-control",
+    suggestions: suggestions,
+    filterKey: "name",
+    onSuggestionClick: onSuggestionItemClick,
+    autoFocus: true,
+    clearInput: navbarSearch,
+    externalClick: () => {
+      setNavbarSearch(false);
+    },
+    onKeyDown: e => {
+      if (e.keyCode === 27 || e.keyCode === 13) {
+        setNavbarSearch(false);
+        props.handleAppOverlay('');
       }
-    }), /*#__PURE__*/React.createElement("div", {
-      className: "search-input-close"
-    }, /*#__PURE__*/React.createElement(X, {
-      size: 24,
-      onClick: e => {
-        e.stopPropagation();
-        this.setState({
-          navbarSearch: false
-        });
-        this.props.handleAppOverlay('');
+    },
+    customRender: (item, i, filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover) => {
+      const IconTag = Icon[item.icon ? item.icon : 'X'];
+      return /*#__PURE__*/React.createElement("li", {
+        className: classnames('suggestion-item', {
+          active: filteredData.indexOf(item) === activeSuggestion
+        }),
+        key: i,
+        onClick: e => onSuggestionItemClick(item, e),
+        onMouseEnter: () => onSuggestionItemHover(filteredData.indexOf(item))
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "d-flex align-items-center"
+      }, /*#__PURE__*/React.createElement(IconTag, {
+        size: 17
+      }), /*#__PURE__*/React.createElement("div", {
+        className: "ml-2"
+      }, item.name)));
+    },
+    onSuggestionsShown: userInput => {
+      if (navbarSearch) {
+        props.handleAppOverlay(userInput);
       }
-    })))), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
-      tag: "li",
-      className: "dropdown-notification nav-item"
-    }, /*#__PURE__*/React.createElement(DropdownToggle, {
-      tag: "a",
-      className: "nav-link nav-link-label"
-    }, /*#__PURE__*/React.createElement(Bell, {
-      size: 21
-    }))), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
-      tag: "li",
-      className: "dropdown-user nav-item"
-    }, /*#__PURE__*/React.createElement(DropdownToggle, {
-      tag: "a",
-      className: "nav-link dropdown-user-link"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "user-nav d-sm-flex d-none"
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "user-name text-bold-600 mb-0"
-    }, user.fullName)), /*#__PURE__*/React.createElement("span", {
-      "data-tour": "user"
-    }, /*#__PURE__*/React.createElement("img", {
-      src: userSettings.avatar || '',
-      className: "round",
-      height: "40",
-      width: "40",
-      alt: "avatar"
-    }))), /*#__PURE__*/React.createElement(UserDropdown, null)));
-  }
-
-}
-
-var NavbarUser$1 = injectIntl(NavbarUser);
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "search-input-close"
+  }, /*#__PURE__*/React.createElement(X, {
+    size: 24,
+    onClick: e => {
+      e.stopPropagation();
+      setNavbarSearch(false);
+      props.handleAppOverlay('');
+    }
+  })))), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
+    tag: "li",
+    className: "dropdown-notification nav-item"
+  }, /*#__PURE__*/React.createElement(DropdownToggle, {
+    tag: "a",
+    className: "nav-link nav-link-label"
+  }, /*#__PURE__*/React.createElement(Bell, {
+    size: 21
+  })), /*#__PURE__*/React.createElement(DropdownMenu, {
+    tag: "ul",
+    right: true,
+    className: "dropdown-menu-media"
+  }, /*#__PURE__*/React.createElement(Notifications, null))), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
+    tag: "li",
+    className: "dropdown-user nav-item"
+  }, /*#__PURE__*/React.createElement(DropdownToggle, {
+    tag: "a",
+    className: "nav-link dropdown-user-link"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "user-nav d-sm-flex d-none"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "user-name text-bold-600 mb-0"
+  }, user.fullName)), /*#__PURE__*/React.createElement("span", {
+    "data-tour": "user"
+  }, /*#__PURE__*/React.createElement("img", {
+    src: userSettings.avatar || '',
+    className: "round",
+    height: "40",
+    width: "40",
+    alt: "avatar"
+  }))), /*#__PURE__*/React.createElement(UserDropdown, null)));
+};
 
 const ThemeNavbar = props => {
   const colorsArr = ['primary', 'danger', 'success', 'info', 'warning', 'dark'];
@@ -2204,15 +2385,8 @@ const ThemeNavbar = props => {
   }, /*#__PURE__*/React.createElement("img", {
     className: "img-fluid",
     src: IMAGE[`NAV_ICON_${index + 1}`]
-  })))))), /*#__PURE__*/React.createElement(NavbarUser$1, {
-    handleAppOverlay: props.handleAppOverlay,
-    changeCurrentLang: props.changeCurrentLang,
-    appId: props.appId,
-    authToken: props.authToken,
-    user: props.user,
-    roles: props.roles,
-    isAuthenticated: props.isAuthenticated,
-    logoutAction: props.logoutAction
+  })))))), /*#__PURE__*/React.createElement(NavbarUser, {
+    handleAppOverlay: props.handleAppOverlay
   }))))));
 };
 
@@ -3463,6 +3637,7 @@ var messages_en = {
 	"menu.allBonusHistory": "All Bonus History",
 	"menu.notification": "Notification",
 	"menu.notificationManagement": "Notification Management",
+	"menu.createNotification": "Create Notification",
 	"menu.notificationApproval": "Notification Management",
 	"navbar.language.vi": "Tiếng việt",
 	"navbar.language.en": "English",
@@ -3837,6 +4012,7 @@ var messages_vi = {
 	"menu.allBonusHistory": "Lịch sử điểm thưởng tất cả",
 	"menu.notification": "Thông báo",
 	"menu.notificationManagement": "Quản lý thông báo",
+	"menu.createNotification": "Tạo mới thông báo",
 	"menu.notificationApproval": "Duyệt thông báo",
 	"navbar.language.vi": "Tiếng Việt",
 	"navbar.language.en": "English",
