@@ -1,11 +1,11 @@
 import { FormattedMessage, useIntl, IntlProvider } from 'react-intl';
 export { FormattedMessage } from 'react-intl';
-import React, { useEffect, useState, Component, PureComponent, useCallback, useRef } from 'react';
+import React, { useState, useEffect, Component, PureComponent, useCallback, useRef } from 'react';
 import { createBrowserHistory } from 'history';
 import Axios from 'axios';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
 import * as Icon from 'react-feather';
-import { AlertTriangle, Check, User, Lock, Link, Users, FileText, Shield, Globe, MessageSquare, Power, PlusSquare, DownloadCloud, CheckCircle, File, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, Download, Clipboard, Sun } from 'react-feather';
+import { AlertTriangle, Check, User, Lock, Link, Users, FileText, Shield, Globe, MessageSquare, Power, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, Download, Clipboard, Sun } from 'react-feather';
 import { toast, ToastContainer } from 'react-toastify';
 export { toast } from 'react-toastify';
 import moment from 'moment';
@@ -18,7 +18,7 @@ import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/es/storage';
 import { useHistory, Link as Link$1, Router, Switch, Route, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
-import { FormGroup, Label, DropdownMenu, DropdownItem, Media, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Navbar as Navbar$1, Button, Badge, Input, Row, Col, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, Modal, ModalHeader, ModalBody, ModalFooter, ButtonGroup, UncontrolledButtonDropdown } from 'reactstrap';
+import { FormGroup, Label, DropdownMenu, DropdownItem, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Navbar as Navbar$1, Button, Badge, Input, Row, Col, Media, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, Modal, ModalHeader, ModalBody, ModalFooter, ButtonGroup, UncontrolledButtonDropdown } from 'reactstrap';
 export { Button } from 'reactstrap';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
@@ -1462,42 +1462,8 @@ const uiReducer = (state = initialState$1, action) => {
   }
 };
 
-class NotificationService {}
-
-NotificationService.getMyNotifications = () => {
-  return HttpClient.get(API_GET_MY_NOTIFICATIONS, {
-    params: {
-      uuid: generateUUID()
-    },
-    isBackgroundRequest: true
-  });
-};
-
-NotificationService.checkNewNotification = () => {
-  return HttpClient.get(API_CHECK_NEW_NOTIFICATIONS, {
-    params: {
-      uuid: generateUUID()
-    },
-    isBackgroundRequest: true
-  });
-};
-
 const LOAD_MY_NOTIFICATIONS = 'LOAD_MY_NOTIFICATIONS';
 const RECEIVE_NEW_NOTIFICATIONS = 'RECEIVE_NEW_NOTIFICATIONS';
-const getMyNotification = notifications => {
-  return async dispatch => {
-    const res = await NotificationService.getMyNotifications();
-
-    if (!res || res.status !== 200) {
-      return;
-    }
-
-    dispatch({
-      type: LOAD_MY_NOTIFICATIONS,
-      payload: res.data
-    });
-  };
-};
 
 const initialState$2 = {
   notifications: [],
@@ -2058,142 +2024,6 @@ const UserDropdown = () => {
   }))));
 };
 
-const Notifications = () => {
-  const {
-    notifications
-  } = useSelector(state => state.notifications);
-  const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(getMyNotification());
-  }, []);
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("li", {
-    className: "dropdown-menu-header"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "dropdown-header mt-0"
-  }, /*#__PURE__*/React.createElement("h3", {
-    className: "text-white"
-  }, "5 New"), /*#__PURE__*/React.createElement("span", {
-    className: "notification-title"
-  }, "App Notifications"))), /*#__PURE__*/React.createElement(PerfectScrollbar, {
-    className: "media-list overflow-hidden position-relative",
-    options: {
-      wheelPropagation: false
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "d-flex justify-content-between"
-  }, /*#__PURE__*/React.createElement(Media, {
-    className: "d-flex align-items-start"
-  }, /*#__PURE__*/React.createElement(Media, {
-    left: true,
-    href: "#"
-  }, /*#__PURE__*/React.createElement(PlusSquare, {
-    className: "font-medium-5 primary",
-    size: 21
-  })), /*#__PURE__*/React.createElement(Media, {
-    body: true
-  }, /*#__PURE__*/React.createElement(Media, {
-    heading: true,
-    className: "primary media-heading",
-    tag: "h6"
-  }, "You have new order!"), /*#__PURE__*/React.createElement("p", {
-    className: "notification-text"
-  }, "Are your going to meet me tonight?")), /*#__PURE__*/React.createElement("small", null, /*#__PURE__*/React.createElement("time", {
-    className: "media-meta",
-    dateTime: "2015-06-11T18:29:20+08:00"
-  }, "9 hours ago")))), /*#__PURE__*/React.createElement("div", {
-    className: "d-flex justify-content-between"
-  }, /*#__PURE__*/React.createElement(Media, {
-    className: "d-flex align-items-start"
-  }, /*#__PURE__*/React.createElement(Media, {
-    left: true,
-    href: "#"
-  }, /*#__PURE__*/React.createElement(DownloadCloud, {
-    className: "font-medium-5 success",
-    size: 21
-  })), /*#__PURE__*/React.createElement(Media, {
-    body: true
-  }, /*#__PURE__*/React.createElement(Media, {
-    heading: true,
-    className: "success media-heading",
-    tag: "h6"
-  }, "99% Server load"), /*#__PURE__*/React.createElement("p", {
-    className: "notification-text"
-  }, "You got new order of goods?")), /*#__PURE__*/React.createElement("small", null, /*#__PURE__*/React.createElement("time", {
-    className: "media-meta",
-    dateTime: "2015-06-11T18:29:20+08:00"
-  }, "5 hours ago")))), /*#__PURE__*/React.createElement("div", {
-    className: "d-flex justify-content-between"
-  }, /*#__PURE__*/React.createElement(Media, {
-    className: "d-flex align-items-start"
-  }, /*#__PURE__*/React.createElement(Media, {
-    left: true,
-    href: "#"
-  }, /*#__PURE__*/React.createElement(AlertTriangle, {
-    className: "font-medium-5 danger",
-    size: 21
-  })), /*#__PURE__*/React.createElement(Media, {
-    body: true
-  }, /*#__PURE__*/React.createElement(Media, {
-    heading: true,
-    className: "danger media-heading",
-    tag: "h6"
-  }, "Warning Notification"), /*#__PURE__*/React.createElement("p", {
-    className: "notification-text"
-  }, "Server has used 99% of CPU")), /*#__PURE__*/React.createElement("small", null, /*#__PURE__*/React.createElement("time", {
-    className: "media-meta",
-    dateTime: "2015-06-11T18:29:20+08:00"
-  }, "Today")))), /*#__PURE__*/React.createElement("div", {
-    className: "d-flex justify-content-between"
-  }, /*#__PURE__*/React.createElement(Media, {
-    className: "d-flex align-items-start"
-  }, /*#__PURE__*/React.createElement(Media, {
-    left: true,
-    href: "#"
-  }, /*#__PURE__*/React.createElement(CheckCircle, {
-    className: "font-medium-5 info",
-    size: 21
-  })), /*#__PURE__*/React.createElement(Media, {
-    body: true
-  }, /*#__PURE__*/React.createElement(Media, {
-    heading: true,
-    className: "info media-heading",
-    tag: "h6"
-  }, "Complete the task"), /*#__PURE__*/React.createElement("p", {
-    className: "notification-text"
-  }, "One of your task is pending.")), /*#__PURE__*/React.createElement("small", null, /*#__PURE__*/React.createElement("time", {
-    className: "media-meta",
-    dateTime: "2015-06-11T18:29:20+08:00"
-  }, "Last week")))), /*#__PURE__*/React.createElement("div", {
-    className: "d-flex justify-content-between"
-  }, /*#__PURE__*/React.createElement(Media, {
-    className: "d-flex align-items-start"
-  }, /*#__PURE__*/React.createElement(Media, {
-    left: true,
-    href: "#"
-  }, /*#__PURE__*/React.createElement(File, {
-    className: "font-medium-5 warning",
-    size: 21
-  })), /*#__PURE__*/React.createElement(Media, {
-    body: true
-  }, /*#__PURE__*/React.createElement(Media, {
-    heading: true,
-    className: "warning media-heading",
-    tag: "h6"
-  }, "Generate monthly report"), /*#__PURE__*/React.createElement("p", {
-    className: "notification-text"
-  }, "Reminder to generate monthly report")), /*#__PURE__*/React.createElement("small", null, /*#__PURE__*/React.createElement("time", {
-    className: "media-meta",
-    dateTime: "2015-06-11T18:29:20+08:00"
-  }, "Last month"))))), /*#__PURE__*/React.createElement("li", {
-    className: "dropdown-menu-footer"
-  }, /*#__PURE__*/React.createElement(DropdownItem, {
-    tag: "a",
-    className: "p-1 text-center"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "align-middle"
-  }, "Read all notifications"))));
-};
-
 const NavbarUser = props => {
   let {
     userSettings,
@@ -2204,7 +2034,7 @@ const NavbarUser = props => {
     appId
   } = useSelector(state => state.customizer);
   let {
-    roles
+    roles = []
   } = useSelector(state => state.navbar);
   const [navbarSearch, setNavbarSearch] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
@@ -2310,11 +2140,7 @@ const NavbarUser = props => {
     className: "nav-link nav-link-label"
   }, /*#__PURE__*/React.createElement(Bell, {
     size: 21
-  })), /*#__PURE__*/React.createElement(DropdownMenu, {
-    tag: "ul",
-    right: true,
-    className: "dropdown-menu-media"
-  }, /*#__PURE__*/React.createElement(Notifications, null))), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
+  }))), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
     tag: "li",
     className: "dropdown-user nav-item"
   }, /*#__PURE__*/React.createElement(DropdownToggle, {
@@ -7095,7 +6921,7 @@ const BaseFormDatePicker = ({
     field,
     form
   }) => /*#__PURE__*/React.createElement(DatePicker, {
-    className: `form-control position-relative ${!disabled ? 'bg-white' : ''} ${_isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'} ${className}`,
+    className: `form-control position-relative ${!disabled ? 'bg-white' : ''} ${_isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'} ${className}`,
     placeholder: messageId ? intl.formatMessage({
       id: messageId
     }) : '',

@@ -1665,46 +1665,8 @@ var uiReducer = function uiReducer(state, action) {
   }
 };
 
-var NotificationService = function NotificationService() {};
-
-NotificationService.getMyNotifications = function () {
-  return HttpClient.get(API_GET_MY_NOTIFICATIONS, {
-    params: {
-      uuid: generateUUID()
-    },
-    isBackgroundRequest: true
-  });
-};
-
-NotificationService.checkNewNotification = function () {
-  return HttpClient.get(API_CHECK_NEW_NOTIFICATIONS, {
-    params: {
-      uuid: generateUUID()
-    },
-    isBackgroundRequest: true
-  });
-};
-
 var LOAD_MY_NOTIFICATIONS = 'LOAD_MY_NOTIFICATIONS';
 var RECEIVE_NEW_NOTIFICATIONS = 'RECEIVE_NEW_NOTIFICATIONS';
-var getMyNotification = function getMyNotification(notifications) {
-  return function (dispatch) {
-    try {
-      return Promise.resolve(NotificationService.getMyNotifications()).then(function (res) {
-        if (!res || res.status !== 200) {
-          return;
-        }
-
-        dispatch({
-          type: LOAD_MY_NOTIFICATIONS,
-          payload: res.data
-        });
-      });
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
-};
 
 var initialState$2 = {
   notifications: [],
@@ -2299,143 +2261,6 @@ var UserDropdown = function UserDropdown() {
   }))));
 };
 
-var Notifications = function Notifications() {
-  var _useSelector = reactRedux.useSelector(function (state) {
-    return state.notifications;
-  });
-
-  var dispatch = reactRedux.useDispatch();
-  React.useEffect(function () {
-    dispatch(getMyNotification());
-  }, []);
-  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("li", {
-    className: "dropdown-menu-header"
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "dropdown-header mt-0"
-  }, /*#__PURE__*/React__default.createElement("h3", {
-    className: "text-white"
-  }, "5 New"), /*#__PURE__*/React__default.createElement("span", {
-    className: "notification-title"
-  }, "App Notifications"))), /*#__PURE__*/React__default.createElement(PerfectScrollbar, {
-    className: "media-list overflow-hidden position-relative",
-    options: {
-      wheelPropagation: false
-    }
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "d-flex justify-content-between"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    className: "d-flex align-items-start"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    left: true,
-    href: "#"
-  }, /*#__PURE__*/React__default.createElement(Icon.PlusSquare, {
-    className: "font-medium-5 primary",
-    size: 21
-  })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    body: true
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    heading: true,
-    className: "primary media-heading",
-    tag: "h6"
-  }, "You have new order!"), /*#__PURE__*/React__default.createElement("p", {
-    className: "notification-text"
-  }, "Are your going to meet me tonight?")), /*#__PURE__*/React__default.createElement("small", null, /*#__PURE__*/React__default.createElement("time", {
-    className: "media-meta",
-    dateTime: "2015-06-11T18:29:20+08:00"
-  }, "9 hours ago")))), /*#__PURE__*/React__default.createElement("div", {
-    className: "d-flex justify-content-between"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    className: "d-flex align-items-start"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    left: true,
-    href: "#"
-  }, /*#__PURE__*/React__default.createElement(Icon.DownloadCloud, {
-    className: "font-medium-5 success",
-    size: 21
-  })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    body: true
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    heading: true,
-    className: "success media-heading",
-    tag: "h6"
-  }, "99% Server load"), /*#__PURE__*/React__default.createElement("p", {
-    className: "notification-text"
-  }, "You got new order of goods?")), /*#__PURE__*/React__default.createElement("small", null, /*#__PURE__*/React__default.createElement("time", {
-    className: "media-meta",
-    dateTime: "2015-06-11T18:29:20+08:00"
-  }, "5 hours ago")))), /*#__PURE__*/React__default.createElement("div", {
-    className: "d-flex justify-content-between"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    className: "d-flex align-items-start"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    left: true,
-    href: "#"
-  }, /*#__PURE__*/React__default.createElement(Icon.AlertTriangle, {
-    className: "font-medium-5 danger",
-    size: 21
-  })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    body: true
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    heading: true,
-    className: "danger media-heading",
-    tag: "h6"
-  }, "Warning Notification"), /*#__PURE__*/React__default.createElement("p", {
-    className: "notification-text"
-  }, "Server has used 99% of CPU")), /*#__PURE__*/React__default.createElement("small", null, /*#__PURE__*/React__default.createElement("time", {
-    className: "media-meta",
-    dateTime: "2015-06-11T18:29:20+08:00"
-  }, "Today")))), /*#__PURE__*/React__default.createElement("div", {
-    className: "d-flex justify-content-between"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    className: "d-flex align-items-start"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    left: true,
-    href: "#"
-  }, /*#__PURE__*/React__default.createElement(Icon.CheckCircle, {
-    className: "font-medium-5 info",
-    size: 21
-  })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    body: true
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    heading: true,
-    className: "info media-heading",
-    tag: "h6"
-  }, "Complete the task"), /*#__PURE__*/React__default.createElement("p", {
-    className: "notification-text"
-  }, "One of your task is pending.")), /*#__PURE__*/React__default.createElement("small", null, /*#__PURE__*/React__default.createElement("time", {
-    className: "media-meta",
-    dateTime: "2015-06-11T18:29:20+08:00"
-  }, "Last week")))), /*#__PURE__*/React__default.createElement("div", {
-    className: "d-flex justify-content-between"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    className: "d-flex align-items-start"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    left: true,
-    href: "#"
-  }, /*#__PURE__*/React__default.createElement(Icon.File, {
-    className: "font-medium-5 warning",
-    size: 21
-  })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    body: true
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-    heading: true,
-    className: "warning media-heading",
-    tag: "h6"
-  }, "Generate monthly report"), /*#__PURE__*/React__default.createElement("p", {
-    className: "notification-text"
-  }, "Reminder to generate monthly report")), /*#__PURE__*/React__default.createElement("small", null, /*#__PURE__*/React__default.createElement("time", {
-    className: "media-meta",
-    dateTime: "2015-06-11T18:29:20+08:00"
-  }, "Last month"))))), /*#__PURE__*/React__default.createElement("li", {
-    className: "dropdown-menu-footer"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
-    tag: "a",
-    className: "p-1 text-center"
-  }, /*#__PURE__*/React__default.createElement("span", {
-    className: "align-middle"
-  }, "Read all notifications"))));
-};
-
 var NavbarUser = function NavbarUser(props) {
   var _useSelector = reactRedux.useSelector(function (state) {
     return state.auth.user;
@@ -2451,7 +2276,8 @@ var NavbarUser = function NavbarUser(props) {
   var _useSelector3 = reactRedux.useSelector(function (state) {
     return state.navbar;
   }),
-      roles = _useSelector3.roles;
+      _useSelector3$roles = _useSelector3.roles,
+      roles = _useSelector3$roles === void 0 ? [] : _useSelector3$roles;
 
   var _useState = React.useState(false),
       navbarSearch = _useState[0],
@@ -2568,11 +2394,7 @@ var NavbarUser = function NavbarUser(props) {
     className: "nav-link nav-link-label"
   }, /*#__PURE__*/React__default.createElement(Icon.Bell, {
     size: 21
-  })), /*#__PURE__*/React__default.createElement(reactstrap.DropdownMenu, {
-    tag: "ul",
-    right: true,
-    className: "dropdown-menu-media"
-  }, /*#__PURE__*/React__default.createElement(Notifications, null))), /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledDropdown, {
+  }))), /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledDropdown, {
     tag: "li",
     className: "dropdown-user nav-item"
   }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
@@ -7468,7 +7290,7 @@ var BaseFormDatePicker = function BaseFormDatePicker(_ref) {
     var field = _ref2.field,
         form = _ref2.form;
     return /*#__PURE__*/React__default.createElement(DatePicker, {
-      className: "form-control position-relative " + (!disabled ? 'bg-white' : '') + " " + (isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid') + " " + className,
+      className: "form-control position-relative " + (!disabled ? 'bg-white' : '') + " " + (isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid') + " " + className,
       placeholder: messageId ? intl.formatMessage({
         id: messageId
       }) : '',
