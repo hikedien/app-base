@@ -127,7 +127,7 @@ var AppId = {
   TP_BANK_APP: 'TP_BANK_APP'
 };
 
-var API_BASE_URL = 'https://apisit.inon.vn';
+var API_BASE_URL = 'https://api.inon.vn';
 var RESOURCE_URL = 'https://sit2.inon.vn/resources/images/';
 var FB_APP_ID = '2651185198505964';
 var GOOGLE_APP_ID = '400818618331-k9ptcdcgr99po0g5q5mh8e5ekodgj61n.apps.googleusercontent.com';

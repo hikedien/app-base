@@ -13768,16 +13768,13 @@ select.form-control:not([multiple="multiple"]) {
     padding: 0.6rem; }
     .light .form-label-group > input, .light
     .form-label-group textarea {
-      color: #42236A;
-      border-color: #E2D8EE; }
+      color: #42236A; }
     .dark .form-label-group > input, .dark
     .form-label-group textarea {
-      color: #F6F3F8;
-      border-color: #564962; }
+      color: #F6F3F8; }
     .premier .form-label-group > input, .premier
     .form-label-group textarea {
-      color: #2C1E45;
-      border-color: #E0DCD8; }
+      color: #2C1E45; }
     .light .form-label-group > input::-moz-placeholder, .light
     .form-label-group textarea::-moz-placeholder {
       color: #E2D8EE; }
@@ -13896,8 +13893,6 @@ select.form-control:not([multiple="multiple"]) {
     .form-label-group textarea .select__menu {
       z-index: 2; }
   .form-label-group .is-invalid .Select__control {
-    border-color: #ea5455 !important; }
-  .form-label-group input.is-invalid {
     border-color: #ea5455 !important; }
   .form-label-group .Select__input input {
     border: none !important;
@@ -36474,16 +36469,13 @@ select.form-control:not([multiple="multiple"]) {
     padding: 0.6rem; }
     .light .form-label-group > input, .light
     .form-label-group textarea {
-      color: #42236A;
-      border-color: #E2D8EE; }
+      color: #42236A; }
     .dark .form-label-group > input, .dark
     .form-label-group textarea {
-      color: #F6F3F8;
-      border-color: #564962; }
+      color: #F6F3F8; }
     .premier .form-label-group > input, .premier
     .form-label-group textarea {
-      color: #2C1E45;
-      border-color: #E0DCD8; }
+      color: #2C1E45; }
     .light .form-label-group > input::-moz-placeholder, .light
     .form-label-group textarea::-moz-placeholder {
       color: #E2D8EE; }
@@ -36602,8 +36594,6 @@ select.form-control:not([multiple="multiple"]) {
     .form-label-group textarea .select__menu {
       z-index: 2; }
   .form-label-group .is-invalid .Select__control {
-    border-color: #ea5455 !important; }
-  .form-label-group input.is-invalid {
     border-color: #ea5455 !important; }
   .form-label-group .Select__input input {
     border: none !important;
