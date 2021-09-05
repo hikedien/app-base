@@ -7322,7 +7322,6 @@ var Select = function Select(props) {
       isFocused = _useState2[0],
       setIsFocused = _useState2[1];
 
-  console.log(props.placeholder, props.value);
   React.useEffect(function () {
     setInputValue(props.value);
   }, [props.value]);

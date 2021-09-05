@@ -6946,7 +6946,6 @@ const BaseFormDatePicker = ({
 const Select = props => {
   const [inputValue, setInputValue] = useState(props.value);
   const [isFocused, setIsFocused] = useState(false);
-  console.log(props.placeholder, props.value);
   useEffect(() => {
     setInputValue(props.value);
   }, [props.value]);
