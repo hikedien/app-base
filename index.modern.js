@@ -55,7 +55,7 @@ const AppId = {
   DIVAY_APP: 'DIVAY_APP'
 };
 
-const API_BASE_URL = 'https://apisit.inon.vn';
+const API_BASE_URL = 'https://api.inon.vn';
 const RESOURCE_URL = 'https://sit2.inon.vn/resources/images/';
 const FB_APP_ID = '2651185198505964';
 const GOOGLE_APP_ID = '400818618331-k9ptcdcgr99po0g5q5mh8e5ekodgj61n.apps.googleusercontent.com';
