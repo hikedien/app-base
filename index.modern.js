@@ -55,7 +55,7 @@ const AppId = {
   DIVAY_APP: 'DIVAY_APP'
 };
 
-const API_BASE_URL = 'https://api.inon.vn';
+const API_BASE_URL = 'https://apisit.inon.vn';
 const RESOURCE_URL = 'https://sit2.inon.vn/resources/images/';
 const FB_APP_ID = '2651185198505964';
 const GOOGLE_APP_ID = '400818618331-k9ptcdcgr99po0g5q5mh8e5ekodgj61n.apps.googleusercontent.com';
@@ -123,6 +123,8 @@ const MAX_FILE_SIZE = 5;
 const CONTACT_PHONE = '0899.300.800';
 const SESSION_TIMEOUT = 30;
 const DATE_TIME_FORMAT = 'YYYY/MM/DD HH:mm:ss';
+const ANDROID_APP_LINK = 'https://play.google.com/store/apps/details?id=com.inon.vn';
+const IOS_APP_LINK = 'https://apps.apple.com/app/id1574202853';
 const LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
   FAIL: 'FAIL'
@@ -296,6 +298,8 @@ var appConfigs = {
     CONTACT_PHONE: CONTACT_PHONE,
     SESSION_TIMEOUT: SESSION_TIMEOUT,
     DATE_TIME_FORMAT: DATE_TIME_FORMAT,
+    ANDROID_APP_LINK: ANDROID_APP_LINK,
+    IOS_APP_LINK: IOS_APP_LINK,
     LOGIN_STATUS: LOGIN_STATUS,
     USER_TYPE: USER_TYPE,
     GENDER_OPTIONS: GENDER_OPTIONS,
@@ -2387,13 +2391,13 @@ const Footer = props => {
     className: "float-md-right d-none d-md-block"
   }, /*#__PURE__*/React.createElement("a", {
     className: "mr-1",
-    href: "https://www.apple.com/app-store/",
+    href: IOS_APP_LINK,
     target: "_blank"
   }, /*#__PURE__*/React.createElement("img", {
     src: IMAGE.DOWNLOAD_APP_IOS,
     alt: "DOWNLOAD ON APP STORE"
   })), /*#__PURE__*/React.createElement("a", {
-    href: "https://play.google.com/store/apps",
+    href: ANDROID_APP_LINK,
     target: "_blank"
   }, /*#__PURE__*/React.createElement("img", {
     src: IMAGE.DOWNLOAD_APP_ANDROID,
