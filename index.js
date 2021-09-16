@@ -22,6 +22,7 @@ var reactstrap = require('reactstrap');
 var ReactDOM = _interopDefault(require('react-dom'));
 var PropTypes = _interopDefault(require('prop-types'));
 var PerfectScrollbar = _interopDefault(require('react-perfect-scrollbar'));
+require('moment/locale/vi');
 var ScrollToTop = _interopDefault(require('react-scroll-up'));
 var Hammer = _interopDefault(require('react-hammerjs'));
 var Yup = require('yup');
@@ -1665,8 +1666,46 @@ var uiReducer = function uiReducer(state, action) {
   }
 };
 
+var NotificationService = function NotificationService() {};
+
+NotificationService.getMyNotifications = function () {
+  return HttpClient.get(API_GET_MY_NOTIFICATIONS, {
+    params: {
+      uuid: generateUUID()
+    },
+    isBackgroundRequest: true
+  });
+};
+
+NotificationService.checkNewNotification = function () {
+  return HttpClient.get(API_CHECK_NEW_NOTIFICATIONS, {
+    params: {
+      uuid: generateUUID()
+    },
+    isBackgroundRequest: true
+  });
+};
+
 var LOAD_MY_NOTIFICATIONS = 'LOAD_MY_NOTIFICATIONS';
 var RECEIVE_NEW_NOTIFICATIONS = 'RECEIVE_NEW_NOTIFICATIONS';
+var getMyNotification = function getMyNotification(notifications) {
+  return function (dispatch) {
+    try {
+      return Promise.resolve(NotificationService.getMyNotifications()).then(function (res) {
+        if (!res || res.status !== 200) {
+          return;
+        }
+
+        dispatch({
+          type: LOAD_MY_NOTIFICATIONS,
+          payload: res.data
+        });
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+};
 
 var initialState$2 = {
   notifications: [],
@@ -2261,6 +2300,66 @@ var UserDropdown = function UserDropdown() {
   }))));
 };
 
+var Notifications = function Notifications() {
+  var _useSelector = reactRedux.useSelector(function (state) {
+    return state.notifications;
+  }),
+      notifications = _useSelector.notifications;
+
+  var dispatch = reactRedux.useDispatch();
+  var intl = reactIntl.useIntl();
+  React.useEffect(function () {
+    dispatch(getMyNotification());
+  }, []);
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("li", {
+    className: "dropdown-menu-header"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "dropdown-header mt-0"
+  }, /*#__PURE__*/React__default.createElement("span", {
+    className: "notification-title"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "menu.notification"
+  })))), /*#__PURE__*/React__default.createElement(PerfectScrollbar, {
+    className: "media-list overflow-hidden position-relative",
+    options: {
+      wheelPropagation: false
+    }
+  }, notifications.map(function (item) {
+    return /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex justify-content-between",
+      key: item.id
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      className: "d-flex align-items-start"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      left: true,
+      href: "#"
+    }, /*#__PURE__*/React__default.createElement(Icon.Server, {
+      className: "font-medium-5 primary",
+      size: 21
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      body: true
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      heading: true,
+      className: "primary media-heading",
+      tag: "h6"
+    }, "You have new order!"), /*#__PURE__*/React__default.createElement("div", {
+      dangerouslySetInnerHTML: {
+        __html: item.content
+      }
+    })), /*#__PURE__*/React__default.createElement("small", null, /*#__PURE__*/React__default.createElement("time", {
+      className: "media-meta",
+      dateTime: item.sendDate
+    }, moment(item.sendDate).fromNow()))));
+  })), /*#__PURE__*/React__default.createElement("li", {
+    className: "dropdown-menu-footer"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+    tag: "a",
+    className: "p-1 text-center"
+  }, /*#__PURE__*/React__default.createElement("span", {
+    className: "align-middle"
+  }, "Read all notifications"))));
+};
+
 var NavbarUser = function NavbarUser(props) {
   var _useSelector = reactRedux.useSelector(function (state) {
     return state.auth.user;
@@ -2290,7 +2389,7 @@ var NavbarUser = function NavbarUser(props) {
   var intl = reactIntl.useIntl();
   userSettings = userSettings || {};
   React.useEffect(function () {
-    var newSuggestions = roles.map(function (item) {
+    var newSuggestions = (roles || []).map(function (item) {
       item.name = intl.formatMessage({
         id: "menu." + item.keyLang
       });
@@ -2394,7 +2493,11 @@ var NavbarUser = function NavbarUser(props) {
     className: "nav-link nav-link-label"
   }, /*#__PURE__*/React__default.createElement(Icon.Bell, {
     size: 21
-  }))), /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledDropdown, {
+  })), /*#__PURE__*/React__default.createElement(reactstrap.DropdownMenu, {
+    tag: "ul",
+    right: true,
+    className: "dropdown-menu-media"
+  }, /*#__PURE__*/React__default.createElement(Notifications, null))), /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledDropdown, {
     tag: "li",
     className: "dropdown-user nav-item"
   }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
@@ -8184,7 +8287,7 @@ var ShareWithFriends = function ShareWithFriends() {
   var shareUrl = document.location.origin + "/home?refId=" + user.username;
   React.useEffect(function () {
     var options = {
-      text: 'https://drive.google.com/drive/folders/19KZRbkHRIlX3o5tayMw2Rh73YAhdFQMS?usp=sharing',
+      text: shareUrl,
       colorDark: '#106D5A',
       correctLevel: QRCode.CorrectLevel.H,
       logo: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzEiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCAzMSAzMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0xOC4zMTY3IDI0Ljk5MDFDMTguNTA1OCAyNC43OTkyIDE4LjcxODUgMjQuNjMyMSAxOC45MDc2IDI0LjQxNzNDMjEuMTA1NiAyMi4xOTc1IDIyLjY0MTggMTkuMzMzMyAyMy4xODU0IDE2LjExMTFDMjMuMzI3MiAxNS4yMjggMjMuNDIxNyAxNC4zMjEgMjMuNDIxNyAxMy40MTRDMjMuNDIxNyAxMy4wNzk4IDIzLjQyMTcgMTIuNzY5NSAyMy4zOTgxIDEyLjQ1OTNDMjMuMTYxOCA4LjU0NDg2IDIxLjQ4MzcgNS4wMTIzNSAxOC45MDc2IDIuNDEwN0MxOC43MTg1IDIuMjE5NzUgMTguNTI5NCAyLjAyODgxIDE4LjMxNjcgMS44Mzc4NkMxNy42NTQ5IDEuMjQxMTUgMTYuOTQ1OSAwLjY5MjE4MSAxNi4xODk2IDAuMjE0ODE1QzE1Ljc0MDUgLTAuMDcxNjA0OSAxNS4xNDk3IC0wLjA3MTYwNDkgMTQuNjc3IDAuMjE0ODE1QzEzLjkyMDcgMC42OTIxODEgMTMuMjExNyAxLjI0MTE1IDEyLjU0OTkgMS44Mzc4NkMxMi4zNjA4IDIuMDI4ODEgMTIuMTQ4MSAyLjE5NTg4IDExLjk1OSAyLjQxMDdDOS44MDgzIDQuNTgyNzIgOC4yNzIwNiA3LjM5OTE4IDcuNzA0ODMgMTAuNTQ5OEM3Ljk0MTE4IDEwLjQzMDUgOC4yMDExNiAxMC4zMTExIDguNDM3NSAxMC4xOTE4QzExLjc0NjMgOC42ODgwNyAxNy4zNDc3IDguMjM0NTcgMjAuMDY1NyAxMC45NTU2QzE4LjYwMDMgMTAuNDc4MiAxNy4wNDA0IDEwLjIzOTUgMTUuNDA5NyAxMC4yMzk1QzEzLjc3ODkgMTAuMjM5NSAxMi4yMTkgMTAuNTAyMSAxMC43NTM3IDEwLjk1NTZDOS41OTU1OSAxMS4zMzc0IDguNDg0NzcgMTEuODM4NyA3LjQ0NDg1IDEyLjQ1OTNDNi4zODEzIDEzLjEwMzcgNS4zODg2NiAxMy44OTE0IDQuNDkwNTUgMTQuNzk4NEMyLjMxNjE4IDE2Ljk5NDIgMC43Nzk5MzcgMTkuODgyMyAwLjIzNjM0NSAyMy4xMDQ1QzAuMDk0NTM3OCAyMy45ODc3IDAgMjQuODk0NiAwIDI1LjgwMTZDMCAyNS44NDk0IDAgMjUuODk3MSAwIDI1Ljk2ODdDMCAyNi40NyAwLjI4MzYxMyAyNi45MjM1IDAuNzMyNjY4IDI3LjE2MjFDMS41NTk4NyAyNy42MTU2IDIuNDM0MzUgMjcuOTczNyAzLjMzMjQ2IDI4LjI2MDFDNC43OTc3OSAyOC43Mzc0IDYuMzU3NjcgMjguOTc2MSA3Ljk4ODQ1IDI4Ljk3NjFDMTAuMDIxIDI4Ljk3NjEgMTEuOTU5IDI4LjU3MDQgMTMuNzU1MyAyNy44NTQzQzEzLjUxODkgMjcuNjg3MiAxMy4yODI2IDI3LjU0NCAxMy4wNDYyIDI3LjM3N0M5LjUwMTA1IDI0Ljg0NjkgNi42MTc2NSAyMC44ODQ4IDcuNjU3NTYgMTYuMTM1QzguMjI0NzkgMTkuMzU3MiA5Ljc2MTAzIDIyLjIyMTQgMTEuOTM1NCAyNC40NDEyQzEyLjEyNDUgMjQuNjMyMSAxMi4zMTM2IDI0LjgyMyAxMi41MjYzIDI1LjAxNEMxMy40MDA3IDI1LjgwMTYgMTQuMzY5NyAyNi41MTc3IDE1LjQwOTcgMjcuMDkwNUMxNy42MDc3IDI4LjMwNzggMjAuMTYwMiAyOS4wMjM5IDIyLjg1NDUgMjkuMDIzOUMyNC40ODUzIDI5LjAyMzkgMjYuMDQ1MiAyOC43NjEzIDI3LjUxMDUgMjguMzA3OEMyOC40MDg2IDI4LjAyMTQgMjkuMjgzMSAyNy42Mzk1IDMwLjExMDMgMjcuMjA5OUMzMC41NTkzIDI2Ljk3MTIgMzAuODQzIDI2LjUxNzcgMzAuODQzIDI1Ljk5MjZDMzAuODQzIDI1Ljk0NDkgMzAuODQzIDI1Ljg5NzEgMzAuODQzIDI1Ljg0OTRDMzAuODQzIDI0LjkxODUgMzAuNzcyMSAyNC4wMzU0IDMwLjYwNjYgMjMuMTUyM0MzMC4wMzk0IDE5LjkzIDI4LjUwMzIgMTcuMDY1OCAyNi4zMjg4IDE0Ljg0NjFDMjUuOTAzNCAxNC40MTY1IDI1LjQzMDcgMTMuOTg2OCAyNC45NTggMTMuNjA0OUMyNC45MTA3IDE4LjI4MzEgMjIuOTAxOCAyMy4xMDQ1IDE4LjMxNjcgMjQuOTkwMVpNMjAuMjc4NCAxNC4zNjg3QzIwLjA0MiAxNy40MjM5IDE4LjcxODUgMjAuMTkyNiAxNi43MDk2IDIyLjI0NTNDMTYuMzA3OCAyMi42NTEgMTUuODgyNCAyMy4wMzI5IDE1LjQzMzMgMjMuMzY3MUMxNC45ODQyIDIzLjAwOTEgMTQuNTU4OCAyMi42NTEgMTQuMTU3IDIyLjI0NTNDMTIuMTI0NSAyMC4xOTI2IDEwLjgwMDkgMTcuNDQ3NyAxMC41ODgyIDE0LjM2ODdDMTIuMDc3MiAxMy43MjQzIDEzLjczMTYgMTMuMzY2MyAxNS40NTY5IDEzLjM2NjNDMTcuMTU4NiAxMy4zNDI0IDE4Ljc4OTQgMTMuNzAwNCAyMC4yNzg0IDE0LjM2ODdaIiBmaWxsPSIjMTA2RDVBIi8+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMTguMzE2OSAyNC45ODk5QzE4LjUwNiAyNC43OTg5IDE4LjcxODcgMjQuNjMxOSAxOC45MDc4IDI0LjQ0MDlDMjEuMTA1OCAyMi4yMjEyIDIyLjY0MiAxOS4zNTcgMjMuMTg1NiAxNi4xMzQ3QzIzLjIwOTIgMTUuOTkxNSAyMy4yMzI5IDE1LjgyNDQgMjMuMjU2NSAxNS42ODEyQzIyLjgwNzQgMTMuNzQ3OSAyMS42NDkzIDEyLjA3NzEgMjAuMDY1OCAxMC45NTUzQzE4LjYwMDUgMTAuNDc3OSAxNy4wNDA2IDEwLjIzOTMgMTUuNDMzNSAxMC4yMzkzQzEzLjkyMDkgMTAuMjM5MyAxMi40NTU1IDEwLjQ1NDEgMTEuMDYxMSAxMC44ODM3QzkuMjY0ODkgMTIuMTAxIDguMDEyMjcgMTMuODkxMSA3LjY4MTM4IDE2LjEzNDdDNy43MDUwMiAxNi4wNjMxIDcuNjU3NzUgMTYuMjA2MyA3LjY4MTM4IDE2LjEzNDdDOC4yNDg2MSAxOS4zNTcgOS43ODQ4NSAyMi4yMjEyIDExLjk1OTIgMjQuNDQwOUMxMi4xMDEgMjQuNTg0MSAxMi4yNjY1IDI0Ljc1MTIgMTIuNDMxOSAyNC44OTQ0QzEzLjM3NzMgMjUuMzAwMiAxNC40MTcyIDI1LjUxNSAxNS41MDQ0IDI1LjUxNUMxNi40OTcgMjUuNTE1IDE3LjQ0MjQgMjUuMzI0IDE4LjMxNjkgMjQuOTg5OVpNMTQuMTMzNiAyMi4yMjEyQzEyLjEwMSAyMC4xNjg1IDEwLjc3NzUgMTcuNDIzNiAxMC41NjQ4IDE0LjM0NDZDMTIuMDUzOCAxMy43MDAyIDEzLjcwODIgMTMuMzQyMSAxNS40MzM1IDEzLjM0MjFDMTcuMTU4OCAxMy4zNDIxIDE4LjgxMzIgMTMuNzAwMiAyMC4zMDIyIDE0LjM0NDZDMjAuMDY1OCAxNy4zOTk4IDE4Ljc0MjMgMjAuMTY4NSAxNi43MzM0IDIyLjIyMTJDMTYuMzMxNiAyMi42MjY5IDE1LjkwNjIgMjMuMDA4OCAxNS40NTcxIDIzLjM0M0MxNC45NjA4IDIzLjAwODggMTQuNTM1NCAyMi42MjY5IDE0LjEzMzYgMjIuMjIxMloiIGZpbGw9IiMxMDZENUEiLz4KPGcgb3BhY2l0eT0iMC42Ij4KPHBhdGggb3BhY2l0eT0iMC42IiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTE4LjMxNjkgMjQuOTg5OUMxOC41MDYgMjQuNzk4OSAxOC43MTg3IDI0LjYzMTkgMTguOTA3OCAyNC40NDA5QzIxLjEwNTggMjIuMjIxMiAyMi42NDIgMTkuMzU3IDIzLjE4NTYgMTYuMTM0N0MyMy4yMDkyIDE1Ljk5MTUgMjMuMjMyOSAxNS44MjQ0IDIzLjI1NjUgMTUuNjgxMkMyMi44MDc0IDEzLjc0NzkgMjEuNjQ5MyAxMi4wNzcxIDIwLjA2NTggMTAuOTU1M0MxOC42MDA1IDEwLjQ3NzkgMTcuMDQwNiAxMC4yMzkzIDE1LjQzMzUgMTAuMjM5M0MxMy45MjA5IDEwLjIzOTMgMTIuNDU1NSAxMC40NTQxIDExLjA2MTEgMTAuODgzN0M5LjI2NDg5IDEyLjEwMSA4LjAxMjI3IDEzLjg5MTEgNy42ODEzOCAxNi4xMzQ3QzcuNzA1MDIgMTYuMDYzMSA3LjY1Nzc1IDE2LjIwNjMgNy42ODEzOCAxNi4xMzQ3QzguMjQ4NjEgMTkuMzU3IDkuNzg0ODUgMjIuMjIxMiAxMS45NTkyIDI0LjQ0MDlDMTIuMTAxIDI0LjU4NDEgMTIuMjY2NSAyNC43NTEyIDEyLjQzMTkgMjQuODk0NEMxMy4zNzczIDI1LjMwMDIgMTQuNDE3MiAyNS41MTUgMTUuNTA0NCAyNS41MTVDMTYuNDk3IDI1LjUxNSAxNy40NDI0IDI1LjMyNCAxOC4zMTY5IDI0Ljk4OTlaTTE0LjEzMzYgMjIuMjIxMkMxMi4xMDEgMjAuMTY4NSAxMC43Nzc1IDE3LjQyMzYgMTAuNTY0OCAxNC4zNDQ2QzEyLjA1MzggMTMuNzAwMiAxMy43MDgyIDEzLjM0MjEgMTUuNDMzNSAxMy4zNDIxQzE3LjE1ODggMTMuMzQyMSAxOC44MTMyIDEzLjcwMDIgMjAuMzAyMiAxNC4zNDQ2QzIwLjA2NTggMTcuMzk5OCAxOC43NDIzIDIwLjE2ODUgMTYuNzMzNCAyMi4yMjEyQzE2LjMzMTYgMjIuNjI2OSAxNS45MDYyIDIzLjAwODggMTUuNDU3MSAyMy4zNDNDMTQuOTYwOCAyMy4wMDg4IDE0LjUzNTQgMjIuNjI2OSAxNC4xMzM2IDIyLjIyMTJaIiBmaWxsPSIjMTA2RDVBIi8+CjwvZz4KPC9zdmc+Cg==',
@@ -8361,7 +8464,7 @@ var LanguageTab = function LanguageTab() {
       setLang = _useState[1];
 
   var onClickBackHome = function onClickBackHome() {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "common.home"
       }),
@@ -8376,7 +8479,7 @@ var LanguageTab = function LanguageTab() {
   };
 
   var onClickSaveChange = function onClickSaveChange(context) {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "setting.language"
       }),
