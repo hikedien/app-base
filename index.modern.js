@@ -1,6 +1,6 @@
 import { FormattedMessage, useIntl, IntlProvider } from 'react-intl';
 export { FormattedMessage } from 'react-intl';
-import React, { useEffect, useState, Component, PureComponent, useCallback, useRef } from 'react';
+import React, { useState, useEffect, Component, PureComponent, useCallback, useRef } from 'react';
 import { createBrowserHistory } from 'history';
 import Axios from 'axios';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
@@ -18,7 +18,7 @@ import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/es/storage';
 import { useHistory, Link as Link$1, Router, Switch, Route, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
-import { FormGroup, Label, DropdownMenu, DropdownItem, Media, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Navbar as Navbar$1, Button, Badge, Input, Row, Col, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, Modal, ModalHeader, ModalBody, ModalFooter, ButtonGroup, UncontrolledButtonDropdown } from 'reactstrap';
+import { FormGroup, Label, DropdownMenu, DropdownItem, Media, Modal, ModalHeader, ModalBody, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Navbar as Navbar$1, Button, Badge, Input, Row, Col, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, ModalFooter, ButtonGroup, UncontrolledButtonDropdown } from 'reactstrap';
 export { Button } from 'reactstrap';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
@@ -79,6 +79,9 @@ const API_RESET_PASSWORD = '/api/authenticate/reset-password';
 const API_EMAIL_SUGGESTION = '/nth/user/api/authenticate/email-suggestion';
 const API_GET_MY_NOTIFICATIONS = '/nth/notification/api/my-notification';
 const API_CHECK_NEW_NOTIFICATIONS = '/nth/notification/api/notifications-es';
+const API_GET_NOTIFICATION_FROM_ESPUBLIC = '/nth/notification/api/user-notifications-es';
+const API_UPDATE_NOTIFICATION = '/nth/notification/';
+const API_UPDATE_ALL_NOTIFICATION_STATUS = '/nth/notification/api/my-notifications-status';
 const API_R_200 = 200;
 const API_GET_CITIES_BY_COUNTRY = '/nth/datacollection/api/citiesbycountry';
 const API_GET_DISTRICTS_BY_CITY = '/nth/datacollection/api/districtsbycity';
@@ -123,6 +126,8 @@ const MAX_FILE_SIZE = 5;
 const CONTACT_PHONE = '0899.300.800';
 const SESSION_TIMEOUT = 30;
 const DATE_TIME_FORMAT = 'YYYY/MM/DD HH:mm:ss';
+const ANDROID_APP_LINK = 'https://play.google.com/store/apps/details?id=com.inon.vn';
+const IOS_APP_LINK = 'https://apps.apple.com/app/id1574202853';
 const LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
   FAIL: 'FAIL'
@@ -269,6 +274,9 @@ var appConfigs = {
     API_EMAIL_SUGGESTION: API_EMAIL_SUGGESTION,
     API_GET_MY_NOTIFICATIONS: API_GET_MY_NOTIFICATIONS,
     API_CHECK_NEW_NOTIFICATIONS: API_CHECK_NEW_NOTIFICATIONS,
+    API_GET_NOTIFICATION_FROM_ESPUBLIC: API_GET_NOTIFICATION_FROM_ESPUBLIC,
+    API_UPDATE_NOTIFICATION: API_UPDATE_NOTIFICATION,
+    API_UPDATE_ALL_NOTIFICATION_STATUS: API_UPDATE_ALL_NOTIFICATION_STATUS,
     API_R_200: API_R_200,
     API_GET_CITIES_BY_COUNTRY: API_GET_CITIES_BY_COUNTRY,
     API_GET_DISTRICTS_BY_CITY: API_GET_DISTRICTS_BY_CITY,
@@ -296,6 +304,8 @@ var appConfigs = {
     CONTACT_PHONE: CONTACT_PHONE,
     SESSION_TIMEOUT: SESSION_TIMEOUT,
     DATE_TIME_FORMAT: DATE_TIME_FORMAT,
+    ANDROID_APP_LINK: ANDROID_APP_LINK,
+    IOS_APP_LINK: IOS_APP_LINK,
     LOGIN_STATUS: LOGIN_STATUS,
     USER_TYPE: USER_TYPE,
     GENDER_OPTIONS: GENDER_OPTIONS,
@@ -710,9 +720,15 @@ NavBarService.getUserGroupRole = groupId => {
 
 const LOAD_NATIVGATION = 'LOAD_NATIVGATION';
 const LOAD_USER_ROLE = 'LOAD_USER_ROLE';
-const loadNavtigation = appId => {
+const loadNavtigation = (appId, callback) => {
   return async dispatch => {
     const res = await NavBarService.getNativagtion();
+
+    if (!res || !res.data) {
+      return;
+    }
+
+    callback();
     const roles = res.data || [];
     const navConfigs = getNativgationConfig(appId, roles);
     dispatch({
@@ -1359,22 +1375,6 @@ const authReducers = (state = { ...authInitialState
   }
 };
 
-const LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
-const LOAD_USER_ROLE$1 = 'LOAD_USER_ROLE';
-const goBackHomePage$1 = () => {
-  return async (dispatch, getState) => {
-    const {
-      appId
-    } = getState().customizer;
-
-    if (appId === AppId.APP_NO1) {
-      history.push('/');
-    } else {
-      window.location.href = getExternalAppUrl(appId === AppId.ELITE_APP ? AppId.ELITE_APP : AppId.APP_NO1, '/');
-    }
-  };
-};
-
 const initialState = {
   navConfigs: [],
   roles: [],
@@ -1383,13 +1383,13 @@ const initialState = {
 
 const navbarReducer = (state = initialState, action) => {
   switch (action.type) {
-    case LOAD_NATIVGATION$1:
+    case LOAD_NATIVGATION:
       return { ...state,
         navConfigs: action.payload.navConfigs,
         roles: action.payload.roles
       };
 
-    case LOAD_USER_ROLE$1:
+    case LOAD_USER_ROLE:
       return { ...state,
         userRoles: action.payload
       };
@@ -1397,22 +1397,6 @@ const navbarReducer = (state = initialState, action) => {
     default:
       return state;
   }
-};
-
-const SHOW_LOADING_BAR$1 = 'SHOW_LOADING_BAR';
-const HIDE_LOADING_BAR$1 = 'HIDE_LOADING_BAR';
-const SHOW_CONFIRM_ALERT$1 = 'SHOW_CONFIRM_ALERT';
-const HIDE_CONFIRM_ALERT$1 = 'HIDE_CONFIRM_ALERT';
-const showConfirmAlert$1 = configs => {
-  return dispatch => dispatch({
-    type: SHOW_CONFIRM_ALERT$1,
-    payload: configs
-  });
-};
-const hideConfirmAlert$1 = () => {
-  return dispatch => dispatch({
-    type: HIDE_CONFIRM_ALERT$1
-  });
 };
 
 const DEFAULT_CONFIRM_ALERT = {
@@ -1431,19 +1415,19 @@ const initialState$1 = {
 
 const uiReducer = (state = initialState$1, action) => {
   switch (action.type) {
-    case SHOW_LOADING_BAR$1:
+    case SHOW_LOADING_BAR:
       return { ...state,
         isLoading: true,
         loading: state.loading.add(action.payload)
       };
 
-    case HIDE_LOADING_BAR$1:
+    case HIDE_LOADING_BAR:
       state.loading.delete(action.payload);
       return { ...state,
         isLoading: !!state.loading.size
       };
 
-    case SHOW_CONFIRM_ALERT$1:
+    case SHOW_CONFIRM_ALERT:
       return { ...state,
         confirmAlert: {
           isShow: true,
@@ -1452,7 +1436,7 @@ const uiReducer = (state = initialState$1, action) => {
         }
       };
 
-    case HIDE_CONFIRM_ALERT$1:
+    case HIDE_CONFIRM_ALERT:
       return { ...state,
         confirmAlert: { ...DEFAULT_CONFIRM_ALERT
         }
@@ -1466,7 +1450,7 @@ const uiReducer = (state = initialState$1, action) => {
 class NotificationService {}
 
 NotificationService.getMyNotifications = () => {
-  return HttpClient.get(API_GET_MY_NOTIFICATIONS, {
+  return HttpClient.get(API_GET_NOTIFICATION_FROM_ESPUBLIC, {
     params: {
       uuid: generateUUID()
     },
@@ -1483,6 +1467,19 @@ NotificationService.checkNewNotification = () => {
   });
 };
 
+NotificationService.updateNotificationStatus = notification => {
+  return HttpClient.put(API_UPDATE_NOTIFICATION, notification, {
+    isBackgroundRequest: true
+  });
+};
+
+NotificationService.updateAllNotificationStatus = () => {
+  return HttpClient.put(API_UPDATE_ALL_NOTIFICATION_STATUS, {}, {
+    params: 'READ',
+    isBackgroundRequest: true
+  });
+};
+
 const LOAD_MY_NOTIFICATIONS = 'LOAD_MY_NOTIFICATIONS';
 const RECEIVE_NEW_NOTIFICATIONS = 'RECEIVE_NEW_NOTIFICATIONS';
 const getMyNotification = notifications => {
@@ -1493,6 +1490,77 @@ const getMyNotification = notifications => {
       return;
     }
 
+    res.data = [{
+      "id": 18,
+      "type": "system",
+      "userId": 2,
+      "read": false,
+      "deleted": false,
+      "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
+      "contentContentType": null,
+      "sendDate": "2021-08-23T20:14:02Z",
+      "updateDate": null,
+      "updateBy": null,
+      "templateId": 1,
+      "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
+      "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
+    }, {
+      "id": 19,
+      "type": "personal",
+      "userId": 2,
+      "read": false,
+      "deleted": false,
+      "content": "<p><strong>Đây la thông báo cá nhân</strong></p>\n",
+      "contentContentType": null,
+      "sendDate": "2021-08-23T20:14:02Z",
+      "updateDate": null,
+      "updateBy": null,
+      "templateId": 1,
+      "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
+      "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
+    }, {
+      "id": 20,
+      "type": "promotion",
+      "userId": 2,
+      "read": false,
+      "deleted": false,
+      "content": "<p><strong>Đây là thông báo khuyến mại</strong></p>\n",
+      "contentContentType": null,
+      "sendDate": "2021-08-23T20:14:02Z",
+      "updateDate": null,
+      "updateBy": null,
+      "templateId": 1,
+      "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
+      "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
+    }, {
+      "id": 21,
+      "type": "system",
+      "userId": 2,
+      "read": false,
+      "deleted": false,
+      "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
+      "contentContentType": null,
+      "sendDate": "2021-08-23T20:14:02Z",
+      "updateDate": null,
+      "updateBy": null,
+      "templateId": 1,
+      "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
+      "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
+    }, {
+      "id": 22,
+      "type": "system",
+      "userId": 2,
+      "read": false,
+      "deleted": false,
+      "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
+      "contentContentType": null,
+      "sendDate": "2021-08-23T20:14:02Z",
+      "updateDate": null,
+      "updateBy": null,
+      "templateId": 1,
+      "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
+      "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
+    }];
     dispatch({
       type: LOAD_MY_NOTIFICATIONS,
       payload: res.data
@@ -2060,30 +2128,50 @@ const UserDropdown = () => {
 };
 
 const Notifications = () => {
+  const dispatch = useDispatch();
+  const intl = useIntl();
   const {
     notifications
   } = useSelector(state => state.notifications);
-  const dispatch = useDispatch();
-  const intl = useIntl();
+  const [notificationModal, setNotificationModal] = useState(false);
+  const [notification, setNotification] = useState(null);
   useEffect(() => {
     dispatch(getMyNotification());
   }, []);
+
+  const onClickOpenNotification = item => {
+    setNotification(item);
+    setNotificationModal(true);
+    const notificationRequest = notifications.find(notification => notification.id === item.id);
+    const notificationAllStatus = NotificationService.updateAllNotificationStatus({
+      notificationId: notificationRequest.id,
+      status: 'READ'
+    });
+    if (notificationAllStatus.status === 200) return;
+  };
+
+  const onClickUpdateAllNotificationStatus = () => {
+    const notificationAllStatus = NotificationService.updateAllNotificationStatus();
+    if (notificationAllStatus.status === 200) return;
+  };
+
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("li", {
     className: "dropdown-menu-header"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "dropdown-header mt-0"
+    className: "dropdown-header mt-0 text-left"
   }, /*#__PURE__*/React.createElement("span", {
     className: "notification-title"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "menu.notification"
-  })))), /*#__PURE__*/React.createElement(PerfectScrollbar, {
+  })), /*#__PURE__*/React.createElement("span", null, "(", notifications.length, ")"))), /*#__PURE__*/React.createElement(PerfectScrollbar, {
     className: "media-list overflow-hidden position-relative",
     options: {
       wheelPropagation: false
     }
   }, notifications.map(item => /*#__PURE__*/React.createElement("div", {
     className: "d-flex justify-content-between",
-    key: item.id
+    key: item.id,
+    onClick: () => onClickOpenNotification(item)
   }, /*#__PURE__*/React.createElement(Media, {
     className: "d-flex align-items-start"
   }, /*#__PURE__*/React.createElement(Media, {
@@ -2098,21 +2186,45 @@ const Notifications = () => {
     heading: true,
     className: "primary media-heading",
     tag: "h6"
-  }, "You have new order!"), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", {
+    className: !item.read ? 'font-weight-bold' : ''
+  }, item.title)), /*#__PURE__*/React.createElement("div", {
+    className: !item.read ? 'font-weight-bold' : '',
     dangerouslySetInnerHTML: {
-      __html: item.content
+      __html: item.shortContent
     }
-  })), /*#__PURE__*/React.createElement("small", null, /*#__PURE__*/React.createElement("time", {
+  })), /*#__PURE__*/React.createElement("small", {
+    className: "mt-1"
+  }, /*#__PURE__*/React.createElement("time", {
     className: "media-meta",
     dateTime: item.sendDate
-  }, moment(item.sendDate).fromNow())))))), /*#__PURE__*/React.createElement("li", {
-    className: "dropdown-menu-footer"
+  }, moment().diff(moment(item.sendDate), 'days') >= 1 ? moment(item.sendDate).format("DD/MM/YYYY") : moment(item.sendDate).fromNow())))))), notifications.length > 0 && /*#__PURE__*/React.createElement("li", {
+    className: "dropdown-menu-footer",
+    onClick: onClickUpdateAllNotificationStatus
   }, /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     className: "p-1 text-center"
   }, /*#__PURE__*/React.createElement("span", {
     className: "align-middle"
-  }, "Read all notifications"))));
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "menu.readAll"
+  })))), notification && /*#__PURE__*/React.createElement(Modal, {
+    isOpen: notificationModal,
+    toggle: () => setNotificationModal(!notificationModal),
+    className: "modal-dialog-centered"
+  }, /*#__PURE__*/React.createElement(ModalHeader, {
+    toggle: () => setNotificationModal(!notificationModal)
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "menu.notification"
+  })), /*#__PURE__*/React.createElement(ModalBody, null, /*#__PURE__*/React.createElement("div", {
+    dangerouslySetInnerHTML: {
+      __html: notification.title
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    dangerouslySetInnerHTML: {
+      __html: notification.content
+    }
+  }))));
 };
 
 const NavbarUser = props => {
@@ -2368,7 +2480,7 @@ const Footer = props => {
 
   const onClickBackHome = e => {
     e.preventDefault();
-    dispatch(goBackHomePage$1());
+    dispatch(goBackHomePage());
   };
 
   return /*#__PURE__*/React.createElement("footer", null, /*#__PURE__*/React.createElement("div", {
@@ -2387,13 +2499,13 @@ const Footer = props => {
     className: "float-md-right d-none d-md-block"
   }, /*#__PURE__*/React.createElement("a", {
     className: "mr-1",
-    href: "https://www.apple.com/app-store/",
+    href: IOS_APP_LINK,
     target: "_blank"
   }, /*#__PURE__*/React.createElement("img", {
     src: IMAGE.DOWNLOAD_APP_IOS,
     alt: "DOWNLOAD ON APP STORE"
   })), /*#__PURE__*/React.createElement("a", {
-    href: "https://play.google.com/store/apps",
+    href: ANDROID_APP_LINK,
     target: "_blank"
   }, /*#__PURE__*/React.createElement("img", {
     src: IMAGE.DOWNLOAD_APP_ANDROID,
@@ -2526,7 +2638,7 @@ const SidebarHeader = props => {
   const dispatch = useDispatch();
 
   const onClickHome = () => {
-    dispatch(goBackHomePage$1());
+    dispatch(goBackHomePage());
   };
 
   return /*#__PURE__*/React.createElement("div", {
@@ -3557,6 +3669,7 @@ var messages_en = {
 	"menu.partnerBonusHistory": "Partner Bonus History",
 	"menu.allBonusHistory": "All Bonus History",
 	"menu.notification": "Notification",
+	"menu.readAll": "Read All",
 	"menu.notificationManagement": "Notification Management",
 	"menu.createNotification": "Create Notification",
 	"menu.notificationApproval": "Notification Management",
@@ -3932,6 +4045,7 @@ var messages_vi = {
 	"menu.partnerBonusHistory": "Lịch sử điểm thưởng đối tác",
 	"menu.allBonusHistory": "Lịch sử điểm thưởng tất cả",
 	"menu.notification": "Thông báo",
+	"menu.readAll": "Đọc tất cả",
 	"menu.notificationManagement": "Quản lý thông báo",
 	"menu.createNotification": "Tạo mới thông báo",
 	"menu.notificationApproval": "Duyệt thông báo",
@@ -7721,7 +7835,7 @@ const ChangePassword = () => {
   const dispatch = useDispatch();
 
   const onClickSubmit = values => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.changePassword"
       }),
@@ -7736,7 +7850,7 @@ const ChangePassword = () => {
   };
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -7745,7 +7859,7 @@ const ChangePassword = () => {
         id: "common.backHome.confirmMessage"
       }),
       onConfirm: () => {
-        dispatch(goBackHomePage$1());
+        dispatch(goBackHomePage());
       }
     }));
   };
@@ -7977,7 +8091,7 @@ const LanguageTab = () => {
         id: "common.backHome.confirmMessage"
       }),
       onConfirm: () => {
-        dispatch(goBackHomePage$1());
+        dispatch(goBackHomePage());
       }
     }));
   };
@@ -8056,7 +8170,7 @@ const ContactTab = () => {
   const dispatch = useDispatch();
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -8065,13 +8179,13 @@ const ContactTab = () => {
         id: "common.backHome.confirmMessage"
       }),
       onConfirm: () => {
-        dispatch(goBackHomePage$1());
+        dispatch(goBackHomePage());
       }
     }));
   };
 
   const onClickCall = () => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.call"
       }),
@@ -9439,7 +9553,7 @@ const ConfirmAlert = () => {
       onConfirm();
     }
 
-    dispatch(hideConfirmAlert$1());
+    dispatch(hideConfirmAlert());
   };
 
   const onClickCancel = () => {
@@ -9447,7 +9561,7 @@ const ConfirmAlert = () => {
       onCancel();
     }
 
-    dispatch(hideConfirmAlert$1());
+    dispatch(hideConfirmAlert());
   };
 
   return /*#__PURE__*/React.createElement(SweetAlert, Object.assign({
@@ -9496,8 +9610,7 @@ const AppRouter = props => {
     }
 
     if (code) {
-      loadNavtigation(appId);
-      loadUserRoles();
+      loadNavtigation(appId, () => loadUserRoles());
     }
   }, [authToken]);
 
