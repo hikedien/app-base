@@ -6816,6 +6816,7 @@ const BaseFormDatePicker = ({
   className,
   options,
   onChange,
+  value,
   disabled,
   isShowErrorMessage,
   isRequired: _isRequired = true
@@ -6840,7 +6841,7 @@ const BaseFormDatePicker = ({
     errors: errors,
     disabled: disabled,
     touched: touched,
-    value: field.value,
+    value: value || field.value,
     options: options || defaultOptions,
     onChange: date => {
       form.setFieldValue(fieldName, date[0]);

@@ -7184,6 +7184,7 @@ var BaseFormDatePicker = function BaseFormDatePicker(_ref) {
       className = _ref.className,
       options = _ref.options,
       _onChange = _ref.onChange,
+      value = _ref.value,
       disabled = _ref.disabled,
       isShowErrorMessage = _ref.isShowErrorMessage,
       _ref$isRequired = _ref.isRequired,
@@ -7208,7 +7209,7 @@ var BaseFormDatePicker = function BaseFormDatePicker(_ref) {
       errors: errors,
       disabled: disabled,
       touched: touched,
-      value: field.value,
+      value: value || field.value,
       options: options || defaultOptions,
       onChange: function onChange(date) {
         form.setFieldValue(fieldName, date[0]);
