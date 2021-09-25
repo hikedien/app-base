@@ -9827,7 +9827,8 @@ const AppRouter = props => {
     changeIsGuest,
     loadUserRoles,
     history,
-    message
+    message,
+    footerApp
   } = props;
   useEffect(() => {
     const urlParams = new URLSearchParams(document.location.search);
@@ -9922,7 +9923,7 @@ const AppRouter = props => {
     }), /*#__PURE__*/React.createElement(Redirect, {
       from: "/",
       to: "/intro"
-    }))
+    }), footerApp)
   })), /*#__PURE__*/React.createElement(CheckLocationChange, null)), /*#__PURE__*/React.createElement(ToastContainer, {
     hideProgressBar: true,
     position: "top-right",
@@ -9998,7 +9999,8 @@ const App = ({
   appReducer,
   message,
   apiBaseUrl,
-  history
+  history,
+  footerApp
 }) => {
   const middlewares = [thunk, createDebounce()];
   const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
@@ -10016,7 +10018,8 @@ const App = ({
     message: message,
     appId: appId,
     history: history,
-    children: children
+    children: children,
+    footerApp: footerApp
   })));
 };
 

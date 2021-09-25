@@ -10504,7 +10504,8 @@ var AppRouter = function AppRouter(props) {
       loadNavtigation = props.loadNavtigation,
       loadUserRoles = props.loadUserRoles,
       history = props.history,
-      message = props.message;
+      message = props.message,
+      footerApp = props.footerApp;
   React.useEffect(function () {
     var urlParams = new URLSearchParams(document.location.search);
     var code = urlParams.get('code') || (appId === AppId.ELITE_APP ? guest.authToken : authToken);
@@ -10607,7 +10608,7 @@ var AppRouter = function AppRouter(props) {
       }), /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
         from: "/",
         to: "/intro"
-      }));
+      }), footerApp);
     }
   })), /*#__PURE__*/React__default.createElement(CheckLocationChange, null)), /*#__PURE__*/React__default.createElement(reactToastify.ToastContainer, {
     hideProgressBar: true,
@@ -10688,7 +10689,8 @@ var App = function App(_ref) {
       appReducer = _ref.appReducer,
       message = _ref.message,
       apiBaseUrl = _ref.apiBaseUrl,
-      history = _ref.history;
+      history = _ref.history,
+      footerApp = _ref.footerApp;
   var middlewares = [thunk, createDebounce()];
   var composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || redux.compose;
   var store = redux.createStore(rootReducer(appReducer), {}, composeEnhancers(redux.applyMiddleware.apply(void 0, middlewares)));
@@ -10705,7 +10707,8 @@ var App = function App(_ref) {
     message: message,
     appId: appId,
     history: history,
-    children: children
+    children: children,
+    footerApp: footerApp
   })));
 };
 
