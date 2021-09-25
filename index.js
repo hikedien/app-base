@@ -10590,7 +10590,7 @@ var AppRouter = function AppRouter(props) {
         render: function render() {
           return children;
         }
-      }))) : /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, landingPageRoutes.map(function (item) {
+      }))) : /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, landingPageRoutes.map(function (item) {
         return /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
           key: item.path,
           path: "/" + item.path,
@@ -10608,7 +10608,7 @@ var AppRouter = function AppRouter(props) {
       }), /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
         from: "/",
         to: "/intro"
-      }), footerApp);
+      })), React__default.createElement(footerApp));
     }
   })), /*#__PURE__*/React__default.createElement(CheckLocationChange, null)), /*#__PURE__*/React__default.createElement(reactToastify.ToastContainer, {
     hideProgressBar: true,

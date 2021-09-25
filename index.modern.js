@@ -9911,7 +9911,7 @@ const AppRouter = props => {
     })), /*#__PURE__*/React.createElement(Route, {
       path: "/",
       render: () => children
-    }))) : /*#__PURE__*/React.createElement(Switch, null, landingPageRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
+    }))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Switch, null, landingPageRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
       key: item.path,
       path: `/${item.path}`,
       render: () => /*#__PURE__*/React.createElement(LandingPage, {
@@ -9923,7 +9923,7 @@ const AppRouter = props => {
     }), /*#__PURE__*/React.createElement(Redirect, {
       from: "/",
       to: "/intro"
-    }), footerApp)
+    })), React.createElement(footerApp))
   })), /*#__PURE__*/React.createElement(CheckLocationChange, null)), /*#__PURE__*/React.createElement(ToastContainer, {
     hideProgressBar: true,
     position: "top-right",
