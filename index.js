@@ -128,8 +128,8 @@ var AppId = {
   DIVAY_APP: 'DIVAY_APP'
 };
 
-var API_BASE_URL = 'https://apisit.inon.vn';
-var RESOURCE_URL = 'https://x.inon.vn/resources/images/';
+var API_BASE_URL = 'https://api.inon.vn';
+var RESOURCE_URL = 'https://sit2.inon.vn/resources/images/';
 var FB_APP_ID = '2651185198505964';
 var GOOGLE_APP_ID = '400818618331-k9ptcdcgr99po0g5q5mh8e5ekodgj61n.apps.googleusercontent.com';
 var API_LOGIN_URL = '/api/authenticate';
@@ -517,23 +517,11 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
   HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
   HttpClient.interceptors.request.use(function (config) {
     var token = store.getState().auth.guest.authToken || store.getState().auth.authToken;
-    var sessionExpireTime = store.getState().auth.sessionExpireTime;
     language = localStorage.getItem('language');
 
     if (token) {
       store.dispatch(changeActionExpireTime());
       config.headers.Authorization = "Bearer " + token;
-      var isSessionExpired = moment().isAfter(moment(sessionExpireTime));
-
-      if (sessionExpireTime && isSessionExpired) {
-        toastError( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-          id: "common.sessionExpired"
-        }));
-        store.dispatch({
-          type: LOGOUT_ACTION
-        });
-        return;
-      }
     }
 
     config.headers.appId = store.getState().customizer.appId;
@@ -541,6 +529,7 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
     config.headers.latitude = localStorage.getItem('latitude');
     config.headers.longitude = localStorage.getItem('longitude');
     config.headers.deviceId = deviceId;
+    config.headers.isMobileApp = true;
     config.headers['Accept-Language'] = language;
 
     if (!config.isBackgroundRequest) {
@@ -898,7 +887,6 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
                   type: LOGIN_ACTION,
                   payload: payload
                 });
-                dispatch(goBackHomePage());
               });
             } else {
               dispatch({
@@ -1042,6 +1030,14 @@ var changeIsGuest = function changeIsGuest(isGuest) {
       type: CHANGE_IS_GUEST,
       payload: isGuest
     });
+  };
+};
+var goToGuestApp = function goToGuestApp() {
+  return function (dispatch) {
+    dispatch({
+      type: GOTO_GUEST_APP
+    });
+    redirectMainApp(true);
   };
 };
 var goToAgencyApp = function goToAgencyApp() {
@@ -1500,6 +1496,7 @@ var authReducers = function authReducers(state, action) {
     case GOTO_AGENCY_APP:
       {
         return _extends({}, state, {
+          guest: {},
           user: state.guest.user,
           authToken: state.guest.authToken
         });
@@ -2066,6 +2063,11 @@ var UserDropdown = function UserDropdown() {
     history.push(path);
   };
 
+  var onClickGoToGuestApp = function onClickGoToGuestApp(e) {
+    e.preventDefault();
+    dispatch(goToGuestApp());
+  };
+
   var onClickLogout = function onClickLogout() {
     dispatch(showConfirmAlert({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
@@ -2122,6 +2124,21 @@ var UserDropdown = function UserDropdown() {
     className: "align-middle"
   }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "setting.shareWithFriends"
+  }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+    divider: true
+  }), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+    tag: "a",
+    href: "#",
+    onClick: function onClick(e) {
+      return onClickGoToGuestApp(e);
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.Users, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React__default.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "setting.goToGuestApp"
   }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
     divider: true
   }), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
@@ -2578,7 +2595,7 @@ var Footer = function Footer(props) {
     className: "w-25"
   }, /*#__PURE__*/React__default.createElement("span", {
     onClick: function onClick(e) {
-      return history.push('/contact');
+      return history.push('/app/contact');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.MessageSquare, null), /*#__PURE__*/React__default.createElement("div", {
     className: "mt-1"
@@ -8198,7 +8215,7 @@ var AccountSettings = function AccountSettings(props) {
       active: activeTab === 'account-info'
     }),
     onClick: function onClick() {
-      history.push('/account-info');
+      history.push('/app/account-info');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.User, {
     size: 16
@@ -8211,7 +8228,7 @@ var AccountSettings = function AccountSettings(props) {
       active: activeTab === 'change-password'
     }),
     onClick: function onClick() {
-      history.push('/change-password');
+      history.push('/app/change-password');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
     size: 16
@@ -8224,7 +8241,7 @@ var AccountSettings = function AccountSettings(props) {
       active: activeTab === 'share-with-friends'
     }),
     onClick: function onClick() {
-      history.push('/share-with-friends');
+      history.push('/app/share-with-friends');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Link, {
     size: 16
@@ -8971,7 +8988,7 @@ var GeneralInfo = function GeneralInfo(props) {
       active: activeTab === 'terms-and-condition'
     }),
     onClick: function onClick() {
-      history.push('/terms-and-condition');
+      history.push('/app/terms-and-condition');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.FileText, {
     size: 16
@@ -8984,7 +9001,7 @@ var GeneralInfo = function GeneralInfo(props) {
       active: activeTab === 'privacy-policy'
     }),
     onClick: function onClick() {
-      history.push('/privacy-policy');
+      history.push('/app/privacy-policy');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Shield, {
     size: 16
@@ -8997,7 +9014,7 @@ var GeneralInfo = function GeneralInfo(props) {
       active: activeTab === 'language'
     }),
     onClick: function onClick() {
-      history.push('/language');
+      history.push('/app/language');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Globe, {
     size: 16
@@ -9010,7 +9027,7 @@ var GeneralInfo = function GeneralInfo(props) {
       active: activeTab === 'contact'
     }),
     onClick: function onClick() {
-      history.push('/contact');
+      history.push('/app/contact');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.MessageSquare, {
     size: 16
@@ -9238,16 +9255,114 @@ var SocialLogin = function SocialLogin(_ref) {
 };
 
 var AppSelection = function AppSelection(_ref) {
+  var isLogin = _ref.isLogin;
 
   var _useSelector = reactRedux.useSelector(function (state) {
     return state.auth;
-  });
+  }),
+      isGuest = _useSelector.isGuest;
 
   var dispatch = reactRedux.useDispatch();
 
+  var onClickChangeAppType = function onClickChangeAppType(value) {
+    dispatch(changeIsGuest(value));
+  };
+
   return /*#__PURE__*/React__default.createElement("div", {
     className: "text-center mt-2 mb-3"
-  });
+  }, /*#__PURE__*/React__default.createElement("p", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: isLogin ? 'socialLogin.youLoginAs' : 'socialLogin.youRegisterAs'
+  })), /*#__PURE__*/React__default.createElement(reactstrap.ButtonGroup, {
+    className: "w-100"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
+    className: "btn-app-selection left",
+    active: !isGuest,
+    type: "button",
+    onClick: function onClick() {
+      return onClickChangeAppType(false);
+    }
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "icon mr-1"
+  }, /*#__PURE__*/React__default.createElement("svg", {
+    width: "40",
+    height: "40",
+    viewBox: "0 0 40 40",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, /*#__PURE__*/React__default.createElement("path", {
+    d: "M20 25C22.7614 25 25 22.7614 25 20C25 17.2386 22.7614 15 20 15C17.2386 15 15 17.2386 15 20C15 22.7614 17.2386 25 20 25Z",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M20 35V35.0167",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M5 15V15.0167",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M35 15V15.0167",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M13.3333 33.4999C11.0589 32.3906 9.1021 30.7238 7.64506 28.6548C6.18802 26.5858 5.2781 24.1818 5 21.6666",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M26.6663 33.4999C28.9407 32.3906 30.8975 30.7238 32.3545 28.6548C33.8116 26.5858 34.7215 24.1818 34.9996 21.6666",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M10.333 8.33345C13.0132 6.14004 16.3697 4.94164 19.833 4.94164C23.2963 4.94164 26.6529 6.14004 29.333 8.33345",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }))), /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "socialLogin.agent"
+  })), /*#__PURE__*/React__default.createElement(reactstrap.Button, {
+    className: "btn-app-selection right",
+    active: isGuest,
+    onClick: function onClick() {
+      return onClickChangeAppType(true);
+    },
+    type: "button"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "icon mr-1"
+  }, /*#__PURE__*/React__default.createElement("svg", {
+    width: "40",
+    height: "40",
+    viewBox: "0 0 40 40",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, /*#__PURE__*/React__default.createElement("path", {
+    d: "M20.0005 18.4999C23.3143 18.4999 26.0007 15.8136 26.0007 12.4997C26.0007 9.1859 23.3143 6.49951 20.0005 6.49951C16.6866 6.49951 14.0002 9.1859 14.0002 12.4997C14.0002 15.8136 16.6866 18.4999 20.0005 18.4999Z",
+    stroke: isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M10.9993 33.5004V30.5003C10.9993 28.9089 11.6314 27.3828 12.7567 26.2575C13.8819 25.1322 15.4081 24.5001 16.9995 24.5001H22.9997C24.5911 24.5001 26.1172 25.1322 27.2425 26.2575C28.3678 27.3828 28.9999 28.9089 28.9999 30.5003V33.5004",
+    stroke: isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }))), /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "socialLogin.personal"
+  }))));
 };
 
 var formSchema$1 = Yup.object().shape({
@@ -9391,11 +9506,7 @@ var Login = function Login() {
       type: "submit"
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "login"
-    }))), isGuest ? /*#__PURE__*/React__default.createElement("div", {
-      className: "mt-2"
-    }, /*#__PURE__*/React__default.createElement(SocialLogin, {
-      isLogin: true
-    })) : null);
+    }))));
   });
 };
 
@@ -9882,7 +9993,7 @@ var LandingPageHeader = function LandingPageHeader() {
     return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("div", {
       className: "d-flex justify-content-between align-items-center"
     }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
-      to: '/login'
+      to: '/'
     }, /*#__PURE__*/React__default.createElement("span", {
       className: "d-block d-lg-none"
     }, /*#__PURE__*/React__default.createElement("img", {
@@ -10495,7 +10606,7 @@ var AppRouter = function AppRouter(props) {
         }
       }), /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
         from: "/",
-        to: "/login"
+        to: "/intro"
       }));
     }
   })), /*#__PURE__*/React__default.createElement(CheckLocationChange, null)), /*#__PURE__*/React__default.createElement(reactToastify.ToastContainer, {
@@ -10562,77 +10673,13 @@ RippleButton.propTypes = _extends({}, reactstrap.Button.propTypes, {
 reactstrap.Button.Ripple = RippleButton;
 
 var isLocalhost = Boolean(window.location.hostname === 'localhost' || window.location.hostname === '[::1]' || window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/));
-function register$3(config) {
-  if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
-    var publicUrl = new URL(process.env.PUBLIC_URL, window.location.href);
 
-    if (publicUrl.origin !== window.location.origin) {
-      return;
-    }
-
-    window.addEventListener('load', function () {
-      var swUrl = process.env.PUBLIC_URL + "/service-worker.js";
-
-      if (isLocalhost) {
-        checkValidServiceWorker(swUrl, config);
-        navigator.serviceWorker.ready.then(function () {
-          console.log('This web app is being served cache-first by a service ' + 'worker. To learn more, visit https://bit.ly/CRA-PWA');
-        });
-      } else {
-        registerValidSW(swUrl, config);
-      }
+function unregister() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(function (registration) {
+      registration.unregister();
     });
   }
-}
-
-function registerValidSW(swUrl, config) {
-  navigator.serviceWorker.register(swUrl).then(function (registration) {
-    registration.onupdatefound = function () {
-      var installingWorker = registration.installing;
-
-      if (installingWorker == null) {
-        return;
-      }
-
-      installingWorker.onstatechange = function () {
-        if (installingWorker.state === 'installed') {
-          if (navigator.serviceWorker.controller) {
-            console.log('New content is available and will be used when all ' + 'tabs for this page are closed. See https://bit.ly/CRA-PWA.');
-
-            if (config && config.onUpdate) {
-              config.onUpdate(registration);
-            }
-          } else {
-            console.log('Content is cached for offline use.');
-
-            if (config && config.onSuccess) {
-              config.onSuccess(registration);
-            }
-          }
-        }
-      };
-    };
-  })["catch"](function (error) {
-    console.error('Error during service worker registration:', error);
-  });
-}
-
-function checkValidServiceWorker(swUrl, config) {
-  fetch(swUrl).then(function (response) {
-    var contentType = response.headers.get('content-type');
-
-    if (response.status === 404 || contentType != null && contentType.indexOf('javascript') === -1) {
-      navigator.serviceWorker.ready.then(function (registration) {
-        registration.unregister().then(function () {
-          window.location.reload();
-        });
-      });
-    } else {
-      registerValidSW(swUrl, config);
-    }
-  })["catch"](function () {
-    console.log('No internet connection found. App is running in offline mode.');
-  });
 }
 
 var App = function App(_ref) {
@@ -10662,7 +10709,7 @@ var App = function App(_ref) {
   })));
 };
 
-register$3();
+unregister();
 
 var FallbackSpinner = /*#__PURE__*/function (_React$Component) {
   _inheritsLoose(FallbackSpinner, _React$Component);
@@ -10838,6 +10885,7 @@ exports.DatePicker = DatePicker;
 exports.FallbackSpinner = FallbackSpinner;
 exports.GeneralInfo = GeneralInfo;
 exports.HttpClient = HttpClient;
+exports.Login = Login;
 exports.Radio = Radio;
 exports.ReactTable = ReactTable;
 exports.Select = Select;

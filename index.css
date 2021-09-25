@@ -23653,6 +23653,9 @@ html[dir="rtl"] body .ps__rail-y {
   -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
   background-color: #aaa; }
 
+body {
+  padding: env(safe-area-inset); }
+
 .loading {
   position: absolute;
   left: calc(50% - 35px);

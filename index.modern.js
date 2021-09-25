@@ -10143,4 +10143,4 @@ const usePageAuthorities = () => {
   return authorities;
 };
 
-export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, Radio, ReactTable, Select, changeIsGuest, goBackHomePage, goToAgencyApp, hideConfirmAlert, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
+export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, Login, Radio, ReactTable, Select, changeIsGuest, goBackHomePage, goToAgencyApp, hideConfirmAlert, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
