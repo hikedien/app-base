@@ -9755,7 +9755,18 @@ const LoadingSpinner = () => {
   const {
     isLoading
   } = useSelector(state => state.ui);
-  return isLoading ? /*#__PURE__*/React.createElement(TopBarProgress, null) : null;
+  return isLoading ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "app-loading"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "load-icon"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "loader"
+  }), /*#__PURE__*/React.createElement("img", {
+    alt: "InOn-logo",
+    src: `${RESOURCE_URL}InOn-logo.svg`
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "fade"
+  }))) : null;
 };
 
 const RippleButton = ({

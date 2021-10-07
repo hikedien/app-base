@@ -10430,7 +10430,18 @@ var LoadingSpinner = function LoadingSpinner() {
   }),
       isLoading = _useSelector.isLoading;
 
-  return isLoading ? /*#__PURE__*/React__default.createElement(TopBarProgress, null) : null;
+  return isLoading ? /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("div", {
+    className: "app-loading"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "load-icon"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "loader"
+  }), /*#__PURE__*/React__default.createElement("img", {
+    alt: "InOn-logo",
+    src: RESOURCE_URL + "InOn-logo.svg"
+  })), /*#__PURE__*/React__default.createElement("div", {
+    className: "fade"
+  }))) : null;
 };
 
 var RippleButton = function RippleButton(_ref) {
