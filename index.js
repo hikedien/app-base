@@ -10512,8 +10512,7 @@ var AppRouter = function AppRouter(props) {
       loadNavtigation = props.loadNavtigation,
       loadUserRoles = props.loadUserRoles,
       history = props.history,
-      message = props.message,
-      footerApp = props.footerApp;
+      message = props.message;
   React.useEffect(function () {
     var urlParams = new URLSearchParams(document.location.search);
     var code = urlParams.get('code') || (appId === AppId.ELITE_APP ? guest.authToken : authToken);
@@ -10613,7 +10612,7 @@ var AppRouter = function AppRouter(props) {
         render: function render() {
           return children;
         }
-      })), React__default.createElement(footerApp));
+      })));
     }
   })), /*#__PURE__*/React__default.createElement(CheckLocationChange, null)), /*#__PURE__*/React__default.createElement(reactToastify.ToastContainer, {
     hideProgressBar: true,

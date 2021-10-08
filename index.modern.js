@@ -9832,8 +9832,7 @@ const AppRouter = props => {
     changeIsGuest,
     loadUserRoles,
     history,
-    message,
-    footerApp
+    message
   } = props;
   useEffect(() => {
     const urlParams = new URLSearchParams(document.location.search);
@@ -9925,7 +9924,7 @@ const AppRouter = props => {
     })), /*#__PURE__*/React.createElement(Route, {
       path: "/",
       render: () => children
-    })), React.createElement(footerApp))
+    })))
   })), /*#__PURE__*/React.createElement(CheckLocationChange, null)), /*#__PURE__*/React.createElement(ToastContainer, {
     hideProgressBar: true,
     position: "top-right",
