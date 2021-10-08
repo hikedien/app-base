@@ -1,29 +1,28 @@
-import { FormattedMessage, useIntl, IntlProvider } from 'react-intl';
+import { FormattedMessage, injectIntl, IntlProvider, useIntl } from 'react-intl';
 export { FormattedMessage } from 'react-intl';
 import React, { useState, useEffect, Component, PureComponent, useCallback, useRef } from 'react';
 import { createBrowserHistory } from 'history';
 import Axios from 'axios';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
 import * as Icon from 'react-feather';
-import { AlertTriangle, Check, User, Lock, Link, Users, FileText, Shield, Globe, MessageSquare, Power, Server, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, Download, Clipboard, Sun } from 'react-feather';
+import { AlertTriangle, Check, User, Lock, Link, Users, FileText, Shield, Globe, MessageSquare, Power, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, Download, Clipboard, ChevronDown, Sun } from 'react-feather';
 import { toast, ToastContainer } from 'react-toastify';
 export { toast } from 'react-toastify';
 import moment from 'moment';
-import { useDispatch, useSelector, connect, Provider } from 'react-redux';
+import { useDispatch, connect, useSelector, Provider } from 'react-redux';
 import { combineReducers, createStore, applyMiddleware, compose } from 'redux';
 import createDebounce from 'redux-debounced';
 import thunk from 'redux-thunk';
 import { PersistGate } from 'redux-persist/integration/react';
 import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/es/storage';
-import { useHistory, Link as Link$1, Router, Switch, Route, Redirect } from 'react-router-dom';
+import { useHistory, Link as Link$1, Router, Switch, Route } from 'react-router-dom';
 import classnames from 'classnames';
-import { FormGroup, Label, DropdownMenu, DropdownItem, Media, Modal, ModalHeader, ModalBody, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Navbar as Navbar$1, Button, Badge, Input, Row, Col, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, ModalFooter, ButtonGroup, UncontrolledButtonDropdown } from 'reactstrap';
+import { FormGroup, Label, DropdownMenu, DropdownItem, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Navbar as Navbar$1, Button, Badge, Input, Row, Col, Media, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, Collapse, Modal, ModalHeader, ModalBody, ModalFooter, ButtonGroup, UncontrolledButtonDropdown } from 'reactstrap';
 export { Button } from 'reactstrap';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import PerfectScrollbar from 'react-perfect-scrollbar';
-import 'moment/locale/vi';
 import ScrollToTop from 'react-scroll-up';
 import Hammer from 'react-hammerjs';
 import { object, string, ref } from 'yup';
@@ -55,7 +54,7 @@ const AppId = {
   DIVAY_APP: 'DIVAY_APP'
 };
 
-const API_BASE_URL = 'https://apisit.inon.vn';
+const API_BASE_URL = 'https://api.inon.vn';
 const RESOURCE_URL = 'https://sit2.inon.vn/resources/images/';
 const FB_APP_ID = '2651185198505964';
 const GOOGLE_APP_ID = '400818618331-k9ptcdcgr99po0g5q5mh8e5ekodgj61n.apps.googleusercontent.com';
@@ -77,11 +76,6 @@ const API_COMPLETE_INFO = '/nth/onboarding/api/authenticate/complete-info';
 const API_FORGOT_PASSWORD = '/api/authenticate/forgot-password';
 const API_RESET_PASSWORD = '/api/authenticate/reset-password';
 const API_EMAIL_SUGGESTION = '/nth/user/api/authenticate/email-suggestion';
-const API_GET_MY_NOTIFICATIONS = '/nth/notification/api/my-notification';
-const API_CHECK_NEW_NOTIFICATIONS = '/nth/notification/api/notifications-es';
-const API_GET_NOTIFICATION_FROM_ESPUBLIC = '/nth/notification/api/user-notifications-es';
-const API_UPDATE_NOTIFICATION = '/nth/notification/';
-const API_UPDATE_ALL_NOTIFICATION_STATUS = '/nth/notification/api/my-notifications-status';
 const API_R_200 = 200;
 const API_GET_CITIES_BY_COUNTRY = '/nth/datacollection/api/citiesbycountry';
 const API_GET_DISTRICTS_BY_CITY = '/nth/datacollection/api/districtsbycity';
@@ -99,8 +93,6 @@ const PERSONAL_ID_REGEX = /^(\d{9}|\d{12})$/;
 const CITIZEN_INDENTIFY_REGEX = /^(\d{12})$/;
 const PASSPORT_REGEX = /^(?!^0+$)[a-zA-Z0-9]{3,20}$/;
 const NAME_REGEX = /^([ÀÁÂÃÈÉÊẾÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêếềìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹý0-9A-Za-z_. ])+$/g;
-const TERMS_PDF = 'https://sit2.inon.vn/resources/pdf/terms-and-conditions.pdf';
-const POLICY_PDF = 'https://sit2.inon.vn/resources/pdf/privacy-policy.pdf';
 const FIRE_BASE_CONFIGS = {
   apiKey: "AIzaSyCvWX-pLEPOxjwp2AJq3_t11JQjRMKtaT8",
   authDomain: "inonvn.firebaseapp.com",
@@ -126,8 +118,6 @@ const MAX_FILE_SIZE = 5;
 const CONTACT_PHONE = '0899.300.800';
 const SESSION_TIMEOUT = 30;
 const DATE_TIME_FORMAT = 'YYYY/MM/DD HH:mm:ss';
-const ANDROID_APP_LINK = 'https://play.google.com/store/apps/details?id=com.inon.vn';
-const IOS_APP_LINK = 'https://apps.apple.com/app/id1574202853';
 const LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
   FAIL: 'FAIL'
@@ -171,16 +161,16 @@ const IC_TYPES_OPTIONS = [{
 const getExternalAppUrl = (appId, url) => {
   switch (appId) {
     case AppId.APP_NO1:
-      return `${window.location.origin}/app${url}?r edirectUrl=${url}`;
+      return `/app${url}`;
 
     case AppId.INSURANCE_APP:
-      return `${window.location.origin}/insurance${url}?redirectUrl=${url}`;
+      return `/insurance${url}`;
 
     case AppId.SUPPLEMENT_APP:
-      return `${window.location.origin}/supplement${url}?redirectUrl=${url}`;
+      return `/supplement${url}`;
 
     case AppId.ELITE_APP:
-      return `${window.location.origin}${url}?redirectUrl=${url}`;
+      return `${url}`;
   }
 };
 const getContextPath = appId => {
@@ -272,11 +262,6 @@ var appConfigs = {
     API_FORGOT_PASSWORD: API_FORGOT_PASSWORD,
     API_RESET_PASSWORD: API_RESET_PASSWORD,
     API_EMAIL_SUGGESTION: API_EMAIL_SUGGESTION,
-    API_GET_MY_NOTIFICATIONS: API_GET_MY_NOTIFICATIONS,
-    API_CHECK_NEW_NOTIFICATIONS: API_CHECK_NEW_NOTIFICATIONS,
-    API_GET_NOTIFICATION_FROM_ESPUBLIC: API_GET_NOTIFICATION_FROM_ESPUBLIC,
-    API_UPDATE_NOTIFICATION: API_UPDATE_NOTIFICATION,
-    API_UPDATE_ALL_NOTIFICATION_STATUS: API_UPDATE_ALL_NOTIFICATION_STATUS,
     API_R_200: API_R_200,
     API_GET_CITIES_BY_COUNTRY: API_GET_CITIES_BY_COUNTRY,
     API_GET_DISTRICTS_BY_CITY: API_GET_DISTRICTS_BY_CITY,
@@ -294,8 +279,6 @@ var appConfigs = {
     CITIZEN_INDENTIFY_REGEX: CITIZEN_INDENTIFY_REGEX,
     PASSPORT_REGEX: PASSPORT_REGEX,
     NAME_REGEX: NAME_REGEX,
-    TERMS_PDF: TERMS_PDF,
-    POLICY_PDF: POLICY_PDF,
     FIRE_BASE_CONFIGS: FIRE_BASE_CONFIGS,
     AUTHORITIES: AUTHORITIES,
     LOGIN_METHODS: LOGIN_METHODS,
@@ -304,8 +287,6 @@ var appConfigs = {
     CONTACT_PHONE: CONTACT_PHONE,
     SESSION_TIMEOUT: SESSION_TIMEOUT,
     DATE_TIME_FORMAT: DATE_TIME_FORMAT,
-    ANDROID_APP_LINK: ANDROID_APP_LINK,
-    IOS_APP_LINK: IOS_APP_LINK,
     LOGIN_STATUS: LOGIN_STATUS,
     USER_TYPE: USER_TYPE,
     GENDER_OPTIONS: GENDER_OPTIONS,
@@ -445,27 +426,12 @@ const setUpHttpClient = (store, apiBaseUrl) => {
 
   HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
   HttpClient.interceptors.request.use(config => {
-    const {
-      appId
-    } = store.getState().customizer;
-    const token = appId === AppId.ELITE_APP ? store.getState().auth.guest.authToken : store.getState().auth.authToken;
-    const sessionExpireTime = store.getState().auth.sessionExpireTime;
+    const token = store.getState().auth.guest.authToken || store.getState().auth.authToken;
     language = localStorage.getItem('language');
 
     if (token) {
       store.dispatch(changeActionExpireTime());
       config.headers.Authorization = `Bearer ${token}`;
-      const isSessionExpired = moment().isAfter(moment(sessionExpireTime));
-
-      if (sessionExpireTime && isSessionExpired) {
-        toastError( /*#__PURE__*/React.createElement(FormattedMessage, {
-          id: "common.sessionExpired"
-        }));
-        store.dispatch({
-          type: LOGOUT_ACTION
-        });
-        return;
-      }
     }
 
     config.headers.appId = store.getState().customizer.appId;
@@ -473,6 +439,7 @@ const setUpHttpClient = (store, apiBaseUrl) => {
     config.headers.latitude = localStorage.getItem('latitude');
     config.headers.longitude = localStorage.getItem('longitude');
     config.headers.deviceId = deviceId;
+    config.headers.isMobileApp = true;
     config.headers['Accept-Language'] = language;
 
     if (!config.isBackgroundRequest) {
@@ -514,6 +481,7 @@ const setUpHttpClient = (store, apiBaseUrl) => {
         store.dispatch({
           type: 'LOGOUT_ACTION'
         });
+        history.push('/login');
         break;
 
       case 500:
@@ -664,7 +632,7 @@ const mapRoleToNavItem = role => {
   item.icon = /*#__PURE__*/React.createElement(IconTag, {
     size: 20
   });
-  item.navLink = role.menuPath;
+  item.navLink = getExternalAppUrl(role.appId, role.menuPath);
 
   if (role.isHighlight) {
     item.badge = 'primary';
@@ -682,10 +650,10 @@ const getNativgationConfig = (appId, navConfigs) => {
   }
 
   return navConfigs.map(item => {
-    item.isExternalApp = item.appId !== appId;
+    item.isExternalApp = false;
 
     if (item.children) {
-      item.children.map(child => child.isExternalApp = child.appId !== appId);
+      item.children.map(child => child.isExternalApp = false);
 
       if (item.children.length === 1) {
         item.navLink = item.children[0].navLink;
@@ -720,15 +688,9 @@ NavBarService.getUserGroupRole = groupId => {
 
 const LOAD_NATIVGATION = 'LOAD_NATIVGATION';
 const LOAD_USER_ROLE = 'LOAD_USER_ROLE';
-const loadNavtigation = (appId, callback) => {
+const loadNavtigation = appId => {
   return async dispatch => {
     const res = await NavBarService.getNativagtion();
-
-    if (!res || !res.data) {
-      return;
-    }
-
-    callback();
     const roles = res.data || [];
     const navConfigs = getNativgationConfig(appId, roles);
     dispatch({
@@ -762,14 +724,16 @@ const loadUserRoles = () => {
 };
 const goBackHomePage = () => {
   return async (dispatch, getState) => {
-    const {
-      appId
-    } = getState().customizer;
+    var _getState, _getState$auth;
 
-    if (appId === AppId.APP_NO1) {
-      history.push('/');
+    const {
+      authToken
+    } = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$auth = _getState.auth) === null || _getState$auth === void 0 ? void 0 : _getState$auth.guest) || {};
+
+    if (authToken) {
+      history.push('/home');
     } else {
-      window.location.href = getExternalAppUrl(appId === AppId.ELITE_APP ? AppId.ELITE_APP : AppId.APP_NO1, '/');
+      history.push('/app/home');
     }
   };
 };
@@ -812,7 +776,6 @@ const checkLoginStatus = (authToken, redirectUrl) => {
           type: LOGIN_ACTION,
           payload
         });
-        history.replace(redirectUrl || window.location.pathname.replace(`/${getContextPath(appId)}/`, '/'));
       } else {
         dispatch({
           type: LOGOUT_ACTION
@@ -827,9 +790,6 @@ const checkLoginStatus = (authToken, redirectUrl) => {
 };
 const loginAction = user => {
   return async (dispatch, getState) => {
-    dispatch({
-      type: LOGOUT_ACTION
-    });
     user.rememberMe = user.isRemeberMe;
     let response = await AuthService.login(user);
     const {
@@ -895,7 +855,7 @@ const loginAction = user => {
         });
       }
 
-      redirectMainApp(isGuest, getState().customizer.appId);
+      redirectMainApp(isGuest);
     } else {
       dispatch({
         type: LOGOUT_ACTION
@@ -929,13 +889,7 @@ const socialLogin = (data, loginMethod, openAddInfoPopup) => {
         }
       }
     });
-    setTimeout(() => {
-      if (getState().customizer.appId !== AppId.ELITE_APP) {
-        window.location.href = getExternalAppUrl(AppId.ELITE_APP, '/');
-      } else {
-        history.push('/');
-      }
-    }, 500);
+    dispatch(goBackHomePage());
   };
 };
 const changeIsGuest = isGuest => {
@@ -947,25 +901,19 @@ const changeIsGuest = isGuest => {
   };
 };
 const goToGuestApp = () => {
-  return (dispatch, getState) => {
-    const {
-      appId
-    } = getState().customizer;
+  return dispatch => {
     dispatch({
       type: GOTO_GUEST_APP
     });
-    redirectMainApp(true, appId);
+    redirectMainApp(true);
   };
 };
 const goToAgencyApp = () => {
-  return (dispatch, getState) => {
-    const {
-      appId
-    } = getState().customizer;
+  return dispatch => {
     dispatch({
       type: GOTO_AGENCY_APP
     });
-    redirectMainApp(false, appId);
+    redirectMainApp(false);
   };
 };
 const createPassword = password => {
@@ -1097,6 +1045,7 @@ const logoutAction = () => {
     dispatch({
       type: LOGOUT_ACTION
     });
+    history.push('/login');
   };
 };
 const updateUserInfo = (user, avatarImage) => {
@@ -1180,16 +1129,12 @@ const verifyPhoneNumber = values => {
   };
 };
 
-const redirectMainApp = (isGuest, appId) => {
-  setTimeout(() => {
-    const mainApp = isGuest ? AppId.ELITE_APP : AppId.APP_NO1;
-
-    if (appId !== mainApp) {
-      window.location.href = getExternalAppUrl(mainApp, '/');
-    } else {
-      history.push('/');
-    }
-  }, 200);
+const redirectMainApp = isGuest => {
+  if (isGuest) {
+    history.push('/');
+  } else {
+    history.push('/app/home');
+  }
 };
 
 const themeConfig = {
@@ -1353,6 +1298,7 @@ const authReducers = (state = { ...authInitialState
     case GOTO_AGENCY_APP:
       {
         return { ...state,
+          guest: {},
           user: state.guest.user,
           authToken: state.guest.authToken
         };
@@ -1375,6 +1321,24 @@ const authReducers = (state = { ...authInitialState
   }
 };
 
+const LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
+const LOAD_USER_ROLE$1 = 'LOAD_USER_ROLE';
+const goBackHomePage$1 = () => {
+  return async (dispatch, getState) => {
+    var _getState, _getState$auth;
+
+    const {
+      authToken
+    } = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$auth = _getState.auth) === null || _getState$auth === void 0 ? void 0 : _getState$auth.guest) || {};
+
+    if (authToken) {
+      history.push('/home');
+    } else {
+      history.push('/app/home');
+    }
+  };
+};
+
 const initialState = {
   navConfigs: [],
   roles: [],
@@ -1383,13 +1347,13 @@ const initialState = {
 
 const navbarReducer = (state = initialState, action) => {
   switch (action.type) {
-    case LOAD_NATIVGATION:
+    case LOAD_NATIVGATION$1:
       return { ...state,
         navConfigs: action.payload.navConfigs,
         roles: action.payload.roles
       };
 
-    case LOAD_USER_ROLE:
+    case LOAD_USER_ROLE$1:
       return { ...state,
         userRoles: action.payload
       };
@@ -1397,6 +1361,22 @@ const navbarReducer = (state = initialState, action) => {
     default:
       return state;
   }
+};
+
+const SHOW_LOADING_BAR$1 = 'SHOW_LOADING_BAR';
+const HIDE_LOADING_BAR$1 = 'HIDE_LOADING_BAR';
+const SHOW_CONFIRM_ALERT$1 = 'SHOW_CONFIRM_ALERT';
+const HIDE_CONFIRM_ALERT$1 = 'HIDE_CONFIRM_ALERT';
+const showConfirmAlert$1 = configs => {
+  return dispatch => dispatch({
+    type: SHOW_CONFIRM_ALERT$1,
+    payload: configs
+  });
+};
+const hideConfirmAlert$1 = () => {
+  return dispatch => dispatch({
+    type: HIDE_CONFIRM_ALERT$1
+  });
 };
 
 const DEFAULT_CONFIRM_ALERT = {
@@ -1415,19 +1395,19 @@ const initialState$1 = {
 
 const uiReducer = (state = initialState$1, action) => {
   switch (action.type) {
-    case SHOW_LOADING_BAR:
+    case SHOW_LOADING_BAR$1:
       return { ...state,
         isLoading: true,
         loading: state.loading.add(action.payload)
       };
 
-    case HIDE_LOADING_BAR:
+    case HIDE_LOADING_BAR$1:
       state.loading.delete(action.payload);
       return { ...state,
         isLoading: !!state.loading.size
       };
 
-    case SHOW_CONFIRM_ALERT:
+    case SHOW_CONFIRM_ALERT$1:
       return { ...state,
         confirmAlert: {
           isShow: true,
@@ -1436,154 +1416,10 @@ const uiReducer = (state = initialState$1, action) => {
         }
       };
 
-    case HIDE_CONFIRM_ALERT:
+    case HIDE_CONFIRM_ALERT$1:
       return { ...state,
         confirmAlert: { ...DEFAULT_CONFIRM_ALERT
         }
-      };
-
-    default:
-      return state;
-  }
-};
-
-class NotificationService {}
-
-NotificationService.getMyNotifications = () => {
-  return HttpClient.get(API_GET_NOTIFICATION_FROM_ESPUBLIC, {
-    params: {
-      uuid: generateUUID()
-    },
-    isBackgroundRequest: true
-  });
-};
-
-NotificationService.checkNewNotification = () => {
-  return HttpClient.get(API_CHECK_NEW_NOTIFICATIONS, {
-    params: {
-      uuid: generateUUID()
-    },
-    isBackgroundRequest: true
-  });
-};
-
-NotificationService.updateNotificationStatus = notification => {
-  return HttpClient.put(API_UPDATE_NOTIFICATION, notification, {
-    isBackgroundRequest: true
-  });
-};
-
-NotificationService.updateAllNotificationStatus = () => {
-  return HttpClient.put(API_UPDATE_ALL_NOTIFICATION_STATUS, {}, {
-    params: 'READ',
-    isBackgroundRequest: true
-  });
-};
-
-const LOAD_MY_NOTIFICATIONS = 'LOAD_MY_NOTIFICATIONS';
-const RECEIVE_NEW_NOTIFICATIONS = 'RECEIVE_NEW_NOTIFICATIONS';
-const getMyNotification = notifications => {
-  return async dispatch => {
-    const res = await NotificationService.getMyNotifications();
-
-    if (!res || res.status !== 200) {
-      return;
-    }
-
-    res.data = [{
-      "id": 18,
-      "type": "system",
-      "userId": 2,
-      "read": false,
-      "deleted": false,
-      "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
-      "contentContentType": null,
-      "sendDate": "2021-08-23T20:14:02Z",
-      "updateDate": null,
-      "updateBy": null,
-      "templateId": 1,
-      "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-      "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-    }, {
-      "id": 19,
-      "type": "personal",
-      "userId": 2,
-      "read": false,
-      "deleted": false,
-      "content": "<p><strong>Đây la thông báo cá nhân</strong></p>\n",
-      "contentContentType": null,
-      "sendDate": "2021-08-23T20:14:02Z",
-      "updateDate": null,
-      "updateBy": null,
-      "templateId": 1,
-      "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-      "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-    }, {
-      "id": 20,
-      "type": "promotion",
-      "userId": 2,
-      "read": false,
-      "deleted": false,
-      "content": "<p><strong>Đây là thông báo khuyến mại</strong></p>\n",
-      "contentContentType": null,
-      "sendDate": "2021-08-23T20:14:02Z",
-      "updateDate": null,
-      "updateBy": null,
-      "templateId": 1,
-      "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-      "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-    }, {
-      "id": 21,
-      "type": "system",
-      "userId": 2,
-      "read": false,
-      "deleted": false,
-      "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
-      "contentContentType": null,
-      "sendDate": "2021-08-23T20:14:02Z",
-      "updateDate": null,
-      "updateBy": null,
-      "templateId": 1,
-      "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-      "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-    }, {
-      "id": 22,
-      "type": "system",
-      "userId": 2,
-      "read": false,
-      "deleted": false,
-      "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
-      "contentContentType": null,
-      "sendDate": "2021-08-23T20:14:02Z",
-      "updateDate": null,
-      "updateBy": null,
-      "templateId": 1,
-      "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-      "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-    }];
-    dispatch({
-      type: LOAD_MY_NOTIFICATIONS,
-      payload: res.data
-    });
-  };
-};
-
-const initialState$2 = {
-  notifications: [],
-  newNotifications: []
-};
-
-const notificationReducer = (state = { ...initialState$2
-}, action) => {
-  switch (action.type) {
-    case LOAD_MY_NOTIFICATIONS:
-      return { ...state,
-        notifications: action.payload
-      };
-
-    case RECEIVE_NEW_NOTIFICATIONS:
-      return { ...state,
-        newNotifications: action.payload
       };
 
     default:
@@ -1600,7 +1436,6 @@ const rootReducer = appReducer => combineReducers({
     blacklist: ['loginStatus']
   }, authReducers),
   navbar: navbarReducer,
-  notifications: notificationReducer,
   app: appReducer
 });
 
@@ -2023,7 +1858,7 @@ const UserDropdown = () => {
   }, /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/account-info')
+    onClick: e => handleNavigation(e, '/app/account-info')
   }, /*#__PURE__*/React.createElement(User, {
     size: 14,
     className: "mr-50"
@@ -2034,7 +1869,7 @@ const UserDropdown = () => {
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/change-password')
+    onClick: e => handleNavigation(e, '/app/change-password')
   }, /*#__PURE__*/React.createElement(Lock, {
     size: 14,
     className: "mr-50"
@@ -2045,7 +1880,7 @@ const UserDropdown = () => {
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/share-with-friends')
+    onClick: e => handleNavigation(e, '/app/share-with-friends')
   }, /*#__PURE__*/React.createElement(Link, {
     size: 14,
     className: "mr-50"
@@ -2070,8 +1905,8 @@ const UserDropdown = () => {
     divider: true
   }), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
-    target: '_blank',
-    href: TERMS_PDF
+    href: "#",
+    onClick: e => handleNavigation(e, '/app/terms-and-condition')
   }, /*#__PURE__*/React.createElement(FileText, {
     size: 14,
     className: "mr-50"
@@ -2081,8 +1916,8 @@ const UserDropdown = () => {
     id: "setting.termAndCondition"
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
-    target: '_blank',
-    href: POLICY_PDF
+    href: "#",
+    onClick: e => handleNavigation(e, '/app/privacy-policy')
   }, /*#__PURE__*/React.createElement(Shield, {
     size: 14,
     className: "mr-50"
@@ -2093,7 +1928,7 @@ const UserDropdown = () => {
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/language')
+    onClick: e => handleNavigation(e, '/app/language')
   }, /*#__PURE__*/React.createElement(Globe, {
     size: 14,
     className: "mr-50"
@@ -2104,7 +1939,7 @@ const UserDropdown = () => {
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/contact')
+    onClick: e => handleNavigation(e, '/app/contact')
   }, /*#__PURE__*/React.createElement(MessageSquare, {
     size: 14,
     className: "mr-50"
@@ -2127,246 +1962,166 @@ const UserDropdown = () => {
   }))));
 };
 
-const Notifications = () => {
-  const dispatch = useDispatch();
-  const intl = useIntl();
-  const {
-    notifications
-  } = useSelector(state => state.notifications);
-  const [notificationModal, setNotificationModal] = useState(false);
-  const [notification, setNotification] = useState(null);
-  useEffect(() => {
-    dispatch(getMyNotification());
-  }, []);
+class NavbarUser extends React.PureComponent {
+  constructor(...args) {
+    super(...args);
+    this.state = {
+      navbarSearch: false,
+      suggestions: []
+    };
 
-  const onClickOpenNotification = item => {
-    setNotification(item);
-    setNotificationModal(true);
-    const notificationRequest = notifications.find(notification => notification.id === item.id);
-    const notificationAllStatus = NotificationService.updateAllNotificationStatus({
-      notificationId: notificationRequest.id,
-      status: 'READ'
-    });
-    if (notificationAllStatus.status === 200) return;
-  };
-
-  const onClickUpdateAllNotificationStatus = () => {
-    const notificationAllStatus = NotificationService.updateAllNotificationStatus();
-    if (notificationAllStatus.status === 200) return;
-  };
-
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("li", {
-    className: "dropdown-menu-header"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "dropdown-header mt-0 text-left"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "notification-title"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "menu.notification"
-  })), /*#__PURE__*/React.createElement("span", null, "(", notifications.length, ")"))), /*#__PURE__*/React.createElement(PerfectScrollbar, {
-    className: "media-list overflow-hidden position-relative",
-    options: {
-      wheelPropagation: false
-    }
-  }, notifications.map(item => /*#__PURE__*/React.createElement("div", {
-    className: "d-flex justify-content-between",
-    key: item.id,
-    onClick: () => onClickOpenNotification(item)
-  }, /*#__PURE__*/React.createElement(Media, {
-    className: "d-flex align-items-start"
-  }, /*#__PURE__*/React.createElement(Media, {
-    left: true,
-    href: "#"
-  }, /*#__PURE__*/React.createElement(Server, {
-    className: "font-medium-5 primary",
-    size: 21
-  })), /*#__PURE__*/React.createElement(Media, {
-    body: true
-  }, /*#__PURE__*/React.createElement(Media, {
-    heading: true,
-    className: "primary media-heading",
-    tag: "h6"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: !item.read ? 'font-weight-bold' : ''
-  }, item.title)), /*#__PURE__*/React.createElement("div", {
-    className: !item.read ? 'font-weight-bold' : '',
-    dangerouslySetInnerHTML: {
-      __html: item.shortContent
-    }
-  })), /*#__PURE__*/React.createElement("small", {
-    className: "mt-1"
-  }, /*#__PURE__*/React.createElement("time", {
-    className: "media-meta",
-    dateTime: item.sendDate
-  }, moment().diff(moment(item.sendDate), 'days') >= 1 ? moment(item.sendDate).format("DD/MM/YYYY") : moment(item.sendDate).fromNow())))))), notifications.length > 0 && /*#__PURE__*/React.createElement("li", {
-    className: "dropdown-menu-footer",
-    onClick: onClickUpdateAllNotificationStatus
-  }, /*#__PURE__*/React.createElement(DropdownItem, {
-    tag: "a",
-    className: "p-1 text-center"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "align-middle"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "menu.readAll"
-  })))), notification && /*#__PURE__*/React.createElement(Modal, {
-    isOpen: notificationModal,
-    toggle: () => setNotificationModal(!notificationModal),
-    className: "modal-dialog-centered"
-  }, /*#__PURE__*/React.createElement(ModalHeader, {
-    toggle: () => setNotificationModal(!notificationModal)
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "menu.notification"
-  })), /*#__PURE__*/React.createElement(ModalBody, null, /*#__PURE__*/React.createElement("div", {
-    dangerouslySetInnerHTML: {
-      __html: notification.title
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    dangerouslySetInnerHTML: {
-      __html: notification.content
-    }
-  }))));
-};
-
-const NavbarUser = props => {
-  let {
-    userSettings,
-    userDetails,
-    ...user
-  } = useSelector(state => state.auth.user);
-  let {
-    appId
-  } = useSelector(state => state.customizer);
-  let {
-    roles = []
-  } = useSelector(state => state.navbar);
-  const [navbarSearch, setNavbarSearch] = useState(false);
-  const [suggestions, setSuggestions] = useState([]);
-  const intl = useIntl();
-  userSettings = userSettings || {};
-  userDetails = userDetails || {};
-  useEffect(() => {
-    const newSuggestions = (roles || []).map(item => {
-      item.name = intl.formatMessage({
-        id: `menu.${item.keyLang}`
+    this.handleNavbarSearch = () => {
+      this.setState({
+        navbarSearch: !this.state.navbarSearch
       });
-      item.isExternalApp = item.appId !== appId;
-      item.navLinkExternal = getExternalAppUrl(item.appId, item.menuPath);
-      return item;
-    });
-    setSuggestions(newSuggestions);
-  }, [roles]);
+    };
 
-  const handleNavbarSearch = () => {
-    setNavbarSearch(prevState => !prevState);
-  };
+    this.getCountryCode = locale => {
+      const countryCode = {
+        en: 'us',
+        vi: 'vn'
+      };
+      return countryCode[locale];
+    };
 
-  const onSuggestionItemClick = item => {
-    if (!item.isExternalApp) {
-      history.push(`${item.menuPath}`);
-    } else {
-      window.location.href = item.navLinkExternal;
-    }
-  };
-
-  return /*#__PURE__*/React.createElement("ul", {
-    className: "nav navbar-nav navbar-nav-user float-right"
-  }, /*#__PURE__*/React.createElement(NavItem, {
-    className: "nav-search",
-    onClick: handleNavbarSearch
-  }, /*#__PURE__*/React.createElement(NavLink, {
-    className: "nav-link-search pt-2"
-  }, /*#__PURE__*/React.createElement(Search, {
-    size: 21,
-    "data-tour": "search"
-  })), /*#__PURE__*/React.createElement("div", {
-    className: classnames('search-input', {
-      open: navbarSearch,
-      'd-none': navbarSearch === false
-    })
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "search-input-icon"
-  }, /*#__PURE__*/React.createElement(Search, {
-    size: 17,
-    className: "primary"
-  })), /*#__PURE__*/React.createElement(Autocomplete, {
-    className: "form-control",
-    suggestions: suggestions,
-    filterKey: "name",
-    onSuggestionClick: onSuggestionItemClick,
-    autoFocus: true,
-    clearInput: navbarSearch,
-    externalClick: () => {
-      setNavbarSearch(false);
-    },
-    onKeyDown: e => {
-      if (e.keyCode === 27 || e.keyCode === 13) {
-        setNavbarSearch(false);
-        props.handleAppOverlay('');
+    this.onSuggestionItemClick = item => {
+      if (!item.isExternalApp) {
+        history.push(`${item.menuPath}`);
+      } else {
+        window.location.href = item.navLinkExternal;
       }
-    },
-    customRender: (item, i, filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover) => {
-      const IconTag = Icon[item.icon ? item.icon : 'X'];
-      return /*#__PURE__*/React.createElement("li", {
-        className: classnames('suggestion-item', {
-          active: filteredData.indexOf(item) === activeSuggestion
-        }),
-        key: i,
-        onClick: e => onSuggestionItemClick(item, e),
-        onMouseEnter: () => onSuggestionItemHover(filteredData.indexOf(item))
-      }, /*#__PURE__*/React.createElement("div", {
-        className: "d-flex align-items-center"
-      }, /*#__PURE__*/React.createElement(IconTag, {
-        size: 17
-      }), /*#__PURE__*/React.createElement("div", {
-        className: "ml-2"
-      }, item.name)));
-    },
-    onSuggestionsShown: userInput => {
-      if (navbarSearch) {
-        props.handleAppOverlay(userInput);
+    };
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.roles !== this.props.roles) {
+      const suggestions = this.props.roles.map(item => {
+        item.name = this.props.intl.formatMessage({
+          id: `menu.${item.keyLang}`
+        });
+        item.isExternalApp = item.appId !== this.props.appId;
+        item.navLinkExternal = getExternalAppUrl(item.appId, item.menuPath);
+        return item;
+      });
+      this.setState({
+        suggestions
+      });
+    }
+  }
+
+  render() {
+    let {
+      userSettings,
+      userDetails,
+      ...user
+    } = this.props.user;
+    userSettings = userSettings || {};
+    userDetails = userDetails || {};
+    return /*#__PURE__*/React.createElement("ul", {
+      className: "nav navbar-nav navbar-nav-user float-right"
+    }, /*#__PURE__*/React.createElement(NavItem, {
+      className: "nav-search",
+      onClick: this.handleNavbarSearch
+    }, /*#__PURE__*/React.createElement(NavLink, {
+      className: "nav-link-search pt-2"
+    }, /*#__PURE__*/React.createElement(Search, {
+      size: 21,
+      "data-tour": "search"
+    })), /*#__PURE__*/React.createElement("div", {
+      className: classnames('search-input', {
+        open: this.state.navbarSearch,
+        'd-none': this.state.navbarSearch === false
+      })
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "search-input-icon"
+    }, /*#__PURE__*/React.createElement(Search, {
+      size: 17,
+      className: "primary"
+    })), /*#__PURE__*/React.createElement(Autocomplete, {
+      className: "form-control",
+      suggestions: this.state.suggestions,
+      filterKey: "name",
+      onSuggestionClick: this.onSuggestionItemClick,
+      autoFocus: true,
+      clearInput: this.state.navbarSearch,
+      externalClick: () => {
+        this.setState({
+          navbarSearch: false
+        });
+      },
+      onKeyDown: e => {
+        if (e.keyCode === 27 || e.keyCode === 13) {
+          this.setState({
+            navbarSearch: false
+          });
+          this.props.handleAppOverlay('');
+        }
+      },
+      customRender: (item, i, filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover) => {
+        const IconTag = Icon[item.icon ? item.icon : 'X'];
+        return /*#__PURE__*/React.createElement("li", {
+          className: classnames('suggestion-item', {
+            active: filteredData.indexOf(item) === activeSuggestion
+          }),
+          key: i,
+          onClick: e => onSuggestionItemClick(item, e),
+          onMouseEnter: () => onSuggestionItemHover(filteredData.indexOf(item))
+        }, /*#__PURE__*/React.createElement("div", {
+          className: "d-flex align-items-center"
+        }, /*#__PURE__*/React.createElement(IconTag, {
+          size: 17
+        }), /*#__PURE__*/React.createElement("div", {
+          className: "ml-2"
+        }, item.name)));
+      },
+      onSuggestionsShown: userInput => {
+        if (this.state.navbarSearch) {
+          this.props.handleAppOverlay(userInput);
+        }
       }
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "search-input-close"
-  }, /*#__PURE__*/React.createElement(X, {
-    size: 24,
-    onClick: e => {
-      e.stopPropagation();
-      setNavbarSearch(false);
-      props.handleAppOverlay('');
-    }
-  })))), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
-    tag: "li",
-    className: "dropdown-notification nav-item"
-  }, /*#__PURE__*/React.createElement(DropdownToggle, {
-    tag: "a",
-    className: "nav-link nav-link-label"
-  }, /*#__PURE__*/React.createElement(Bell, {
-    size: 21
-  })), /*#__PURE__*/React.createElement(DropdownMenu, {
-    tag: "ul",
-    right: true,
-    className: "dropdown-menu-media"
-  }, /*#__PURE__*/React.createElement(Notifications, null))), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
-    tag: "li",
-    className: "dropdown-user nav-item"
-  }, /*#__PURE__*/React.createElement(DropdownToggle, {
-    tag: "a",
-    className: "nav-link dropdown-user-link"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "user-nav d-sm-flex d-none"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "user-name text-bold-600 mb-0"
-  }, user.fullName)), /*#__PURE__*/React.createElement("span", {
-    "data-tour": "user"
-  }, /*#__PURE__*/React.createElement("img", {
-    src: userSettings.avatar || '',
-    className: "round",
-    height: "40",
-    width: "40",
-    alt: "avatar"
-  }))), /*#__PURE__*/React.createElement(UserDropdown, null)));
-};
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "search-input-close"
+    }, /*#__PURE__*/React.createElement(X, {
+      size: 24,
+      onClick: e => {
+        e.stopPropagation();
+        this.setState({
+          navbarSearch: false
+        });
+        this.props.handleAppOverlay('');
+      }
+    })))), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
+      tag: "li",
+      className: "dropdown-notification nav-item"
+    }, /*#__PURE__*/React.createElement(DropdownToggle, {
+      tag: "a",
+      className: "nav-link nav-link-label"
+    }, /*#__PURE__*/React.createElement(Bell, {
+      size: 21
+    }))), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
+      tag: "li",
+      className: "dropdown-user nav-item"
+    }, /*#__PURE__*/React.createElement(DropdownToggle, {
+      tag: "a",
+      className: "nav-link dropdown-user-link"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "user-nav d-sm-flex d-none"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "user-name text-bold-600 mb-0"
+    }, user.fullName)), /*#__PURE__*/React.createElement("span", {
+      "data-tour": "user"
+    }, /*#__PURE__*/React.createElement("img", {
+      src: userSettings.avatar || '',
+      className: "round",
+      height: "40",
+      width: "40",
+      alt: "avatar"
+    }))), /*#__PURE__*/React.createElement(UserDropdown, null)));
+  }
+
+}
+
+var NavbarUser$1 = injectIntl(NavbarUser);
 
 const ThemeNavbar = props => {
   const colorsArr = ['primary', 'danger', 'success', 'info', 'warning', 'dark'];
@@ -2418,8 +2173,15 @@ const ThemeNavbar = props => {
   }, /*#__PURE__*/React.createElement("img", {
     className: "img-fluid",
     src: IMAGE[`NAV_ICON_${index + 1}`]
-  })))))), /*#__PURE__*/React.createElement(NavbarUser, {
-    handleAppOverlay: props.handleAppOverlay
+  })))))), /*#__PURE__*/React.createElement(NavbarUser$1, {
+    handleAppOverlay: props.handleAppOverlay,
+    changeCurrentLang: props.changeCurrentLang,
+    appId: props.appId,
+    authToken: props.authToken,
+    user: props.user,
+    roles: props.roles,
+    isAuthenticated: props.isAuthenticated,
+    logoutAction: props.logoutAction
   }))))));
 };
 
@@ -2470,12 +2232,7 @@ const Footer = props => {
 
   const goToPage = (e, navLink) => {
     e.preventDefault();
-
-    if (appId === AppId.INSURANCE_APP) {
-      history.push(navLink);
-    } else {
-      window.location.href = getExternalAppUrl(AppId.INSURANCE_APP, navLink);
-    }
+    history.push(navLink);
   };
 
   const onClickBackHome = e => {
@@ -2499,13 +2256,13 @@ const Footer = props => {
     className: "float-md-right d-none d-md-block"
   }, /*#__PURE__*/React.createElement("a", {
     className: "mr-1",
-    href: IOS_APP_LINK,
+    href: "https://www.apple.com/app-store/",
     target: "_blank"
   }, /*#__PURE__*/React.createElement("img", {
     src: IMAGE.DOWNLOAD_APP_IOS,
     alt: "DOWNLOAD ON APP STORE"
   })), /*#__PURE__*/React.createElement("a", {
-    href: ANDROID_APP_LINK,
+    href: "https://play.google.com/store/apps",
     target: "_blank"
   }, /*#__PURE__*/React.createElement("img", {
     src: IMAGE.DOWNLOAD_APP_ANDROID,
@@ -2516,8 +2273,7 @@ const Footer = props => {
     })
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React.createElement("span", {
     onClick: onClickBackHome
   }, /*#__PURE__*/React.createElement(Home, null), /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
@@ -2525,18 +2281,16 @@ const Footer = props => {
     id: "menu.home"
   })))), /*#__PURE__*/React.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#",
-    onClick: e => goToPage(e, '/contracts')
+  }, /*#__PURE__*/React.createElement("span", {
+    onClick: e => goToPage(e, '/insurance/contracts')
   }, /*#__PURE__*/React.createElement(List, null), /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "menu.contract"
   })))), /*#__PURE__*/React.createElement("div", {
     className: "position-relative w-25"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#",
-    onClick: e => goToPage(e, '/buy-insurance')
+  }, /*#__PURE__*/React.createElement("span", {
+    onClick: e => goToPage(e, '/insurance/buy-insurance')
   }, /*#__PURE__*/React.createElement("img", {
     src: IMAGE.BUY_INSURANCE,
     className: "buy-insurance",
@@ -2551,8 +2305,7 @@ const Footer = props => {
     id: "menu.buyInsurance"
   })))), /*#__PURE__*/React.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React.createElement("span", {
     onClick: onClickBackHome
   }, /*#__PURE__*/React.createElement(Gift, null), /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
@@ -2560,9 +2313,8 @@ const Footer = props => {
     id: "menu.promotion"
   })))), /*#__PURE__*/React.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#",
-    onClick: e => history.push('/contact')
+  }, /*#__PURE__*/React.createElement("span", {
+    onClick: e => history.push('/app/contact')
   }, /*#__PURE__*/React.createElement(MessageSquare, null), /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -2638,7 +2390,7 @@ const SidebarHeader = props => {
   const dispatch = useDispatch();
 
   const onClickHome = () => {
-    dispatch(goBackHomePage());
+    dispatch(goBackHomePage$1());
   };
 
   return /*#__PURE__*/React.createElement("div", {
@@ -3588,8 +3340,6 @@ var messages_en = {
 	"login.notMe": "Not me",
 	"login.fail": "Username or password was incorrect",
 	"login.sayHi": "Hi, {name}",
-	"login.registerPartner": "Partner Registration",
-	"login.needRegisterPartner": "Your account cannot use this function. Please register as a partner or log in as an individual customer.",
 	register: register$1,
 	"register.fullname": "Full name *",
 	"register.fullname.required": "You must enter your full name",
@@ -3636,7 +3386,7 @@ var messages_en = {
 	"menu.customerFee": "Customer Fee",
 	"menu.allFee": "All Fee",
 	"menu.feeApproval": "Fee Approval",
-	"menu.bonusManagement": "Bonus Management",
+	"menu.bonusManagement": "Bonus Mangement",
 	"menu.systemBonus": "System Bonus",
 	"menu.personalBonus": "Personal Bonus",
 	"menu.partnerBonus": "Partner Bonus",
@@ -3659,22 +3409,15 @@ var messages_en = {
 	"menu.partnerDebt": "Partner Debt",
 	"menu.allDebt": "All Debt",
 	"menu.permissionGoup": "Permission Group",
-	"menu.creatPermissionGoup": "Create Permission Group",
+	"menu.creatPermissionGoup": "Create Permision Group",
 	"menu.permissionGoupManagement": "Permission Group Management",
 	"menu.insuranceMotobike": "Motobike Insurance",
 	"menu.insuranceCar": "Car Insurance",
 	"menu.approveOpenAccount": "Account Approval",
 	"menu.promotion": "Promotion",
-	"menu.createPromotion": "Create Promotion",
-	"menu.promotionManagement": "Promotion Management",
 	"menu.personalBonusHistory": "Personal Bonus History",
 	"menu.partnerBonusHistory": "Partner Bonus History",
 	"menu.allBonusHistory": "All Bonus History",
-	"menu.notification": "Notification",
-	"menu.readAll": "Read All",
-	"menu.notificationManagement": "Notification Management",
-	"menu.createNotification": "Create Notification",
-	"menu.notificationApproval": "Notification Management",
 	"navbar.language.vi": "Tiếng việt",
 	"navbar.language.en": "English",
 	"navbar.logout": "Logout",
@@ -3798,8 +3541,8 @@ var messages_en = {
 	"generalInfo.policy.11.1.2": "11.1.2  Gửi thư điện tử cho chúng tôi theo địa chỉ: <b>lienhe@inon.vn</b>",
 	"generalInfo.policy.11.1.3": "11.1.3  Hoặc liên hệ trực tiếp với chúng tôi tại văn phòng: <b>Phòng 301A, Tòa nhà Thiên Bảo, số 47-49 Lê Văn Hưu, Phường Ngô Thì Nhậm, Quận Hai Bà Trưng, Thành phố Hà Nội.</b>",
 	"generalInfo.terms.1": "1. CÁC ĐIỀU KHOẢN VÀ ĐIỀU KIỆN SỬ DỤNG",
-	"generalInfo.terms.1.1": "1.1  Trang thông tin điện tử này <b>(www.inon.vn)</b> cùng các tên miền phụ (x.inon.vn,...) và ứng dụng di động <b>“InOn” (sau đây gọi tắt là “Hệ thống\nInOn”)</b> do <b>Công ty Cổ phần InOn (sau đây gọi tắt là “InOn”) - Đơn vị chủ quản của Hệ thống và Thương hiệu InOn<b/> toàn quyền sở hữu và điều\nhành.\n",
-	"generalInfo.terms.1.2": "1.2  Việc sử dụng <b>Hệ thống InOn</b> này phụ thuộc vào các điều khoản và điều kiện cụ thể sau: (A) các điều khoản và điều kiện được nêu dưới đây và (B) mọi điều khoản và điều kiện bổ sung cụ thể tùy từng thời điểm để điều chỉnh việc sử dụng, và truy cập vào một số mục của trang thông tin điện tử này (và các điều khoản bổ sung đó sẽ có hiệu lực ràng buộc khi chúng được đăng tải trên <b>Hệ thống InOn</b> này) <b>(\"Điều Khoản và Điều Kiện\")</b>.",
+	"generalInfo.terms.1.1": "1.1  Trang thông tin điện tử này <b>(www.inon.vn) do Công Ty TNHH NPG NAM PHONG - Đơn vị chủ quản của Hệ thống và Thương hiệu InOn (sau đây gọi tắt là “InOn”)</b> hoàn toàn sở hữu và điều hành.",
+	"generalInfo.terms.1.2": "1.2  Việc sử dụng trang thông tin điện tử này phụ thuộc vào các điều khoản và điều kiện cụ thể sau: (A) các điều khoản và điều kiện được nêu dưới đây và (B) mọi điều khoản và điều kiện bổ sung cụ thể tùy từng thời điểm để điều chỉnh việc sử dụng, và truy cập vào một số mục của trang thông tin điện tử này (và các điều khoản bổ sung đó sẽ có hiệu lực ràng buộc khi chúng được đăng tải trên trang thông tin điện tử này) <b>(\"Điều Khoản và Điều Kiện\")</b>.",
 	"generalInfo.terms.1.3": "1.3  Khi sử dụng trang thông tin điện tử này, bạn đã đồng ý với các Điều Khoản và Điều Kiện, và sự đồng ý của bạn cùng với các Điều Khoản và Điều Kiện sẽ cấu thành một hợp đồng có giá trị ràng buộc về pháp lý giữa bạn và <b>InOn</b>. Vì thế, bạn vui lòng đọc kỹ các Điều Khoản và Điều Kiện của trang thông tin điện tử này.",
 	"generalInfo.terms.2": "2. CÁC HẠN CHẾ VÀ SỬ DỤNG CÁC THÔNG TIN TÀI LIỆU",
 	"generalInfo.terms.2.1": "2.1  Trừ khi được <b>InOn</b> đồng ý bằng văn bản một cách khác đi, bạn sẽ không sao chép, sao lại, tái bản, đưa lên mạng, công bố, chuyển, tạo liên kết đến hoặc phân phối dưới bất cứ hình thức nào các thông tin và/hoặc tài liệu đã được đăng tải trên trang thông tin điện tử này.",
@@ -3966,8 +3709,6 @@ var messages_vi = {
 	"login.notMe": "Không phải tôi",
 	"login.fail": "Tài khoản hoặc mật khẩu của bạn không chính xác",
 	"login.sayHi": "Xin chào, {name}",
-	"login.registerPartner": "Đăng ký đối tác",
-	"login.needRegisterPartner": "Tài khoản của bạn không sử dụng được chức năng này. Vui lòng đăng ký đối tác hoặc đăng nhập với tư cách khách hàng cá nhân.",
 	register: register$2,
 	"register.fullname": "Họ và tên *",
 	"register.email": "Email*",
@@ -4043,16 +3784,9 @@ var messages_vi = {
 	"menu.insuranceCar": "Bảo hiểm ô tô",
 	"menu.approveOpenAccount": "Phê duyệt mở tài khoản",
 	"menu.promotion": "Khuyến mại",
-	"menu.createPromotion": "Tạo khuyến mại",
-	"menu.promotionManagement": "Quản lý khuyến mại",
 	"menu.personalBonusHistory": "Lịch sử điểm thưởng cá nhân",
 	"menu.partnerBonusHistory": "Lịch sử điểm thưởng đối tác",
 	"menu.allBonusHistory": "Lịch sử điểm thưởng tất cả",
-	"menu.notification": "Thông báo",
-	"menu.readAll": "Đọc tất cả",
-	"menu.notificationManagement": "Quản lý thông báo",
-	"menu.createNotification": "Tạo mới thông báo",
-	"menu.notificationApproval": "Duyệt thông báo",
 	"navbar.language.vi": "Tiếng Việt",
 	"navbar.language.en": "English",
 	"navbar.logout": "Đăng xuất",
@@ -4084,7 +3818,7 @@ var messages_vi = {
 	"setting.gender.F": "Nữ",
 	"setting.gender.O": "Khác",
 	"setting.goToGuestApp": "Về trang KHCN",
-	"setting.goToAgencyApp": "Về trang đối tác",
+	"setting.goToAgencyApp": "Về trang đại lý",
 	"setting.call": "Gọi điện",
 	"setting.call.confirmMessage": "Bạn có muốn gọi đến số {phoneNumber}?",
 	"setting.sendEmail": "Gửi mail",
@@ -4176,8 +3910,8 @@ var messages_vi = {
 	"generalInfo.policy.11.1.2": "11.1.2  Gửi thư điện tử cho chúng tôi theo địa chỉ: <b>lienhe@inon.vn</b>",
 	"generalInfo.policy.11.1.3": "11.1.3  Hoặc liên hệ trực tiếp với chúng tôi tại văn phòng: <b>Phòng 301A, Tòa nhà Thiên Bảo, số 47-49 Lê Văn Hưu, Phường Ngô Thì Nhậm, Quận Hai Bà Trưng, Thành phố Hà Nội.</b>",
 	"generalInfo.terms.1": "1. CÁC ĐIỀU KHOẢN VÀ ĐIỀU KIỆN SỬ DỤNG",
-	"generalInfo.terms.1.1": "1.1  Trang thông tin điện tử này <b>(www.inon.vn)</b> cùng các tên miền phụ (x.inon.vn,...) và ứng dụng di động <b>“InOn” (sau đây gọi tắt là “Hệ thống\nInOn”)</b> do <b>Công ty Cổ phần InOn (sau đây gọi tắt là “InOn”) - Đơn vị chủ quản của Hệ thống và Thương hiệu InOn<b/> toàn quyền sở hữu và điều\nhành.\n",
-	"generalInfo.terms.1.2": "1.2  Việc sử dụng <b>Hệ thống InOn</b> này phụ thuộc vào các điều khoản và điều kiện cụ thể sau: (A) các điều khoản và điều kiện được nêu dưới đây và (B) mọi điều khoản và điều kiện bổ sung cụ thể tùy từng thời điểm để điều chỉnh việc sử dụng, và truy cập vào một số mục của trang thông tin điện tử này (và các điều khoản bổ sung đó sẽ có hiệu lực ràng buộc khi chúng được đăng tải trên <b>Hệ thống InOn</b> này) <b>(\"Điều Khoản và Điều Kiện\")</b>.",
+	"generalInfo.terms.1.1": "1.1  Trang thông tin điện tử này <b>(www.inon.vn) do Công Ty TNHH NPG NAM PHONG - Đơn vị chủ quản của Hệ thống và Thương hiệu InOn (sau đây gọi tắt là “InOn”)</b> hoàn toàn sở hữu và điều hành.",
+	"generalInfo.terms.1.2": "1.2  Việc sử dụng trang thông tin điện tử này phụ thuộc vào các điều khoản và điều kiện cụ thể sau: (A) các điều khoản và điều kiện được nêu dưới đây và (B) mọi điều khoản và điều kiện bổ sung cụ thể tùy từng thời điểm để điều chỉnh việc sử dụng, và truy cập vào một số mục của trang thông tin điện tử này (và các điều khoản bổ sung đó sẽ có hiệu lực ràng buộc khi chúng được đăng tải trên trang thông tin điện tử này) <b>(\"Điều Khoản và Điều Kiện\")</b>.",
 	"generalInfo.terms.1.3": "1.3  Khi sử dụng trang thông tin điện tử này, bạn đã đồng ý với các Điều Khoản và Điều Kiện, và sự đồng ý của bạn cùng với các Điều Khoản và Điều Kiện sẽ cấu thành một hợp đồng có giá trị ràng buộc về pháp lý giữa bạn và <b>InOn</b>. Vì thế, bạn vui lòng đọc kỹ các Điều Khoản và Điều Kiện của trang thông tin điện tử này.",
 	"generalInfo.terms.2": "2. CÁC HẠN CHẾ VÀ SỬ DỤNG CÁC THÔNG TIN TÀI LIỆU",
 	"generalInfo.terms.2.1": "2.1  Trừ khi được <b>InOn</b> đồng ý bằng văn bản một cách khác đi, bạn sẽ không sao chép, sao lại, tái bản, đưa lên mạng, công bố, chuyển, tạo liên kết đến hoặc phân phối dưới bất cứ hình thức nào các thông tin và/hoặc tài liệu đã được đăng tải trên trang thông tin điện tử này.",
@@ -4279,7 +4013,7 @@ var messages_vi = {
 	"completeInformation.success": "Hoàn tất đăng ký thành công!",
 	"socialLogin.addInfo": "Bổ sung thông tin",
 	"socialLogin.addInfo.info": "InOn cần bạn bổ sung các thông tin bên dưới để hoàn tất đăng ký tài khoản.",
-	"socialLogin.agent": "Đối tác",
+	"socialLogin.agent": "Đại lý",
 	"socialLogin.personal": "Cá nhân",
 	"socialLogin.loginWith": "Hoặc đăng nhập với",
 	"socialLogin.registerWith": "Hoặc đăng ký với",
@@ -7134,7 +6868,7 @@ const BaseFormDatePicker = ({
     field,
     form
   }) => /*#__PURE__*/React.createElement(DatePicker, {
-    className: `form-control position-relative ${!disabled ? 'bg-white' : ''} ${_isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'} ${className}`,
+    className: `form-control position-relative ${!disabled ? 'bg-white' : ''} ${_isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'} ${className}`,
     placeholder: messageId ? intl.formatMessage({
       id: messageId
     }) : '',
@@ -7194,24 +6928,17 @@ const Select = props => {
   };
 
   const SelectComponent = useCallback(componentProps => {
-    const newProps = { ...componentProps
-    };
-
-    if (props.isMulti) {
-      newProps.value = props.options.filter(item => (props.value || []).includes(item.value));
-    }
-
     switch (props.type) {
       case 'creatable':
-        return /*#__PURE__*/React.createElement(CreatableSelect, newProps);
+        return /*#__PURE__*/React.createElement(CreatableSelect, componentProps);
 
       case 'async':
-        return /*#__PURE__*/React.createElement(AsyncSelect, newProps);
+        return /*#__PURE__*/React.createElement(AsyncSelect, componentProps);
 
       default:
-        return /*#__PURE__*/React.createElement(ReactSelect, newProps);
+        return /*#__PURE__*/React.createElement(ReactSelect, componentProps);
     }
-  }, [props.options, props.value]);
+  }, [props]);
   return /*#__PURE__*/React.createElement(FormGroup, {
     className: "form-label-group position-relative"
   }, /*#__PURE__*/React.createElement(SelectComponent, Object.assign({}, props, {
@@ -7839,7 +7566,7 @@ const ChangePassword = () => {
   const dispatch = useDispatch();
 
   const onClickSubmit = values => {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.changePassword"
       }),
@@ -7854,7 +7581,7 @@ const ChangePassword = () => {
   };
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -7863,7 +7590,7 @@ const ChangePassword = () => {
         id: "common.backHome.confirmMessage"
       }),
       onConfirm: () => {
-        dispatch(goBackHomePage());
+        dispatch(goBackHomePage$1());
       }
     }));
   };
@@ -8004,7 +7731,7 @@ const AccountSettings = props => {
       active: activeTab === 'account-info'
     }),
     onClick: () => {
-      history.push('/account-info');
+      history.push('/app/account-info');
     }
   }, /*#__PURE__*/React.createElement(User, {
     size: 16
@@ -8017,7 +7744,7 @@ const AccountSettings = props => {
       active: activeTab === 'change-password'
     }),
     onClick: () => {
-      history.push('/change-password');
+      history.push('/app/change-password');
     }
   }, /*#__PURE__*/React.createElement(Lock, {
     size: 16
@@ -8030,7 +7757,7 @@ const AccountSettings = props => {
       active: activeTab === 'share-with-friends'
     }),
     onClick: () => {
-      history.push('/share-with-friends');
+      history.push('/app/share-with-friends');
     }
   }, /*#__PURE__*/React.createElement(Link, {
     size: 16
@@ -8055,6 +7782,262 @@ const AccountSettings = props => {
     sm: "11",
     className: "mx-auto"
   }, /*#__PURE__*/React.createElement(ShareWithFriends, null))))))));
+};
+
+const TERMS = [{
+  id: '1',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }]
+}, {
+  id: '2',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }]
+}, {
+  id: '3',
+  items: [{
+    id: '1'
+  }]
+}, {
+  id: '4',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }]
+}, {
+  id: '5',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }, {
+    id: '4'
+  }, {
+    id: '5'
+  }]
+}, {
+  id: '6',
+  items: [{
+    id: '1'
+  }]
+}, {
+  id: '7',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }]
+}, {
+  id: '8',
+  items: [{
+    id: '1',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }, {
+      id: '3'
+    }, {
+      id: '4'
+    }]
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }, {
+    id: '4'
+  }]
+}, {
+  id: '9',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }, {
+      id: '3'
+    }, {
+      id: '4'
+    }]
+  }]
+}, {
+  id: '10',
+  items: [{
+    id: '1',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }, {
+      id: '3'
+    }]
+  }]
+}, {
+  id: '11',
+  items: [{
+    id: '1'
+  }]
+}, {
+  id: '12',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }]
+}, {
+  id: '13',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }]
+}, {
+  id: '14',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }]
+}];
+
+const InfoItems = ({
+  data,
+  type
+}) => {
+  const intl = useIntl();
+  const [state, setState] = useState({
+    collapseID: '',
+    status: 'Closed'
+  });
+
+  const toggleCollapse = collapseID => {
+    collapseID = state.collapseID !== collapseID ? collapseID : '';
+    setState({ ...state,
+      collapseID
+    });
+  };
+
+  const onEntered = id => {
+    if (id === state.collapseID) setState({ ...state,
+      status: 'Opened'
+    });
+  };
+
+  const onEntering = id => {
+    if (id === state.collapseID) setState({ ...state,
+      status: 'Opening...'
+    });
+  };
+
+  const onExited = id => {
+    if (id === state.collapseID) setState({ ...state,
+      status: 'Closed'
+    });
+  };
+
+  const onExiting = id => {
+    if (id === state.collapseID) setState({ ...state,
+      status: 'Closing...'
+    });
+  };
+
+  return data.map(item1 => /*#__PURE__*/React.createElement("div", {
+    className: "collapse-margin",
+    key: item1.id
+  }, /*#__PURE__*/React.createElement(Card, {
+    onClick: () => toggleCollapse(item1.id),
+    className: classnames({
+      'collapse-collapsed': state.status === 'Closed' && state.collapseID === item1.id,
+      'collapse-shown': state.status === 'Opened' && state.collapseID === item1.id,
+      closing: state.status === 'Closing...' && state.collapseID === item1.id,
+      opening: state.status === 'Opening...' && state.collapseID === item1.id
+    })
+  }, /*#__PURE__*/React.createElement(CardHeader, {
+    className: "p-1"
+  }, /*#__PURE__*/React.createElement(CardTitle, {
+    className: "lead collapse-title collapsed col-11 p-0\""
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: `generalInfo.${type}.${item1.id}`
+  })), /*#__PURE__*/React.createElement(ChevronDown, {
+    size: 15,
+    className: "collapse-icon"
+  })), /*#__PURE__*/React.createElement(Collapse, {
+    isOpen: item1.id === state.collapseID,
+    onEntering: () => onEntering(item1.id),
+    onEntered: () => onEntered(item1.id),
+    onExiting: () => onExiting(item1.id),
+    onExited: () => onExited(item1.id)
+  }, /*#__PURE__*/React.createElement(CardBody, null, item1.items.map(item2 => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+    className: "ml-1",
+    key: item2.id,
+    dangerouslySetInnerHTML: {
+      __html: intl.formatMessage({
+        id: `generalInfo.${type}.${item1.id}.${item2.id}`
+      })
+    }
+  }), item2.items ? item2.items.map(item3 => /*#__PURE__*/React.createElement("p", {
+    className: "ml-2",
+    key: item3.id,
+    dangerouslySetInnerHTML: {
+      __html: intl.formatMessage({
+        id: `generalInfo.${type}.${item1.id}.${item2.id}.${item3.id}`
+      })
+    }
+  })) : '')))))));
+};
+
+const Terms = () => {
+  const dispatch = useDispatch();
+
+  const onClickBackHome = () => {
+    dispatch(showConfirmAlert$1({
+      title: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "common.home"
+      }),
+      isShow: true,
+      content: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "common.backHome.confirmMessage"
+      }),
+      onConfirm: () => {
+        dispatch(goBackHomePage$1());
+      }
+    }));
+  };
+
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardBody, null, /*#__PURE__*/React.createElement("div", {
+    className: "vx-collapse"
+  }, /*#__PURE__*/React.createElement(InfoItems, {
+    data: TERMS,
+    type: "terms"
+  })), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
+    className: "d-flex justify-content-end flex-wrap mt-2",
+    sm: "12"
+  }, /*#__PURE__*/React.createElement(Button.Ripple, {
+    type: "button",
+    color: "secondary",
+    onClick: onClickBackHome
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: `common.home`
+  })))))));
 };
 
 class Radio extends React.Component {
@@ -8091,7 +8074,7 @@ const LanguageTab = () => {
   const [lang, setLang] = useState(localStorage.getItem('language'));
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -8100,13 +8083,13 @@ const LanguageTab = () => {
         id: "common.backHome.confirmMessage"
       }),
       onConfirm: () => {
-        dispatch(goBackHomePage());
+        dispatch(goBackHomePage$1());
       }
     }));
   };
 
   const onClickSaveChange = context => {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.language"
       }),
@@ -8160,6 +8143,197 @@ const LanguageTab = () => {
   })))));
 };
 
+const POLICIES = [{
+  id: '1',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }, {
+    id: '4'
+  }, {
+    id: '5'
+  }, {
+    id: '6'
+  }, {
+    id: '7'
+  }]
+}, {
+  id: '2',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }, {
+    id: '4'
+  }, {
+    id: '5'
+  }, {
+    id: '6'
+  }, {
+    id: '7'
+  }, {
+    id: '8'
+  }, {
+    id: '9'
+  }]
+}, {
+  id: '3',
+  items: [{
+    id: '1'
+  }, {
+    id: '2',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }]
+  }, {
+    id: '3'
+  }, {
+    id: '4'
+  }]
+}, {
+  id: '4',
+  items: [{
+    id: '1',
+    items: [{
+      id: '1'
+    }]
+  }, {
+    id: '2'
+  }, {
+    id: '3',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }]
+  }, {
+    id: '4',
+    items: [{
+      id: '1'
+    }]
+  }]
+}, {
+  id: '5',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }]
+}, {
+  id: '6',
+  items: [{
+    id: '1'
+  }]
+}, {
+  id: '7',
+  items: [{
+    id: '1'
+  }]
+}, {
+  id: '8',
+  items: [{
+    id: '1'
+  }, {
+    id: '2',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }, {
+      id: '3'
+    }, {
+      id: '4'
+    }, {
+      id: '5'
+    }, {
+      id: '6'
+    }, {
+      id: '7'
+    }]
+  }, {
+    id: '3'
+  }, {
+    id: '4'
+  }]
+}, {
+  id: '9',
+  items: [{
+    id: '1',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }]
+  }, {
+    id: '2'
+  }]
+}, {
+  id: '10',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }]
+}, {
+  id: '11',
+  items: [{
+    id: '1',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }, {
+      id: '3'
+    }]
+  }]
+}];
+
+const Policies = () => {
+  const dispatch = useDispatch();
+
+  const onClickBackHome = () => {
+    dispatch(showConfirmAlert$1({
+      title: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "common.home"
+      }),
+      isShow: true,
+      content: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "common.backHome.confirmMessage"
+      }),
+      onConfirm: () => {
+        dispatch(goBackHomePage$1());
+      }
+    }));
+  };
+
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardBody, null, /*#__PURE__*/React.createElement("div", {
+    className: "vx-collapse"
+  }, /*#__PURE__*/React.createElement(InfoItems, {
+    data: POLICIES,
+    type: "policy"
+  })), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
+    className: "d-flex justify-content-end flex-wrap mt-2",
+    sm: "12"
+  }, /*#__PURE__*/React.createElement(Button.Ripple, {
+    type: "button",
+    color: "secondary",
+    onClick: onClickBackHome
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: `common.home`
+  })))))));
+};
+
 function useDeviceDetect() {
   const [isMobile, setMobile] = React.useState(false);
   React.useEffect(() => {
@@ -8179,7 +8353,7 @@ const ContactTab = () => {
   const dispatch = useDispatch();
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -8188,13 +8362,13 @@ const ContactTab = () => {
         id: "common.backHome.confirmMessage"
       }),
       onConfirm: () => {
-        dispatch(goBackHomePage());
+        dispatch(goBackHomePage$1());
       }
     }));
   };
 
   const onClickCall = () => {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.call"
       }),
@@ -8279,10 +8453,36 @@ const GeneralInfo = props => {
     tabs: true
   }, /*#__PURE__*/React.createElement(NavItem, null, /*#__PURE__*/React.createElement(NavLink, {
     className: classnames({
+      active: activeTab === 'terms-and-condition'
+    }),
+    onClick: () => {
+      history.push('/app/terms-and-condition');
+    }
+  }, /*#__PURE__*/React.createElement(FileText, {
+    size: 16
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "align-middle ml-50"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "setting.termAndCondition"
+  })))), /*#__PURE__*/React.createElement(NavItem, null, /*#__PURE__*/React.createElement(NavLink, {
+    className: classnames({
+      active: activeTab === 'privacy-policy'
+    }),
+    onClick: () => {
+      history.push('/app/privacy-policy');
+    }
+  }, /*#__PURE__*/React.createElement(Shield, {
+    size: 16
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "align-middle ml-50"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "setting.privacyPolicy"
+  })))), /*#__PURE__*/React.createElement(NavItem, null, /*#__PURE__*/React.createElement(NavLink, {
+    className: classnames({
       active: activeTab === 'language'
     }),
     onClick: () => {
-      history.push('/language');
+      history.push('/app/language');
     }
   }, /*#__PURE__*/React.createElement(Globe, {
     size: 16
@@ -8295,7 +8495,7 @@ const GeneralInfo = props => {
       active: activeTab === 'contact'
     }),
     onClick: () => {
-      history.push('/contact');
+      history.push('/app/contact');
     }
   }, /*#__PURE__*/React.createElement(MessageSquare, {
     size: 16
@@ -8306,6 +8506,10 @@ const GeneralInfo = props => {
   }))))), /*#__PURE__*/React.createElement(TabContent, {
     activeTab: activeTab
   }, /*#__PURE__*/React.createElement(TabPane, {
+    tabId: "terms-and-condition"
+  }, /*#__PURE__*/React.createElement(Terms, null)), /*#__PURE__*/React.createElement(TabPane, {
+    tabId: "privacy-policy"
+  }, /*#__PURE__*/React.createElement(Policies, null)), /*#__PURE__*/React.createElement(TabPane, {
     tabId: "language"
   }, /*#__PURE__*/React.createElement(LanguageTab, null)), /*#__PURE__*/React.createElement(TabPane, {
     tabId: "contact"
@@ -8615,6 +8819,7 @@ const Login = () => {
   const {
     isGuest
   } = useSelector(state => state.auth);
+  const loginStatus = useSelector(state => state.auth.loginStatus);
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem(REMEMBER_ME_TOKEN));
 
@@ -8717,11 +8922,7 @@ const Login = () => {
     type: "submit"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "login"
-  }))), isGuest ? /*#__PURE__*/React.createElement("div", {
-    className: "mt-2"
-  }, /*#__PURE__*/React.createElement(SocialLogin, {
-    isLogin: true
-  })) : null));
+  })))));
 };
 
 const formSchema$2 = object().shape({
@@ -8795,7 +8996,7 @@ const Register = () => {
   };
 
   const onChangeFullName = (e, form) => {
-    const value = e.target.value.replace(/[^0-9a-zàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ\s]/gi, '');
+    const value = e.target.value.replace(/[^\w\s]/gi, '');
     form.setFieldValue('fullName', value);
   };
 
@@ -9151,8 +9352,8 @@ const VerifyOtp = () => {
 
 const LandingPageHeader = () => /*#__PURE__*/React.createElement(Context.Consumer, null, context => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
   className: "d-flex justify-content-between align-items-center"
-}, /*#__PURE__*/React.createElement("a", {
-  href: "https://inon.vn/"
+}, /*#__PURE__*/React.createElement(Link$1, {
+  to: '/'
 }, /*#__PURE__*/React.createElement("span", {
   className: "d-block d-lg-none"
 }, /*#__PURE__*/React.createElement("img", {
@@ -9475,8 +9676,8 @@ const LandingPage = props => {
     className: "d-none d-lg-block landing-page-bg"
   }, /*#__PURE__*/React.createElement("div", {
     className: "logo mx-auto"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "https://inon.vn/"
+  }, /*#__PURE__*/React.createElement(Link$1, {
+    to: '/'
   }, /*#__PURE__*/React.createElement("img", {
     src: IMAGE.LOGO,
     alt: "logo"
@@ -9562,7 +9763,7 @@ const ConfirmAlert = () => {
       onConfirm();
     }
 
-    dispatch(hideConfirmAlert());
+    dispatch(hideConfirmAlert$1());
   };
 
   const onClickCancel = () => {
@@ -9570,7 +9771,7 @@ const ConfirmAlert = () => {
       onCancel();
     }
 
-    dispatch(hideConfirmAlert());
+    dispatch(hideConfirmAlert$1());
   };
 
   return /*#__PURE__*/React.createElement(SweetAlert, Object.assign({
@@ -9591,6 +9792,32 @@ const ConfirmAlert = () => {
   }, otherConfigs), content);
 };
 
+const CheckLocationChange = () => {
+  const history = useHistory();
+  const dispatch = useDispatch();
+  const {
+    appId
+  } = useSelector(state => state.customizer);
+  useEffect(() => {
+    let id;
+
+    if (window.location.href.includes('/app/')) {
+      id = AppId.APP_NO1;
+    } else if (window.location.href.includes('/insurance/')) {
+      id = AppId.INSURANCE_APP;
+    } else if (window.location.href.includes('/supplement/')) {
+      id = AppId.SUPPLEMENT_APP;
+    } else {
+      id = AppId.ELITE_APP;
+    }
+
+    if (appId !== id) {
+      dispatch(setAppId(id));
+    }
+  }, [history.location.pathname]);
+  return /*#__PURE__*/React.createElement("span", null);
+};
+
 const AppRouter = props => {
   const {
     checkLoginStatus,
@@ -9604,12 +9831,11 @@ const AppRouter = props => {
     loadNavtigation,
     changeIsGuest,
     loadUserRoles,
-    setAppId,
     history,
-    message
+    message,
+    footerApp
   } = props;
   useEffect(() => {
-    setAppId(appId);
     const urlParams = new URLSearchParams(document.location.search);
     const code = urlParams.get('code') || (appId === AppId.ELITE_APP ? guest.authToken : authToken);
     const redirectUrl = urlParams.get('redirectUrl');
@@ -9618,25 +9844,17 @@ const AppRouter = props => {
       checkLoginStatus(code, redirectUrl);
     }
 
-    if (code) {
-      loadNavtigation(appId, () => loadUserRoles());
+    if (authToken) {
+      loadNavtigation(appId);
+      loadUserRoles();
     }
   }, [authToken]);
-
-  const setMessages = (message = {}) => {
-    const newMessage = {};
-    Object.keys(message).forEach(key => {
-      newMessage[appId + '.' + key] = message[key];
-    });
-    return newMessage;
-  };
-
   const appMessage = {
     en: { ...messages_en,
-      ...setMessages(message.en)
+      ...message.en
     },
     vi: { ...messages_vi,
-      ...setMessages(message.vi)
+      ...message.vi
     }
   };
   const settingRoutes = [{
@@ -9691,33 +9909,24 @@ const AppRouter = props => {
       appId
     }, /*#__PURE__*/React.createElement(Switch, null, settingRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
       key: item.path,
-      path: `/${item.path}`,
+      path: `/app/${item.path}`,
       render: () => /*#__PURE__*/React.createElement(item.component, {
         activeTab: item.path
       })
     })), /*#__PURE__*/React.createElement(Route, {
       path: "/",
       render: () => children
-    }))) : /*#__PURE__*/React.createElement(Switch, null, landingPageRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
+    }))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Switch, null, landingPageRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
       key: item.path,
       path: `/${item.path}`,
       render: () => /*#__PURE__*/React.createElement(LandingPage, {
         activeTab: item.path
       })
-    })), appId === AppId.ELITE_APP ? /*#__PURE__*/React.createElement(Route, {
+    })), /*#__PURE__*/React.createElement(Route, {
       path: "/",
       render: () => children
-    }) : /*#__PURE__*/React.createElement(Redirect, {
-      from: "/",
-      to: "/login"
-    }), /*#__PURE__*/React.createElement(Route, {
-      path: "/social-login",
-      component: SocialLogin
-    }), /*#__PURE__*/React.createElement(Redirect, {
-      from: "/",
-      to: "/"
-    }))
-  }))), /*#__PURE__*/React.createElement(ToastContainer, {
+    })), React.createElement(footerApp))
+  })), /*#__PURE__*/React.createElement(CheckLocationChange, null)), /*#__PURE__*/React.createElement(ToastContainer, {
     hideProgressBar: true,
     position: "top-right",
     autoClose: 5000,
@@ -9732,7 +9941,8 @@ const mapStateToProps$3 = state => {
     authToken: state.auth.authToken,
     guest: state.auth.guest,
     loginStatus: state.auth.loginStatus,
-    user: state.auth.user
+    user: state.auth.user,
+    appId: state.customizer.appId
   };
 };
 
@@ -9802,7 +10012,8 @@ const App = ({
   appReducer,
   message,
   apiBaseUrl,
-  history
+  history,
+  footerApp
 }) => {
   const middlewares = [thunk, createDebounce()];
   const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
@@ -9820,7 +10031,8 @@ const App = ({
     message: message,
     appId: appId,
     history: history,
-    children: children
+    children: children,
+    footerApp: footerApp
   })));
 };
 
@@ -9947,5 +10159,4 @@ const usePageAuthorities = () => {
   return authorities;
 };
 
-export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, Radio, ReactTable, Select, changeIsGuest, goBackHomePage, goToAgencyApp, hideConfirmAlert, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
-//# sourceMappingURL=index.modern.js.map
+export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, LandingPage, Radio, ReactTable, Select, changeIsGuest, goBackHomePage, goToAgencyApp, hideConfirmAlert, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };

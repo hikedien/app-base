@@ -22,7 +22,6 @@ var reactstrap = require('reactstrap');
 var ReactDOM = _interopDefault(require('react-dom'));
 var PropTypes = _interopDefault(require('prop-types'));
 var PerfectScrollbar = _interopDefault(require('react-perfect-scrollbar'));
-require('moment/locale/vi');
 var ScrollToTop = _interopDefault(require('react-scroll-up'));
 var Hammer = _interopDefault(require('react-hammerjs'));
 var Yup = require('yup');
@@ -129,7 +128,7 @@ var AppId = {
   DIVAY_APP: 'DIVAY_APP'
 };
 
-var API_BASE_URL = 'https://apisit.inon.vn';
+var API_BASE_URL = 'https://api.inon.vn';
 var RESOURCE_URL = 'https://sit2.inon.vn/resources/images/';
 var FB_APP_ID = '2651185198505964';
 var GOOGLE_APP_ID = '400818618331-k9ptcdcgr99po0g5q5mh8e5ekodgj61n.apps.googleusercontent.com';
@@ -151,11 +150,6 @@ var API_COMPLETE_INFO = '/nth/onboarding/api/authenticate/complete-info';
 var API_FORGOT_PASSWORD = '/api/authenticate/forgot-password';
 var API_RESET_PASSWORD = '/api/authenticate/reset-password';
 var API_EMAIL_SUGGESTION = '/nth/user/api/authenticate/email-suggestion';
-var API_GET_MY_NOTIFICATIONS = '/nth/notification/api/my-notification';
-var API_CHECK_NEW_NOTIFICATIONS = '/nth/notification/api/notifications-es';
-var API_GET_NOTIFICATION_FROM_ESPUBLIC = '/nth/notification/api/user-notifications-es';
-var API_UPDATE_NOTIFICATION = '/nth/notification/';
-var API_UPDATE_ALL_NOTIFICATION_STATUS = '/nth/notification/api/my-notifications-status';
 var API_R_200 = 200;
 var API_GET_CITIES_BY_COUNTRY = '/nth/datacollection/api/citiesbycountry';
 var API_GET_DISTRICTS_BY_CITY = '/nth/datacollection/api/districtsbycity';
@@ -173,8 +167,6 @@ var PERSONAL_ID_REGEX = /^(\d{9}|\d{12})$/;
 var CITIZEN_INDENTIFY_REGEX = /^(\d{12})$/;
 var PASSPORT_REGEX = /^(?!^0+$)[a-zA-Z0-9]{3,20}$/;
 var NAME_REGEX = /^([ÀÁÂÃÈÉÊẾÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêếềìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹý0-9A-Za-z_. ])+$/g;
-var TERMS_PDF = 'https://sit2.inon.vn/resources/pdf/terms-and-conditions.pdf';
-var POLICY_PDF = 'https://sit2.inon.vn/resources/pdf/privacy-policy.pdf';
 var FIRE_BASE_CONFIGS = {
   apiKey: "AIzaSyCvWX-pLEPOxjwp2AJq3_t11JQjRMKtaT8",
   authDomain: "inonvn.firebaseapp.com",
@@ -200,8 +192,6 @@ var MAX_FILE_SIZE = 5;
 var CONTACT_PHONE = '0899.300.800';
 var SESSION_TIMEOUT = 30;
 var DATE_TIME_FORMAT = 'YYYY/MM/DD HH:mm:ss';
-var ANDROID_APP_LINK = 'https://play.google.com/store/apps/details?id=com.inon.vn';
-var IOS_APP_LINK = 'https://apps.apple.com/app/id1574202853';
 var LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
   FAIL: 'FAIL'
@@ -245,16 +235,16 @@ var IC_TYPES_OPTIONS = [{
 var getExternalAppUrl = function getExternalAppUrl(appId, url) {
   switch (appId) {
     case AppId.APP_NO1:
-      return window.location.origin + "/app" + url + "?r edirectUrl=" + url;
+      return "/app" + url;
 
     case AppId.INSURANCE_APP:
-      return window.location.origin + "/insurance" + url + "?redirectUrl=" + url;
+      return "/insurance" + url;
 
     case AppId.SUPPLEMENT_APP:
-      return window.location.origin + "/supplement" + url + "?redirectUrl=" + url;
+      return "/supplement" + url;
 
     case AppId.ELITE_APP:
-      return "" + window.location.origin + url + "?redirectUrl=" + url;
+      return "" + url;
   }
 };
 var getContextPath = function getContextPath(appId) {
@@ -346,11 +336,6 @@ var appConfigs = {
   API_FORGOT_PASSWORD: API_FORGOT_PASSWORD,
   API_RESET_PASSWORD: API_RESET_PASSWORD,
   API_EMAIL_SUGGESTION: API_EMAIL_SUGGESTION,
-  API_GET_MY_NOTIFICATIONS: API_GET_MY_NOTIFICATIONS,
-  API_CHECK_NEW_NOTIFICATIONS: API_CHECK_NEW_NOTIFICATIONS,
-  API_GET_NOTIFICATION_FROM_ESPUBLIC: API_GET_NOTIFICATION_FROM_ESPUBLIC,
-  API_UPDATE_NOTIFICATION: API_UPDATE_NOTIFICATION,
-  API_UPDATE_ALL_NOTIFICATION_STATUS: API_UPDATE_ALL_NOTIFICATION_STATUS,
   API_R_200: API_R_200,
   API_GET_CITIES_BY_COUNTRY: API_GET_CITIES_BY_COUNTRY,
   API_GET_DISTRICTS_BY_CITY: API_GET_DISTRICTS_BY_CITY,
@@ -368,8 +353,6 @@ var appConfigs = {
   CITIZEN_INDENTIFY_REGEX: CITIZEN_INDENTIFY_REGEX,
   PASSPORT_REGEX: PASSPORT_REGEX,
   NAME_REGEX: NAME_REGEX,
-  TERMS_PDF: TERMS_PDF,
-  POLICY_PDF: POLICY_PDF,
   FIRE_BASE_CONFIGS: FIRE_BASE_CONFIGS,
   AUTHORITIES: AUTHORITIES,
   LOGIN_METHODS: LOGIN_METHODS,
@@ -378,8 +361,6 @@ var appConfigs = {
   CONTACT_PHONE: CONTACT_PHONE,
   SESSION_TIMEOUT: SESSION_TIMEOUT,
   DATE_TIME_FORMAT: DATE_TIME_FORMAT,
-  ANDROID_APP_LINK: ANDROID_APP_LINK,
-  IOS_APP_LINK: IOS_APP_LINK,
   LOGIN_STATUS: LOGIN_STATUS,
   USER_TYPE: USER_TYPE,
   GENDER_OPTIONS: GENDER_OPTIONS,
@@ -535,25 +516,12 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
 
   HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
   HttpClient.interceptors.request.use(function (config) {
-    var appId = store.getState().customizer.appId;
-    var token = appId === AppId.ELITE_APP ? store.getState().auth.guest.authToken : store.getState().auth.authToken;
-    var sessionExpireTime = store.getState().auth.sessionExpireTime;
+    var token = store.getState().auth.guest.authToken || store.getState().auth.authToken;
     language = localStorage.getItem('language');
 
     if (token) {
       store.dispatch(changeActionExpireTime());
       config.headers.Authorization = "Bearer " + token;
-      var isSessionExpired = moment().isAfter(moment(sessionExpireTime));
-
-      if (sessionExpireTime && isSessionExpired) {
-        toastError( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-          id: "common.sessionExpired"
-        }));
-        store.dispatch({
-          type: LOGOUT_ACTION
-        });
-        return;
-      }
     }
 
     config.headers.appId = store.getState().customizer.appId;
@@ -561,6 +529,7 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
     config.headers.latitude = localStorage.getItem('latitude');
     config.headers.longitude = localStorage.getItem('longitude');
     config.headers.deviceId = deviceId;
+    config.headers.isMobileApp = true;
     config.headers['Accept-Language'] = language;
 
     if (!config.isBackgroundRequest) {
@@ -602,6 +571,7 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
         store.dispatch({
           type: 'LOGOUT_ACTION'
         });
+        history.push('/login');
         break;
 
       case 500:
@@ -758,7 +728,7 @@ var mapRoleToNavItem = function mapRoleToNavItem(role) {
   item.icon = /*#__PURE__*/React__default.createElement(IconTag, {
     size: 20
   });
-  item.navLink = role.menuPath;
+  item.navLink = getExternalAppUrl(role.appId, role.menuPath);
 
   if (role.isHighlight) {
     item.badge = 'primary';
@@ -776,11 +746,11 @@ var getNativgationConfig = function getNativgationConfig(appId, navConfigs) {
   }
 
   return navConfigs.map(function (item) {
-    item.isExternalApp = item.appId !== appId;
+    item.isExternalApp = false;
 
     if (item.children) {
       item.children.map(function (child) {
-        return child.isExternalApp = child.appId !== appId;
+        return child.isExternalApp = false;
       });
 
       if (item.children.length === 1) {
@@ -816,15 +786,10 @@ NavBarService.getUserGroupRole = function (groupId) {
 
 var LOAD_NATIVGATION = 'LOAD_NATIVGATION';
 var LOAD_USER_ROLE = 'LOAD_USER_ROLE';
-var loadNavtigation = function loadNavtigation(appId, callback) {
+var loadNavtigation = function loadNavtigation(appId) {
   return function (dispatch) {
     try {
       return Promise.resolve(NavBarService.getNativagtion()).then(function (res) {
-        if (!res || !res.data) {
-          return;
-        }
-
-        callback();
         var roles = res.data || [];
         var navConfigs = getNativgationConfig(appId, roles);
         dispatch({
@@ -865,12 +830,15 @@ var loadUserRoles = function loadUserRoles() {
 var goBackHomePage = function goBackHomePage() {
   return function (dispatch, getState) {
     try {
-      var appId = getState().customizer.appId;
+      var _getState, _getState$auth;
 
-      if (appId === AppId.APP_NO1) {
-        history.push('/');
+      var _ref = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$auth = _getState.auth) === null || _getState$auth === void 0 ? void 0 : _getState$auth.guest) || {},
+          authToken = _ref.authToken;
+
+      if (authToken) {
+        history.push('/home');
       } else {
-        window.location.href = getExternalAppUrl(appId === AppId.ELITE_APP ? AppId.ELITE_APP : AppId.APP_NO1, '/');
+        history.push('/app/home');
       }
 
       return Promise.resolve();
@@ -919,7 +887,6 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
                   type: LOGIN_ACTION,
                   payload: payload
                 });
-                history.replace(redirectUrl || window.location.pathname.replace("/" + getContextPath(appId) + "/", '/'));
               });
             } else {
               dispatch({
@@ -945,9 +912,6 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
 var loginAction = function loginAction(user) {
   return function (dispatch, getState) {
     try {
-      dispatch({
-        type: LOGOUT_ACTION
-      });
       user.rememberMe = user.isRemeberMe;
       return Promise.resolve(AuthService.login(user)).then(function (response) {
         var isGuest = getState().auth.isGuest;
@@ -1011,7 +975,7 @@ var loginAction = function loginAction(user) {
                 });
               }
 
-              redirectMainApp(isGuest, getState().customizer.appId);
+              redirectMainApp(isGuest);
             });
           } else {
             dispatch({
@@ -1052,13 +1016,7 @@ var socialLogin = function socialLogin(data, loginMethod, openAddInfoPopup) {
               }
             }
           });
-          setTimeout(function () {
-            if (getState().customizer.appId !== AppId.ELITE_APP) {
-              window.location.href = getExternalAppUrl(AppId.ELITE_APP, '/');
-            } else {
-              history.push('/');
-            }
-          }, 500);
+          dispatch(goBackHomePage());
         });
       });
     } catch (e) {
@@ -1075,21 +1033,19 @@ var changeIsGuest = function changeIsGuest(isGuest) {
   };
 };
 var goToGuestApp = function goToGuestApp() {
-  return function (dispatch, getState) {
-    var appId = getState().customizer.appId;
+  return function (dispatch) {
     dispatch({
       type: GOTO_GUEST_APP
     });
-    redirectMainApp(true, appId);
+    redirectMainApp(true);
   };
 };
 var goToAgencyApp = function goToAgencyApp() {
-  return function (dispatch, getState) {
-    var appId = getState().customizer.appId;
+  return function (dispatch) {
     dispatch({
       type: GOTO_AGENCY_APP
     });
-    redirectMainApp(false, appId);
+    redirectMainApp(false);
   };
 };
 var createPassword = function createPassword(password) {
@@ -1258,6 +1214,7 @@ var logoutAction = function logoutAction() {
         dispatch({
           type: LOGOUT_ACTION
         });
+        history.push('/login');
       });
     } catch (e) {
       return Promise.reject(e);
@@ -1368,16 +1325,12 @@ var verifyPhoneNumber = function verifyPhoneNumber(values) {
   };
 };
 
-var redirectMainApp = function redirectMainApp(isGuest, appId) {
-  setTimeout(function () {
-    var mainApp = isGuest ? AppId.ELITE_APP : AppId.APP_NO1;
-
-    if (appId !== mainApp) {
-      window.location.href = getExternalAppUrl(mainApp, '/');
-    } else {
-      history.push('/');
-    }
-  }, 200);
+var redirectMainApp = function redirectMainApp(isGuest) {
+  if (isGuest) {
+    history.push('/');
+  } else {
+    history.push('/app/home');
+  }
 };
 
 var themeConfig = {
@@ -1543,6 +1496,7 @@ var authReducers = function authReducers(state, action) {
     case GOTO_AGENCY_APP:
       {
         return _extends({}, state, {
+          guest: {},
           user: state.guest.user,
           authToken: state.guest.authToken
         });
@@ -1565,6 +1519,29 @@ var authReducers = function authReducers(state, action) {
   }
 };
 
+var LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
+var LOAD_USER_ROLE$1 = 'LOAD_USER_ROLE';
+var goBackHomePage$1 = function goBackHomePage() {
+  return function (dispatch, getState) {
+    try {
+      var _getState, _getState$auth;
+
+      var _ref = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$auth = _getState.auth) === null || _getState$auth === void 0 ? void 0 : _getState$auth.guest) || {},
+          authToken = _ref.authToken;
+
+      if (authToken) {
+        history.push('/home');
+      } else {
+        history.push('/app/home');
+      }
+
+      return Promise.resolve();
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+};
+
 var initialState = {
   navConfigs: [],
   roles: [],
@@ -1577,13 +1554,13 @@ var navbarReducer = function navbarReducer(state, action) {
   }
 
   switch (action.type) {
-    case LOAD_NATIVGATION:
+    case LOAD_NATIVGATION$1:
       return _extends({}, state, {
         navConfigs: action.payload.navConfigs,
         roles: action.payload.roles
       });
 
-    case LOAD_USER_ROLE:
+    case LOAD_USER_ROLE$1:
       return _extends({}, state, {
         userRoles: action.payload
       });
@@ -1591,6 +1568,26 @@ var navbarReducer = function navbarReducer(state, action) {
     default:
       return state;
   }
+};
+
+var SHOW_LOADING_BAR$1 = 'SHOW_LOADING_BAR';
+var HIDE_LOADING_BAR$1 = 'HIDE_LOADING_BAR';
+var SHOW_CONFIRM_ALERT$1 = 'SHOW_CONFIRM_ALERT';
+var HIDE_CONFIRM_ALERT$1 = 'HIDE_CONFIRM_ALERT';
+var showConfirmAlert$1 = function showConfirmAlert(configs) {
+  return function (dispatch) {
+    return dispatch({
+      type: SHOW_CONFIRM_ALERT$1,
+      payload: configs
+    });
+  };
+};
+var hideConfirmAlert$1 = function hideConfirmAlert() {
+  return function (dispatch) {
+    return dispatch({
+      type: HIDE_CONFIRM_ALERT$1
+    });
+  };
 };
 
 var DEFAULT_CONFIRM_ALERT = {
@@ -1612,179 +1609,28 @@ var uiReducer = function uiReducer(state, action) {
   }
 
   switch (action.type) {
-    case SHOW_LOADING_BAR:
+    case SHOW_LOADING_BAR$1:
       return _extends({}, state, {
         isLoading: true,
         loading: state.loading.add(action.payload)
       });
 
-    case HIDE_LOADING_BAR:
+    case HIDE_LOADING_BAR$1:
       state.loading["delete"](action.payload);
       return _extends({}, state, {
         isLoading: !!state.loading.size
       });
 
-    case SHOW_CONFIRM_ALERT:
+    case SHOW_CONFIRM_ALERT$1:
       return _extends({}, state, {
         confirmAlert: _extends({
           isShow: true
         }, state.confirmAlert, action.payload)
       });
 
-    case HIDE_CONFIRM_ALERT:
+    case HIDE_CONFIRM_ALERT$1:
       return _extends({}, state, {
         confirmAlert: _extends({}, DEFAULT_CONFIRM_ALERT)
-      });
-
-    default:
-      return state;
-  }
-};
-
-var NotificationService = function NotificationService() {};
-
-NotificationService.getMyNotifications = function () {
-  return HttpClient.get(API_GET_NOTIFICATION_FROM_ESPUBLIC, {
-    params: {
-      uuid: generateUUID()
-    },
-    isBackgroundRequest: true
-  });
-};
-
-NotificationService.checkNewNotification = function () {
-  return HttpClient.get(API_CHECK_NEW_NOTIFICATIONS, {
-    params: {
-      uuid: generateUUID()
-    },
-    isBackgroundRequest: true
-  });
-};
-
-NotificationService.updateNotificationStatus = function (notification) {
-  return HttpClient.put(API_UPDATE_NOTIFICATION, notification, {
-    isBackgroundRequest: true
-  });
-};
-
-NotificationService.updateAllNotificationStatus = function () {
-  return HttpClient.put(API_UPDATE_ALL_NOTIFICATION_STATUS, {}, {
-    params: 'READ',
-    isBackgroundRequest: true
-  });
-};
-
-var LOAD_MY_NOTIFICATIONS = 'LOAD_MY_NOTIFICATIONS';
-var RECEIVE_NEW_NOTIFICATIONS = 'RECEIVE_NEW_NOTIFICATIONS';
-var getMyNotification = function getMyNotification(notifications) {
-  return function (dispatch) {
-    try {
-      return Promise.resolve(NotificationService.getMyNotifications()).then(function (res) {
-        if (!res || res.status !== 200) {
-          return;
-        }
-
-        res.data = [{
-          "id": 18,
-          "type": "system",
-          "userId": 2,
-          "read": false,
-          "deleted": false,
-          "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
-          "contentContentType": null,
-          "sendDate": "2021-08-23T20:14:02Z",
-          "updateDate": null,
-          "updateBy": null,
-          "templateId": 1,
-          "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-          "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-        }, {
-          "id": 19,
-          "type": "personal",
-          "userId": 2,
-          "read": false,
-          "deleted": false,
-          "content": "<p><strong>Đây la thông báo cá nhân</strong></p>\n",
-          "contentContentType": null,
-          "sendDate": "2021-08-23T20:14:02Z",
-          "updateDate": null,
-          "updateBy": null,
-          "templateId": 1,
-          "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-          "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-        }, {
-          "id": 20,
-          "type": "promotion",
-          "userId": 2,
-          "read": false,
-          "deleted": false,
-          "content": "<p><strong>Đây là thông báo khuyến mại</strong></p>\n",
-          "contentContentType": null,
-          "sendDate": "2021-08-23T20:14:02Z",
-          "updateDate": null,
-          "updateBy": null,
-          "templateId": 1,
-          "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-          "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-        }, {
-          "id": 21,
-          "type": "system",
-          "userId": 2,
-          "read": false,
-          "deleted": false,
-          "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
-          "contentContentType": null,
-          "sendDate": "2021-08-23T20:14:02Z",
-          "updateDate": null,
-          "updateBy": null,
-          "templateId": 1,
-          "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-          "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-        }, {
-          "id": 22,
-          "type": "system",
-          "userId": 2,
-          "read": false,
-          "deleted": false,
-          "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
-          "contentContentType": null,
-          "sendDate": "2021-08-23T20:14:02Z",
-          "updateDate": null,
-          "updateBy": null,
-          "templateId": 1,
-          "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-          "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-        }];
-        dispatch({
-          type: LOAD_MY_NOTIFICATIONS,
-          payload: res.data
-        });
-      });
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
-};
-
-var initialState$2 = {
-  notifications: [],
-  newNotifications: []
-};
-
-var notificationReducer = function notificationReducer(state, action) {
-  if (state === void 0) {
-    state = _extends({}, initialState$2);
-  }
-
-  switch (action.type) {
-    case LOAD_MY_NOTIFICATIONS:
-      return _extends({}, state, {
-        notifications: action.payload
-      });
-
-    case RECEIVE_NEW_NOTIFICATIONS:
-      return _extends({}, state, {
-        newNotifications: action.payload
       });
 
     default:
@@ -1802,7 +1648,6 @@ var rootReducer = function rootReducer(appReducer) {
       blacklist: ['loginStatus']
     }, authReducers),
     navbar: navbarReducer,
-    notifications: notificationReducer,
     app: appReducer
   });
 };
@@ -2244,7 +2089,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/account-info');
+      return handleNavigation(e, '/app/account-info');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.User, {
     size: 14,
@@ -2257,7 +2102,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/change-password');
+      return handleNavigation(e, '/app/change-password');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
     size: 14,
@@ -2270,7 +2115,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/share-with-friends');
+      return handleNavigation(e, '/app/share-with-friends');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Link, {
     size: 14,
@@ -2298,8 +2143,10 @@ var UserDropdown = function UserDropdown() {
     divider: true
   }), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
     tag: "a",
-    target: '_blank',
-    href: TERMS_PDF
+    href: "#",
+    onClick: function onClick(e) {
+      return handleNavigation(e, '/app/terms-and-condition');
+    }
   }, /*#__PURE__*/React__default.createElement(Icon.FileText, {
     size: 14,
     className: "mr-50"
@@ -2309,8 +2156,10 @@ var UserDropdown = function UserDropdown() {
     id: "setting.termAndCondition"
   }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
     tag: "a",
-    target: '_blank',
-    href: POLICY_PDF
+    href: "#",
+    onClick: function onClick(e) {
+      return handleNavigation(e, '/app/privacy-policy');
+    }
   }, /*#__PURE__*/React__default.createElement(Icon.Shield, {
     size: 14,
     className: "mr-50"
@@ -2322,7 +2171,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/language');
+      return handleNavigation(e, '/app/language');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Globe, {
     size: 14,
@@ -2335,7 +2184,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/contact');
+      return handleNavigation(e, '/app/contact');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.MessageSquare, {
     size: 14,
@@ -2359,282 +2208,188 @@ var UserDropdown = function UserDropdown() {
   }))));
 };
 
-var Notifications = function Notifications() {
-  var dispatch = reactRedux.useDispatch();
-  var intl = reactIntl.useIntl();
+var NavbarUser = /*#__PURE__*/function (_React$PureComponent) {
+  _inheritsLoose(NavbarUser, _React$PureComponent);
 
-  var _useSelector = reactRedux.useSelector(function (state) {
-    return state.notifications;
-  }),
-      notifications = _useSelector.notifications;
+  function NavbarUser() {
+    var _this;
 
-  var _useState = React.useState(false),
-      notificationModal = _useState[0],
-      setNotificationModal = _useState[1];
-
-  var _useState2 = React.useState(null),
-      notification = _useState2[0],
-      setNotification = _useState2[1];
-
-  React.useEffect(function () {
-    dispatch(getMyNotification());
-  }, []);
-
-  var onClickOpenNotification = function onClickOpenNotification(item) {
-    setNotification(item);
-    setNotificationModal(true);
-    var notificationRequest = notifications.find(function (notification) {
-      return notification.id === item.id;
-    });
-    var notificationAllStatus = NotificationService.updateAllNotificationStatus({
-      notificationId: notificationRequest.id,
-      status: 'READ'
-    });
-    if (notificationAllStatus.status === 200) return;
-  };
-
-  var onClickUpdateAllNotificationStatus = function onClickUpdateAllNotificationStatus() {
-    var notificationAllStatus = NotificationService.updateAllNotificationStatus();
-    if (notificationAllStatus.status === 200) return;
-  };
-
-  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("li", {
-    className: "dropdown-menu-header"
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "dropdown-header mt-0 text-left"
-  }, /*#__PURE__*/React__default.createElement("span", {
-    className: "notification-title"
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "menu.notification"
-  })), /*#__PURE__*/React__default.createElement("span", null, "(", notifications.length, ")"))), /*#__PURE__*/React__default.createElement(PerfectScrollbar, {
-    className: "media-list overflow-hidden position-relative",
-    options: {
-      wheelPropagation: false
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
     }
-  }, notifications.map(function (item) {
-    return /*#__PURE__*/React__default.createElement("div", {
-      className: "d-flex justify-content-between",
-      key: item.id,
-      onClick: function onClick() {
-        return onClickOpenNotification(item);
-      }
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "d-flex align-items-start"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      left: true,
-      href: "#"
-    }, /*#__PURE__*/React__default.createElement(Icon.Server, {
-      className: "font-medium-5 primary",
-      size: 21
-    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      body: true
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      heading: true,
-      className: "primary media-heading",
-      tag: "h6"
-    }, /*#__PURE__*/React__default.createElement("div", {
-      className: !item.read ? 'font-weight-bold' : ''
-    }, item.title)), /*#__PURE__*/React__default.createElement("div", {
-      className: !item.read ? 'font-weight-bold' : '',
-      dangerouslySetInnerHTML: {
-        __html: item.shortContent
-      }
-    })), /*#__PURE__*/React__default.createElement("small", {
-      className: "mt-1"
-    }, /*#__PURE__*/React__default.createElement("time", {
-      className: "media-meta",
-      dateTime: item.sendDate
-    }, moment().diff(moment(item.sendDate), 'days') >= 1 ? moment(item.sendDate).format("DD/MM/YYYY") : moment(item.sendDate).fromNow()))));
-  })), notifications.length > 0 && /*#__PURE__*/React__default.createElement("li", {
-    className: "dropdown-menu-footer",
-    onClick: onClickUpdateAllNotificationStatus
-  }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
-    tag: "a",
-    className: "p-1 text-center"
-  }, /*#__PURE__*/React__default.createElement("span", {
-    className: "align-middle"
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "menu.readAll"
-  })))), notification && /*#__PURE__*/React__default.createElement(reactstrap.Modal, {
-    isOpen: notificationModal,
-    toggle: function toggle() {
-      return setNotificationModal(!notificationModal);
-    },
-    className: "modal-dialog-centered"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.ModalHeader, {
-    toggle: function toggle() {
-      return setNotificationModal(!notificationModal);
-    }
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "menu.notification"
-  })), /*#__PURE__*/React__default.createElement(reactstrap.ModalBody, null, /*#__PURE__*/React__default.createElement("div", {
-    dangerouslySetInnerHTML: {
-      __html: notification.title
-    }
-  }), /*#__PURE__*/React__default.createElement("div", {
-    dangerouslySetInnerHTML: {
-      __html: notification.content
-    }
-  }))));
-};
 
-var NavbarUser = function NavbarUser(props) {
-  var _useSelector = reactRedux.useSelector(function (state) {
-    return state.auth.user;
-  }),
-      userSettings = _useSelector.userSettings,
-      user = _objectWithoutPropertiesLoose(_useSelector, ["userSettings", "userDetails"]);
+    _this = _React$PureComponent.call.apply(_React$PureComponent, [this].concat(args)) || this;
+    _this.state = {
+      navbarSearch: false,
+      suggestions: []
+    };
 
-  var _useSelector2 = reactRedux.useSelector(function (state) {
-    return state.customizer;
-  }),
-      appId = _useSelector2.appId;
-
-  var _useSelector3 = reactRedux.useSelector(function (state) {
-    return state.navbar;
-  }),
-      _useSelector3$roles = _useSelector3.roles,
-      roles = _useSelector3$roles === void 0 ? [] : _useSelector3$roles;
-
-  var _useState = React.useState(false),
-      navbarSearch = _useState[0],
-      setNavbarSearch = _useState[1];
-
-  var _useState2 = React.useState([]),
-      suggestions = _useState2[0],
-      setSuggestions = _useState2[1];
-
-  var intl = reactIntl.useIntl();
-  userSettings = userSettings || {};
-  React.useEffect(function () {
-    var newSuggestions = (roles || []).map(function (item) {
-      item.name = intl.formatMessage({
-        id: "menu." + item.keyLang
+    _this.handleNavbarSearch = function () {
+      _this.setState({
+        navbarSearch: !_this.state.navbarSearch
       });
-      item.isExternalApp = item.appId !== appId;
-      item.navLinkExternal = getExternalAppUrl(item.appId, item.menuPath);
-      return item;
-    });
-    setSuggestions(newSuggestions);
-  }, [roles]);
+    };
 
-  var handleNavbarSearch = function handleNavbarSearch() {
-    setNavbarSearch(function (prevState) {
-      return !prevState;
-    });
-  };
+    _this.getCountryCode = function (locale) {
+      var countryCode = {
+        en: 'us',
+        vi: 'vn'
+      };
+      return countryCode[locale];
+    };
 
-  var onSuggestionItemClick = function onSuggestionItemClick(item) {
-    if (!item.isExternalApp) {
-      history.push("" + item.menuPath);
-    } else {
-      window.location.href = item.navLinkExternal;
+    _this.onSuggestionItemClick = function (item) {
+      if (!item.isExternalApp) {
+        history.push("" + item.menuPath);
+      } else {
+        window.location.href = item.navLinkExternal;
+      }
+    };
+
+    return _this;
+  }
+
+  var _proto = NavbarUser.prototype;
+
+  _proto.componentDidUpdate = function componentDidUpdate(prevProps) {
+    var _this2 = this;
+
+    if (prevProps.roles !== this.props.roles) {
+      var suggestions = this.props.roles.map(function (item) {
+        item.name = _this2.props.intl.formatMessage({
+          id: "menu." + item.keyLang
+        });
+        item.isExternalApp = item.appId !== _this2.props.appId;
+        item.navLinkExternal = getExternalAppUrl(item.appId, item.menuPath);
+        return item;
+      });
+      this.setState({
+        suggestions: suggestions
+      });
     }
   };
 
-  return /*#__PURE__*/React__default.createElement("ul", {
-    className: "nav navbar-nav navbar-nav-user float-right"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.NavItem, {
-    className: "nav-search",
-    onClick: handleNavbarSearch
-  }, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
-    className: "nav-link-search pt-2"
-  }, /*#__PURE__*/React__default.createElement(Icon.Search, {
-    size: 21,
-    "data-tour": "search"
-  })), /*#__PURE__*/React__default.createElement("div", {
-    className: classnames('search-input', {
-      open: navbarSearch,
-      'd-none': navbarSearch === false
-    })
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "search-input-icon"
-  }, /*#__PURE__*/React__default.createElement(Icon.Search, {
-    size: 17,
-    className: "primary"
-  })), /*#__PURE__*/React__default.createElement(Autocomplete, {
-    className: "form-control",
-    suggestions: suggestions,
-    filterKey: "name",
-    onSuggestionClick: onSuggestionItemClick,
-    autoFocus: true,
-    clearInput: navbarSearch,
-    externalClick: function externalClick() {
-      setNavbarSearch(false);
-    },
-    onKeyDown: function onKeyDown(e) {
-      if (e.keyCode === 27 || e.keyCode === 13) {
-        setNavbarSearch(false);
-        props.handleAppOverlay('');
-      }
-    },
-    customRender: function customRender(item, i, filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover) {
-      var IconTag = Icon[item.icon ? item.icon : 'X'];
-      return /*#__PURE__*/React__default.createElement("li", {
-        className: classnames('suggestion-item', {
-          active: filteredData.indexOf(item) === activeSuggestion
-        }),
-        key: i,
-        onClick: function onClick(e) {
-          return onSuggestionItemClick(item, e);
-        },
-        onMouseEnter: function onMouseEnter() {
-          return onSuggestionItemHover(filteredData.indexOf(item));
+  _proto.render = function render() {
+    var _this3 = this;
+
+    var _this$props$user = this.props.user,
+        userSettings = _this$props$user.userSettings,
+        user = _objectWithoutPropertiesLoose(_this$props$user, ["userSettings", "userDetails"]);
+
+    userSettings = userSettings || {};
+    return /*#__PURE__*/React__default.createElement("ul", {
+      className: "nav navbar-nav navbar-nav-user float-right"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.NavItem, {
+      className: "nav-search",
+      onClick: this.handleNavbarSearch
+    }, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
+      className: "nav-link-search pt-2"
+    }, /*#__PURE__*/React__default.createElement(Icon.Search, {
+      size: 21,
+      "data-tour": "search"
+    })), /*#__PURE__*/React__default.createElement("div", {
+      className: classnames('search-input', {
+        open: this.state.navbarSearch,
+        'd-none': this.state.navbarSearch === false
+      })
+    }, /*#__PURE__*/React__default.createElement("div", {
+      className: "search-input-icon"
+    }, /*#__PURE__*/React__default.createElement(Icon.Search, {
+      size: 17,
+      className: "primary"
+    })), /*#__PURE__*/React__default.createElement(Autocomplete, {
+      className: "form-control",
+      suggestions: this.state.suggestions,
+      filterKey: "name",
+      onSuggestionClick: this.onSuggestionItemClick,
+      autoFocus: true,
+      clearInput: this.state.navbarSearch,
+      externalClick: function externalClick() {
+        _this3.setState({
+          navbarSearch: false
+        });
+      },
+      onKeyDown: function onKeyDown(e) {
+        if (e.keyCode === 27 || e.keyCode === 13) {
+          _this3.setState({
+            navbarSearch: false
+          });
+
+          _this3.props.handleAppOverlay('');
         }
-      }, /*#__PURE__*/React__default.createElement("div", {
-        className: "d-flex align-items-center"
-      }, /*#__PURE__*/React__default.createElement(IconTag, {
-        size: 17
-      }), /*#__PURE__*/React__default.createElement("div", {
-        className: "ml-2"
-      }, item.name)));
-    },
-    onSuggestionsShown: function onSuggestionsShown(userInput) {
-      if (navbarSearch) {
-        props.handleAppOverlay(userInput);
+      },
+      customRender: function customRender(item, i, filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover) {
+        var IconTag = Icon[item.icon ? item.icon : 'X'];
+        return /*#__PURE__*/React__default.createElement("li", {
+          className: classnames('suggestion-item', {
+            active: filteredData.indexOf(item) === activeSuggestion
+          }),
+          key: i,
+          onClick: function onClick(e) {
+            return onSuggestionItemClick(item, e);
+          },
+          onMouseEnter: function onMouseEnter() {
+            return onSuggestionItemHover(filteredData.indexOf(item));
+          }
+        }, /*#__PURE__*/React__default.createElement("div", {
+          className: "d-flex align-items-center"
+        }, /*#__PURE__*/React__default.createElement(IconTag, {
+          size: 17
+        }), /*#__PURE__*/React__default.createElement("div", {
+          className: "ml-2"
+        }, item.name)));
+      },
+      onSuggestionsShown: function onSuggestionsShown(userInput) {
+        if (_this3.state.navbarSearch) {
+          _this3.props.handleAppOverlay(userInput);
+        }
       }
-    }
-  }), /*#__PURE__*/React__default.createElement("div", {
-    className: "search-input-close"
-  }, /*#__PURE__*/React__default.createElement(Icon.X, {
-    size: 24,
-    onClick: function onClick(e) {
-      e.stopPropagation();
-      setNavbarSearch(false);
-      props.handleAppOverlay('');
-    }
-  })))), /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledDropdown, {
-    tag: "li",
-    className: "dropdown-notification nav-item"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
-    tag: "a",
-    className: "nav-link nav-link-label"
-  }, /*#__PURE__*/React__default.createElement(Icon.Bell, {
-    size: 21
-  })), /*#__PURE__*/React__default.createElement(reactstrap.DropdownMenu, {
-    tag: "ul",
-    right: true,
-    className: "dropdown-menu-media"
-  }, /*#__PURE__*/React__default.createElement(Notifications, null))), /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledDropdown, {
-    tag: "li",
-    className: "dropdown-user nav-item"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
-    tag: "a",
-    className: "nav-link dropdown-user-link"
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "user-nav d-sm-flex d-none"
-  }, /*#__PURE__*/React__default.createElement("span", {
-    className: "user-name text-bold-600 mb-0"
-  }, user.fullName)), /*#__PURE__*/React__default.createElement("span", {
-    "data-tour": "user"
-  }, /*#__PURE__*/React__default.createElement("img", {
-    src: userSettings.avatar || '',
-    className: "round",
-    height: "40",
-    width: "40",
-    alt: "avatar"
-  }))), /*#__PURE__*/React__default.createElement(UserDropdown, null)));
-};
+    }), /*#__PURE__*/React__default.createElement("div", {
+      className: "search-input-close"
+    }, /*#__PURE__*/React__default.createElement(Icon.X, {
+      size: 24,
+      onClick: function onClick(e) {
+        e.stopPropagation();
+
+        _this3.setState({
+          navbarSearch: false
+        });
+
+        _this3.props.handleAppOverlay('');
+      }
+    })))), /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledDropdown, {
+      tag: "li",
+      className: "dropdown-notification nav-item"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
+      tag: "a",
+      className: "nav-link nav-link-label"
+    }, /*#__PURE__*/React__default.createElement(Icon.Bell, {
+      size: 21
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledDropdown, {
+      tag: "li",
+      className: "dropdown-user nav-item"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
+      tag: "a",
+      className: "nav-link dropdown-user-link"
+    }, /*#__PURE__*/React__default.createElement("div", {
+      className: "user-nav d-sm-flex d-none"
+    }, /*#__PURE__*/React__default.createElement("span", {
+      className: "user-name text-bold-600 mb-0"
+    }, user.fullName)), /*#__PURE__*/React__default.createElement("span", {
+      "data-tour": "user"
+    }, /*#__PURE__*/React__default.createElement("img", {
+      src: userSettings.avatar || '',
+      className: "round",
+      height: "40",
+      width: "40",
+      alt: "avatar"
+    }))), /*#__PURE__*/React__default.createElement(UserDropdown, null)));
+  };
+
+  return NavbarUser;
+}(React__default.PureComponent);
+
+var NavbarUser$1 = reactIntl.injectIntl(NavbarUser);
 
 var ThemeNavbar = function ThemeNavbar(props) {
   var colorsArr = ['primary', 'danger', 'success', 'info', 'warning', 'dark'];
@@ -2688,8 +2443,15 @@ var ThemeNavbar = function ThemeNavbar(props) {
       className: "img-fluid",
       src: IMAGE["NAV_ICON_" + (index + 1)]
     }));
-  })))), /*#__PURE__*/React__default.createElement(NavbarUser, {
-    handleAppOverlay: props.handleAppOverlay
+  })))), /*#__PURE__*/React__default.createElement(NavbarUser$1, {
+    handleAppOverlay: props.handleAppOverlay,
+    changeCurrentLang: props.changeCurrentLang,
+    appId: props.appId,
+    authToken: props.authToken,
+    user: props.user,
+    roles: props.roles,
+    isAuthenticated: props.isAuthenticated,
+    logoutAction: props.logoutAction
   }))))));
 };
 
@@ -2746,12 +2508,7 @@ var Footer = function Footer(props) {
 
   var goToPage = function goToPage(e, navLink) {
     e.preventDefault();
-
-    if (appId === AppId.INSURANCE_APP) {
-      history.push(navLink);
-    } else {
-      window.location.href = getExternalAppUrl(AppId.INSURANCE_APP, navLink);
-    }
+    history.push(navLink);
   };
 
   var onClickBackHome = function onClickBackHome(e) {
@@ -2775,13 +2532,13 @@ var Footer = function Footer(props) {
     className: "float-md-right d-none d-md-block"
   }, /*#__PURE__*/React__default.createElement("a", {
     className: "mr-1",
-    href: IOS_APP_LINK,
+    href: "https://www.apple.com/app-store/",
     target: "_blank"
   }, /*#__PURE__*/React__default.createElement("img", {
     src: IMAGE.DOWNLOAD_APP_IOS,
     alt: "DOWNLOAD ON APP STORE"
   })), /*#__PURE__*/React__default.createElement("a", {
-    href: ANDROID_APP_LINK,
+    href: "https://play.google.com/store/apps",
     target: "_blank"
   }, /*#__PURE__*/React__default.createElement("img", {
     src: IMAGE.DOWNLOAD_APP_ANDROID,
@@ -2792,8 +2549,7 @@ var Footer = function Footer(props) {
     })
   }, /*#__PURE__*/React__default.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React__default.createElement("span", {
     onClick: onClickBackHome
   }, /*#__PURE__*/React__default.createElement(Icon.Home, null), /*#__PURE__*/React__default.createElement("div", {
     className: "mt-1"
@@ -2801,10 +2557,9 @@ var Footer = function Footer(props) {
     id: "menu.home"
   })))), /*#__PURE__*/React__default.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React__default.createElement("span", {
     onClick: function onClick(e) {
-      return goToPage(e, '/contracts');
+      return goToPage(e, '/insurance/contracts');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.List, null), /*#__PURE__*/React__default.createElement("div", {
     className: "mt-1"
@@ -2812,10 +2567,9 @@ var Footer = function Footer(props) {
     id: "menu.contract"
   })))), /*#__PURE__*/React__default.createElement("div", {
     className: "position-relative w-25"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React__default.createElement("span", {
     onClick: function onClick(e) {
-      return goToPage(e, '/buy-insurance');
+      return goToPage(e, '/insurance/buy-insurance');
     }
   }, /*#__PURE__*/React__default.createElement("img", {
     src: IMAGE.BUY_INSURANCE,
@@ -2831,8 +2585,7 @@ var Footer = function Footer(props) {
     id: "menu.buyInsurance"
   })))), /*#__PURE__*/React__default.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React__default.createElement("span", {
     onClick: onClickBackHome
   }, /*#__PURE__*/React__default.createElement(Icon.Gift, null), /*#__PURE__*/React__default.createElement("div", {
     className: "mt-1"
@@ -2840,10 +2593,9 @@ var Footer = function Footer(props) {
     id: "menu.promotion"
   })))), /*#__PURE__*/React__default.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React__default.createElement("span", {
     onClick: function onClick(e) {
-      return history.push('/contact');
+      return history.push('/app/contact');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.MessageSquare, null), /*#__PURE__*/React__default.createElement("div", {
     className: "mt-1"
@@ -2934,7 +2686,7 @@ var SidebarHeader = function SidebarHeader(props) {
   var dispatch = reactRedux.useDispatch();
 
   var onClickHome = function onClickHome() {
-    dispatch(goBackHomePage());
+    dispatch(goBackHomePage$1());
   };
 
   return /*#__PURE__*/React__default.createElement("div", {
@@ -3961,8 +3713,6 @@ var messages_en = {
 	"login.notMe": "Not me",
 	"login.fail": "Username or password was incorrect",
 	"login.sayHi": "Hi, {name}",
-	"login.registerPartner": "Partner Registration",
-	"login.needRegisterPartner": "Your account cannot use this function. Please register as a partner or log in as an individual customer.",
 	register: register$1,
 	"register.fullname": "Full name *",
 	"register.fullname.required": "You must enter your full name",
@@ -4009,7 +3759,7 @@ var messages_en = {
 	"menu.customerFee": "Customer Fee",
 	"menu.allFee": "All Fee",
 	"menu.feeApproval": "Fee Approval",
-	"menu.bonusManagement": "Bonus Management",
+	"menu.bonusManagement": "Bonus Mangement",
 	"menu.systemBonus": "System Bonus",
 	"menu.personalBonus": "Personal Bonus",
 	"menu.partnerBonus": "Partner Bonus",
@@ -4032,22 +3782,15 @@ var messages_en = {
 	"menu.partnerDebt": "Partner Debt",
 	"menu.allDebt": "All Debt",
 	"menu.permissionGoup": "Permission Group",
-	"menu.creatPermissionGoup": "Create Permission Group",
+	"menu.creatPermissionGoup": "Create Permision Group",
 	"menu.permissionGoupManagement": "Permission Group Management",
 	"menu.insuranceMotobike": "Motobike Insurance",
 	"menu.insuranceCar": "Car Insurance",
 	"menu.approveOpenAccount": "Account Approval",
 	"menu.promotion": "Promotion",
-	"menu.createPromotion": "Create Promotion",
-	"menu.promotionManagement": "Promotion Management",
 	"menu.personalBonusHistory": "Personal Bonus History",
 	"menu.partnerBonusHistory": "Partner Bonus History",
 	"menu.allBonusHistory": "All Bonus History",
-	"menu.notification": "Notification",
-	"menu.readAll": "Read All",
-	"menu.notificationManagement": "Notification Management",
-	"menu.createNotification": "Create Notification",
-	"menu.notificationApproval": "Notification Management",
 	"navbar.language.vi": "Tiếng việt",
 	"navbar.language.en": "English",
 	"navbar.logout": "Logout",
@@ -4171,8 +3914,8 @@ var messages_en = {
 	"generalInfo.policy.11.1.2": "11.1.2  Gửi thư điện tử cho chúng tôi theo địa chỉ: <b>lienhe@inon.vn</b>",
 	"generalInfo.policy.11.1.3": "11.1.3  Hoặc liên hệ trực tiếp với chúng tôi tại văn phòng: <b>Phòng 301A, Tòa nhà Thiên Bảo, số 47-49 Lê Văn Hưu, Phường Ngô Thì Nhậm, Quận Hai Bà Trưng, Thành phố Hà Nội.</b>",
 	"generalInfo.terms.1": "1. CÁC ĐIỀU KHOẢN VÀ ĐIỀU KIỆN SỬ DỤNG",
-	"generalInfo.terms.1.1": "1.1  Trang thông tin điện tử này <b>(www.inon.vn)</b> cùng các tên miền phụ (x.inon.vn,...) và ứng dụng di động <b>“InOn” (sau đây gọi tắt là “Hệ thống\nInOn”)</b> do <b>Công ty Cổ phần InOn (sau đây gọi tắt là “InOn”) - Đơn vị chủ quản của Hệ thống và Thương hiệu InOn<b/> toàn quyền sở hữu và điều\nhành.\n",
-	"generalInfo.terms.1.2": "1.2  Việc sử dụng <b>Hệ thống InOn</b> này phụ thuộc vào các điều khoản và điều kiện cụ thể sau: (A) các điều khoản và điều kiện được nêu dưới đây và (B) mọi điều khoản và điều kiện bổ sung cụ thể tùy từng thời điểm để điều chỉnh việc sử dụng, và truy cập vào một số mục của trang thông tin điện tử này (và các điều khoản bổ sung đó sẽ có hiệu lực ràng buộc khi chúng được đăng tải trên <b>Hệ thống InOn</b> này) <b>(\"Điều Khoản và Điều Kiện\")</b>.",
+	"generalInfo.terms.1.1": "1.1  Trang thông tin điện tử này <b>(www.inon.vn) do Công Ty TNHH NPG NAM PHONG - Đơn vị chủ quản của Hệ thống và Thương hiệu InOn (sau đây gọi tắt là “InOn”)</b> hoàn toàn sở hữu và điều hành.",
+	"generalInfo.terms.1.2": "1.2  Việc sử dụng trang thông tin điện tử này phụ thuộc vào các điều khoản và điều kiện cụ thể sau: (A) các điều khoản và điều kiện được nêu dưới đây và (B) mọi điều khoản và điều kiện bổ sung cụ thể tùy từng thời điểm để điều chỉnh việc sử dụng, và truy cập vào một số mục của trang thông tin điện tử này (và các điều khoản bổ sung đó sẽ có hiệu lực ràng buộc khi chúng được đăng tải trên trang thông tin điện tử này) <b>(\"Điều Khoản và Điều Kiện\")</b>.",
 	"generalInfo.terms.1.3": "1.3  Khi sử dụng trang thông tin điện tử này, bạn đã đồng ý với các Điều Khoản và Điều Kiện, và sự đồng ý của bạn cùng với các Điều Khoản và Điều Kiện sẽ cấu thành một hợp đồng có giá trị ràng buộc về pháp lý giữa bạn và <b>InOn</b>. Vì thế, bạn vui lòng đọc kỹ các Điều Khoản và Điều Kiện của trang thông tin điện tử này.",
 	"generalInfo.terms.2": "2. CÁC HẠN CHẾ VÀ SỬ DỤNG CÁC THÔNG TIN TÀI LIỆU",
 	"generalInfo.terms.2.1": "2.1  Trừ khi được <b>InOn</b> đồng ý bằng văn bản một cách khác đi, bạn sẽ không sao chép, sao lại, tái bản, đưa lên mạng, công bố, chuyển, tạo liên kết đến hoặc phân phối dưới bất cứ hình thức nào các thông tin và/hoặc tài liệu đã được đăng tải trên trang thông tin điện tử này.",
@@ -4339,8 +4082,6 @@ var messages_vi = {
 	"login.notMe": "Không phải tôi",
 	"login.fail": "Tài khoản hoặc mật khẩu của bạn không chính xác",
 	"login.sayHi": "Xin chào, {name}",
-	"login.registerPartner": "Đăng ký đối tác",
-	"login.needRegisterPartner": "Tài khoản của bạn không sử dụng được chức năng này. Vui lòng đăng ký đối tác hoặc đăng nhập với tư cách khách hàng cá nhân.",
 	register: register$2,
 	"register.fullname": "Họ và tên *",
 	"register.email": "Email*",
@@ -4416,16 +4157,9 @@ var messages_vi = {
 	"menu.insuranceCar": "Bảo hiểm ô tô",
 	"menu.approveOpenAccount": "Phê duyệt mở tài khoản",
 	"menu.promotion": "Khuyến mại",
-	"menu.createPromotion": "Tạo khuyến mại",
-	"menu.promotionManagement": "Quản lý khuyến mại",
 	"menu.personalBonusHistory": "Lịch sử điểm thưởng cá nhân",
 	"menu.partnerBonusHistory": "Lịch sử điểm thưởng đối tác",
 	"menu.allBonusHistory": "Lịch sử điểm thưởng tất cả",
-	"menu.notification": "Thông báo",
-	"menu.readAll": "Đọc tất cả",
-	"menu.notificationManagement": "Quản lý thông báo",
-	"menu.createNotification": "Tạo mới thông báo",
-	"menu.notificationApproval": "Duyệt thông báo",
 	"navbar.language.vi": "Tiếng Việt",
 	"navbar.language.en": "English",
 	"navbar.logout": "Đăng xuất",
@@ -4457,7 +4191,7 @@ var messages_vi = {
 	"setting.gender.F": "Nữ",
 	"setting.gender.O": "Khác",
 	"setting.goToGuestApp": "Về trang KHCN",
-	"setting.goToAgencyApp": "Về trang đối tác",
+	"setting.goToAgencyApp": "Về trang đại lý",
 	"setting.call": "Gọi điện",
 	"setting.call.confirmMessage": "Bạn có muốn gọi đến số {phoneNumber}?",
 	"setting.sendEmail": "Gửi mail",
@@ -4549,8 +4283,8 @@ var messages_vi = {
 	"generalInfo.policy.11.1.2": "11.1.2  Gửi thư điện tử cho chúng tôi theo địa chỉ: <b>lienhe@inon.vn</b>",
 	"generalInfo.policy.11.1.3": "11.1.3  Hoặc liên hệ trực tiếp với chúng tôi tại văn phòng: <b>Phòng 301A, Tòa nhà Thiên Bảo, số 47-49 Lê Văn Hưu, Phường Ngô Thì Nhậm, Quận Hai Bà Trưng, Thành phố Hà Nội.</b>",
 	"generalInfo.terms.1": "1. CÁC ĐIỀU KHOẢN VÀ ĐIỀU KIỆN SỬ DỤNG",
-	"generalInfo.terms.1.1": "1.1  Trang thông tin điện tử này <b>(www.inon.vn)</b> cùng các tên miền phụ (x.inon.vn,...) và ứng dụng di động <b>“InOn” (sau đây gọi tắt là “Hệ thống\nInOn”)</b> do <b>Công ty Cổ phần InOn (sau đây gọi tắt là “InOn”) - Đơn vị chủ quản của Hệ thống và Thương hiệu InOn<b/> toàn quyền sở hữu và điều\nhành.\n",
-	"generalInfo.terms.1.2": "1.2  Việc sử dụng <b>Hệ thống InOn</b> này phụ thuộc vào các điều khoản và điều kiện cụ thể sau: (A) các điều khoản và điều kiện được nêu dưới đây và (B) mọi điều khoản và điều kiện bổ sung cụ thể tùy từng thời điểm để điều chỉnh việc sử dụng, và truy cập vào một số mục của trang thông tin điện tử này (và các điều khoản bổ sung đó sẽ có hiệu lực ràng buộc khi chúng được đăng tải trên <b>Hệ thống InOn</b> này) <b>(\"Điều Khoản và Điều Kiện\")</b>.",
+	"generalInfo.terms.1.1": "1.1  Trang thông tin điện tử này <b>(www.inon.vn) do Công Ty TNHH NPG NAM PHONG - Đơn vị chủ quản của Hệ thống và Thương hiệu InOn (sau đây gọi tắt là “InOn”)</b> hoàn toàn sở hữu và điều hành.",
+	"generalInfo.terms.1.2": "1.2  Việc sử dụng trang thông tin điện tử này phụ thuộc vào các điều khoản và điều kiện cụ thể sau: (A) các điều khoản và điều kiện được nêu dưới đây và (B) mọi điều khoản và điều kiện bổ sung cụ thể tùy từng thời điểm để điều chỉnh việc sử dụng, và truy cập vào một số mục của trang thông tin điện tử này (và các điều khoản bổ sung đó sẽ có hiệu lực ràng buộc khi chúng được đăng tải trên trang thông tin điện tử này) <b>(\"Điều Khoản và Điều Kiện\")</b>.",
 	"generalInfo.terms.1.3": "1.3  Khi sử dụng trang thông tin điện tử này, bạn đã đồng ý với các Điều Khoản và Điều Kiện, và sự đồng ý của bạn cùng với các Điều Khoản và Điều Kiện sẽ cấu thành một hợp đồng có giá trị ràng buộc về pháp lý giữa bạn và <b>InOn</b>. Vì thế, bạn vui lòng đọc kỹ các Điều Khoản và Điều Kiện của trang thông tin điện tử này.",
 	"generalInfo.terms.2": "2. CÁC HẠN CHẾ VÀ SỬ DỤNG CÁC THÔNG TIN TÀI LIỆU",
 	"generalInfo.terms.2.1": "2.1  Trừ khi được <b>InOn</b> đồng ý bằng văn bản một cách khác đi, bạn sẽ không sao chép, sao lại, tái bản, đưa lên mạng, công bố, chuyển, tạo liên kết đến hoặc phân phối dưới bất cứ hình thức nào các thông tin và/hoặc tài liệu đã được đăng tải trên trang thông tin điện tử này.",
@@ -4652,7 +4386,7 @@ var messages_vi = {
 	"completeInformation.success": "Hoàn tất đăng ký thành công!",
 	"socialLogin.addInfo": "Bổ sung thông tin",
 	"socialLogin.addInfo.info": "InOn cần bạn bổ sung các thông tin bên dưới để hoàn tất đăng ký tài khoản.",
-	"socialLogin.agent": "Đối tác",
+	"socialLogin.agent": "Đại lý",
 	"socialLogin.personal": "Cá nhân",
 	"socialLogin.loginWith": "Hoặc đăng nhập với",
 	"socialLogin.registerWith": "Hoặc đăng ký với",
@@ -7517,7 +7251,7 @@ var BaseFormDatePicker = function BaseFormDatePicker(_ref) {
     var field = _ref2.field,
         form = _ref2.form;
     return /*#__PURE__*/React__default.createElement(DatePicker, {
-      className: "form-control position-relative " + (!disabled ? 'bg-white' : '') + " " + (isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid') + " " + className,
+      className: "form-control position-relative " + (!disabled ? 'bg-white' : '') + " " + (isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid') + " " + className,
       placeholder: messageId ? intl.formatMessage({
         id: messageId
       }) : '',
@@ -7586,25 +7320,17 @@ var Select = function Select(props) {
   };
 
   var SelectComponent = React.useCallback(function (componentProps) {
-    var newProps = _extends({}, componentProps);
-
-    if (props.isMulti) {
-      newProps.value = props.options.filter(function (item) {
-        return (props.value || []).includes(item.value);
-      });
-    }
-
     switch (props.type) {
       case 'creatable':
-        return /*#__PURE__*/React__default.createElement(CreatableSelect, newProps);
+        return /*#__PURE__*/React__default.createElement(CreatableSelect, componentProps);
 
       case 'async':
-        return /*#__PURE__*/React__default.createElement(AsyncSelect, newProps);
+        return /*#__PURE__*/React__default.createElement(AsyncSelect, componentProps);
 
       default:
-        return /*#__PURE__*/React__default.createElement(ReactSelect, newProps);
+        return /*#__PURE__*/React__default.createElement(ReactSelect, componentProps);
     }
-  }, [props.options, props.value]);
+  }, [props]);
   return /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
     className: "form-label-group position-relative"
   }, /*#__PURE__*/React__default.createElement(SelectComponent, _extends({}, props, {
@@ -8316,7 +8042,7 @@ var ChangePassword = function ChangePassword() {
   var dispatch = reactRedux.useDispatch();
 
   var onClickSubmit = function onClickSubmit(values) {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "setting.changePassword"
       }),
@@ -8331,7 +8057,7 @@ var ChangePassword = function ChangePassword() {
   };
 
   var onClickBackHome = function onClickBackHome() {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "common.home"
       }),
@@ -8340,7 +8066,7 @@ var ChangePassword = function ChangePassword() {
         id: "common.backHome.confirmMessage"
       }),
       onConfirm: function onConfirm() {
-        dispatch(goBackHomePage());
+        dispatch(goBackHomePage$1());
       }
     }));
   };
@@ -8497,7 +8223,7 @@ var AccountSettings = function AccountSettings(props) {
       active: activeTab === 'account-info'
     }),
     onClick: function onClick() {
-      history.push('/account-info');
+      history.push('/app/account-info');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.User, {
     size: 16
@@ -8510,7 +8236,7 @@ var AccountSettings = function AccountSettings(props) {
       active: activeTab === 'change-password'
     }),
     onClick: function onClick() {
-      history.push('/change-password');
+      history.push('/app/change-password');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
     size: 16
@@ -8523,7 +8249,7 @@ var AccountSettings = function AccountSettings(props) {
       active: activeTab === 'share-with-friends'
     }),
     onClick: function onClick() {
-      history.push('/share-with-friends');
+      history.push('/app/share-with-friends');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Link, {
     size: 16
@@ -8548,6 +8274,280 @@ var AccountSettings = function AccountSettings(props) {
     sm: "11",
     className: "mx-auto"
   }, /*#__PURE__*/React__default.createElement(ShareWithFriends, null))))))));
+};
+
+var TERMS = [{
+  id: '1',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }]
+}, {
+  id: '2',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }]
+}, {
+  id: '3',
+  items: [{
+    id: '1'
+  }]
+}, {
+  id: '4',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }]
+}, {
+  id: '5',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }, {
+    id: '4'
+  }, {
+    id: '5'
+  }]
+}, {
+  id: '6',
+  items: [{
+    id: '1'
+  }]
+}, {
+  id: '7',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }]
+}, {
+  id: '8',
+  items: [{
+    id: '1',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }, {
+      id: '3'
+    }, {
+      id: '4'
+    }]
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }, {
+    id: '4'
+  }]
+}, {
+  id: '9',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }, {
+      id: '3'
+    }, {
+      id: '4'
+    }]
+  }]
+}, {
+  id: '10',
+  items: [{
+    id: '1',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }, {
+      id: '3'
+    }]
+  }]
+}, {
+  id: '11',
+  items: [{
+    id: '1'
+  }]
+}, {
+  id: '12',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }]
+}, {
+  id: '13',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }]
+}, {
+  id: '14',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }]
+}];
+
+var InfoItems = function InfoItems(_ref) {
+  var data = _ref.data,
+      type = _ref.type;
+  var intl = reactIntl.useIntl();
+
+  var _useState = React.useState({
+    collapseID: '',
+    status: 'Closed'
+  }),
+      state = _useState[0],
+      setState = _useState[1];
+
+  var toggleCollapse = function toggleCollapse(collapseID) {
+    collapseID = state.collapseID !== collapseID ? collapseID : '';
+    setState(_extends({}, state, {
+      collapseID: collapseID
+    }));
+  };
+
+  var _onEntered = function onEntered(id) {
+    if (id === state.collapseID) setState(_extends({}, state, {
+      status: 'Opened'
+    }));
+  };
+
+  var _onEntering = function onEntering(id) {
+    if (id === state.collapseID) setState(_extends({}, state, {
+      status: 'Opening...'
+    }));
+  };
+
+  var _onExited = function onExited(id) {
+    if (id === state.collapseID) setState(_extends({}, state, {
+      status: 'Closed'
+    }));
+  };
+
+  var _onExiting = function onExiting(id) {
+    if (id === state.collapseID) setState(_extends({}, state, {
+      status: 'Closing...'
+    }));
+  };
+
+  return data.map(function (item1) {
+    return /*#__PURE__*/React__default.createElement("div", {
+      className: "collapse-margin",
+      key: item1.id
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Card, {
+      onClick: function onClick() {
+        return toggleCollapse(item1.id);
+      },
+      className: classnames({
+        'collapse-collapsed': state.status === 'Closed' && state.collapseID === item1.id,
+        'collapse-shown': state.status === 'Opened' && state.collapseID === item1.id,
+        closing: state.status === 'Closing...' && state.collapseID === item1.id,
+        opening: state.status === 'Opening...' && state.collapseID === item1.id
+      })
+    }, /*#__PURE__*/React__default.createElement(reactstrap.CardHeader, {
+      className: "p-1"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.CardTitle, {
+      className: "lead collapse-title collapsed col-11 p-0\""
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "generalInfo." + type + "." + item1.id
+    })), /*#__PURE__*/React__default.createElement(Icon.ChevronDown, {
+      size: 15,
+      className: "collapse-icon"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Collapse, {
+      isOpen: item1.id === state.collapseID,
+      onEntering: function onEntering() {
+        return _onEntering(item1.id);
+      },
+      onEntered: function onEntered() {
+        return _onEntered(item1.id);
+      },
+      onExiting: function onExiting() {
+        return _onExiting(item1.id);
+      },
+      onExited: function onExited() {
+        return _onExited(item1.id);
+      }
+    }, /*#__PURE__*/React__default.createElement(reactstrap.CardBody, null, item1.items.map(function (item2) {
+      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("p", {
+        className: "ml-1",
+        key: item2.id,
+        dangerouslySetInnerHTML: {
+          __html: intl.formatMessage({
+            id: "generalInfo." + type + "." + item1.id + "." + item2.id
+          })
+        }
+      }), item2.items ? item2.items.map(function (item3) {
+        return /*#__PURE__*/React__default.createElement("p", {
+          className: "ml-2",
+          key: item3.id,
+          dangerouslySetInnerHTML: {
+            __html: intl.formatMessage({
+              id: "generalInfo." + type + "." + item1.id + "." + item2.id + "." + item3.id
+            })
+          }
+        });
+      }) : '');
+    })))));
+  });
+};
+
+var Terms = function Terms() {
+  var dispatch = reactRedux.useDispatch();
+
+  var onClickBackHome = function onClickBackHome() {
+    dispatch(showConfirmAlert$1({
+      title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "common.home"
+      }),
+      isShow: true,
+      content: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "common.backHome.confirmMessage"
+      }),
+      onConfirm: function onConfirm() {
+        dispatch(goBackHomePage$1());
+      }
+    }));
+  };
+
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Card, null, /*#__PURE__*/React__default.createElement(reactstrap.CardBody, null, /*#__PURE__*/React__default.createElement("div", {
+    className: "vx-collapse"
+  }, /*#__PURE__*/React__default.createElement(InfoItems, {
+    data: TERMS,
+    type: "terms"
+  })), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    className: "d-flex justify-content-end flex-wrap mt-2",
+    sm: "12"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+    type: "button",
+    color: "secondary",
+    onClick: onClickBackHome
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "common.home"
+  })))))));
 };
 
 var Radio = /*#__PURE__*/function (_React$Component) {
@@ -8596,7 +8596,7 @@ var LanguageTab = function LanguageTab() {
       setLang = _useState[1];
 
   var onClickBackHome = function onClickBackHome() {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "common.home"
       }),
@@ -8605,13 +8605,13 @@ var LanguageTab = function LanguageTab() {
         id: "common.backHome.confirmMessage"
       }),
       onConfirm: function onConfirm() {
-        dispatch(goBackHomePage());
+        dispatch(goBackHomePage$1());
       }
     }));
   };
 
   var onClickSaveChange = function onClickSaveChange(context) {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "setting.language"
       }),
@@ -8675,6 +8675,197 @@ var LanguageTab = function LanguageTab() {
   });
 };
 
+var POLICIES = [{
+  id: '1',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }, {
+    id: '4'
+  }, {
+    id: '5'
+  }, {
+    id: '6'
+  }, {
+    id: '7'
+  }]
+}, {
+  id: '2',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }, {
+    id: '4'
+  }, {
+    id: '5'
+  }, {
+    id: '6'
+  }, {
+    id: '7'
+  }, {
+    id: '8'
+  }, {
+    id: '9'
+  }]
+}, {
+  id: '3',
+  items: [{
+    id: '1'
+  }, {
+    id: '2',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }]
+  }, {
+    id: '3'
+  }, {
+    id: '4'
+  }]
+}, {
+  id: '4',
+  items: [{
+    id: '1',
+    items: [{
+      id: '1'
+    }]
+  }, {
+    id: '2'
+  }, {
+    id: '3',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }]
+  }, {
+    id: '4',
+    items: [{
+      id: '1'
+    }]
+  }]
+}, {
+  id: '5',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }]
+}, {
+  id: '6',
+  items: [{
+    id: '1'
+  }]
+}, {
+  id: '7',
+  items: [{
+    id: '1'
+  }]
+}, {
+  id: '8',
+  items: [{
+    id: '1'
+  }, {
+    id: '2',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }, {
+      id: '3'
+    }, {
+      id: '4'
+    }, {
+      id: '5'
+    }, {
+      id: '6'
+    }, {
+      id: '7'
+    }]
+  }, {
+    id: '3'
+  }, {
+    id: '4'
+  }]
+}, {
+  id: '9',
+  items: [{
+    id: '1',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }]
+  }, {
+    id: '2'
+  }]
+}, {
+  id: '10',
+  items: [{
+    id: '1'
+  }, {
+    id: '2'
+  }, {
+    id: '3'
+  }]
+}, {
+  id: '11',
+  items: [{
+    id: '1',
+    items: [{
+      id: '1'
+    }, {
+      id: '2'
+    }, {
+      id: '3'
+    }]
+  }]
+}];
+
+var Policies = function Policies() {
+  var dispatch = reactRedux.useDispatch();
+
+  var onClickBackHome = function onClickBackHome() {
+    dispatch(showConfirmAlert$1({
+      title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "common.home"
+      }),
+      isShow: true,
+      content: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "common.backHome.confirmMessage"
+      }),
+      onConfirm: function onConfirm() {
+        dispatch(goBackHomePage$1());
+      }
+    }));
+  };
+
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.Card, null, /*#__PURE__*/React__default.createElement(reactstrap.CardBody, null, /*#__PURE__*/React__default.createElement("div", {
+    className: "vx-collapse"
+  }, /*#__PURE__*/React__default.createElement(InfoItems, {
+    data: POLICIES,
+    type: "policy"
+  })), /*#__PURE__*/React__default.createElement(reactstrap.Row, null, /*#__PURE__*/React__default.createElement(reactstrap.Col, {
+    className: "d-flex justify-content-end flex-wrap mt-2",
+    sm: "12"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Button.Ripple, {
+    type: "button",
+    color: "secondary",
+    onClick: onClickBackHome
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "common.home"
+  })))))));
+};
+
 function useDeviceDetect() {
   var _React$useState = React__default.useState(false),
       isMobile = _React$useState[0],
@@ -8697,7 +8888,7 @@ var ContactTab = function ContactTab() {
   var dispatch = reactRedux.useDispatch();
 
   var onClickBackHome = function onClickBackHome() {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "common.home"
       }),
@@ -8706,13 +8897,13 @@ var ContactTab = function ContactTab() {
         id: "common.backHome.confirmMessage"
       }),
       onConfirm: function onConfirm() {
-        dispatch(goBackHomePage());
+        dispatch(goBackHomePage$1());
       }
     }));
   };
 
   var onClickCall = function onClickCall() {
-    dispatch(showConfirmAlert({
+    dispatch(showConfirmAlert$1({
       title: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
         id: "setting.call"
       }),
@@ -8802,10 +8993,36 @@ var GeneralInfo = function GeneralInfo(props) {
     tabs: true
   }, /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
     className: classnames({
+      active: activeTab === 'terms-and-condition'
+    }),
+    onClick: function onClick() {
+      history.push('/app/terms-and-condition');
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.FileText, {
+    size: 16
+  }), /*#__PURE__*/React__default.createElement("span", {
+    className: "align-middle ml-50"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "setting.termAndCondition"
+  })))), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
+    className: classnames({
+      active: activeTab === 'privacy-policy'
+    }),
+    onClick: function onClick() {
+      history.push('/app/privacy-policy');
+    }
+  }, /*#__PURE__*/React__default.createElement(Icon.Shield, {
+    size: 16
+  }), /*#__PURE__*/React__default.createElement("span", {
+    className: "align-middle ml-50"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "setting.privacyPolicy"
+  })))), /*#__PURE__*/React__default.createElement(reactstrap.NavItem, null, /*#__PURE__*/React__default.createElement(reactstrap.NavLink, {
+    className: classnames({
       active: activeTab === 'language'
     }),
     onClick: function onClick() {
-      history.push('/language');
+      history.push('/app/language');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Globe, {
     size: 16
@@ -8818,7 +9035,7 @@ var GeneralInfo = function GeneralInfo(props) {
       active: activeTab === 'contact'
     }),
     onClick: function onClick() {
-      history.push('/contact');
+      history.push('/app/contact');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.MessageSquare, {
     size: 16
@@ -8829,6 +9046,10 @@ var GeneralInfo = function GeneralInfo(props) {
   }))))), /*#__PURE__*/React__default.createElement(reactstrap.TabContent, {
     activeTab: activeTab
   }, /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
+    tabId: "terms-and-condition"
+  }, /*#__PURE__*/React__default.createElement(Terms, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
+    tabId: "privacy-policy"
+  }, /*#__PURE__*/React__default.createElement(Policies, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
     tabId: "language"
   }, /*#__PURE__*/React__default.createElement(LanguageTab, null)), /*#__PURE__*/React__default.createElement(reactstrap.TabPane, {
     tabId: "contact"
@@ -9181,6 +9402,9 @@ var Login = function Login() {
   }),
       isGuest = _useSelector.isGuest;
 
+  var loginStatus = reactRedux.useSelector(function (state) {
+    return state.auth.loginStatus;
+  });
   React.useEffect(function () {
     var user = JSON.parse(localStorage.getItem(REMEMBER_ME_TOKEN));
 
@@ -9290,11 +9514,7 @@ var Login = function Login() {
       type: "submit"
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "login"
-    }))), isGuest ? /*#__PURE__*/React__default.createElement("div", {
-      className: "mt-2"
-    }, /*#__PURE__*/React__default.createElement(SocialLogin, {
-      isLogin: true
-    })) : null);
+    }))));
   });
 };
 
@@ -9391,7 +9611,7 @@ var Register = function Register() {
   };
 
   var onChangeFullName = function onChangeFullName(e, form) {
-    var value = e.target.value.replace(/[^0-9a-zàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ\s]/gi, '');
+    var value = e.target.value.replace(/[^\w\s]/gi, '');
     form.setFieldValue('fullName', value);
   };
 
@@ -9780,8 +10000,8 @@ var LandingPageHeader = function LandingPageHeader() {
   return /*#__PURE__*/React__default.createElement(Context.Consumer, null, function (context) {
     return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("div", {
       className: "d-flex justify-content-between align-items-center"
-    }, /*#__PURE__*/React__default.createElement("a", {
-      href: "https://inon.vn/"
+    }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
+      to: '/'
     }, /*#__PURE__*/React__default.createElement("span", {
       className: "d-block d-lg-none"
     }, /*#__PURE__*/React__default.createElement("img", {
@@ -10129,8 +10349,8 @@ var LandingPage = function LandingPage(props) {
     className: "d-none d-lg-block landing-page-bg"
   }, /*#__PURE__*/React__default.createElement("div", {
     className: "logo mx-auto"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "https://inon.vn/"
+  }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
+    to: '/'
   }, /*#__PURE__*/React__default.createElement("img", {
     src: IMAGE.LOGO,
     alt: "logo"
@@ -10222,7 +10442,7 @@ var ConfirmAlert = function ConfirmAlert() {
       onConfirm();
     }
 
-    dispatch(hideConfirmAlert());
+    dispatch(hideConfirmAlert$1());
   };
 
   var onClickCancel = function onClickCancel() {
@@ -10230,7 +10450,7 @@ var ConfirmAlert = function ConfirmAlert() {
       onCancel();
     }
 
-    dispatch(hideConfirmAlert());
+    dispatch(hideConfirmAlert$1());
   };
 
   return /*#__PURE__*/React__default.createElement(SweetAlert, _extends({
@@ -10251,6 +10471,35 @@ var ConfirmAlert = function ConfirmAlert() {
   }, otherConfigs), content);
 };
 
+var CheckLocationChange = function CheckLocationChange() {
+  var history = reactRouterDom.useHistory();
+  var dispatch = reactRedux.useDispatch();
+
+  var _useSelector = reactRedux.useSelector(function (state) {
+    return state.customizer;
+  }),
+      appId = _useSelector.appId;
+
+  React.useEffect(function () {
+    var id;
+
+    if (window.location.href.includes('/app/')) {
+      id = AppId.APP_NO1;
+    } else if (window.location.href.includes('/insurance/')) {
+      id = AppId.INSURANCE_APP;
+    } else if (window.location.href.includes('/supplement/')) {
+      id = AppId.SUPPLEMENT_APP;
+    } else {
+      id = AppId.ELITE_APP;
+    }
+
+    if (appId !== id) {
+      dispatch(setAppId(id));
+    }
+  }, [history.location.pathname]);
+  return /*#__PURE__*/React__default.createElement("span", null);
+};
+
 var AppRouter = function AppRouter(props) {
   var checkLoginStatus = props.checkLoginStatus,
       appId = props.appId,
@@ -10262,11 +10511,10 @@ var AppRouter = function AppRouter(props) {
       children = props.children,
       loadNavtigation = props.loadNavtigation,
       loadUserRoles = props.loadUserRoles,
-      setAppId = props.setAppId,
       history = props.history,
-      message = props.message;
+      message = props.message,
+      footerApp = props.footerApp;
   React.useEffect(function () {
-    setAppId(appId);
     var urlParams = new URLSearchParams(document.location.search);
     var code = urlParams.get('code') || (appId === AppId.ELITE_APP ? guest.authToken : authToken);
     var redirectUrl = urlParams.get('redirectUrl');
@@ -10275,28 +10523,14 @@ var AppRouter = function AppRouter(props) {
       checkLoginStatus(code, redirectUrl);
     }
 
-    if (code) {
-      loadNavtigation(appId, function () {
-        return loadUserRoles();
-      });
+    if (authToken) {
+      loadNavtigation(appId);
+      loadUserRoles();
     }
   }, [authToken]);
-
-  var setMessages = function setMessages(message) {
-    if (message === void 0) {
-      message = {};
-    }
-
-    var newMessage = {};
-    Object.keys(message).forEach(function (key) {
-      newMessage[appId + '.' + key] = message[key];
-    });
-    return newMessage;
-  };
-
   var appMessage = {
-    en: _extends({}, messages_en, setMessages(message.en)),
-    vi: _extends({}, messages_vi, setMessages(message.vi))
+    en: _extends({}, messages_en, message.en),
+    vi: _extends({}, messages_vi, message.vi)
   };
   var settingRoutes = [{
     path: 'account-info',
@@ -10352,7 +10586,7 @@ var AppRouter = function AppRouter(props) {
       }), /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, settingRoutes.map(function (item) {
         return /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
           key: item.path,
-          path: "/" + item.path,
+          path: "/app/" + item.path,
           render: function render() {
             return /*#__PURE__*/React__default.createElement(item.component, {
               activeTab: item.path
@@ -10364,7 +10598,7 @@ var AppRouter = function AppRouter(props) {
         render: function render() {
           return children;
         }
-      }))) : /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, landingPageRoutes.map(function (item) {
+      }))) : /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, landingPageRoutes.map(function (item) {
         return /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
           key: item.path,
           path: "/" + item.path,
@@ -10374,23 +10608,14 @@ var AppRouter = function AppRouter(props) {
             });
           }
         });
-      }), appId === AppId.ELITE_APP ? /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
+      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
         path: "/",
         render: function render() {
           return children;
         }
-      }) : /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
-        from: "/",
-        to: "/login"
-      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
-        path: "/social-login",
-        component: SocialLogin
-      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
-        from: "/",
-        to: "/"
-      }));
+      })), React__default.createElement(footerApp));
     }
-  }))), /*#__PURE__*/React__default.createElement(reactToastify.ToastContainer, {
+  })), /*#__PURE__*/React__default.createElement(CheckLocationChange, null)), /*#__PURE__*/React__default.createElement(reactToastify.ToastContainer, {
     hideProgressBar: true,
     position: "top-right",
     autoClose: 5000,
@@ -10405,7 +10630,8 @@ var mapStateToProps$3 = function mapStateToProps(state) {
     authToken: state.auth.authToken,
     guest: state.auth.guest,
     loginStatus: state.auth.loginStatus,
-    user: state.auth.user
+    user: state.auth.user,
+    appId: state.customizer.appId
   };
 };
 
@@ -10479,7 +10705,8 @@ var App = function App(_ref) {
       appReducer = _ref.appReducer,
       message = _ref.message,
       apiBaseUrl = _ref.apiBaseUrl,
-      history = _ref.history;
+      history = _ref.history,
+      footerApp = _ref.footerApp;
   var middlewares = [thunk, createDebounce()];
   var composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || redux.compose;
   var store = redux.createStore(rootReducer(appReducer), {}, composeEnhancers(redux.applyMiddleware.apply(void 0, middlewares)));
@@ -10496,7 +10723,8 @@ var App = function App(_ref) {
     message: message,
     appId: appId,
     history: history,
-    children: children
+    children: children,
+    footerApp: footerApp
   })));
 };
 
@@ -10676,6 +10904,7 @@ exports.DatePicker = DatePicker;
 exports.FallbackSpinner = FallbackSpinner;
 exports.GeneralInfo = GeneralInfo;
 exports.HttpClient = HttpClient;
+exports.LandingPage = LandingPage;
 exports.Radio = Radio;
 exports.ReactTable = ReactTable;
 exports.Select = Select;
@@ -10692,4 +10921,3 @@ exports.useDistrictList = useDistrictList;
 exports.usePageAuthorities = usePageAuthorities;
 exports.useWardList = useWardList;
 exports.useWindowDimensions = useWindowDimensions;
-//# sourceMappingURL=index.js.map
