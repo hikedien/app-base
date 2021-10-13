@@ -9836,7 +9836,7 @@ const CheckLocationChange = () => {
       dispatch(setAppId(id));
     }
 
-    if ([AppId.APP_NO1, AppId.SUPPLEMENT_APP, AppId.INSURANCE_APP].indexOf(appId) >= 0 && !authToken) {
+    if ([AppId.APP_NO1, AppId.SUPPLEMENT_APP, AppId.INSURANCE_APP].indexOf(id) >= 0 && !authToken) {
       history.push('/');
     }
   }, [history.location.pathname]);
