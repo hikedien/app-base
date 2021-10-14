@@ -32,9 +32,9 @@ var ReactSelect = _interopDefault(require('react-select'));
 var AsyncSelect = _interopDefault(require('react-select/async'));
 var CreatableSelect = _interopDefault(require('react-select/creatable'));
 var QRCode = _interopDefault(require('easyqrcodejs'));
+var firebase = _interopDefault(require('firebase'));
 var FacebookLogin = _interopDefault(require('react-facebook-login/dist/facebook-login-render-props'));
 var GoogleLogin = _interopDefault(require('react-google-login'));
-var firebase = _interopDefault(require('firebase'));
 var OtpInput = _interopDefault(require('react-otp-input'));
 var styled = _interopDefault(require('styled-components'));
 var SweetAlert = _interopDefault(require('react-bootstrap-sweetalert'));
@@ -129,7 +129,7 @@ var AppId = {
   DIVAY_APP: 'DIVAY_APP'
 };
 
-var API_BASE_URL = 'https://apisit.inon.vn';
+var API_BASE_URL = 'https://api.inon.vn';
 var RESOURCE_URL = 'https://sit2.inon.vn/resources/images/';
 var FB_APP_ID = '2651185198505964';
 var GOOGLE_APP_ID = '400818618331-k9ptcdcgr99po0g5q5mh8e5ekodgj61n.apps.googleusercontent.com';
@@ -245,16 +245,16 @@ var IC_TYPES_OPTIONS = [{
 var getExternalAppUrl = function getExternalAppUrl(appId, url) {
   switch (appId) {
     case AppId.APP_NO1:
-      return window.location.origin + "/app" + url + "?r edirectUrl=" + url;
+      return "/app" + url;
 
     case AppId.INSURANCE_APP:
-      return window.location.origin + "/insurance" + url + "?redirectUrl=" + url;
+      return "/insurance" + url;
 
     case AppId.SUPPLEMENT_APP:
-      return window.location.origin + "/supplement" + url + "?redirectUrl=" + url;
+      return "/supplement" + url;
 
     case AppId.ELITE_APP:
-      return "" + window.location.origin + url + "?redirectUrl=" + url;
+      return "" + url;
   }
 };
 var getContextPath = function getContextPath(appId) {
@@ -535,25 +535,11 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
 
   HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
   HttpClient.interceptors.request.use(function (config) {
-    var appId = store.getState().customizer.appId;
-    var token = appId === AppId.ELITE_APP ? store.getState().auth.guest.authToken : store.getState().auth.authToken;
-    var sessionExpireTime = store.getState().auth.sessionExpireTime;
+    var token = store.getState().auth.guest.authToken || store.getState().auth.authToken;
     language = localStorage.getItem('language');
 
     if (token) {
-      store.dispatch(changeActionExpireTime());
       config.headers.Authorization = "Bearer " + token;
-      var isSessionExpired = moment().isAfter(moment(sessionExpireTime));
-
-      if (sessionExpireTime && isSessionExpired) {
-        toastError( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-          id: "common.sessionExpired"
-        }));
-        store.dispatch({
-          type: LOGOUT_ACTION
-        });
-        return;
-      }
     }
 
     config.headers.appId = store.getState().customizer.appId;
@@ -561,6 +547,7 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
     config.headers.latitude = localStorage.getItem('latitude');
     config.headers.longitude = localStorage.getItem('longitude');
     config.headers.deviceId = deviceId;
+    config.headers.isMobileApp = true;
     config.headers['Accept-Language'] = language;
 
     if (!config.isBackgroundRequest) {
@@ -602,6 +589,7 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
         store.dispatch({
           type: 'LOGOUT_ACTION'
         });
+        history.push('/login');
         break;
 
       case 500:
@@ -758,7 +746,7 @@ var mapRoleToNavItem = function mapRoleToNavItem(role) {
   item.icon = /*#__PURE__*/React__default.createElement(IconTag, {
     size: 20
   });
-  item.navLink = role.menuPath;
+  item.navLink = getExternalAppUrl(role.appId, role.menuPath);
 
   if (role.isHighlight) {
     item.badge = 'primary';
@@ -776,11 +764,11 @@ var getNativgationConfig = function getNativgationConfig(appId, navConfigs) {
   }
 
   return navConfigs.map(function (item) {
-    item.isExternalApp = item.appId !== appId;
+    item.isExternalApp = false;
 
     if (item.children) {
       item.children.map(function (child) {
-        return child.isExternalApp = child.appId !== appId;
+        return child.isExternalApp = false;
       });
 
       if (item.children.length === 1) {
@@ -816,15 +804,10 @@ NavBarService.getUserGroupRole = function (groupId) {
 
 var LOAD_NATIVGATION = 'LOAD_NATIVGATION';
 var LOAD_USER_ROLE = 'LOAD_USER_ROLE';
-var loadNavtigation = function loadNavtigation(appId, callback) {
+var loadNavtigation = function loadNavtigation(appId) {
   return function (dispatch) {
     try {
       return Promise.resolve(NavBarService.getNativagtion()).then(function (res) {
-        if (!res || !res.data) {
-          return;
-        }
-
-        callback();
         var roles = res.data || [];
         var navConfigs = getNativgationConfig(appId, roles);
         dispatch({
@@ -865,12 +848,15 @@ var loadUserRoles = function loadUserRoles() {
 var goBackHomePage = function goBackHomePage() {
   return function (dispatch, getState) {
     try {
-      var appId = getState().customizer.appId;
+      var _getState, _getState$auth;
 
-      if (appId === AppId.APP_NO1) {
-        history.push('/');
+      var _ref = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$auth = _getState.auth) === null || _getState$auth === void 0 ? void 0 : _getState$auth.guest) || {},
+          authToken = _ref.authToken;
+
+      if (authToken) {
+        history.push('/home');
       } else {
-        window.location.href = getExternalAppUrl(appId === AppId.ELITE_APP ? AppId.ELITE_APP : AppId.APP_NO1, '/');
+        history.push('/app/home');
       }
 
       return Promise.resolve();
@@ -919,7 +905,6 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
                   type: LOGIN_ACTION,
                   payload: payload
                 });
-                history.replace(redirectUrl || window.location.pathname.replace("/" + getContextPath(appId) + "/", '/'));
               });
             } else {
               dispatch({
@@ -945,9 +930,6 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
 var loginAction = function loginAction(user) {
   return function (dispatch, getState) {
     try {
-      dispatch({
-        type: LOGOUT_ACTION
-      });
       user.rememberMe = user.isRemeberMe;
       return Promise.resolve(AuthService.login(user)).then(function (response) {
         var isGuest = getState().auth.isGuest;
@@ -1011,7 +993,7 @@ var loginAction = function loginAction(user) {
                 });
               }
 
-              redirectMainApp(isGuest, getState().customizer.appId);
+              redirectMainApp(isGuest);
             });
           } else {
             dispatch({
@@ -1052,13 +1034,7 @@ var socialLogin = function socialLogin(data, loginMethod, openAddInfoPopup) {
               }
             }
           });
-          setTimeout(function () {
-            if (getState().customizer.appId !== AppId.ELITE_APP) {
-              window.location.href = getExternalAppUrl(AppId.ELITE_APP, '/');
-            } else {
-              history.push('/');
-            }
-          }, 500);
+          dispatch(goBackHomePage());
         });
       });
     } catch (e) {
@@ -1075,21 +1051,19 @@ var changeIsGuest = function changeIsGuest(isGuest) {
   };
 };
 var goToGuestApp = function goToGuestApp() {
-  return function (dispatch, getState) {
-    var appId = getState().customizer.appId;
+  return function (dispatch) {
     dispatch({
       type: GOTO_GUEST_APP
     });
-    redirectMainApp(true, appId);
+    redirectMainApp(true);
   };
 };
 var goToAgencyApp = function goToAgencyApp() {
-  return function (dispatch, getState) {
-    var appId = getState().customizer.appId;
+  return function (dispatch) {
     dispatch({
       type: GOTO_AGENCY_APP
     });
-    redirectMainApp(false, appId);
+    redirectMainApp(false);
   };
 };
 var createPassword = function createPassword(password) {
@@ -1258,6 +1232,7 @@ var logoutAction = function logoutAction() {
         dispatch({
           type: LOGOUT_ACTION
         });
+        history.push('/login');
       });
     } catch (e) {
       return Promise.reject(e);
@@ -1344,13 +1319,6 @@ var changeLanguageSetting = function changeLanguageSetting(lang, callBack) {
     }
   };
 };
-var changeActionExpireTime = function changeActionExpireTime() {
-  return function (dispatch) {
-    dispatch({
-      type: CHANGE_SESSION_EXPIRE_TIME
-    });
-  };
-};
 var verifyPhoneNumber = function verifyPhoneNumber(values) {
   return function (dispatch) {
     try {
@@ -1368,16 +1336,12 @@ var verifyPhoneNumber = function verifyPhoneNumber(values) {
   };
 };
 
-var redirectMainApp = function redirectMainApp(isGuest, appId) {
-  setTimeout(function () {
-    var mainApp = isGuest ? AppId.ELITE_APP : AppId.APP_NO1;
-
-    if (appId !== mainApp) {
-      window.location.href = getExternalAppUrl(mainApp, '/');
-    } else {
-      history.push('/');
-    }
-  }, 200);
+var redirectMainApp = function redirectMainApp(isGuest) {
+  if (isGuest) {
+    history.push('/');
+  } else {
+    history.push('/app/home');
+  }
 };
 
 var themeConfig = {
@@ -1543,6 +1507,7 @@ var authReducers = function authReducers(state, action) {
     case GOTO_AGENCY_APP:
       {
         return _extends({}, state, {
+          guest: {},
           user: state.guest.user,
           authToken: state.guest.authToken
         });
@@ -1565,6 +1530,29 @@ var authReducers = function authReducers(state, action) {
   }
 };
 
+var LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
+var LOAD_USER_ROLE$1 = 'LOAD_USER_ROLE';
+var goBackHomePage$1 = function goBackHomePage() {
+  return function (dispatch, getState) {
+    try {
+      var _getState, _getState$auth;
+
+      var _ref = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$auth = _getState.auth) === null || _getState$auth === void 0 ? void 0 : _getState$auth.guest) || {},
+          authToken = _ref.authToken;
+
+      if (authToken) {
+        history.push('/home');
+      } else {
+        history.push('/app/home');
+      }
+
+      return Promise.resolve();
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+};
+
 var initialState = {
   navConfigs: [],
   roles: [],
@@ -1577,13 +1565,13 @@ var navbarReducer = function navbarReducer(state, action) {
   }
 
   switch (action.type) {
-    case LOAD_NATIVGATION:
+    case LOAD_NATIVGATION$1:
       return _extends({}, state, {
         navConfigs: action.payload.navConfigs,
         roles: action.payload.roles
       });
 
-    case LOAD_USER_ROLE:
+    case LOAD_USER_ROLE$1:
       return _extends({}, state, {
         userRoles: action.payload
       });
@@ -1592,6 +1580,11 @@ var navbarReducer = function navbarReducer(state, action) {
       return state;
   }
 };
+
+var SHOW_LOADING_BAR$1 = 'SHOW_LOADING_BAR';
+var HIDE_LOADING_BAR$1 = 'HIDE_LOADING_BAR';
+var SHOW_CONFIRM_ALERT$1 = 'SHOW_CONFIRM_ALERT';
+var HIDE_CONFIRM_ALERT$1 = 'HIDE_CONFIRM_ALERT';
 
 var DEFAULT_CONFIRM_ALERT = {
   title: '',
@@ -1612,26 +1605,26 @@ var uiReducer = function uiReducer(state, action) {
   }
 
   switch (action.type) {
-    case SHOW_LOADING_BAR:
+    case SHOW_LOADING_BAR$1:
       return _extends({}, state, {
         isLoading: true,
         loading: state.loading.add(action.payload)
       });
 
-    case HIDE_LOADING_BAR:
+    case HIDE_LOADING_BAR$1:
       state.loading["delete"](action.payload);
       return _extends({}, state, {
         isLoading: !!state.loading.size
       });
 
-    case SHOW_CONFIRM_ALERT:
+    case SHOW_CONFIRM_ALERT$1:
       return _extends({}, state, {
         confirmAlert: _extends({
           isShow: true
         }, state.confirmAlert, action.payload)
       });
 
-    case HIDE_CONFIRM_ALERT:
+    case HIDE_CONFIRM_ALERT$1:
       return _extends({}, state, {
         confirmAlert: _extends({}, DEFAULT_CONFIRM_ALERT)
       });
@@ -2244,7 +2237,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/account-info');
+      return handleNavigation(e, '/app/account-info');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.User, {
     size: 14,
@@ -2257,7 +2250,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/change-password');
+      return handleNavigation(e, '/app/change-password');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
     size: 14,
@@ -2270,7 +2263,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/share-with-friends');
+      return handleNavigation(e, '/app/share-with-friends');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Link, {
     size: 14,
@@ -2322,7 +2315,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/language');
+      return handleNavigation(e, '/app/language');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Globe, {
     size: 14,
@@ -2335,7 +2328,7 @@ var UserDropdown = function UserDropdown() {
     tag: "a",
     href: "#",
     onClick: function onClick(e) {
-      return handleNavigation(e, '/contact');
+      return handleNavigation(e, '/app/contact');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.MessageSquare, {
     size: 14,
@@ -2801,10 +2794,9 @@ var Footer = function Footer(props) {
     id: "menu.home"
   })))), /*#__PURE__*/React__default.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React__default.createElement("span", {
     onClick: function onClick(e) {
-      return goToPage(e, '/contracts');
+      return goToPage(e, '/insurance/contracts');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.List, null), /*#__PURE__*/React__default.createElement("div", {
     className: "mt-1"
@@ -2812,10 +2804,9 @@ var Footer = function Footer(props) {
     id: "menu.contract"
   })))), /*#__PURE__*/React__default.createElement("div", {
     className: "position-relative w-25"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React__default.createElement("span", {
     onClick: function onClick(e) {
-      return goToPage(e, '/buy-insurance');
+      return goToPage(e, '/insurance/buy-insurance');
     }
   }, /*#__PURE__*/React__default.createElement("img", {
     src: IMAGE.BUY_INSURANCE,
@@ -2831,8 +2822,7 @@ var Footer = function Footer(props) {
     id: "menu.buyInsurance"
   })))), /*#__PURE__*/React__default.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React__default.createElement("span", {
     onClick: onClickBackHome
   }, /*#__PURE__*/React__default.createElement(Icon.Gift, null), /*#__PURE__*/React__default.createElement("div", {
     className: "mt-1"
@@ -2840,10 +2830,9 @@ var Footer = function Footer(props) {
     id: "menu.promotion"
   })))), /*#__PURE__*/React__default.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React__default.createElement("span", {
     onClick: function onClick(e) {
-      return history.push('/contact');
+      return history.push('/app/contact');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.MessageSquare, null), /*#__PURE__*/React__default.createElement("div", {
     className: "mt-1"
@@ -2934,7 +2923,7 @@ var SidebarHeader = function SidebarHeader(props) {
   var dispatch = reactRedux.useDispatch();
 
   var onClickHome = function onClickHome() {
-    dispatch(goBackHomePage());
+    dispatch(goBackHomePage$1());
   };
 
   return /*#__PURE__*/React__default.createElement("div", {
@@ -4032,12 +4021,14 @@ var messages_en = {
 	"menu.partnerDebt": "Partner Debt",
 	"menu.allDebt": "All Debt",
 	"menu.permissionGoup": "Permission Group",
-	"menu.creatPermissionGoup": "Create Permision Group",
+	"menu.creatPermissionGoup": "Create Permission Group",
 	"menu.permissionGoupManagement": "Permission Group Management",
 	"menu.insuranceMotobike": "Motobike Insurance",
 	"menu.insuranceCar": "Car Insurance",
 	"menu.approveOpenAccount": "Account Approval",
 	"menu.promotion": "Promotion",
+	"menu.createPromotion": "Create Promotion",
+	"menu.promotionManagement": "Promotion Management",
 	"menu.personalBonusHistory": "Personal Bonus History",
 	"menu.partnerBonusHistory": "Partner Bonus History",
 	"menu.allBonusHistory": "All Bonus History",
@@ -4414,6 +4405,8 @@ var messages_vi = {
 	"menu.insuranceCar": "Bảo hiểm ô tô",
 	"menu.approveOpenAccount": "Phê duyệt mở tài khoản",
 	"menu.promotion": "Khuyến mại",
+	"menu.createPromotion": "Tạo khuyến mại",
+	"menu.promotionManagement": "Quản lý khuyến mại",
 	"menu.personalBonusHistory": "Lịch sử điểm thưởng cá nhân",
 	"menu.partnerBonusHistory": "Lịch sử điểm thưởng đối tác",
 	"menu.allBonusHistory": "Lịch sử điểm thưởng tất cả",
@@ -8403,7 +8396,7 @@ var ShareWithFriends = function ShareWithFriends() {
   }),
       user = _useSelector.user;
 
-  var _useState = React.useState(null),
+  var _useState = useState(null),
       qrCodeInstance = _useState[0],
       setQRCodeInstance = _useState[1];
 
@@ -8493,7 +8486,7 @@ var AccountSettings = function AccountSettings(props) {
       active: activeTab === 'account-info'
     }),
     onClick: function onClick() {
-      history.push('/account-info');
+      history.push('/app/account-info');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.User, {
     size: 16
@@ -8506,7 +8499,7 @@ var AccountSettings = function AccountSettings(props) {
       active: activeTab === 'change-password'
     }),
     onClick: function onClick() {
-      history.push('/change-password');
+      history.push('/app/change-password');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Lock, {
     size: 16
@@ -8519,7 +8512,7 @@ var AccountSettings = function AccountSettings(props) {
       active: activeTab === 'share-with-friends'
     }),
     onClick: function onClick() {
-      history.push('/share-with-friends');
+      history.push('/app/share-with-friends');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Link, {
     size: 16
@@ -8801,7 +8794,7 @@ var GeneralInfo = function GeneralInfo(props) {
       active: activeTab === 'language'
     }),
     onClick: function onClick() {
-      history.push('/language');
+      history.push('/app/language');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.Globe, {
     size: 16
@@ -8814,7 +8807,7 @@ var GeneralInfo = function GeneralInfo(props) {
       active: activeTab === 'contact'
     }),
     onClick: function onClick() {
-      history.push('/contact');
+      history.push('/app/contact');
     }
   }, /*#__PURE__*/React__default.createElement(Icon.MessageSquare, {
     size: 16
@@ -8860,6 +8853,262 @@ var CheckBox = /*#__PURE__*/function (_React$Component) {
 
   return CheckBox;
 }(React__default.Component);
+
+var AppSelection = function AppSelection(_ref) {
+  var isLogin = _ref.isLogin;
+
+  var _useSelector = reactRedux.useSelector(function (state) {
+    return state.auth;
+  }),
+      isGuest = _useSelector.isGuest;
+
+  var dispatch = reactRedux.useDispatch();
+
+  var onClickChangeAppType = function onClickChangeAppType(value) {
+    dispatch(changeIsGuest(value));
+  };
+
+  return /*#__PURE__*/React__default.createElement("div", {
+    className: "text-center mt-2 mb-3"
+  }, /*#__PURE__*/React__default.createElement("p", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: isLogin ? 'socialLogin.youLoginAs' : 'socialLogin.youRegisterAs'
+  })), /*#__PURE__*/React__default.createElement(reactstrap.ButtonGroup, {
+    className: "w-100"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
+    className: "btn-app-selection left",
+    active: !isGuest,
+    type: "button",
+    onClick: function onClick() {
+      return onClickChangeAppType(false);
+    }
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "icon mr-1"
+  }, /*#__PURE__*/React__default.createElement("svg", {
+    width: "40",
+    height: "40",
+    viewBox: "0 0 40 40",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, /*#__PURE__*/React__default.createElement("path", {
+    d: "M20 25C22.7614 25 25 22.7614 25 20C25 17.2386 22.7614 15 20 15C17.2386 15 15 17.2386 15 20C15 22.7614 17.2386 25 20 25Z",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M20 35V35.0167",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M5 15V15.0167",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M35 15V15.0167",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M13.3333 33.4999C11.0589 32.3906 9.1021 30.7238 7.64506 28.6548C6.18802 26.5858 5.2781 24.1818 5 21.6666",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M26.6663 33.4999C28.9407 32.3906 30.8975 30.7238 32.3545 28.6548C33.8116 26.5858 34.7215 24.1818 34.9996 21.6666",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M10.333 8.33345C13.0132 6.14004 16.3697 4.94164 19.833 4.94164C23.2963 4.94164 26.6529 6.14004 29.333 8.33345",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }))), /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "socialLogin.agent"
+  })), /*#__PURE__*/React__default.createElement(reactstrap.Button, {
+    className: "btn-app-selection right",
+    active: isGuest,
+    onClick: function onClick() {
+      return onClickChangeAppType(true);
+    },
+    type: "button"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "icon mr-1"
+  }, /*#__PURE__*/React__default.createElement("svg", {
+    width: "40",
+    height: "40",
+    viewBox: "0 0 40 40",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, /*#__PURE__*/React__default.createElement("path", {
+    d: "M20.0005 18.4999C23.3143 18.4999 26.0007 15.8136 26.0007 12.4997C26.0007 9.1859 23.3143 6.49951 20.0005 6.49951C16.6866 6.49951 14.0002 9.1859 14.0002 12.4997C14.0002 15.8136 16.6866 18.4999 20.0005 18.4999Z",
+    stroke: isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M10.9993 33.5004V30.5003C10.9993 28.9089 11.6314 27.3828 12.7567 26.2575C13.8819 25.1322 15.4081 24.5001 16.9995 24.5001H22.9997C24.5911 24.5001 26.1172 25.1322 27.2425 26.2575C28.3678 27.3828 28.9999 28.9089 28.9999 30.5003V33.5004",
+    stroke: isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }))), /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "socialLogin.personal"
+  }))));
+};
+
+var formSchema$1 = Yup.object().shape({
+  username: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "login.username.required"
+  })),
+  password: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "login.password.required"
+  })).matches(PASSWORD_REGEX, function () {
+    return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "createPassword.password.invalid"
+    });
+  })
+});
+
+var Login = function Login() {
+  var _useState = React.useState(null),
+      rememberMe = _useState[0],
+      setRememberMe = _useState[1];
+
+  var _useState2 = React.useState(false),
+      isRemeberMe = _useState2[0],
+      setIsRemeberMe = _useState2[1];
+
+  var dispatch = reactRedux.useDispatch();
+
+  var _useSelector = reactRedux.useSelector(function (state) {
+    return state.auth;
+  }),
+      isGuest = _useSelector.isGuest;
+
+  var loginStatus = reactRedux.useSelector(function (state) {
+    return state.auth.loginStatus;
+  });
+  React.useEffect(function () {
+    var user = JSON.parse(localStorage.getItem(REMEMBER_ME_TOKEN));
+
+    if (user) {
+      setRememberMe(user);
+    }
+  }, []);
+
+  var onSubmit = function onSubmit(values, actions) {
+    dispatch(loginAction({
+      username: trimValue(values.username),
+      password: values.password,
+      isGuest: isGuest,
+      isRemeberMe: isRemeberMe
+    }));
+    actions.setSubmitting(false);
+  };
+
+  var onClickNotMe = function onClickNotMe() {
+    localStorage.removeItem(REMEMBER_ME_TOKEN);
+    setRememberMe(null);
+  };
+
+  return /*#__PURE__*/React__default.createElement(formik.Formik, {
+    enableReinitialize: true,
+    initialValues: {
+      username: rememberMe ? rememberMe.username : '',
+      password: ''
+    },
+    onSubmit: onSubmit,
+    validationSchema: formSchema$1
+  }, function (_ref) {
+    var errors = _ref.errors,
+        touched = _ref.touched;
+    return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement(AppSelection, {
+      isLogin: true
+    }), rememberMe ? /*#__PURE__*/React__default.createElement("h4", {
+      className: "text-center mb-2"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "login.sayHi",
+      values: {
+        name: rememberMe.name
+      }
+    })) : /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      messageId: "login.username",
+      fieldName: "username",
+      errors: errors,
+      touched: touched
+    }), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+      className: "form-label-group position-relative"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "login.password"
+    }, function (msg) {
+      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.FastField, {
+        name: "password"
+      }, function (_ref2) {
+        var field = _ref2.field,
+            form = _ref2.form;
+        return /*#__PURE__*/React__default.createElement(reactstrap.Input, _extends({
+          type: "password",
+          className: "form-control " + (errors.password && touched.password && 'is-invalid'),
+          placeholder: msg
+        }, field, {
+          onChange: function onChange(e) {
+            return form.setFieldValue('password', e.target.value);
+          }
+        }));
+      }), errors.password && touched.password ? /*#__PURE__*/React__default.createElement("div", {
+        className: "text-danger"
+      }, errors.password) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+      className: "d-flex justify-content-between align-items-center"
+    }, rememberMe ? /*#__PURE__*/React__default.createElement("a", {
+      className: "text-dark-green",
+      onClick: onClickNotMe
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "login.notMe"
+    })) : /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "login.rememberMe"
+      }),
+      onChange: function onChange(e) {
+        return setIsRemeberMe(e.target.checked);
+      },
+      defaultChecked: isRemeberMe
+    }), /*#__PURE__*/React__default.createElement("div", {
+      className: "divider",
+      style: {
+        height: '30px'
+      }
+    }), /*#__PURE__*/React__default.createElement("div", {
+      className: "float-right"
+    }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
+      to: "/forgot-password",
+      className: "text-secondary font-weight-bold"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "forgotPassword"
+    })))), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex justify-content-center"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
+      color: "primary",
+      type: "submit"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "login"
+    }))));
+  });
+};
 
 var SocialLogin = function SocialLogin(_ref) {
   var isLogin = _ref.isLogin;
@@ -9035,263 +9284,6 @@ var SocialLogin = function SocialLogin(_ref) {
       id: "common.ok"
     })))));
   }));
-};
-
-var AppSelection = function AppSelection(_ref) {
-  var isLogin = _ref.isLogin;
-
-  var _useSelector = reactRedux.useSelector(function (state) {
-    return state.auth;
-  }),
-      isGuest = _useSelector.isGuest;
-
-  var dispatch = reactRedux.useDispatch();
-
-  var onClickChangeAppType = function onClickChangeAppType(value) {
-    dispatch(changeIsGuest(value));
-  };
-
-  return /*#__PURE__*/React__default.createElement("div", {
-    className: "text-center mt-2 mb-3"
-  }, /*#__PURE__*/React__default.createElement("p", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: isLogin ? 'socialLogin.youLoginAs' : 'socialLogin.youRegisterAs'
-  })), /*#__PURE__*/React__default.createElement(reactstrap.ButtonGroup, {
-    className: "w-100"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
-    className: "btn-app-selection left",
-    active: !isGuest,
-    type: "button",
-    onClick: function onClick() {
-      return onClickChangeAppType(false);
-    }
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "icon mr-1"
-  }, /*#__PURE__*/React__default.createElement("svg", {
-    width: "40",
-    height: "40",
-    viewBox: "0 0 40 40",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, /*#__PURE__*/React__default.createElement("path", {
-    d: "M20 25C22.7614 25 25 22.7614 25 20C25 17.2386 22.7614 15 20 15C17.2386 15 15 17.2386 15 20C15 22.7614 17.2386 25 20 25Z",
-    stroke: !isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }), /*#__PURE__*/React__default.createElement("path", {
-    d: "M20 35V35.0167",
-    stroke: !isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }), /*#__PURE__*/React__default.createElement("path", {
-    d: "M5 15V15.0167",
-    stroke: !isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }), /*#__PURE__*/React__default.createElement("path", {
-    d: "M35 15V15.0167",
-    stroke: !isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }), /*#__PURE__*/React__default.createElement("path", {
-    d: "M13.3333 33.4999C11.0589 32.3906 9.1021 30.7238 7.64506 28.6548C6.18802 26.5858 5.2781 24.1818 5 21.6666",
-    stroke: !isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }), /*#__PURE__*/React__default.createElement("path", {
-    d: "M26.6663 33.4999C28.9407 32.3906 30.8975 30.7238 32.3545 28.6548C33.8116 26.5858 34.7215 24.1818 34.9996 21.6666",
-    stroke: !isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }), /*#__PURE__*/React__default.createElement("path", {
-    d: "M10.333 8.33345C13.0132 6.14004 16.3697 4.94164 19.833 4.94164C23.2963 4.94164 26.6529 6.14004 29.333 8.33345",
-    stroke: !isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }))), /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "socialLogin.agent"
-  })), /*#__PURE__*/React__default.createElement(reactstrap.Button, {
-    className: "btn-app-selection right",
-    active: isGuest,
-    onClick: function onClick() {
-      return onClickChangeAppType(true);
-    },
-    type: "button"
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "icon mr-1"
-  }, /*#__PURE__*/React__default.createElement("svg", {
-    width: "40",
-    height: "40",
-    viewBox: "0 0 40 40",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, /*#__PURE__*/React__default.createElement("path", {
-    d: "M20.0005 18.4999C23.3143 18.4999 26.0007 15.8136 26.0007 12.4997C26.0007 9.1859 23.3143 6.49951 20.0005 6.49951C16.6866 6.49951 14.0002 9.1859 14.0002 12.4997C14.0002 15.8136 16.6866 18.4999 20.0005 18.4999Z",
-    stroke: isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }), /*#__PURE__*/React__default.createElement("path", {
-    d: "M10.9993 33.5004V30.5003C10.9993 28.9089 11.6314 27.3828 12.7567 26.2575C13.8819 25.1322 15.4081 24.5001 16.9995 24.5001H22.9997C24.5911 24.5001 26.1172 25.1322 27.2425 26.2575C28.3678 27.3828 28.9999 28.9089 28.9999 30.5003V33.5004",
-    stroke: isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }))), /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "socialLogin.personal"
-  }))));
-};
-
-var formSchema$1 = Yup.object().shape({
-  username: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "login.username.required"
-  })),
-  password: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "login.password.required"
-  })).matches(PASSWORD_REGEX, function () {
-    return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "createPassword.password.invalid"
-    });
-  })
-});
-
-var Login = function Login() {
-  var _useState = React.useState(null),
-      rememberMe = _useState[0],
-      setRememberMe = _useState[1];
-
-  var _useState2 = React.useState(false),
-      isRemeberMe = _useState2[0],
-      setIsRemeberMe = _useState2[1];
-
-  var dispatch = reactRedux.useDispatch();
-
-  var _useSelector = reactRedux.useSelector(function (state) {
-    return state.auth;
-  }),
-      isGuest = _useSelector.isGuest;
-
-  React.useEffect(function () {
-    var user = JSON.parse(localStorage.getItem(REMEMBER_ME_TOKEN));
-
-    if (user) {
-      setRememberMe(user);
-    }
-  }, []);
-
-  var onSubmit = function onSubmit(values, actions) {
-    dispatch(loginAction({
-      username: trimValue(values.username),
-      password: values.password,
-      isGuest: isGuest,
-      isRemeberMe: isRemeberMe
-    }));
-    actions.setSubmitting(false);
-  };
-
-  var onClickNotMe = function onClickNotMe() {
-    localStorage.removeItem(REMEMBER_ME_TOKEN);
-    setRememberMe(null);
-  };
-
-  return /*#__PURE__*/React__default.createElement(formik.Formik, {
-    enableReinitialize: true,
-    initialValues: {
-      username: rememberMe ? rememberMe.username : '',
-      password: ''
-    },
-    onSubmit: onSubmit,
-    validationSchema: formSchema$1
-  }, function (_ref) {
-    var errors = _ref.errors,
-        touched = _ref.touched;
-    return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement(AppSelection, {
-      isLogin: true
-    }), rememberMe ? /*#__PURE__*/React__default.createElement("h4", {
-      className: "text-center mb-2"
-    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "login.sayHi",
-      values: {
-        name: rememberMe.name
-      }
-    })) : /*#__PURE__*/React__default.createElement(BaseFormGroup, {
-      messageId: "login.username",
-      fieldName: "username",
-      errors: errors,
-      touched: touched
-    }), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
-      className: "form-label-group position-relative"
-    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "login.password"
-    }, function (msg) {
-      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.FastField, {
-        name: "password"
-      }, function (_ref2) {
-        var field = _ref2.field,
-            form = _ref2.form;
-        return /*#__PURE__*/React__default.createElement(reactstrap.Input, _extends({
-          type: "password",
-          className: "form-control " + (errors.password && touched.password && 'is-invalid'),
-          placeholder: msg
-        }, field, {
-          onChange: function onChange(e) {
-            return form.setFieldValue('password', e.target.value);
-          }
-        }));
-      }), errors.password && touched.password ? /*#__PURE__*/React__default.createElement("div", {
-        className: "text-danger"
-      }, errors.password) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
-    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
-      className: "d-flex justify-content-between align-items-center"
-    }, rememberMe ? /*#__PURE__*/React__default.createElement("a", {
-      className: "text-dark-green",
-      onClick: onClickNotMe
-    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "login.notMe"
-    })) : /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-        id: "login.rememberMe"
-      }),
-      onChange: function onChange(e) {
-        return setIsRemeberMe(e.target.checked);
-      },
-      defaultChecked: isRemeberMe
-    }), /*#__PURE__*/React__default.createElement("div", {
-      className: "divider",
-      style: {
-        height: '30px'
-      }
-    }), /*#__PURE__*/React__default.createElement("div", {
-      className: "float-right"
-    }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
-      to: "/forgot-password",
-      className: "text-secondary font-weight-bold"
-    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "forgotPassword"
-    })))), /*#__PURE__*/React__default.createElement("div", {
-      className: "d-flex justify-content-center"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
-      color: "primary",
-      type: "submit"
-    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "login"
-    }))), isGuest ? /*#__PURE__*/React__default.createElement("div", {
-      className: "mt-2"
-    }, /*#__PURE__*/React__default.createElement(SocialLogin, {
-      isLogin: true
-    })) : null);
-  });
 };
 
 var formSchema$2 = Yup.object().shape({
@@ -9776,8 +9768,8 @@ var LandingPageHeader = function LandingPageHeader() {
   return /*#__PURE__*/React__default.createElement(Context.Consumer, null, function (context) {
     return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("div", {
       className: "d-flex justify-content-between align-items-center"
-    }, /*#__PURE__*/React__default.createElement("a", {
-      href: "https://inon.vn/"
+    }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
+      to: '/'
     }, /*#__PURE__*/React__default.createElement("span", {
       className: "d-block d-lg-none"
     }, /*#__PURE__*/React__default.createElement("img", {
@@ -10125,8 +10117,8 @@ var LandingPage = function LandingPage(props) {
     className: "d-none d-lg-block landing-page-bg"
   }, /*#__PURE__*/React__default.createElement("div", {
     className: "logo mx-auto"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "https://inon.vn/"
+  }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
+    to: '/'
   }, /*#__PURE__*/React__default.createElement("img", {
     src: IMAGE.LOGO,
     alt: "logo"
@@ -10247,6 +10239,44 @@ var ConfirmAlert = function ConfirmAlert() {
   }, otherConfigs), content);
 };
 
+var CheckLocationChange = function CheckLocationChange() {
+  var history = reactRouterDom.useHistory();
+  var dispatch = reactRedux.useDispatch();
+
+  var _useSelector = reactRedux.useSelector(function (state) {
+    return state.customizer;
+  }),
+      appId = _useSelector.appId;
+
+  var _useSelector2 = reactRedux.useSelector(function (state) {
+    return state.auth;
+  }),
+      authToken = _useSelector2.authToken;
+
+  React.useEffect(function () {
+    var id;
+
+    if (window.location.href.includes('/app/')) {
+      id = AppId.APP_NO1;
+    } else if (window.location.href.includes('/insurance/')) {
+      id = AppId.INSURANCE_APP;
+    } else if (window.location.href.includes('/supplement/')) {
+      id = AppId.SUPPLEMENT_APP;
+    } else {
+      id = AppId.ELITE_APP;
+    }
+
+    if (appId !== id) {
+      dispatch(setAppId(id));
+    }
+
+    if ([AppId.APP_NO1, AppId.SUPPLEMENT_APP, AppId.INSURANCE_APP].indexOf(id) >= 0 && !authToken) {
+      history.push('/');
+    }
+  }, [history.location.pathname]);
+  return /*#__PURE__*/React__default.createElement("span", null);
+};
+
 var AppRouter = function AppRouter(props) {
   var checkLoginStatus = props.checkLoginStatus,
       appId = props.appId,
@@ -10258,11 +10288,10 @@ var AppRouter = function AppRouter(props) {
       children = props.children,
       loadNavtigation = props.loadNavtigation,
       loadUserRoles = props.loadUserRoles,
-      setAppId = props.setAppId,
       history = props.history,
-      message = props.message;
+      message = props.message,
+      footerApp = props.footerApp;
   React.useEffect(function () {
-    setAppId(appId);
     var urlParams = new URLSearchParams(document.location.search);
     var code = urlParams.get('code') || (appId === AppId.ELITE_APP ? guest.authToken : authToken);
     var redirectUrl = urlParams.get('redirectUrl');
@@ -10271,28 +10300,14 @@ var AppRouter = function AppRouter(props) {
       checkLoginStatus(code, redirectUrl);
     }
 
-    if (code) {
-      loadNavtigation(appId, function () {
-        return loadUserRoles();
-      });
+    if (authToken) {
+      loadNavtigation(appId);
+      loadUserRoles();
     }
   }, [authToken]);
-
-  var setMessages = function setMessages(message) {
-    if (message === void 0) {
-      message = {};
-    }
-
-    var newMessage = {};
-    Object.keys(message).forEach(function (key) {
-      newMessage[appId + '.' + key] = message[key];
-    });
-    return newMessage;
-  };
-
   var appMessage = {
-    en: _extends({}, messages_en, setMessages(message.en)),
-    vi: _extends({}, messages_vi, setMessages(message.vi))
+    en: _extends({}, messages_en, message.en),
+    vi: _extends({}, messages_vi, message.vi)
   };
   var settingRoutes = [{
     path: 'account-info',
@@ -10348,7 +10363,7 @@ var AppRouter = function AppRouter(props) {
       }), /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, settingRoutes.map(function (item) {
         return /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
           key: item.path,
-          path: "/" + item.path,
+          path: "/app/" + item.path,
           render: function render() {
             return /*#__PURE__*/React__default.createElement(item.component, {
               activeTab: item.path
@@ -10360,7 +10375,7 @@ var AppRouter = function AppRouter(props) {
         render: function render() {
           return children;
         }
-      }))) : /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, landingPageRoutes.map(function (item) {
+      }))) : /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactRouterDom.Switch, null, landingPageRoutes.map(function (item) {
         return /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
           key: item.path,
           path: "/" + item.path,
@@ -10370,23 +10385,17 @@ var AppRouter = function AppRouter(props) {
             });
           }
         });
-      }), appId === AppId.ELITE_APP ? /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
+      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
         path: "/",
         render: function render() {
           return children;
         }
-      }) : /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
-        from: "/",
-        to: "/login"
-      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
-        path: "/social-login",
-        component: SocialLogin
       }), /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
         from: "/",
-        to: "/"
-      }));
+        to: "/intro"
+      })), React__default.createElement(footerApp));
     }
-  }))), /*#__PURE__*/React__default.createElement(reactToastify.ToastContainer, {
+  })), /*#__PURE__*/React__default.createElement(CheckLocationChange, null)), /*#__PURE__*/React__default.createElement(reactToastify.ToastContainer, {
     hideProgressBar: true,
     position: "top-right",
     autoClose: 5000,
@@ -10401,7 +10410,8 @@ var mapStateToProps$3 = function mapStateToProps(state) {
     authToken: state.auth.authToken,
     guest: state.auth.guest,
     loginStatus: state.auth.loginStatus,
-    user: state.auth.user
+    user: state.auth.user,
+    appId: state.customizer.appId
   };
 };
 
@@ -10426,7 +10436,18 @@ var LoadingSpinner = function LoadingSpinner() {
   }),
       isLoading = _useSelector.isLoading;
 
-  return isLoading ? /*#__PURE__*/React__default.createElement(TopBarProgress, null) : null;
+  return isLoading ? /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("div", {
+    className: "app-loading"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "load-icon"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "loader"
+  }), /*#__PURE__*/React__default.createElement("img", {
+    alt: "InOn-logo",
+    src: RESOURCE_URL + "InOn-logo.svg"
+  })), /*#__PURE__*/React__default.createElement("div", {
+    className: "fade"
+  }))) : null;
 };
 
 var RippleButton = function RippleButton(_ref) {
@@ -10464,7 +10485,8 @@ var App = function App(_ref) {
       appReducer = _ref.appReducer,
       message = _ref.message,
       apiBaseUrl = _ref.apiBaseUrl,
-      history = _ref.history;
+      history = _ref.history,
+      footerApp = _ref.footerApp;
   var middlewares = [thunk, createDebounce()];
   var composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || redux.compose;
   var store = redux.createStore(rootReducer(appReducer), {}, composeEnhancers(redux.applyMiddleware.apply(void 0, middlewares)));
@@ -10481,7 +10503,8 @@ var App = function App(_ref) {
     message: message,
     appId: appId,
     history: history,
-    children: children
+    children: children,
+    footerApp: footerApp
   })));
 };
 
@@ -10661,6 +10684,7 @@ exports.DatePicker = DatePicker;
 exports.FallbackSpinner = FallbackSpinner;
 exports.GeneralInfo = GeneralInfo;
 exports.HttpClient = HttpClient;
+exports.LandingPage = LandingPage;
 exports.Radio = Radio;
 exports.ReactTable = ReactTable;
 exports.Select = Select;
@@ -10677,4 +10701,3 @@ exports.useDistrictList = useDistrictList;
 exports.usePageAuthorities = usePageAuthorities;
 exports.useWardList = useWardList;
 exports.useWindowDimensions = useWindowDimensions;
-//# sourceMappingURL=index.js.map

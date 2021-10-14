@@ -9358,6 +9358,8 @@ footer .footer-mobile {
     width: 4.5rem; }
   footer .footer-mobile .w-25 {
     width: 25%; }
+  footer .footer-mobile span {
+    color: #338955; }
 
 footer.navbar-shadow {
   box-shadow: 0px -1px 4px 0px rgba(0, 0, 0, 0.15); }
@@ -11925,6 +11927,81 @@ body .vertical-layout.fixed-footer .main-menu.menu-fixed {
   100% {
     transform: rotate(1turn);
     opacity: 1; } }
+
+.app-loading .load-icon {
+  display: block;
+  left: calc(50% - 70px);
+  position: fixed;
+  top: calc(50% - 70px);
+  z-index: 10000; }
+  .app-loading .load-icon .loader {
+    border: 16px solid #f3f3f3;
+    /* Light grey */
+    border-top: 16px solid #73c14f;
+    /* Dark Green */
+    border-radius: 50%;
+    top: 0;
+    left: 0;
+    width: 150px;
+    height: 150px;
+    -webkit-animation: spinloader 1.5s linear infinite;
+            animation: spinloader 1.5s linear infinite; }
+  .app-loading .load-icon img {
+    width: 105px;
+    position: relative;
+    top: -94px;
+    left: 22px; }
+
+@-webkit-keyframes spinloader {
+  0% {
+    transform: rotate(0deg); }
+  100% {
+    transform: rotate(360deg); } }
+
+@keyframes spinloader {
+  0% {
+    transform: rotate(0deg); }
+  100% {
+    transform: rotate(360deg); } }
+
+@media (max-width: 576px) {
+  .app-loading .load-icon {
+    left: calc(50% - 50px);
+    position: fixed;
+    top: calc(50% - 50px); }
+    .app-loading .load-icon .loader {
+      border: 12px solid #f3f3f3;
+      /* Light grey */
+      border-top: 12px solid #73c14f;
+      width: 100px;
+      height: 100px; }
+    .app-loading .load-icon img {
+      width: 60px;
+      position: relative;
+      top: -62px;
+      left: 20px; } }
+
+@-webkit-keyframes spinlogo {
+  0% {
+    transform: rotate(360deg); }
+  100% {
+    transform: rotate(0deg); } }
+
+@keyframes spinlogo {
+  0% {
+    transform: rotate(360deg); }
+  100% {
+    transform: rotate(0deg); } }
+
+.app-loading .fade {
+  background: rgba(1, 18, 34, 0.5);
+  height: 100%;
+  left: 0;
+  top: 0;
+  opacity: 1;
+  width: 100%;
+  z-index: 9999;
+  position: fixed; }
 
 .vx-autocomplete-container {
   position: relative; }
@@ -23655,6 +23732,9 @@ html[dir="rtl"] body .ps__rail-y {
   -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
   background-color: #aaa; }
 
+body {
+  padding: env(safe-area-inset); }
+
 .loading {
   position: absolute;
   left: calc(50% - 35px);
@@ -23725,3 +23805,78 @@ html[dir="rtl"] body .ps__rail-y {
   100% {
     transform: rotate(1turn);
     opacity: 1; } }
+
+.app-loading .load-icon {
+  display: block;
+  left: calc(50% - 70px);
+  position: fixed;
+  top: calc(50% - 70px);
+  z-index: 10000; }
+  .app-loading .load-icon .loader {
+    border: 16px solid #f3f3f3;
+    /* Light grey */
+    border-top: 16px solid #73c14f;
+    /* Dark Green */
+    border-radius: 50%;
+    top: 0;
+    left: 0;
+    width: 150px;
+    height: 150px;
+    -webkit-animation: spinloader 1.5s linear infinite;
+            animation: spinloader 1.5s linear infinite; }
+  .app-loading .load-icon img {
+    width: 105px;
+    position: relative;
+    top: -94px;
+    left: 22px; }
+
+@-webkit-keyframes spinloader {
+  0% {
+    transform: rotate(0deg); }
+  100% {
+    transform: rotate(360deg); } }
+
+@keyframes spinloader {
+  0% {
+    transform: rotate(0deg); }
+  100% {
+    transform: rotate(360deg); } }
+
+@media (max-width: 576px) {
+  .app-loading .load-icon {
+    left: calc(50% - 50px);
+    position: fixed;
+    top: calc(50% - 50px); }
+    .app-loading .load-icon .loader {
+      border: 12px solid #f3f3f3;
+      /* Light grey */
+      border-top: 12px solid #73c14f;
+      width: 100px;
+      height: 100px; }
+    .app-loading .load-icon img {
+      width: 60px;
+      position: relative;
+      top: -62px;
+      left: 20px; } }
+
+@-webkit-keyframes spinlogo {
+  0% {
+    transform: rotate(360deg); }
+  100% {
+    transform: rotate(0deg); } }
+
+@keyframes spinlogo {
+  0% {
+    transform: rotate(360deg); }
+  100% {
+    transform: rotate(0deg); } }
+
+.app-loading .fade {
+  background: rgba(1, 18, 34, 0.5);
+  height: 100%;
+  left: 0;
+  top: 0;
+  opacity: 1;
+  width: 100%;
+  z-index: 9999;
+  position: fixed; }

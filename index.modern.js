@@ -1,6 +1,6 @@
 import { FormattedMessage, useIntl, IntlProvider } from 'react-intl';
 export { FormattedMessage } from 'react-intl';
-import React, { useState, useEffect, Component, PureComponent, useCallback, useRef } from 'react';
+import React, { useState as useState$1, useEffect, Component, PureComponent, useCallback, useRef } from 'react';
 import { createBrowserHistory } from 'history';
 import Axios from 'axios';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
@@ -18,7 +18,7 @@ import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/es/storage';
 import { useHistory, Link as Link$1, Router, Switch, Route, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
-import { FormGroup, Label, DropdownMenu, DropdownItem, Media, Modal, ModalHeader, ModalBody, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Navbar as Navbar$1, Button, Badge, Input, Row, Col, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, ModalFooter, ButtonGroup, UncontrolledButtonDropdown } from 'reactstrap';
+import { FormGroup, Label, DropdownMenu, DropdownItem, Media, Modal, ModalHeader, ModalBody, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Navbar as Navbar$1, Button, Badge, Input, Row, Col, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, ButtonGroup, ModalFooter, UncontrolledButtonDropdown } from 'reactstrap';
 export { Button } from 'reactstrap';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
@@ -33,9 +33,9 @@ import ReactSelect from 'react-select';
 import AsyncSelect from 'react-select/async';
 import CreatableSelect from 'react-select/creatable';
 import QRCode from 'easyqrcodejs';
+import firebase from 'firebase';
 import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
 import GoogleLogin from 'react-google-login';
-import firebase from 'firebase';
 import OtpInput from 'react-otp-input';
 import styled from 'styled-components';
 import SweetAlert from 'react-bootstrap-sweetalert';
@@ -55,7 +55,7 @@ const AppId = {
   DIVAY_APP: 'DIVAY_APP'
 };
 
-const API_BASE_URL = 'https://apisit.inon.vn';
+const API_BASE_URL = 'https://api.inon.vn';
 const RESOURCE_URL = 'https://sit2.inon.vn/resources/images/';
 const FB_APP_ID = '2651185198505964';
 const GOOGLE_APP_ID = '400818618331-k9ptcdcgr99po0g5q5mh8e5ekodgj61n.apps.googleusercontent.com';
@@ -171,16 +171,16 @@ const IC_TYPES_OPTIONS = [{
 const getExternalAppUrl = (appId, url) => {
   switch (appId) {
     case AppId.APP_NO1:
-      return `${window.location.origin}/app${url}?r edirectUrl=${url}`;
+      return `/app${url}`;
 
     case AppId.INSURANCE_APP:
-      return `${window.location.origin}/insurance${url}?redirectUrl=${url}`;
+      return `/insurance${url}`;
 
     case AppId.SUPPLEMENT_APP:
-      return `${window.location.origin}/supplement${url}?redirectUrl=${url}`;
+      return `/supplement${url}`;
 
     case AppId.ELITE_APP:
-      return `${window.location.origin}${url}?redirectUrl=${url}`;
+      return `${url}`;
   }
 };
 const getContextPath = appId => {
@@ -445,27 +445,11 @@ const setUpHttpClient = (store, apiBaseUrl) => {
 
   HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
   HttpClient.interceptors.request.use(config => {
-    const {
-      appId
-    } = store.getState().customizer;
-    const token = appId === AppId.ELITE_APP ? store.getState().auth.guest.authToken : store.getState().auth.authToken;
-    const sessionExpireTime = store.getState().auth.sessionExpireTime;
+    const token = store.getState().auth.guest.authToken || store.getState().auth.authToken;
     language = localStorage.getItem('language');
 
     if (token) {
-      store.dispatch(changeActionExpireTime());
       config.headers.Authorization = `Bearer ${token}`;
-      const isSessionExpired = moment().isAfter(moment(sessionExpireTime));
-
-      if (sessionExpireTime && isSessionExpired) {
-        toastError( /*#__PURE__*/React.createElement(FormattedMessage, {
-          id: "common.sessionExpired"
-        }));
-        store.dispatch({
-          type: LOGOUT_ACTION
-        });
-        return;
-      }
     }
 
     config.headers.appId = store.getState().customizer.appId;
@@ -473,6 +457,7 @@ const setUpHttpClient = (store, apiBaseUrl) => {
     config.headers.latitude = localStorage.getItem('latitude');
     config.headers.longitude = localStorage.getItem('longitude');
     config.headers.deviceId = deviceId;
+    config.headers.isMobileApp = true;
     config.headers['Accept-Language'] = language;
 
     if (!config.isBackgroundRequest) {
@@ -514,6 +499,7 @@ const setUpHttpClient = (store, apiBaseUrl) => {
         store.dispatch({
           type: 'LOGOUT_ACTION'
         });
+        history.push('/login');
         break;
 
       case 500:
@@ -664,7 +650,7 @@ const mapRoleToNavItem = role => {
   item.icon = /*#__PURE__*/React.createElement(IconTag, {
     size: 20
   });
-  item.navLink = role.menuPath;
+  item.navLink = getExternalAppUrl(role.appId, role.menuPath);
 
   if (role.isHighlight) {
     item.badge = 'primary';
@@ -682,10 +668,10 @@ const getNativgationConfig = (appId, navConfigs) => {
   }
 
   return navConfigs.map(item => {
-    item.isExternalApp = item.appId !== appId;
+    item.isExternalApp = false;
 
     if (item.children) {
-      item.children.map(child => child.isExternalApp = child.appId !== appId);
+      item.children.map(child => child.isExternalApp = false);
 
       if (item.children.length === 1) {
         item.navLink = item.children[0].navLink;
@@ -720,15 +706,9 @@ NavBarService.getUserGroupRole = groupId => {
 
 const LOAD_NATIVGATION = 'LOAD_NATIVGATION';
 const LOAD_USER_ROLE = 'LOAD_USER_ROLE';
-const loadNavtigation = (appId, callback) => {
+const loadNavtigation = appId => {
   return async dispatch => {
     const res = await NavBarService.getNativagtion();
-
-    if (!res || !res.data) {
-      return;
-    }
-
-    callback();
     const roles = res.data || [];
     const navConfigs = getNativgationConfig(appId, roles);
     dispatch({
@@ -762,14 +742,16 @@ const loadUserRoles = () => {
 };
 const goBackHomePage = () => {
   return async (dispatch, getState) => {
-    const {
-      appId
-    } = getState().customizer;
+    var _getState, _getState$auth;
 
-    if (appId === AppId.APP_NO1) {
-      history.push('/');
+    const {
+      authToken
+    } = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$auth = _getState.auth) === null || _getState$auth === void 0 ? void 0 : _getState$auth.guest) || {};
+
+    if (authToken) {
+      history.push('/home');
     } else {
-      window.location.href = getExternalAppUrl(appId === AppId.ELITE_APP ? AppId.ELITE_APP : AppId.APP_NO1, '/');
+      history.push('/app/home');
     }
   };
 };
@@ -812,7 +794,6 @@ const checkLoginStatus = (authToken, redirectUrl) => {
           type: LOGIN_ACTION,
           payload
         });
-        history.replace(redirectUrl || window.location.pathname.replace(`/${getContextPath(appId)}/`, '/'));
       } else {
         dispatch({
           type: LOGOUT_ACTION
@@ -827,9 +808,6 @@ const checkLoginStatus = (authToken, redirectUrl) => {
 };
 const loginAction = user => {
   return async (dispatch, getState) => {
-    dispatch({
-      type: LOGOUT_ACTION
-    });
     user.rememberMe = user.isRemeberMe;
     let response = await AuthService.login(user);
     const {
@@ -895,7 +873,7 @@ const loginAction = user => {
         });
       }
 
-      redirectMainApp(isGuest, getState().customizer.appId);
+      redirectMainApp(isGuest);
     } else {
       dispatch({
         type: LOGOUT_ACTION
@@ -929,13 +907,7 @@ const socialLogin = (data, loginMethod, openAddInfoPopup) => {
         }
       }
     });
-    setTimeout(() => {
-      if (getState().customizer.appId !== AppId.ELITE_APP) {
-        window.location.href = getExternalAppUrl(AppId.ELITE_APP, '/');
-      } else {
-        history.push('/');
-      }
-    }, 500);
+    dispatch(goBackHomePage());
   };
 };
 const changeIsGuest = isGuest => {
@@ -947,25 +919,19 @@ const changeIsGuest = isGuest => {
   };
 };
 const goToGuestApp = () => {
-  return (dispatch, getState) => {
-    const {
-      appId
-    } = getState().customizer;
+  return dispatch => {
     dispatch({
       type: GOTO_GUEST_APP
     });
-    redirectMainApp(true, appId);
+    redirectMainApp(true);
   };
 };
 const goToAgencyApp = () => {
-  return (dispatch, getState) => {
-    const {
-      appId
-    } = getState().customizer;
+  return dispatch => {
     dispatch({
       type: GOTO_AGENCY_APP
     });
-    redirectMainApp(false, appId);
+    redirectMainApp(false);
   };
 };
 const createPassword = password => {
@@ -1097,6 +1063,7 @@ const logoutAction = () => {
     dispatch({
       type: LOGOUT_ACTION
     });
+    history.push('/login');
   };
 };
 const updateUserInfo = (user, avatarImage) => {
@@ -1160,13 +1127,6 @@ const changeLanguageSetting = (lang, callBack) => {
     }
   };
 };
-const changeActionExpireTime = () => {
-  return dispatch => {
-    dispatch({
-      type: CHANGE_SESSION_EXPIRE_TIME
-    });
-  };
-};
 const verifyPhoneNumber = values => {
   return async dispatch => {
     const res = await AuthService.verifyPhoneNumber(values);
@@ -1180,16 +1140,12 @@ const verifyPhoneNumber = values => {
   };
 };
 
-const redirectMainApp = (isGuest, appId) => {
-  setTimeout(() => {
-    const mainApp = isGuest ? AppId.ELITE_APP : AppId.APP_NO1;
-
-    if (appId !== mainApp) {
-      window.location.href = getExternalAppUrl(mainApp, '/');
-    } else {
-      history.push('/');
-    }
-  }, 200);
+const redirectMainApp = isGuest => {
+  if (isGuest) {
+    history.push('/');
+  } else {
+    history.push('/app/home');
+  }
 };
 
 const themeConfig = {
@@ -1353,6 +1309,7 @@ const authReducers = (state = { ...authInitialState
     case GOTO_AGENCY_APP:
       {
         return { ...state,
+          guest: {},
           user: state.guest.user,
           authToken: state.guest.authToken
         };
@@ -1375,6 +1332,24 @@ const authReducers = (state = { ...authInitialState
   }
 };
 
+const LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
+const LOAD_USER_ROLE$1 = 'LOAD_USER_ROLE';
+const goBackHomePage$1 = () => {
+  return async (dispatch, getState) => {
+    var _getState, _getState$auth;
+
+    const {
+      authToken
+    } = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$auth = _getState.auth) === null || _getState$auth === void 0 ? void 0 : _getState$auth.guest) || {};
+
+    if (authToken) {
+      history.push('/home');
+    } else {
+      history.push('/app/home');
+    }
+  };
+};
+
 const initialState = {
   navConfigs: [],
   roles: [],
@@ -1383,13 +1358,13 @@ const initialState = {
 
 const navbarReducer = (state = initialState, action) => {
   switch (action.type) {
-    case LOAD_NATIVGATION:
+    case LOAD_NATIVGATION$1:
       return { ...state,
         navConfigs: action.payload.navConfigs,
         roles: action.payload.roles
       };
 
-    case LOAD_USER_ROLE:
+    case LOAD_USER_ROLE$1:
       return { ...state,
         userRoles: action.payload
       };
@@ -1398,6 +1373,11 @@ const navbarReducer = (state = initialState, action) => {
       return state;
   }
 };
+
+const SHOW_LOADING_BAR$1 = 'SHOW_LOADING_BAR';
+const HIDE_LOADING_BAR$1 = 'HIDE_LOADING_BAR';
+const SHOW_CONFIRM_ALERT$1 = 'SHOW_CONFIRM_ALERT';
+const HIDE_CONFIRM_ALERT$1 = 'HIDE_CONFIRM_ALERT';
 
 const DEFAULT_CONFIRM_ALERT = {
   title: '',
@@ -1415,19 +1395,19 @@ const initialState$1 = {
 
 const uiReducer = (state = initialState$1, action) => {
   switch (action.type) {
-    case SHOW_LOADING_BAR:
+    case SHOW_LOADING_BAR$1:
       return { ...state,
         isLoading: true,
         loading: state.loading.add(action.payload)
       };
 
-    case HIDE_LOADING_BAR:
+    case HIDE_LOADING_BAR$1:
       state.loading.delete(action.payload);
       return { ...state,
         isLoading: !!state.loading.size
       };
 
-    case SHOW_CONFIRM_ALERT:
+    case SHOW_CONFIRM_ALERT$1:
       return { ...state,
         confirmAlert: {
           isShow: true,
@@ -1436,7 +1416,7 @@ const uiReducer = (state = initialState$1, action) => {
         }
       };
 
-    case HIDE_CONFIRM_ALERT:
+    case HIDE_CONFIRM_ALERT$1:
       return { ...state,
         confirmAlert: { ...DEFAULT_CONFIRM_ALERT
         }
@@ -2023,7 +2003,7 @@ const UserDropdown = () => {
   }, /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/account-info')
+    onClick: e => handleNavigation(e, '/app/account-info')
   }, /*#__PURE__*/React.createElement(User, {
     size: 14,
     className: "mr-50"
@@ -2034,7 +2014,7 @@ const UserDropdown = () => {
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/change-password')
+    onClick: e => handleNavigation(e, '/app/change-password')
   }, /*#__PURE__*/React.createElement(Lock, {
     size: 14,
     className: "mr-50"
@@ -2045,7 +2025,7 @@ const UserDropdown = () => {
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/share-with-friends')
+    onClick: e => handleNavigation(e, '/app/share-with-friends')
   }, /*#__PURE__*/React.createElement(Link, {
     size: 14,
     className: "mr-50"
@@ -2093,7 +2073,7 @@ const UserDropdown = () => {
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/language')
+    onClick: e => handleNavigation(e, '/app/language')
   }, /*#__PURE__*/React.createElement(Globe, {
     size: 14,
     className: "mr-50"
@@ -2104,7 +2084,7 @@ const UserDropdown = () => {
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     href: "#",
-    onClick: e => handleNavigation(e, '/contact')
+    onClick: e => handleNavigation(e, '/app/contact')
   }, /*#__PURE__*/React.createElement(MessageSquare, {
     size: 14,
     className: "mr-50"
@@ -2133,8 +2113,8 @@ const Notifications = () => {
   const {
     notifications
   } = useSelector(state => state.notifications);
-  const [notificationModal, setNotificationModal] = useState(false);
-  const [notification, setNotification] = useState(null);
+  const [notificationModal, setNotificationModal] = useState$1(false);
+  const [notification, setNotification] = useState$1(null);
   useEffect(() => {
     dispatch(getMyNotification());
   }, []);
@@ -2239,8 +2219,8 @@ const NavbarUser = props => {
   let {
     roles = []
   } = useSelector(state => state.navbar);
-  const [navbarSearch, setNavbarSearch] = useState(false);
-  const [suggestions, setSuggestions] = useState([]);
+  const [navbarSearch, setNavbarSearch] = useState$1(false);
+  const [suggestions, setSuggestions] = useState$1([]);
   const intl = useIntl();
   userSettings = userSettings || {};
   userDetails = userDetails || {};
@@ -2448,7 +2428,7 @@ function getWindowDimensions() {
 }
 
 function useWindowDimensions() {
-  const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
+  const [windowDimensions, setWindowDimensions] = useState$1(getWindowDimensions());
   useEffect(() => {
     function handleResize() {
       setWindowDimensions(getWindowDimensions());
@@ -2525,18 +2505,16 @@ const Footer = props => {
     id: "menu.home"
   })))), /*#__PURE__*/React.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#",
-    onClick: e => goToPage(e, '/contracts')
+  }, /*#__PURE__*/React.createElement("span", {
+    onClick: e => goToPage(e, '/insurance/contracts')
   }, /*#__PURE__*/React.createElement(List, null), /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "menu.contract"
   })))), /*#__PURE__*/React.createElement("div", {
     className: "position-relative w-25"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#",
-    onClick: e => goToPage(e, '/buy-insurance')
+  }, /*#__PURE__*/React.createElement("span", {
+    onClick: e => goToPage(e, '/insurance/buy-insurance')
   }, /*#__PURE__*/React.createElement("img", {
     src: IMAGE.BUY_INSURANCE,
     className: "buy-insurance",
@@ -2551,8 +2529,7 @@ const Footer = props => {
     id: "menu.buyInsurance"
   })))), /*#__PURE__*/React.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React.createElement("span", {
     onClick: onClickBackHome
   }, /*#__PURE__*/React.createElement(Gift, null), /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
@@ -2560,9 +2537,8 @@ const Footer = props => {
     id: "menu.promotion"
   })))), /*#__PURE__*/React.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#",
-    onClick: e => history.push('/contact')
+  }, /*#__PURE__*/React.createElement("span", {
+    onClick: e => history.push('/app/contact')
   }, /*#__PURE__*/React.createElement(MessageSquare, null), /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -2638,7 +2614,7 @@ const SidebarHeader = props => {
   const dispatch = useDispatch();
 
   const onClickHome = () => {
-    dispatch(goBackHomePage());
+    dispatch(goBackHomePage$1());
   };
 
   return /*#__PURE__*/React.createElement("div", {
@@ -3659,12 +3635,14 @@ var messages_en = {
 	"menu.partnerDebt": "Partner Debt",
 	"menu.allDebt": "All Debt",
 	"menu.permissionGoup": "Permission Group",
-	"menu.creatPermissionGoup": "Create Permision Group",
+	"menu.creatPermissionGoup": "Create Permission Group",
 	"menu.permissionGoupManagement": "Permission Group Management",
 	"menu.insuranceMotobike": "Motobike Insurance",
 	"menu.insuranceCar": "Car Insurance",
 	"menu.approveOpenAccount": "Account Approval",
 	"menu.promotion": "Promotion",
+	"menu.createPromotion": "Create Promotion",
+	"menu.promotionManagement": "Promotion Management",
 	"menu.personalBonusHistory": "Personal Bonus History",
 	"menu.partnerBonusHistory": "Partner Bonus History",
 	"menu.allBonusHistory": "All Bonus History",
@@ -4041,6 +4019,8 @@ var messages_vi = {
 	"menu.insuranceCar": "Bảo hiểm ô tô",
 	"menu.approveOpenAccount": "Phê duyệt mở tài khoản",
 	"menu.promotion": "Khuyến mại",
+	"menu.createPromotion": "Tạo khuyến mại",
+	"menu.promotionManagement": "Quản lý khuyến mại",
 	"menu.personalBonusHistory": "Lịch sử điểm thưởng cá nhân",
 	"menu.partnerBonusHistory": "Lịch sử điểm thưởng đối tác",
 	"menu.allBonusHistory": "Lịch sử điểm thưởng tất cả",
@@ -7153,8 +7133,8 @@ const BaseFormDatePicker = ({
 };
 
 const Select = props => {
-  const [inputValue, setInputValue] = useState(props.value);
-  const [isFocused, setIsFocused] = useState(false);
+  const [inputValue, setInputValue] = useState$1(props.value);
+  const [isFocused, setIsFocused] = useState$1(false);
   useEffect(() => {
     setInputValue(props.value);
   }, [props.value]);
@@ -7352,7 +7332,7 @@ const mapDataToSelectOptions = (data, lang) => {
 };
 
 const useCityList = countryCode => {
-  const [cities, setCities] = useState([]);
+  const [cities, setCities] = useState$1([]);
   const {
     locale
   } = useIntl();
@@ -7376,7 +7356,7 @@ const useCityList = countryCode => {
   };
 };
 const useDistrictList = cityCode => {
-  const [districts, setDistricts] = useState([]);
+  const [districts, setDistricts] = useState$1([]);
   const {
     locale
   } = useIntl();
@@ -7400,7 +7380,7 @@ const useDistrictList = cityCode => {
   };
 };
 const useWardList = districtCode => {
-  const [wards, setWards] = useState([]);
+  const [wards, setWards] = useState$1([]);
   const {
     locale
   } = useIntl();
@@ -7424,7 +7404,7 @@ const useWardList = districtCode => {
   };
 };
 const useBankList = () => {
-  const [banks, setBanks] = useState([]);
+  const [banks, setBanks] = useState$1([]);
   const {
     locale
   } = useIntl();
@@ -7517,7 +7497,7 @@ const UserAccountTab = () => {
   const {
     banks
   } = useBankList();
-  const [avatar, setAvatar] = useState({
+  const [avatar, setAvatar] = useState$1({
     url: userSettings.avatar,
     file: null
   });
@@ -7982,7 +7962,7 @@ const ShareWithFriends = () => {
 };
 
 const AccountSettings = props => {
-  const [activeTab, setActiveTab] = useState('account-info');
+  const [activeTab, setActiveTab] = useState$1('account-info');
   const history = useHistory();
   useEffect(() => setActiveTab(props.activeTab), [props.activeTab]);
   return /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
@@ -8000,7 +7980,7 @@ const AccountSettings = props => {
       active: activeTab === 'account-info'
     }),
     onClick: () => {
-      history.push('/account-info');
+      history.push('/app/account-info');
     }
   }, /*#__PURE__*/React.createElement(User, {
     size: 16
@@ -8013,7 +7993,7 @@ const AccountSettings = props => {
       active: activeTab === 'change-password'
     }),
     onClick: () => {
-      history.push('/change-password');
+      history.push('/app/change-password');
     }
   }, /*#__PURE__*/React.createElement(Lock, {
     size: 16
@@ -8026,7 +8006,7 @@ const AccountSettings = props => {
       active: activeTab === 'share-with-friends'
     }),
     onClick: () => {
-      history.push('/share-with-friends');
+      history.push('/app/share-with-friends');
     }
   }, /*#__PURE__*/React.createElement(Link, {
     size: 16
@@ -8084,7 +8064,7 @@ class Radio extends React.Component {
 const LanguageTab = () => {
   const dispatch = useDispatch();
   const intl = useIntl();
-  const [lang, setLang] = useState(localStorage.getItem('language'));
+  const [lang, setLang] = useState$1(localStorage.getItem('language'));
 
   const onClickBackHome = () => {
     dispatch(showConfirmAlert({
@@ -8258,7 +8238,7 @@ const ContactTab = () => {
 };
 
 const GeneralInfo = props => {
-  const [activeTab, setActiveTab] = useState('terms-and-condition');
+  const [activeTab, setActiveTab] = useState$1('terms-and-condition');
   const history = useHistory();
   useEffect(() => setActiveTab(props.activeTab), [props.activeTab]);
   return /*#__PURE__*/React.createElement(Row, {
@@ -8278,7 +8258,7 @@ const GeneralInfo = props => {
       active: activeTab === 'language'
     }),
     onClick: () => {
-      history.push('/language');
+      history.push('/app/language');
     }
   }, /*#__PURE__*/React.createElement(Globe, {
     size: 16
@@ -8291,7 +8271,7 @@ const GeneralInfo = props => {
       active: activeTab === 'contact'
     }),
     onClick: () => {
-      history.push('/contact');
+      history.push('/app/contact');
     }
   }, /*#__PURE__*/React.createElement(MessageSquare, {
     size: 16
@@ -8329,11 +8309,240 @@ class CheckBox extends React.Component {
 
 }
 
+const AppSelection = ({
+  isLogin
+}) => {
+  const {
+    isGuest
+  } = useSelector(state => state.auth);
+  const dispatch = useDispatch();
+
+  const onClickChangeAppType = value => {
+    dispatch(changeIsGuest(value));
+  };
+
+  return /*#__PURE__*/React.createElement("div", {
+    className: "text-center mt-2 mb-3"
+  }, /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: isLogin ? 'socialLogin.youLoginAs' : 'socialLogin.youRegisterAs'
+  })), /*#__PURE__*/React.createElement(ButtonGroup, {
+    className: "w-100"
+  }, /*#__PURE__*/React.createElement(Button, {
+    className: "btn-app-selection left",
+    active: !isGuest,
+    type: "button",
+    onClick: () => onClickChangeAppType(false)
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "icon mr-1"
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "40",
+    height: "40",
+    viewBox: "0 0 40 40",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M20 25C22.7614 25 25 22.7614 25 20C25 17.2386 22.7614 15 20 15C17.2386 15 15 17.2386 15 20C15 22.7614 17.2386 25 20 25Z",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M20 35V35.0167",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M5 15V15.0167",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M35 15V15.0167",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M13.3333 33.4999C11.0589 32.3906 9.1021 30.7238 7.64506 28.6548C6.18802 26.5858 5.2781 24.1818 5 21.6666",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M26.6663 33.4999C28.9407 32.3906 30.8975 30.7238 32.3545 28.6548C33.8116 26.5858 34.7215 24.1818 34.9996 21.6666",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M10.333 8.33345C13.0132 6.14004 16.3697 4.94164 19.833 4.94164C23.2963 4.94164 26.6529 6.14004 29.333 8.33345",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }))), /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "socialLogin.agent"
+  })), /*#__PURE__*/React.createElement(Button, {
+    className: "btn-app-selection right",
+    active: isGuest,
+    onClick: () => onClickChangeAppType(true),
+    type: "button"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "icon mr-1"
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "40",
+    height: "40",
+    viewBox: "0 0 40 40",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M20.0005 18.4999C23.3143 18.4999 26.0007 15.8136 26.0007 12.4997C26.0007 9.1859 23.3143 6.49951 20.0005 6.49951C16.6866 6.49951 14.0002 9.1859 14.0002 12.4997C14.0002 15.8136 16.6866 18.4999 20.0005 18.4999Z",
+    stroke: isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M10.9993 33.5004V30.5003C10.9993 28.9089 11.6314 27.3828 12.7567 26.2575C13.8819 25.1322 15.4081 24.5001 16.9995 24.5001H22.9997C24.5911 24.5001 26.1172 25.1322 27.2425 26.2575C28.3678 27.3828 28.9999 28.9089 28.9999 30.5003V33.5004",
+    stroke: isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }))), /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "socialLogin.personal"
+  }))));
+};
+
+const formSchema$1 = object().shape({
+  username: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "login.username.required"
+  })),
+  password: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "login.password.required"
+  })).matches(PASSWORD_REGEX, () => /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "createPassword.password.invalid"
+  }))
+});
+
+const Login = () => {
+  const [rememberMe, setRememberMe] = useState$1(null);
+  const [isRemeberMe, setIsRemeberMe] = useState$1(false);
+  const dispatch = useDispatch();
+  const {
+    isGuest
+  } = useSelector(state => state.auth);
+  const loginStatus = useSelector(state => state.auth.loginStatus);
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem(REMEMBER_ME_TOKEN));
+
+    if (user) {
+      setRememberMe(user);
+    }
+  }, []);
+
+  const onSubmit = (values, actions) => {
+    dispatch(loginAction({
+      username: trimValue(values.username),
+      password: values.password,
+      isGuest,
+      isRemeberMe
+    }));
+    actions.setSubmitting(false);
+  };
+
+  const onClickNotMe = () => {
+    localStorage.removeItem(REMEMBER_ME_TOKEN);
+    setRememberMe(null);
+  };
+
+  return /*#__PURE__*/React.createElement(Formik, {
+    enableReinitialize: true,
+    initialValues: {
+      username: rememberMe ? rememberMe.username : '',
+      password: ''
+    },
+    onSubmit: onSubmit,
+    validationSchema: formSchema$1
+  }, ({
+    errors,
+    touched
+  }) => /*#__PURE__*/React.createElement(Form, null, /*#__PURE__*/React.createElement(AppSelection, {
+    isLogin: true
+  }), rememberMe ? /*#__PURE__*/React.createElement("h4", {
+    className: "text-center mb-2"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "login.sayHi",
+    values: {
+      name: rememberMe.name
+    }
+  })) : /*#__PURE__*/React.createElement(BaseFormGroup, {
+    messageId: "login.username",
+    fieldName: "username",
+    errors: errors,
+    touched: touched
+  }), /*#__PURE__*/React.createElement(FormGroup, {
+    className: "form-label-group position-relative"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "login.password"
+  }, msg => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(FastField, {
+    name: "password"
+  }, ({
+    field,
+    form
+  }) => /*#__PURE__*/React.createElement(Input, Object.assign({
+    type: "password",
+    className: `form-control ${errors.password && touched.password && 'is-invalid'}`,
+    placeholder: msg
+  }, field, {
+    onChange: e => form.setFieldValue('password', e.target.value)
+  }))), errors.password && touched.password ? /*#__PURE__*/React.createElement("div", {
+    className: "text-danger"
+  }, errors.password) : null, /*#__PURE__*/React.createElement(Label, null, msg)))), /*#__PURE__*/React.createElement(FormGroup, {
+    className: "d-flex justify-content-between align-items-center"
+  }, rememberMe ? /*#__PURE__*/React.createElement("a", {
+    className: "text-dark-green",
+    onClick: onClickNotMe
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "login.notMe"
+  })) : /*#__PURE__*/React.createElement(CheckBox, {
+    color: "primary",
+    icon: /*#__PURE__*/React.createElement(Check, {
+      className: "vx-icon",
+      size: 16
+    }),
+    label: /*#__PURE__*/React.createElement(FormattedMessage, {
+      id: "login.rememberMe"
+    }),
+    onChange: e => setIsRemeberMe(e.target.checked),
+    defaultChecked: isRemeberMe
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "divider",
+    style: {
+      height: '30px'
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "float-right"
+  }, /*#__PURE__*/React.createElement(Link$1, {
+    to: "/forgot-password",
+    className: "text-secondary font-weight-bold"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "forgotPassword"
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "d-flex justify-content-center"
+  }, /*#__PURE__*/React.createElement(Button, {
+    color: "primary",
+    type: "submit"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "login"
+  })))));
+};
+
 const SocialLogin = ({
   isLogin
 }) => {
-  const [isOpenModal, setIsOpenModal] = useState(false);
-  const [userInfo, setUserInfo] = useState({});
+  const [isOpenModal, setIsOpenModal] = useState$1(false);
+  const [userInfo, setUserInfo] = useState$1({});
   const dispatch = useDispatch();
 
   const openAddInfoModal = userInfo => {
@@ -8488,238 +8697,6 @@ const SocialLogin = ({
   })))))));
 };
 
-const AppSelection = ({
-  isLogin
-}) => {
-  const {
-    isGuest
-  } = useSelector(state => state.auth);
-  const dispatch = useDispatch();
-
-  const onClickChangeAppType = value => {
-    dispatch(changeIsGuest(value));
-  };
-
-  return /*#__PURE__*/React.createElement("div", {
-    className: "text-center mt-2 mb-3"
-  }, /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: isLogin ? 'socialLogin.youLoginAs' : 'socialLogin.youRegisterAs'
-  })), /*#__PURE__*/React.createElement(ButtonGroup, {
-    className: "w-100"
-  }, /*#__PURE__*/React.createElement(Button, {
-    className: "btn-app-selection left",
-    active: !isGuest,
-    type: "button",
-    onClick: () => onClickChangeAppType(false)
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "icon mr-1"
-  }, /*#__PURE__*/React.createElement("svg", {
-    width: "40",
-    height: "40",
-    viewBox: "0 0 40 40",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, /*#__PURE__*/React.createElement("path", {
-    d: "M20 25C22.7614 25 25 22.7614 25 20C25 17.2386 22.7614 15 20 15C17.2386 15 15 17.2386 15 20C15 22.7614 17.2386 25 20 25Z",
-    stroke: !isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M20 35V35.0167",
-    stroke: !isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M5 15V15.0167",
-    stroke: !isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M35 15V15.0167",
-    stroke: !isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M13.3333 33.4999C11.0589 32.3906 9.1021 30.7238 7.64506 28.6548C6.18802 26.5858 5.2781 24.1818 5 21.6666",
-    stroke: !isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M26.6663 33.4999C28.9407 32.3906 30.8975 30.7238 32.3545 28.6548C33.8116 26.5858 34.7215 24.1818 34.9996 21.6666",
-    stroke: !isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M10.333 8.33345C13.0132 6.14004 16.3697 4.94164 19.833 4.94164C23.2963 4.94164 26.6529 6.14004 29.333 8.33345",
-    stroke: !isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }))), /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "socialLogin.agent"
-  })), /*#__PURE__*/React.createElement(Button, {
-    className: "btn-app-selection right",
-    active: isGuest,
-    onClick: () => onClickChangeAppType(true),
-    type: "button"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "icon mr-1"
-  }, /*#__PURE__*/React.createElement("svg", {
-    width: "40",
-    height: "40",
-    viewBox: "0 0 40 40",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, /*#__PURE__*/React.createElement("path", {
-    d: "M20.0005 18.4999C23.3143 18.4999 26.0007 15.8136 26.0007 12.4997C26.0007 9.1859 23.3143 6.49951 20.0005 6.49951C16.6866 6.49951 14.0002 9.1859 14.0002 12.4997C14.0002 15.8136 16.6866 18.4999 20.0005 18.4999Z",
-    stroke: isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M10.9993 33.5004V30.5003C10.9993 28.9089 11.6314 27.3828 12.7567 26.2575C13.8819 25.1322 15.4081 24.5001 16.9995 24.5001H22.9997C24.5911 24.5001 26.1172 25.1322 27.2425 26.2575C28.3678 27.3828 28.9999 28.9089 28.9999 30.5003V33.5004",
-    stroke: isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }))), /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "socialLogin.personal"
-  }))));
-};
-
-const formSchema$1 = object().shape({
-  username: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "login.username.required"
-  })),
-  password: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "login.password.required"
-  })).matches(PASSWORD_REGEX, () => /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "createPassword.password.invalid"
-  }))
-});
-
-const Login = () => {
-  const [rememberMe, setRememberMe] = useState(null);
-  const [isRemeberMe, setIsRemeberMe] = useState(false);
-  const dispatch = useDispatch();
-  const {
-    isGuest
-  } = useSelector(state => state.auth);
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem(REMEMBER_ME_TOKEN));
-
-    if (user) {
-      setRememberMe(user);
-    }
-  }, []);
-
-  const onSubmit = (values, actions) => {
-    dispatch(loginAction({
-      username: trimValue(values.username),
-      password: values.password,
-      isGuest,
-      isRemeberMe
-    }));
-    actions.setSubmitting(false);
-  };
-
-  const onClickNotMe = () => {
-    localStorage.removeItem(REMEMBER_ME_TOKEN);
-    setRememberMe(null);
-  };
-
-  return /*#__PURE__*/React.createElement(Formik, {
-    enableReinitialize: true,
-    initialValues: {
-      username: rememberMe ? rememberMe.username : '',
-      password: ''
-    },
-    onSubmit: onSubmit,
-    validationSchema: formSchema$1
-  }, ({
-    errors,
-    touched
-  }) => /*#__PURE__*/React.createElement(Form, null, /*#__PURE__*/React.createElement(AppSelection, {
-    isLogin: true
-  }), rememberMe ? /*#__PURE__*/React.createElement("h4", {
-    className: "text-center mb-2"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "login.sayHi",
-    values: {
-      name: rememberMe.name
-    }
-  })) : /*#__PURE__*/React.createElement(BaseFormGroup, {
-    messageId: "login.username",
-    fieldName: "username",
-    errors: errors,
-    touched: touched
-  }), /*#__PURE__*/React.createElement(FormGroup, {
-    className: "form-label-group position-relative"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "login.password"
-  }, msg => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(FastField, {
-    name: "password"
-  }, ({
-    field,
-    form
-  }) => /*#__PURE__*/React.createElement(Input, Object.assign({
-    type: "password",
-    className: `form-control ${errors.password && touched.password && 'is-invalid'}`,
-    placeholder: msg
-  }, field, {
-    onChange: e => form.setFieldValue('password', e.target.value)
-  }))), errors.password && touched.password ? /*#__PURE__*/React.createElement("div", {
-    className: "text-danger"
-  }, errors.password) : null, /*#__PURE__*/React.createElement(Label, null, msg)))), /*#__PURE__*/React.createElement(FormGroup, {
-    className: "d-flex justify-content-between align-items-center"
-  }, rememberMe ? /*#__PURE__*/React.createElement("a", {
-    className: "text-dark-green",
-    onClick: onClickNotMe
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "login.notMe"
-  })) : /*#__PURE__*/React.createElement(CheckBox, {
-    color: "primary",
-    icon: /*#__PURE__*/React.createElement(Check, {
-      className: "vx-icon",
-      size: 16
-    }),
-    label: /*#__PURE__*/React.createElement(FormattedMessage, {
-      id: "login.rememberMe"
-    }),
-    onChange: e => setIsRemeberMe(e.target.checked),
-    defaultChecked: isRemeberMe
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "divider",
-    style: {
-      height: '30px'
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "float-right"
-  }, /*#__PURE__*/React.createElement(Link$1, {
-    to: "/forgot-password",
-    className: "text-secondary font-weight-bold"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "forgotPassword"
-  })))), /*#__PURE__*/React.createElement("div", {
-    className: "d-flex justify-content-center"
-  }, /*#__PURE__*/React.createElement(Button, {
-    color: "primary",
-    type: "submit"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "login"
-  }))), isGuest ? /*#__PURE__*/React.createElement("div", {
-    className: "mt-2"
-  }, /*#__PURE__*/React.createElement(SocialLogin, {
-    isLogin: true
-  })) : null));
-};
-
 const formSchema$2 = object().shape({
   fullName: string().required( /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "register.fullname.required"
@@ -8746,8 +8723,8 @@ const formSchema$2 = object().shape({
 const Register = () => {
   var _guest$user, _guest$user2, _guest$user3;
 
-  const [isAppcepted, setIsAppcepted] = useState(false);
-  const [isNotApccepted, setIsNotAccepted] = useState(false);
+  const [isAppcepted, setIsAppcepted] = useState$1(false);
+  const [isNotApccepted, setIsNotAccepted] = useState$1(false);
   const {
     isGuest,
     register: registerInfo,
@@ -8876,8 +8853,8 @@ const formSchema$3 = object().shape({
 });
 
 const ForgotPassword = () => {
-  const [isModalOpen, setIsOpenModal] = useState(false);
-  const [emailSuggestion, setEmailSuggestion] = useState('');
+  const [isModalOpen, setIsOpenModal] = useState$1(false);
+  const [emailSuggestion, setEmailSuggestion] = useState$1('');
   const dispatch = useDispatch();
 
   const onSubmit = (values, actions) => {
@@ -9068,7 +9045,7 @@ const CreatePassword = ({
 };
 
 const VerifyOtp = () => {
-  const [otp, setOtp] = useState('');
+  const [otp, setOtp] = useState$1('');
   const registerInfo = useSelector(state => state.auth.register);
   const dispatch = useDispatch();
   const history = useHistory();
@@ -9147,8 +9124,8 @@ const VerifyOtp = () => {
 
 const LandingPageHeader = () => /*#__PURE__*/React.createElement(Context.Consumer, null, context => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
   className: "d-flex justify-content-between align-items-center"
-}, /*#__PURE__*/React.createElement("a", {
-  href: "https://inon.vn/"
+}, /*#__PURE__*/React.createElement(Link$1, {
+  to: '/'
 }, /*#__PURE__*/React.createElement("span", {
   className: "d-block d-lg-none"
 }, /*#__PURE__*/React.createElement("img", {
@@ -9420,7 +9397,7 @@ const PageStyle = styled.div(_t || (_t = _`
 `), IMAGE.LANDING_PAGE_BG);
 
 const LandingPage = props => {
-  const [activeTab, setActiveTab] = useState('');
+  const [activeTab, setActiveTab] = useState$1('');
   const history = useHistory();
   useEffect(() => {
     setActiveTab(props.activeTab || 'login');
@@ -9471,8 +9448,8 @@ const LandingPage = props => {
     className: "d-none d-lg-block landing-page-bg"
   }, /*#__PURE__*/React.createElement("div", {
     className: "logo mx-auto"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "https://inon.vn/"
+  }, /*#__PURE__*/React.createElement(Link$1, {
+    to: '/'
   }, /*#__PURE__*/React.createElement("img", {
     src: IMAGE.LOGO,
     alt: "logo"
@@ -9587,6 +9564,39 @@ const ConfirmAlert = () => {
   }, otherConfigs), content);
 };
 
+const CheckLocationChange = () => {
+  const history = useHistory();
+  const dispatch = useDispatch();
+  const {
+    appId
+  } = useSelector(state => state.customizer);
+  const {
+    authToken
+  } = useSelector(state => state.auth);
+  useEffect(() => {
+    let id;
+
+    if (window.location.href.includes('/app/')) {
+      id = AppId.APP_NO1;
+    } else if (window.location.href.includes('/insurance/')) {
+      id = AppId.INSURANCE_APP;
+    } else if (window.location.href.includes('/supplement/')) {
+      id = AppId.SUPPLEMENT_APP;
+    } else {
+      id = AppId.ELITE_APP;
+    }
+
+    if (appId !== id) {
+      dispatch(setAppId(id));
+    }
+
+    if ([AppId.APP_NO1, AppId.SUPPLEMENT_APP, AppId.INSURANCE_APP].indexOf(id) >= 0 && !authToken) {
+      history.push('/');
+    }
+  }, [history.location.pathname]);
+  return /*#__PURE__*/React.createElement("span", null);
+};
+
 const AppRouter = props => {
   const {
     checkLoginStatus,
@@ -9600,12 +9610,11 @@ const AppRouter = props => {
     loadNavtigation,
     changeIsGuest,
     loadUserRoles,
-    setAppId,
     history,
-    message
+    message,
+    footerApp
   } = props;
   useEffect(() => {
-    setAppId(appId);
     const urlParams = new URLSearchParams(document.location.search);
     const code = urlParams.get('code') || (appId === AppId.ELITE_APP ? guest.authToken : authToken);
     const redirectUrl = urlParams.get('redirectUrl');
@@ -9614,25 +9623,17 @@ const AppRouter = props => {
       checkLoginStatus(code, redirectUrl);
     }
 
-    if (code) {
-      loadNavtigation(appId, () => loadUserRoles());
+    if (authToken) {
+      loadNavtigation(appId);
+      loadUserRoles();
     }
   }, [authToken]);
-
-  const setMessages = (message = {}) => {
-    const newMessage = {};
-    Object.keys(message).forEach(key => {
-      newMessage[appId + '.' + key] = message[key];
-    });
-    return newMessage;
-  };
-
   const appMessage = {
     en: { ...messages_en,
-      ...setMessages(message.en)
+      ...message.en
     },
     vi: { ...messages_vi,
-      ...setMessages(message.vi)
+      ...message.vi
     }
   };
   const settingRoutes = [{
@@ -9687,33 +9688,27 @@ const AppRouter = props => {
       appId
     }, /*#__PURE__*/React.createElement(Switch, null, settingRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
       key: item.path,
-      path: `/${item.path}`,
+      path: `/app/${item.path}`,
       render: () => /*#__PURE__*/React.createElement(item.component, {
         activeTab: item.path
       })
     })), /*#__PURE__*/React.createElement(Route, {
       path: "/",
       render: () => children
-    }))) : /*#__PURE__*/React.createElement(Switch, null, landingPageRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
+    }))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Switch, null, landingPageRoutes.map(item => /*#__PURE__*/React.createElement(Route, {
       key: item.path,
       path: `/${item.path}`,
       render: () => /*#__PURE__*/React.createElement(LandingPage, {
         activeTab: item.path
       })
-    })), appId === AppId.ELITE_APP ? /*#__PURE__*/React.createElement(Route, {
+    })), /*#__PURE__*/React.createElement(Route, {
       path: "/",
       render: () => children
-    }) : /*#__PURE__*/React.createElement(Redirect, {
-      from: "/",
-      to: "/login"
-    }), /*#__PURE__*/React.createElement(Route, {
-      path: "/social-login",
-      component: SocialLogin
     }), /*#__PURE__*/React.createElement(Redirect, {
       from: "/",
-      to: "/"
-    }))
-  }))), /*#__PURE__*/React.createElement(ToastContainer, {
+      to: "/intro"
+    })), React.createElement(footerApp))
+  })), /*#__PURE__*/React.createElement(CheckLocationChange, null)), /*#__PURE__*/React.createElement(ToastContainer, {
     hideProgressBar: true,
     position: "top-right",
     autoClose: 5000,
@@ -9728,7 +9723,8 @@ const mapStateToProps$3 = state => {
     authToken: state.auth.authToken,
     guest: state.auth.guest,
     loginStatus: state.auth.loginStatus,
-    user: state.auth.user
+    user: state.auth.user,
+    appId: state.customizer.appId
   };
 };
 
@@ -9751,7 +9747,18 @@ const LoadingSpinner = () => {
   const {
     isLoading
   } = useSelector(state => state.ui);
-  return isLoading ? /*#__PURE__*/React.createElement(TopBarProgress, null) : null;
+  return isLoading ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "app-loading"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "load-icon"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "loader"
+  }), /*#__PURE__*/React.createElement("img", {
+    alt: "InOn-logo",
+    src: `${RESOURCE_URL}InOn-logo.svg`
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "fade"
+  }))) : null;
 };
 
 const RippleButton = ({
@@ -9787,7 +9794,8 @@ const App = ({
   appReducer,
   message,
   apiBaseUrl,
-  history
+  history,
+  footerApp
 }) => {
   const middlewares = [thunk, createDebounce()];
   const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
@@ -9805,7 +9813,8 @@ const App = ({
     message: message,
     appId: appId,
     history: history,
-    children: children
+    children: children,
+    footerApp: footerApp
   })));
 };
 
@@ -9910,7 +9919,7 @@ const ReactTable = props => {
 };
 
 const usePageAuthorities = () => {
-  const [authorities, setAuthorities] = useState([]);
+  const [authorities, setAuthorities] = useState$1([]);
   const {
     userRoles,
     roles
@@ -9932,5 +9941,4 @@ const usePageAuthorities = () => {
   return authorities;
 };
 
-export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, Radio, ReactTable, Select, changeIsGuest, goBackHomePage, goToAgencyApp, hideConfirmAlert, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
-//# sourceMappingURL=index.modern.js.map
+export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, LandingPage, Radio, ReactTable, Select, changeIsGuest, goBackHomePage, goToAgencyApp, hideConfirmAlert, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
