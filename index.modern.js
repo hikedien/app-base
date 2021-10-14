@@ -512,6 +512,7 @@ const setUpHttpClient = (store, apiBaseUrl) => {
         store.dispatch({
           type: 'LOGOUT_ACTION'
         });
+        history.push('/login');
         break;
 
       case 500:
