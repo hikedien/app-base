@@ -1,6 +1,6 @@
 import { FormattedMessage, useIntl, IntlProvider } from 'react-intl';
 export { FormattedMessage } from 'react-intl';
-import React, { useState, useEffect as useEffect$1, Component, PureComponent, useCallback, useRef } from 'react';
+import React, { useState, useEffect, Component, PureComponent, useCallback, useRef } from 'react';
 import { createBrowserHistory } from 'history';
 import Axios from 'axios';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
@@ -2119,7 +2119,7 @@ const Notifications = () => {
   } = useSelector(state => state.notifications);
   const [notificationModal, setNotificationModal] = useState(false);
   const [notification, setNotification] = useState(null);
-  useEffect$1(() => {
+  useEffect(() => {
     dispatch(getMyNotification());
   }, []);
 
@@ -2433,7 +2433,7 @@ function getWindowDimensions() {
 
 function useWindowDimensions() {
   const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
-  useEffect$1(() => {
+  useEffect(() => {
     function handleResize() {
       setWindowDimensions(getWindowDimensions());
     }
@@ -7155,7 +7155,7 @@ const BaseFormDatePicker = ({
 const Select = props => {
   const [inputValue, setInputValue] = useState(props.value);
   const [isFocused, setIsFocused] = useState(false);
-  useEffect$1(() => {
+  useEffect(() => {
     setInputValue(props.value);
   }, [props.value]);
 
@@ -7356,7 +7356,7 @@ const useCityList = countryCode => {
   const {
     locale
   } = useIntl();
-  useEffect$1(() => {
+  useEffect(() => {
     if (!countryCode) {
       return;
     }
@@ -7380,7 +7380,7 @@ const useDistrictList = cityCode => {
   const {
     locale
   } = useIntl();
-  useEffect$1(() => {
+  useEffect(() => {
     if (!cityCode) {
       return;
     }
@@ -7404,7 +7404,7 @@ const useWardList = districtCode => {
   const {
     locale
   } = useIntl();
-  useEffect$1(() => {
+  useEffect(() => {
     if (!districtCode) {
       return;
     }
@@ -7428,7 +7428,7 @@ const useBankList = () => {
   const {
     locale
   } = useIntl();
-  useEffect$1(() => {
+  useEffect(() => {
     loadBanks();
   }, []);
 
@@ -7521,7 +7521,7 @@ const UserAccountTab = () => {
     url: userSettings.avatar,
     file: null
   });
-  useEffect$1(() => {
+  useEffect(() => {
     if (userDetails && userDetails.city) {
       loadDitrictsByCity(userDetails.city);
       loadWardsByDistrict(userDetails.district);
@@ -7926,7 +7926,7 @@ const ShareWithFriends = () => {
   const [qrCodeInstance, setQRCodeInstance] = useState(null);
   const qrCode = useRef();
   const shareUrl = `${document.location.origin}/home?refId=${user.username}`;
-  useEffect$1(() => {
+  useEffect(() => {
     const options = {
       text: shareUrl,
       colorDark: '#106D5A',
@@ -7984,7 +7984,7 @@ const ShareWithFriends = () => {
 const AccountSettings = props => {
   const [activeTab, setActiveTab] = useState('account-info');
   const history = useHistory();
-  useEffect$1(() => setActiveTab(props.activeTab), [props.activeTab]);
+  useEffect(() => setActiveTab(props.activeTab), [props.activeTab]);
   return /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
     sm: "12"
   }, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardHeader, null, /*#__PURE__*/React.createElement(CardTitle, {
@@ -8260,7 +8260,7 @@ const ContactTab = () => {
 const GeneralInfo = props => {
   const [activeTab, setActiveTab] = useState('terms-and-condition');
   const history = useHistory();
-  useEffect$1(() => setActiveTab(props.activeTab), [props.activeTab]);
+  useEffect(() => setActiveTab(props.activeTab), [props.activeTab]);
   return /*#__PURE__*/React.createElement(Row, {
     className: "general-info"
   }, /*#__PURE__*/React.createElement(Col, {
@@ -8611,7 +8611,7 @@ const Login = () => {
   const {
     isGuest
   } = useSelector(state => state.auth);
-  useEffect$1(() => {
+  useEffect(() => {
     const user = JSON.parse(localStorage.getItem(REMEMBER_ME_TOKEN));
 
     if (user) {
@@ -8755,7 +8755,7 @@ const Register = () => {
   } = useSelector(state => state.auth);
   const dispatch = useDispatch();
   const history = useHistory();
-  useEffect$1(() => {
+  useEffect(() => {
     window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier("recaptcha-container", {
       size: "invisible",
       callback: recaptchaToken => {
@@ -8993,7 +8993,7 @@ const CreatePassword = ({
 }) => {
   const history = useHistory();
   const dispatch = useDispatch();
-  useEffect$1(() => {
+  useEffect(() => {
     _isCreatePassword ? setRegisterToken() : setResetPassword();
   }, []);
 
@@ -9074,7 +9074,7 @@ const VerifyOtp = () => {
   const history = useHistory();
   const intl = useIntl();
   const NUM_INPUTS = 6;
-  useEffect$1(() => {}, []);
+  useEffect(() => {}, []);
 
   const onChangeOtp = value => {
     setOtp(value);
@@ -9422,7 +9422,7 @@ const PageStyle = styled.div(_t || (_t = _`
 const LandingPage = props => {
   const [activeTab, setActiveTab] = useState('');
   const history = useHistory();
-  useEffect$1(() => {
+  useEffect(() => {
     setActiveTab(props.activeTab || 'login');
   }, [props.activeTab]);
 
@@ -9596,7 +9596,7 @@ const CheckLocationChange = () => {
   const {
     authToken
   } = useSelector(state => state.auth);
-  useEffect$1(() => {
+  useEffect(() => {
     let id;
 
     if (window.location.href.includes('/app/')) {
@@ -9637,7 +9637,7 @@ const AppRouter = props => {
     history,
     message
   } = props;
-  useEffect$1(() => {
+  useEffect(() => {
     const urlParams = new URLSearchParams(document.location.search);
     const code = urlParams.get('code') || (appId === AppId.ELITE_APP ? guest.authToken : authToken);
     const redirectUrl = urlParams.get('redirectUrl');
@@ -9945,7 +9945,7 @@ const usePageAuthorities = () => {
     roles
   } = useSelector(state => state.navbar);
   const history = useHistory();
-  useEffect$1(() => {
+  useEffect(() => {
     const roleList = roles.filter(item => history.location.pathname.includes(item.menuPath));
 
     if (!roleList.length) {
