@@ -9639,7 +9639,7 @@ const AppRouter = props => {
       checkLoginStatus(code, redirectUrl);
     }
 
-    if (code) {
+    if (authToken) {
       loadNavtigation(appId, () => loadUserRoles());
     }
   }, [authToken]);
