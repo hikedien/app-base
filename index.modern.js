@@ -1,15 +1,15 @@
-import { FormattedMessage, injectIntl, IntlProvider, useIntl } from 'react-intl';
+import { FormattedMessage, useIntl, IntlProvider } from 'react-intl';
 export { FormattedMessage } from 'react-intl';
-import React, { useState, useEffect, Component, PureComponent, useCallback, useRef } from 'react';
+import React, { useState as useState$1, useEffect as useEffect$1, Component, PureComponent, useCallback, useRef } from 'react';
 import { createBrowserHistory } from 'history';
 import Axios from 'axios';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
 import * as Icon from 'react-feather';
-import { AlertTriangle, Check, User, Lock, Link, Users, FileText, Shield, Globe, MessageSquare, Power, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, Download, Clipboard, ChevronDown, Sun } from 'react-feather';
+import { AlertTriangle, Check, User, Lock, Link, Users, FileText, Shield, Globe, MessageSquare, Power, Server, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, Download, Clipboard, Sun } from 'react-feather';
 import { toast, ToastContainer } from 'react-toastify';
 export { toast } from 'react-toastify';
 import moment from 'moment';
-import { useDispatch, connect, useSelector, Provider } from 'react-redux';
+import { useDispatch, useSelector, connect, Provider } from 'react-redux';
 import { combineReducers, createStore, applyMiddleware, compose } from 'redux';
 import createDebounce from 'redux-debounced';
 import thunk from 'redux-thunk';
@@ -18,11 +18,12 @@ import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/es/storage';
 import { useHistory, Link as Link$1, Router, Switch, Route } from 'react-router-dom';
 import classnames from 'classnames';
-import { FormGroup, Label, DropdownMenu, DropdownItem, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Navbar as Navbar$1, Button, Badge, Input, Row, Col, Media, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, Collapse, Modal, ModalHeader, ModalBody, ModalFooter, ButtonGroup, UncontrolledButtonDropdown } from 'reactstrap';
+import { FormGroup, Label, DropdownMenu, DropdownItem, Media, Modal, ModalHeader, ModalBody, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Navbar as Navbar$1, Button, Badge, Input, Row, Col, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, ModalFooter, ButtonGroup, UncontrolledButtonDropdown } from 'reactstrap';
 export { Button } from 'reactstrap';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import PerfectScrollbar from 'react-perfect-scrollbar';
+import 'moment/locale/vi';
 import ScrollToTop from 'react-scroll-up';
 import Hammer from 'react-hammerjs';
 import { object, string, ref } from 'yup';
@@ -76,6 +77,11 @@ const API_COMPLETE_INFO = '/nth/onboarding/api/authenticate/complete-info';
 const API_FORGOT_PASSWORD = '/api/authenticate/forgot-password';
 const API_RESET_PASSWORD = '/api/authenticate/reset-password';
 const API_EMAIL_SUGGESTION = '/nth/user/api/authenticate/email-suggestion';
+const API_GET_MY_NOTIFICATIONS = '/nth/notification/api/my-notification';
+const API_CHECK_NEW_NOTIFICATIONS = '/nth/notification/api/notifications-es';
+const API_GET_NOTIFICATION_FROM_ESPUBLIC = '/nth/notification/api/user-notifications-es';
+const API_UPDATE_NOTIFICATION = '/nth/notification/';
+const API_UPDATE_ALL_NOTIFICATION_STATUS = '/nth/notification/api/my-notifications-status';
 const API_R_200 = 200;
 const API_GET_CITIES_BY_COUNTRY = '/nth/datacollection/api/citiesbycountry';
 const API_GET_DISTRICTS_BY_CITY = '/nth/datacollection/api/districtsbycity';
@@ -93,6 +99,8 @@ const PERSONAL_ID_REGEX = /^(\d{9}|\d{12})$/;
 const CITIZEN_INDENTIFY_REGEX = /^(\d{12})$/;
 const PASSPORT_REGEX = /^(?!^0+$)[a-zA-Z0-9]{3,20}$/;
 const NAME_REGEX = /^([ÀÁÂÃÈÉÊẾÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêếềìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹý0-9A-Za-z_. ])+$/g;
+const TERMS_PDF = 'https://sit2.inon.vn/resources/pdf/terms-and-conditions.pdf';
+const POLICY_PDF = 'https://sit2.inon.vn/resources/pdf/privacy-policy.pdf';
 const FIRE_BASE_CONFIGS = {
   apiKey: "AIzaSyCvWX-pLEPOxjwp2AJq3_t11JQjRMKtaT8",
   authDomain: "inonvn.firebaseapp.com",
@@ -118,6 +126,8 @@ const MAX_FILE_SIZE = 5;
 const CONTACT_PHONE = '0899.300.800';
 const SESSION_TIMEOUT = 30;
 const DATE_TIME_FORMAT = 'YYYY/MM/DD HH:mm:ss';
+const ANDROID_APP_LINK = 'https://play.google.com/store/apps/details?id=com.inon.vn';
+const IOS_APP_LINK = 'https://apps.apple.com/app/id1574202853';
 const LOGIN_STATUS = {
   SUCCESS: 'SUCCESS',
   FAIL: 'FAIL'
@@ -188,7 +198,7 @@ const getContextPath = appId => {
       return '';
   }
 };
-const getPropObject = (obj, prop) => {
+const getPropObject$1 = (obj, prop) => {
   if (!obj) {
     return null;
   }
@@ -262,6 +272,11 @@ var appConfigs = {
     API_FORGOT_PASSWORD: API_FORGOT_PASSWORD,
     API_RESET_PASSWORD: API_RESET_PASSWORD,
     API_EMAIL_SUGGESTION: API_EMAIL_SUGGESTION,
+    API_GET_MY_NOTIFICATIONS: API_GET_MY_NOTIFICATIONS,
+    API_CHECK_NEW_NOTIFICATIONS: API_CHECK_NEW_NOTIFICATIONS,
+    API_GET_NOTIFICATION_FROM_ESPUBLIC: API_GET_NOTIFICATION_FROM_ESPUBLIC,
+    API_UPDATE_NOTIFICATION: API_UPDATE_NOTIFICATION,
+    API_UPDATE_ALL_NOTIFICATION_STATUS: API_UPDATE_ALL_NOTIFICATION_STATUS,
     API_R_200: API_R_200,
     API_GET_CITIES_BY_COUNTRY: API_GET_CITIES_BY_COUNTRY,
     API_GET_DISTRICTS_BY_CITY: API_GET_DISTRICTS_BY_CITY,
@@ -279,6 +294,8 @@ var appConfigs = {
     CITIZEN_INDENTIFY_REGEX: CITIZEN_INDENTIFY_REGEX,
     PASSPORT_REGEX: PASSPORT_REGEX,
     NAME_REGEX: NAME_REGEX,
+    TERMS_PDF: TERMS_PDF,
+    POLICY_PDF: POLICY_PDF,
     FIRE_BASE_CONFIGS: FIRE_BASE_CONFIGS,
     AUTHORITIES: AUTHORITIES,
     LOGIN_METHODS: LOGIN_METHODS,
@@ -287,22 +304,24 @@ var appConfigs = {
     CONTACT_PHONE: CONTACT_PHONE,
     SESSION_TIMEOUT: SESSION_TIMEOUT,
     DATE_TIME_FORMAT: DATE_TIME_FORMAT,
+    ANDROID_APP_LINK: ANDROID_APP_LINK,
+    IOS_APP_LINK: IOS_APP_LINK,
     LOGIN_STATUS: LOGIN_STATUS,
     USER_TYPE: USER_TYPE,
     GENDER_OPTIONS: GENDER_OPTIONS,
     IC_TYPES_OPTIONS: IC_TYPES_OPTIONS,
     getExternalAppUrl: getExternalAppUrl,
     getContextPath: getContextPath,
-    getPropObject: getPropObject,
+    getPropObject: getPropObject$1,
     USER_ROLE: USER_ROLE,
     IMAGE: IMAGE
 };
 
-let history = createBrowserHistory({
+let history$1 = createBrowserHistory({
   basename: ''
 });
 const setBaseHistory = appHistory => {
-  history = appHistory;
+  history$1 = appHistory;
 };
 
 const generateUUID = () => {
@@ -426,12 +445,27 @@ const setUpHttpClient = (store, apiBaseUrl) => {
 
   HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
   HttpClient.interceptors.request.use(config => {
-    const token = store.getState().auth.guest.authToken || store.getState().auth.authToken;
+    const {
+      appId
+    } = store.getState().customizer;
+    const token = appId === AppId.ELITE_APP ? store.getState().auth.guest.authToken : store.getState().auth.authToken;
+    const sessionExpireTime = store.getState().auth.sessionExpireTime;
     language = localStorage.getItem('language');
 
     if (token) {
       store.dispatch(changeActionExpireTime());
       config.headers.Authorization = `Bearer ${token}`;
+      const isSessionExpired = moment().isAfter(moment(sessionExpireTime));
+
+      if (sessionExpireTime && isSessionExpired) {
+        toastError( /*#__PURE__*/React.createElement(FormattedMessage, {
+          id: "common.sessionExpired"
+        }));
+        store.dispatch({
+          type: LOGOUT_ACTION
+        });
+        return;
+      }
     }
 
     config.headers.appId = store.getState().customizer.appId;
@@ -439,7 +473,6 @@ const setUpHttpClient = (store, apiBaseUrl) => {
     config.headers.latitude = localStorage.getItem('latitude');
     config.headers.longitude = localStorage.getItem('longitude');
     config.headers.deviceId = deviceId;
-    config.headers.isMobileApp = true;
     config.headers['Accept-Language'] = language;
 
     if (!config.isBackgroundRequest) {
@@ -688,9 +721,15 @@ NavBarService.getUserGroupRole = groupId => {
 
 const LOAD_NATIVGATION = 'LOAD_NATIVGATION';
 const LOAD_USER_ROLE = 'LOAD_USER_ROLE';
-const loadNavtigation = appId => {
+const loadNavtigation = (appId, callback) => {
   return async dispatch => {
     const res = await NavBarService.getNativagtion();
+
+    if (!res || !res.data) {
+      return;
+    }
+
+    callback();
     const roles = res.data || [];
     const navConfigs = getNativgationConfig(appId, roles);
     dispatch({
@@ -731,9 +770,9 @@ const goBackHomePage = () => {
     } = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$auth = _getState.auth) === null || _getState$auth === void 0 ? void 0 : _getState$auth.guest) || {};
 
     if (authToken) {
-      history.push('/home');
+      history$1.push('/home');
     } else {
-      history.push('/app/home');
+      history$1.push('/app/home');
     }
   };
 };
@@ -839,7 +878,7 @@ const loginAction = user => {
               id: "login.needRegisterPartner"
             }),
             onConfirm: () => {
-              history.push('/register');
+              history$1.push('/register');
             }
           }));
           return;
@@ -922,7 +961,7 @@ const createPassword = password => {
       const response = await AuthService.createPassword(password, getState().auth.register.token);
 
       if (response.status === 200 && response.data) {
-        history.push('/complete-information');
+        history$1.push('/complete-information');
       }
     } catch (error) {}
   };
@@ -937,7 +976,7 @@ const register = (values, isGuest) => {
           toastSuccess( /*#__PURE__*/React.createElement(FormattedMessage, {
             id: "register.registerSuccess"
           }));
-          history.push('/login');
+          history$1.push('/login');
         }
       }
     } catch (error) {}
@@ -953,7 +992,7 @@ const compeleteInfo = user => {
         toastSuccess( /*#__PURE__*/React.createElement(FormattedMessage, {
           id: "completeInformation.success"
         }));
-        history.push('/login');
+        history$1.push('/login');
       }
     } catch (error) {
       console.log(error);
@@ -973,7 +1012,7 @@ const saveRegisterToken = registerToken => {
         }
       });
     } else {
-      history.push('/login');
+      history$1.push('/login');
     }
   };
 };
@@ -1012,7 +1051,7 @@ const forgotPassword = ({
           type: SAVE_RESET_PASSWORD_TOKEN,
           payload: ''
         });
-        history.push('/login');
+        history$1.push('/login');
       }
     } catch (error) {}
   };
@@ -1030,7 +1069,7 @@ const resetPassword = password => {
           type: SAVE_RESET_PASSWORD_TOKEN,
           payload: ''
         });
-        history.push('/login');
+        history$1.push('/login');
       }
     } catch (error) {}
   };
@@ -1045,7 +1084,7 @@ const logoutAction = () => {
     dispatch({
       type: LOGOUT_ACTION
     });
-    history.push('/login');
+    history$1.push('/login');
   };
 };
 const updateUserInfo = (user, avatarImage) => {
@@ -1124,16 +1163,16 @@ const verifyPhoneNumber = values => {
       toastSuccess( /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "verifyAccount.otp.registerSuccess"
       }));
-      history.push('/login');
+      history$1.push('/login');
     }
   };
 };
 
 const redirectMainApp = isGuest => {
   if (isGuest) {
-    history.push('/');
+    history$1.push('/');
   } else {
-    history.push('/app/home');
+    history$1.push('/app/home');
   }
 };
 
@@ -1298,7 +1337,6 @@ const authReducers = (state = { ...authInitialState
     case GOTO_AGENCY_APP:
       {
         return { ...state,
-          guest: {},
           user: state.guest.user,
           authToken: state.guest.authToken
         };
@@ -1321,24 +1359,6 @@ const authReducers = (state = { ...authInitialState
   }
 };
 
-const LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
-const LOAD_USER_ROLE$1 = 'LOAD_USER_ROLE';
-const goBackHomePage$1 = () => {
-  return async (dispatch, getState) => {
-    var _getState, _getState$auth;
-
-    const {
-      authToken
-    } = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$auth = _getState.auth) === null || _getState$auth === void 0 ? void 0 : _getState$auth.guest) || {};
-
-    if (authToken) {
-      history.push('/home');
-    } else {
-      history.push('/app/home');
-    }
-  };
-};
-
 const initialState = {
   navConfigs: [],
   roles: [],
@@ -1347,13 +1367,13 @@ const initialState = {
 
 const navbarReducer = (state = initialState, action) => {
   switch (action.type) {
-    case LOAD_NATIVGATION$1:
+    case LOAD_NATIVGATION:
       return { ...state,
         navConfigs: action.payload.navConfigs,
         roles: action.payload.roles
       };
 
-    case LOAD_USER_ROLE$1:
+    case LOAD_USER_ROLE:
       return { ...state,
         userRoles: action.payload
       };
@@ -1361,22 +1381,6 @@ const navbarReducer = (state = initialState, action) => {
     default:
       return state;
   }
-};
-
-const SHOW_LOADING_BAR$1 = 'SHOW_LOADING_BAR';
-const HIDE_LOADING_BAR$1 = 'HIDE_LOADING_BAR';
-const SHOW_CONFIRM_ALERT$1 = 'SHOW_CONFIRM_ALERT';
-const HIDE_CONFIRM_ALERT$1 = 'HIDE_CONFIRM_ALERT';
-const showConfirmAlert$1 = configs => {
-  return dispatch => dispatch({
-    type: SHOW_CONFIRM_ALERT$1,
-    payload: configs
-  });
-};
-const hideConfirmAlert$1 = () => {
-  return dispatch => dispatch({
-    type: HIDE_CONFIRM_ALERT$1
-  });
 };
 
 const DEFAULT_CONFIRM_ALERT = {
@@ -1395,19 +1399,19 @@ const initialState$1 = {
 
 const uiReducer = (state = initialState$1, action) => {
   switch (action.type) {
-    case SHOW_LOADING_BAR$1:
+    case SHOW_LOADING_BAR:
       return { ...state,
         isLoading: true,
         loading: state.loading.add(action.payload)
       };
 
-    case HIDE_LOADING_BAR$1:
+    case HIDE_LOADING_BAR:
       state.loading.delete(action.payload);
       return { ...state,
         isLoading: !!state.loading.size
       };
 
-    case SHOW_CONFIRM_ALERT$1:
+    case SHOW_CONFIRM_ALERT:
       return { ...state,
         confirmAlert: {
           isShow: true,
@@ -1416,10 +1420,154 @@ const uiReducer = (state = initialState$1, action) => {
         }
       };
 
-    case HIDE_CONFIRM_ALERT$1:
+    case HIDE_CONFIRM_ALERT:
       return { ...state,
         confirmAlert: { ...DEFAULT_CONFIRM_ALERT
         }
+      };
+
+    default:
+      return state;
+  }
+};
+
+class NotificationService {}
+
+NotificationService.getMyNotifications = () => {
+  return HttpClient.get(API_GET_NOTIFICATION_FROM_ESPUBLIC, {
+    params: {
+      uuid: generateUUID()
+    },
+    isBackgroundRequest: true
+  });
+};
+
+NotificationService.checkNewNotification = () => {
+  return HttpClient.get(API_CHECK_NEW_NOTIFICATIONS, {
+    params: {
+      uuid: generateUUID()
+    },
+    isBackgroundRequest: true
+  });
+};
+
+NotificationService.updateNotificationStatus = notification => {
+  return HttpClient.put(API_UPDATE_NOTIFICATION, notification, {
+    isBackgroundRequest: true
+  });
+};
+
+NotificationService.updateAllNotificationStatus = () => {
+  return HttpClient.put(API_UPDATE_ALL_NOTIFICATION_STATUS, {}, {
+    params: 'READ',
+    isBackgroundRequest: true
+  });
+};
+
+const LOAD_MY_NOTIFICATIONS = 'LOAD_MY_NOTIFICATIONS';
+const RECEIVE_NEW_NOTIFICATIONS = 'RECEIVE_NEW_NOTIFICATIONS';
+const getMyNotification = notifications => {
+  return async dispatch => {
+    const res = await NotificationService.getMyNotifications();
+
+    if (!res || res.status !== 200) {
+      return;
+    }
+
+    res.data = [{
+      "id": 18,
+      "type": "system",
+      "userId": 2,
+      "read": false,
+      "deleted": false,
+      "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
+      "contentContentType": null,
+      "sendDate": "2021-08-23T20:14:02Z",
+      "updateDate": null,
+      "updateBy": null,
+      "templateId": 1,
+      "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
+      "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
+    }, {
+      "id": 19,
+      "type": "personal",
+      "userId": 2,
+      "read": false,
+      "deleted": false,
+      "content": "<p><strong>Đây la thông báo cá nhân</strong></p>\n",
+      "contentContentType": null,
+      "sendDate": "2021-08-23T20:14:02Z",
+      "updateDate": null,
+      "updateBy": null,
+      "templateId": 1,
+      "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
+      "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
+    }, {
+      "id": 20,
+      "type": "promotion",
+      "userId": 2,
+      "read": false,
+      "deleted": false,
+      "content": "<p><strong>Đây là thông báo khuyến mại</strong></p>\n",
+      "contentContentType": null,
+      "sendDate": "2021-08-23T20:14:02Z",
+      "updateDate": null,
+      "updateBy": null,
+      "templateId": 1,
+      "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
+      "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
+    }, {
+      "id": 21,
+      "type": "system",
+      "userId": 2,
+      "read": false,
+      "deleted": false,
+      "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
+      "contentContentType": null,
+      "sendDate": "2021-08-23T20:14:02Z",
+      "updateDate": null,
+      "updateBy": null,
+      "templateId": 1,
+      "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
+      "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
+    }, {
+      "id": 22,
+      "type": "system",
+      "userId": 2,
+      "read": false,
+      "deleted": false,
+      "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
+      "contentContentType": null,
+      "sendDate": "2021-08-23T20:14:02Z",
+      "updateDate": null,
+      "updateBy": null,
+      "templateId": 1,
+      "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
+      "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
+    }];
+    dispatch({
+      type: LOAD_MY_NOTIFICATIONS,
+      payload: res.data
+    });
+  };
+};
+
+const initialState$2 = {
+  notifications: [],
+  newNotifications: []
+};
+
+const notificationReducer = (state = { ...initialState$2
+}, action) => {
+  switch (action.type) {
+    case LOAD_MY_NOTIFICATIONS:
+      return { ...state,
+        notifications: action.payload
+      };
+
+    case RECEIVE_NEW_NOTIFICATIONS:
+      return { ...state,
+        newNotifications: action.payload
       };
 
     default:
@@ -1436,6 +1584,7 @@ const rootReducer = appReducer => combineReducers({
     blacklist: ['loginStatus']
   }, authReducers),
   navbar: navbarReducer,
+  notifications: notificationReducer,
   app: appReducer
 });
 
@@ -1905,8 +2054,8 @@ const UserDropdown = () => {
     divider: true
   }), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
-    href: "#",
-    onClick: e => handleNavigation(e, '/app/terms-and-condition')
+    target: '_blank',
+    href: TERMS_PDF
   }, /*#__PURE__*/React.createElement(FileText, {
     size: 14,
     className: "mr-50"
@@ -1916,8 +2065,8 @@ const UserDropdown = () => {
     id: "setting.termAndCondition"
   }))), /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
-    href: "#",
-    onClick: e => handleNavigation(e, '/app/privacy-policy')
+    target: '_blank',
+    href: POLICY_PDF
   }, /*#__PURE__*/React.createElement(Shield, {
     size: 14,
     className: "mr-50"
@@ -1962,166 +2111,246 @@ const UserDropdown = () => {
   }))));
 };
 
-class NavbarUser extends React.PureComponent {
-  constructor(...args) {
-    super(...args);
-    this.state = {
-      navbarSearch: false,
-      suggestions: []
-    };
+const Notifications = () => {
+  const dispatch = useDispatch();
+  const intl = useIntl();
+  const {
+    notifications
+  } = useSelector(state => state.notifications);
+  const [notificationModal, setNotificationModal] = useState$1(false);
+  const [notification, setNotification] = useState$1(null);
+  useEffect$1(() => {
+    dispatch(getMyNotification());
+  }, []);
 
-    this.handleNavbarSearch = () => {
-      this.setState({
-        navbarSearch: !this.state.navbarSearch
-      });
-    };
+  const onClickOpenNotification = item => {
+    setNotification(item);
+    setNotificationModal(true);
+    const notificationRequest = notifications.find(notification => notification.id === item.id);
+    const notificationAllStatus = NotificationService.updateAllNotificationStatus({
+      notificationId: notificationRequest.id,
+      status: 'READ'
+    });
+    if (notificationAllStatus.status === 200) return;
+  };
 
-    this.getCountryCode = locale => {
-      const countryCode = {
-        en: 'us',
-        vi: 'vn'
-      };
-      return countryCode[locale];
-    };
+  const onClickUpdateAllNotificationStatus = () => {
+    const notificationAllStatus = NotificationService.updateAllNotificationStatus();
+    if (notificationAllStatus.status === 200) return;
+  };
 
-    this.onSuggestionItemClick = item => {
-      if (!item.isExternalApp) {
-        history.push(`${item.menuPath}`);
-      } else {
-        window.location.href = item.navLinkExternal;
-      }
-    };
-  }
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.roles !== this.props.roles) {
-      const suggestions = this.props.roles.map(item => {
-        item.name = this.props.intl.formatMessage({
-          id: `menu.${item.keyLang}`
-        });
-        item.isExternalApp = item.appId !== this.props.appId;
-        item.navLinkExternal = getExternalAppUrl(item.appId, item.menuPath);
-        return item;
-      });
-      this.setState({
-        suggestions
-      });
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("li", {
+    className: "dropdown-menu-header"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "dropdown-header mt-0 text-left"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "notification-title"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "menu.notification"
+  })), /*#__PURE__*/React.createElement("span", null, "(", notifications.length, ")"))), /*#__PURE__*/React.createElement(PerfectScrollbar, {
+    className: "media-list overflow-hidden position-relative",
+    options: {
+      wheelPropagation: false
     }
-  }
+  }, notifications.map(item => /*#__PURE__*/React.createElement("div", {
+    className: "d-flex justify-content-between",
+    key: item.id,
+    onClick: () => onClickOpenNotification(item)
+  }, /*#__PURE__*/React.createElement(Media, {
+    className: "d-flex align-items-start"
+  }, /*#__PURE__*/React.createElement(Media, {
+    left: true,
+    href: "#"
+  }, /*#__PURE__*/React.createElement(Server, {
+    className: "font-medium-5 primary",
+    size: 21
+  })), /*#__PURE__*/React.createElement(Media, {
+    body: true
+  }, /*#__PURE__*/React.createElement(Media, {
+    heading: true,
+    className: "primary media-heading",
+    tag: "h6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: !item.read ? 'font-weight-bold' : ''
+  }, item.title)), /*#__PURE__*/React.createElement("div", {
+    className: !item.read ? 'font-weight-bold' : '',
+    dangerouslySetInnerHTML: {
+      __html: item.shortContent
+    }
+  })), /*#__PURE__*/React.createElement("small", {
+    className: "mt-1"
+  }, /*#__PURE__*/React.createElement("time", {
+    className: "media-meta",
+    dateTime: item.sendDate
+  }, moment().diff(moment(item.sendDate), 'days') >= 1 ? moment(item.sendDate).format("DD/MM/YYYY") : moment(item.sendDate).fromNow())))))), notifications.length > 0 && /*#__PURE__*/React.createElement("li", {
+    className: "dropdown-menu-footer",
+    onClick: onClickUpdateAllNotificationStatus
+  }, /*#__PURE__*/React.createElement(DropdownItem, {
+    tag: "a",
+    className: "p-1 text-center"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "menu.readAll"
+  })))), notification && /*#__PURE__*/React.createElement(Modal, {
+    isOpen: notificationModal,
+    toggle: () => setNotificationModal(!notificationModal),
+    className: "modal-dialog-centered"
+  }, /*#__PURE__*/React.createElement(ModalHeader, {
+    toggle: () => setNotificationModal(!notificationModal)
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "menu.notification"
+  })), /*#__PURE__*/React.createElement(ModalBody, null, /*#__PURE__*/React.createElement("div", {
+    dangerouslySetInnerHTML: {
+      __html: notification.title
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    dangerouslySetInnerHTML: {
+      __html: notification.content
+    }
+  }))));
+};
 
-  render() {
-    let {
-      userSettings,
-      userDetails,
-      ...user
-    } = this.props.user;
-    userSettings = userSettings || {};
-    userDetails = userDetails || {};
-    return /*#__PURE__*/React.createElement("ul", {
-      className: "nav navbar-nav navbar-nav-user float-right"
-    }, /*#__PURE__*/React.createElement(NavItem, {
-      className: "nav-search",
-      onClick: this.handleNavbarSearch
-    }, /*#__PURE__*/React.createElement(NavLink, {
-      className: "nav-link-search pt-2"
-    }, /*#__PURE__*/React.createElement(Search, {
-      size: 21,
-      "data-tour": "search"
-    })), /*#__PURE__*/React.createElement("div", {
-      className: classnames('search-input', {
-        open: this.state.navbarSearch,
-        'd-none': this.state.navbarSearch === false
-      })
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "search-input-icon"
-    }, /*#__PURE__*/React.createElement(Search, {
-      size: 17,
-      className: "primary"
-    })), /*#__PURE__*/React.createElement(Autocomplete, {
-      className: "form-control",
-      suggestions: this.state.suggestions,
-      filterKey: "name",
-      onSuggestionClick: this.onSuggestionItemClick,
-      autoFocus: true,
-      clearInput: this.state.navbarSearch,
-      externalClick: () => {
-        this.setState({
-          navbarSearch: false
-        });
-      },
-      onKeyDown: e => {
-        if (e.keyCode === 27 || e.keyCode === 13) {
-          this.setState({
-            navbarSearch: false
-          });
-          this.props.handleAppOverlay('');
-        }
-      },
-      customRender: (item, i, filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover) => {
-        const IconTag = Icon[item.icon ? item.icon : 'X'];
-        return /*#__PURE__*/React.createElement("li", {
-          className: classnames('suggestion-item', {
-            active: filteredData.indexOf(item) === activeSuggestion
-          }),
-          key: i,
-          onClick: e => onSuggestionItemClick(item, e),
-          onMouseEnter: () => onSuggestionItemHover(filteredData.indexOf(item))
-        }, /*#__PURE__*/React.createElement("div", {
-          className: "d-flex align-items-center"
-        }, /*#__PURE__*/React.createElement(IconTag, {
-          size: 17
-        }), /*#__PURE__*/React.createElement("div", {
-          className: "ml-2"
-        }, item.name)));
-      },
-      onSuggestionsShown: userInput => {
-        if (this.state.navbarSearch) {
-          this.props.handleAppOverlay(userInput);
-        }
+const NavbarUser = props => {
+  let {
+    userSettings,
+    userDetails,
+    ...user
+  } = useSelector(state => state.auth.user);
+  let {
+    appId
+  } = useSelector(state => state.customizer);
+  let {
+    roles = []
+  } = useSelector(state => state.navbar);
+  const [navbarSearch, setNavbarSearch] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const intl = useIntl();
+  userSettings = userSettings || {};
+  userDetails = userDetails || {};
+  useEffect(() => {
+    const newSuggestions = (roles || []).map(item => {
+      item.name = intl.formatMessage({
+        id: `menu.${item.keyLang}`
+      });
+      item.isExternalApp = item.appId !== appId;
+      item.navLinkExternal = getExternalAppUrl(item.appId, item.menuPath);
+      return item;
+    });
+    setSuggestions(newSuggestions);
+  }, [roles]);
+
+  const handleNavbarSearch = () => {
+    setNavbarSearch(prevState => !prevState);
+  };
+
+  const onSuggestionItemClick = item => {
+    if (!item.isExternalApp) {
+      history$1.push(`${item.menuPath}`);
+    } else {
+      window.location.href = item.navLinkExternal;
+    }
+  };
+
+  return /*#__PURE__*/React.createElement("ul", {
+    className: "nav navbar-nav navbar-nav-user float-right"
+  }, /*#__PURE__*/React.createElement(NavItem, {
+    className: "nav-search",
+    onClick: handleNavbarSearch
+  }, /*#__PURE__*/React.createElement(NavLink, {
+    className: "nav-link-search pt-2"
+  }, /*#__PURE__*/React.createElement(Search, {
+    size: 21,
+    "data-tour": "search"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: classnames('search-input', {
+      open: navbarSearch,
+      'd-none': navbarSearch === false
+    })
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "search-input-icon"
+  }, /*#__PURE__*/React.createElement(Search, {
+    size: 17,
+    className: "primary"
+  })), /*#__PURE__*/React.createElement(Autocomplete, {
+    className: "form-control",
+    suggestions: suggestions,
+    filterKey: "name",
+    onSuggestionClick: onSuggestionItemClick,
+    autoFocus: true,
+    clearInput: navbarSearch,
+    externalClick: () => {
+      setNavbarSearch(false);
+    },
+    onKeyDown: e => {
+      if (e.keyCode === 27 || e.keyCode === 13) {
+        setNavbarSearch(false);
+        props.handleAppOverlay('');
       }
-    }), /*#__PURE__*/React.createElement("div", {
-      className: "search-input-close"
-    }, /*#__PURE__*/React.createElement(X, {
-      size: 24,
-      onClick: e => {
-        e.stopPropagation();
-        this.setState({
-          navbarSearch: false
-        });
-        this.props.handleAppOverlay('');
+    },
+    customRender: (item, i, filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover) => {
+      const IconTag = Icon[item.icon ? item.icon : 'X'];
+      return /*#__PURE__*/React.createElement("li", {
+        className: classnames('suggestion-item', {
+          active: filteredData.indexOf(item) === activeSuggestion
+        }),
+        key: i,
+        onClick: e => onSuggestionItemClick(item, e),
+        onMouseEnter: () => onSuggestionItemHover(filteredData.indexOf(item))
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "d-flex align-items-center"
+      }, /*#__PURE__*/React.createElement(IconTag, {
+        size: 17
+      }), /*#__PURE__*/React.createElement("div", {
+        className: "ml-2"
+      }, item.name)));
+    },
+    onSuggestionsShown: userInput => {
+      if (navbarSearch) {
+        props.handleAppOverlay(userInput);
       }
-    })))), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
-      tag: "li",
-      className: "dropdown-notification nav-item"
-    }, /*#__PURE__*/React.createElement(DropdownToggle, {
-      tag: "a",
-      className: "nav-link nav-link-label"
-    }, /*#__PURE__*/React.createElement(Bell, {
-      size: 21
-    }))), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
-      tag: "li",
-      className: "dropdown-user nav-item"
-    }, /*#__PURE__*/React.createElement(DropdownToggle, {
-      tag: "a",
-      className: "nav-link dropdown-user-link"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "user-nav d-sm-flex d-none"
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "user-name text-bold-600 mb-0"
-    }, user.fullName)), /*#__PURE__*/React.createElement("span", {
-      "data-tour": "user"
-    }, /*#__PURE__*/React.createElement("img", {
-      src: userSettings.avatar || '',
-      className: "round",
-      height: "40",
-      width: "40",
-      alt: "avatar"
-    }))), /*#__PURE__*/React.createElement(UserDropdown, null)));
-  }
-
-}
-
-var NavbarUser$1 = injectIntl(NavbarUser);
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "search-input-close"
+  }, /*#__PURE__*/React.createElement(X, {
+    size: 24,
+    onClick: e => {
+      e.stopPropagation();
+      setNavbarSearch(false);
+      props.handleAppOverlay('');
+    }
+  })))), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
+    tag: "li",
+    className: "dropdown-notification nav-item"
+  }, /*#__PURE__*/React.createElement(DropdownToggle, {
+    tag: "a",
+    className: "nav-link nav-link-label"
+  }, /*#__PURE__*/React.createElement(Bell, {
+    size: 21
+  })), /*#__PURE__*/React.createElement(DropdownMenu, {
+    tag: "ul",
+    right: true,
+    className: "dropdown-menu-media"
+  }, /*#__PURE__*/React.createElement(Notifications, null))), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
+    tag: "li",
+    className: "dropdown-user nav-item"
+  }, /*#__PURE__*/React.createElement(DropdownToggle, {
+    tag: "a",
+    className: "nav-link dropdown-user-link"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "user-nav d-sm-flex d-none"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "user-name text-bold-600 mb-0"
+  }, user.fullName)), /*#__PURE__*/React.createElement("span", {
+    "data-tour": "user"
+  }, /*#__PURE__*/React.createElement("img", {
+    src: userSettings.avatar || '',
+    className: "round",
+    height: "40",
+    width: "40",
+    alt: "avatar"
+  }))), /*#__PURE__*/React.createElement(UserDropdown, null)));
+};
 
 const ThemeNavbar = props => {
   const colorsArr = ['primary', 'danger', 'success', 'info', 'warning', 'dark'];
@@ -2173,15 +2402,8 @@ const ThemeNavbar = props => {
   }, /*#__PURE__*/React.createElement("img", {
     className: "img-fluid",
     src: IMAGE[`NAV_ICON_${index + 1}`]
-  })))))), /*#__PURE__*/React.createElement(NavbarUser$1, {
-    handleAppOverlay: props.handleAppOverlay,
-    changeCurrentLang: props.changeCurrentLang,
-    appId: props.appId,
-    authToken: props.authToken,
-    user: props.user,
-    roles: props.roles,
-    isAuthenticated: props.isAuthenticated,
-    logoutAction: props.logoutAction
+  })))))), /*#__PURE__*/React.createElement(NavbarUser, {
+    handleAppOverlay: props.handleAppOverlay
   }))))));
 };
 
@@ -2210,8 +2432,8 @@ function getWindowDimensions() {
 }
 
 function useWindowDimensions() {
-  const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
-  useEffect(() => {
+  const [windowDimensions, setWindowDimensions] = useState$1(getWindowDimensions());
+  useEffect$1(() => {
     function handleResize() {
       setWindowDimensions(getWindowDimensions());
     }
@@ -2232,7 +2454,12 @@ const Footer = props => {
 
   const goToPage = (e, navLink) => {
     e.preventDefault();
-    history.push(navLink);
+
+    if (appId === AppId.INSURANCE_APP) {
+      history.push(navLink);
+    } else {
+      window.location.href = getExternalAppUrl(AppId.INSURANCE_APP, navLink);
+    }
   };
 
   const onClickBackHome = e => {
@@ -2256,13 +2483,13 @@ const Footer = props => {
     className: "float-md-right d-none d-md-block"
   }, /*#__PURE__*/React.createElement("a", {
     className: "mr-1",
-    href: "https://www.apple.com/app-store/",
+    href: IOS_APP_LINK,
     target: "_blank"
   }, /*#__PURE__*/React.createElement("img", {
     src: IMAGE.DOWNLOAD_APP_IOS,
     alt: "DOWNLOAD ON APP STORE"
   })), /*#__PURE__*/React.createElement("a", {
-    href: "https://play.google.com/store/apps",
+    href: ANDROID_APP_LINK,
     target: "_blank"
   }, /*#__PURE__*/React.createElement("img", {
     src: IMAGE.DOWNLOAD_APP_ANDROID,
@@ -2273,7 +2500,8 @@ const Footer = props => {
     })
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "#",
     onClick: onClickBackHome
   }, /*#__PURE__*/React.createElement(Home, null), /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
@@ -2376,6 +2604,22 @@ const hideScrollToTop = value => {
     type: "HIDE_SCROLL_TO_TOP",
     value
   });
+};
+
+const goBackHomePage$1 = () => {
+  return async (dispatch, getState) => {
+    var _getState, _getState$auth;
+
+    const {
+      authToken
+    } = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$auth = _getState.auth) === null || _getState$auth === void 0 ? void 0 : _getState$auth.guest) || {};
+
+    if (authToken) {
+      history$1.push('/home');
+    } else {
+      history$1.push('/app/home');
+    }
+  };
 };
 
 const SidebarHeader = props => {
@@ -4031,7 +4275,7 @@ var messages_vi = {
 	"completeInformation.success": "Hoàn tất đăng ký thành công!",
 	"socialLogin.addInfo": "Bổ sung thông tin",
 	"socialLogin.addInfo.info": "InOn cần bạn bổ sung các thông tin bên dưới để hoàn tất đăng ký tài khoản.",
-	"socialLogin.agent": "Đại lý",
+	"socialLogin.agent": "Đối tác",
 	"socialLogin.personal": "Cá nhân",
 	"socialLogin.loginWith": "Hoặc đăng nhập với",
 	"socialLogin.registerWith": "Hoặc đăng ký với",
@@ -4091,7 +4335,7 @@ const BaseFormGroup = ({
     field,
     form
   }) => /*#__PURE__*/React.createElement(Input, Object.assign({
-    className: `form-control ${_isRequired && getPropObject(form.errors, fieldName) && getPropObject(form.touched, fieldName) && 'is-invalid'}`
+    className: `form-control ${_isRequired && getPropObject$1(form.errors, fieldName) && getPropObject$1(form.touched, fieldName) && 'is-invalid'}`
   }, field, {
     type: type,
     disabled: disabled,
@@ -4100,9 +4344,9 @@ const BaseFormGroup = ({
     placeholder: msg,
     onBlur: e => onBlur(e, form),
     onChange: e => handleChange(e, form)
-  }))), _isRequired && _isShowErrorMessage && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) ? /*#__PURE__*/React.createElement("div", {
+  }))), _isRequired && _isShowErrorMessage && getPropObject$1(errors, fieldName) && getPropObject$1(touched, fieldName) ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
-  }, getPropObject(errors, fieldName)) : null, /*#__PURE__*/React.createElement(Label, null, msg))));
+  }, getPropObject$1(errors, fieldName)) : null, /*#__PURE__*/React.createElement(Label, null, msg))));
 };
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
@@ -6859,9 +7103,9 @@ const DatePicker = props => {
     value: props.value,
     onClose: () => props.onClose && props.onClose(),
     onChange: date => props.onChange && props.onChange(date)
-  }), /*#__PURE__*/React.createElement(Label, null, props.placeholder), props.errors && props.touched && props.isShowErrorMessage && getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement(Label, null, props.placeholder), props.errors && props.touched && props.isShowErrorMessage && getPropObject$1(props.errors, props.fieldName) && getPropObject$1(props.touched, props.fieldName) ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
-  }, getPropObject(props.errors, props.fieldName)) : null);
+  }, getPropObject$1(props.errors, props.fieldName)) : null);
 };
 
 const BaseFormDatePicker = ({
@@ -6886,7 +7130,7 @@ const BaseFormDatePicker = ({
     field,
     form
   }) => /*#__PURE__*/React.createElement(DatePicker, {
-    className: `form-control position-relative ${!disabled ? 'bg-white' : ''} ${_isRequired && errors[fieldName] && touched[fieldName] && 'is-invalid'} ${className}`,
+    className: `form-control position-relative ${!disabled ? 'bg-white' : ''} ${_isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'} ${className}`,
     placeholder: messageId ? intl.formatMessage({
       id: messageId
     }) : '',
@@ -6909,9 +7153,9 @@ const BaseFormDatePicker = ({
 };
 
 const Select = props => {
-  const [inputValue, setInputValue] = useState(props.value);
-  const [isFocused, setIsFocused] = useState(false);
-  useEffect(() => {
+  const [inputValue, setInputValue] = useState$1(props.value);
+  const [isFocused, setIsFocused] = useState$1(false);
+  useEffect$1(() => {
     setInputValue(props.value);
   }, [props.value]);
 
@@ -6976,9 +7220,9 @@ const Select = props => {
         primary: '#338955'
       }
     })
-  })), props.required && props.isShowErrorMessage ? getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React.createElement("div", {
+  })), props.required && props.isShowErrorMessage ? getPropObject$1(props.errors, props.fieldName) && getPropObject$1(props.touched, props.fieldName) ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
-  }, getPropObject(props.errors, props.fieldName)) : null : '', /*#__PURE__*/React.createElement("input", {
+  }, getPropObject$1(props.errors, props.fieldName)) : null : '', /*#__PURE__*/React.createElement("input", {
     className: "d-none",
     placeholder: props.placeholder,
     value: inputValue
@@ -7015,7 +7259,7 @@ const BaseFormGroupSelect = ({
     placeholder: intl.formatMessage({
       id: messageId
     }),
-    className: `${_isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'}`,
+    className: `${_isRequired && getPropObject$1(errors, fieldName) && getPropObject$1(touched, fieldName) && 'is-invalid'}`,
     type: type,
     isShowErrorMessage: _isShowErrorMessage,
     classNamePrefix: "Select",
@@ -7108,11 +7352,11 @@ const mapDataToSelectOptions = (data, lang) => {
 };
 
 const useCityList = countryCode => {
-  const [cities, setCities] = useState([]);
+  const [cities, setCities] = useState$1([]);
   const {
     locale
   } = useIntl();
-  useEffect(() => {
+  useEffect$1(() => {
     if (!countryCode) {
       return;
     }
@@ -7132,11 +7376,11 @@ const useCityList = countryCode => {
   };
 };
 const useDistrictList = cityCode => {
-  const [districts, setDistricts] = useState([]);
+  const [districts, setDistricts] = useState$1([]);
   const {
     locale
   } = useIntl();
-  useEffect(() => {
+  useEffect$1(() => {
     if (!cityCode) {
       return;
     }
@@ -7156,11 +7400,11 @@ const useDistrictList = cityCode => {
   };
 };
 const useWardList = districtCode => {
-  const [wards, setWards] = useState([]);
+  const [wards, setWards] = useState$1([]);
   const {
     locale
   } = useIntl();
-  useEffect(() => {
+  useEffect$1(() => {
     if (!districtCode) {
       return;
     }
@@ -7180,11 +7424,11 @@ const useWardList = districtCode => {
   };
 };
 const useBankList = () => {
-  const [banks, setBanks] = useState([]);
+  const [banks, setBanks] = useState$1([]);
   const {
     locale
   } = useIntl();
-  useEffect(() => {
+  useEffect$1(() => {
     loadBanks();
   }, []);
 
@@ -7273,11 +7517,11 @@ const UserAccountTab = () => {
   const {
     banks
   } = useBankList();
-  const [avatar, setAvatar] = useState({
+  const [avatar, setAvatar] = useState$1({
     url: userSettings.avatar,
     file: null
   });
-  useEffect(() => {
+  useEffect$1(() => {
     if (userDetails && userDetails.city) {
       loadDitrictsByCity(userDetails.city);
       loadWardsByDistrict(userDetails.district);
@@ -7591,7 +7835,7 @@ const ChangePassword = () => {
   const dispatch = useDispatch();
 
   const onClickSubmit = values => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.changePassword"
       }),
@@ -7606,7 +7850,7 @@ const ChangePassword = () => {
   };
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -7615,7 +7859,7 @@ const ChangePassword = () => {
         id: "common.backHome.confirmMessage"
       }),
       onConfirm: () => {
-        dispatch(goBackHomePage$1());
+        dispatch(goBackHomePage());
       }
     }));
   };
@@ -7679,10 +7923,10 @@ const ShareWithFriends = () => {
   const {
     user
   } = useSelector(state => state.customizer.appId === AppId.ELITE_APP ? state.auth.guest : state.auth);
-  const [qrCodeInstance, setQRCodeInstance] = useState(null);
+  const [qrCodeInstance, setQRCodeInstance] = useState$1(null);
   const qrCode = useRef();
   const shareUrl = `${document.location.origin}/home?refId=${user.username}`;
-  useEffect(() => {
+  useEffect$1(() => {
     const options = {
       text: shareUrl,
       colorDark: '#106D5A',
@@ -7738,9 +7982,9 @@ const ShareWithFriends = () => {
 };
 
 const AccountSettings = props => {
-  const [activeTab, setActiveTab] = useState('account-info');
+  const [activeTab, setActiveTab] = useState$1('account-info');
   const history = useHistory();
-  useEffect(() => setActiveTab(props.activeTab), [props.activeTab]);
+  useEffect$1(() => setActiveTab(props.activeTab), [props.activeTab]);
   return /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
     sm: "12"
   }, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardHeader, null, /*#__PURE__*/React.createElement(CardTitle, {
@@ -7809,262 +8053,6 @@ const AccountSettings = props => {
   }, /*#__PURE__*/React.createElement(ShareWithFriends, null))))))));
 };
 
-const TERMS = [{
-  id: '1',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }]
-}, {
-  id: '2',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }]
-}, {
-  id: '3',
-  items: [{
-    id: '1'
-  }]
-}, {
-  id: '4',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }]
-}, {
-  id: '5',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }, {
-    id: '4'
-  }, {
-    id: '5'
-  }]
-}, {
-  id: '6',
-  items: [{
-    id: '1'
-  }]
-}, {
-  id: '7',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }]
-}, {
-  id: '8',
-  items: [{
-    id: '1',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }, {
-      id: '3'
-    }, {
-      id: '4'
-    }]
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }, {
-    id: '4'
-  }]
-}, {
-  id: '9',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }, {
-      id: '3'
-    }, {
-      id: '4'
-    }]
-  }]
-}, {
-  id: '10',
-  items: [{
-    id: '1',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }, {
-      id: '3'
-    }]
-  }]
-}, {
-  id: '11',
-  items: [{
-    id: '1'
-  }]
-}, {
-  id: '12',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }]
-}, {
-  id: '13',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }]
-}, {
-  id: '14',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }]
-}];
-
-const InfoItems = ({
-  data,
-  type
-}) => {
-  const intl = useIntl();
-  const [state, setState] = useState({
-    collapseID: '',
-    status: 'Closed'
-  });
-
-  const toggleCollapse = collapseID => {
-    collapseID = state.collapseID !== collapseID ? collapseID : '';
-    setState({ ...state,
-      collapseID
-    });
-  };
-
-  const onEntered = id => {
-    if (id === state.collapseID) setState({ ...state,
-      status: 'Opened'
-    });
-  };
-
-  const onEntering = id => {
-    if (id === state.collapseID) setState({ ...state,
-      status: 'Opening...'
-    });
-  };
-
-  const onExited = id => {
-    if (id === state.collapseID) setState({ ...state,
-      status: 'Closed'
-    });
-  };
-
-  const onExiting = id => {
-    if (id === state.collapseID) setState({ ...state,
-      status: 'Closing...'
-    });
-  };
-
-  return data.map(item1 => /*#__PURE__*/React.createElement("div", {
-    className: "collapse-margin",
-    key: item1.id
-  }, /*#__PURE__*/React.createElement(Card, {
-    onClick: () => toggleCollapse(item1.id),
-    className: classnames({
-      'collapse-collapsed': state.status === 'Closed' && state.collapseID === item1.id,
-      'collapse-shown': state.status === 'Opened' && state.collapseID === item1.id,
-      closing: state.status === 'Closing...' && state.collapseID === item1.id,
-      opening: state.status === 'Opening...' && state.collapseID === item1.id
-    })
-  }, /*#__PURE__*/React.createElement(CardHeader, {
-    className: "p-1"
-  }, /*#__PURE__*/React.createElement(CardTitle, {
-    className: "lead collapse-title collapsed col-11 p-0\""
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: `generalInfo.${type}.${item1.id}`
-  })), /*#__PURE__*/React.createElement(ChevronDown, {
-    size: 15,
-    className: "collapse-icon"
-  })), /*#__PURE__*/React.createElement(Collapse, {
-    isOpen: item1.id === state.collapseID,
-    onEntering: () => onEntering(item1.id),
-    onEntered: () => onEntered(item1.id),
-    onExiting: () => onExiting(item1.id),
-    onExited: () => onExited(item1.id)
-  }, /*#__PURE__*/React.createElement(CardBody, null, item1.items.map(item2 => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
-    className: "ml-1",
-    key: item2.id,
-    dangerouslySetInnerHTML: {
-      __html: intl.formatMessage({
-        id: `generalInfo.${type}.${item1.id}.${item2.id}`
-      })
-    }
-  }), item2.items ? item2.items.map(item3 => /*#__PURE__*/React.createElement("p", {
-    className: "ml-2",
-    key: item3.id,
-    dangerouslySetInnerHTML: {
-      __html: intl.formatMessage({
-        id: `generalInfo.${type}.${item1.id}.${item2.id}.${item3.id}`
-      })
-    }
-  })) : '')))))));
-};
-
-const Terms = () => {
-  const dispatch = useDispatch();
-
-  const onClickBackHome = () => {
-    dispatch(showConfirmAlert$1({
-      title: /*#__PURE__*/React.createElement(FormattedMessage, {
-        id: "common.home"
-      }),
-      isShow: true,
-      content: /*#__PURE__*/React.createElement(FormattedMessage, {
-        id: "common.backHome.confirmMessage"
-      }),
-      onConfirm: () => {
-        dispatch(goBackHomePage$1());
-      }
-    }));
-  };
-
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardBody, null, /*#__PURE__*/React.createElement("div", {
-    className: "vx-collapse"
-  }, /*#__PURE__*/React.createElement(InfoItems, {
-    data: TERMS,
-    type: "terms"
-  })), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
-    className: "d-flex justify-content-end flex-wrap mt-2",
-    sm: "12"
-  }, /*#__PURE__*/React.createElement(Button.Ripple, {
-    type: "button",
-    color: "secondary",
-    onClick: onClickBackHome
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: `common.home`
-  })))))));
-};
-
 class Radio extends React.Component {
   render() {
     return /*#__PURE__*/React.createElement("div", {
@@ -8096,10 +8084,10 @@ class Radio extends React.Component {
 const LanguageTab = () => {
   const dispatch = useDispatch();
   const intl = useIntl();
-  const [lang, setLang] = useState(localStorage.getItem('language'));
+  const [lang, setLang] = useState$1(localStorage.getItem('language'));
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -8108,13 +8096,13 @@ const LanguageTab = () => {
         id: "common.backHome.confirmMessage"
       }),
       onConfirm: () => {
-        dispatch(goBackHomePage$1());
+        dispatch(goBackHomePage());
       }
     }));
   };
 
   const onClickSaveChange = context => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.language"
       }),
@@ -8168,197 +8156,6 @@ const LanguageTab = () => {
   })))));
 };
 
-const POLICIES = [{
-  id: '1',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }, {
-    id: '4'
-  }, {
-    id: '5'
-  }, {
-    id: '6'
-  }, {
-    id: '7'
-  }]
-}, {
-  id: '2',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }, {
-    id: '4'
-  }, {
-    id: '5'
-  }, {
-    id: '6'
-  }, {
-    id: '7'
-  }, {
-    id: '8'
-  }, {
-    id: '9'
-  }]
-}, {
-  id: '3',
-  items: [{
-    id: '1'
-  }, {
-    id: '2',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }]
-  }, {
-    id: '3'
-  }, {
-    id: '4'
-  }]
-}, {
-  id: '4',
-  items: [{
-    id: '1',
-    items: [{
-      id: '1'
-    }]
-  }, {
-    id: '2'
-  }, {
-    id: '3',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }]
-  }, {
-    id: '4',
-    items: [{
-      id: '1'
-    }]
-  }]
-}, {
-  id: '5',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }]
-}, {
-  id: '6',
-  items: [{
-    id: '1'
-  }]
-}, {
-  id: '7',
-  items: [{
-    id: '1'
-  }]
-}, {
-  id: '8',
-  items: [{
-    id: '1'
-  }, {
-    id: '2',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }, {
-      id: '3'
-    }, {
-      id: '4'
-    }, {
-      id: '5'
-    }, {
-      id: '6'
-    }, {
-      id: '7'
-    }]
-  }, {
-    id: '3'
-  }, {
-    id: '4'
-  }]
-}, {
-  id: '9',
-  items: [{
-    id: '1',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }]
-  }, {
-    id: '2'
-  }]
-}, {
-  id: '10',
-  items: [{
-    id: '1'
-  }, {
-    id: '2'
-  }, {
-    id: '3'
-  }]
-}, {
-  id: '11',
-  items: [{
-    id: '1',
-    items: [{
-      id: '1'
-    }, {
-      id: '2'
-    }, {
-      id: '3'
-    }]
-  }]
-}];
-
-const Policies = () => {
-  const dispatch = useDispatch();
-
-  const onClickBackHome = () => {
-    dispatch(showConfirmAlert$1({
-      title: /*#__PURE__*/React.createElement(FormattedMessage, {
-        id: "common.home"
-      }),
-      isShow: true,
-      content: /*#__PURE__*/React.createElement(FormattedMessage, {
-        id: "common.backHome.confirmMessage"
-      }),
-      onConfirm: () => {
-        dispatch(goBackHomePage$1());
-      }
-    }));
-  };
-
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardBody, null, /*#__PURE__*/React.createElement("div", {
-    className: "vx-collapse"
-  }, /*#__PURE__*/React.createElement(InfoItems, {
-    data: POLICIES,
-    type: "policy"
-  })), /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
-    className: "d-flex justify-content-end flex-wrap mt-2",
-    sm: "12"
-  }, /*#__PURE__*/React.createElement(Button.Ripple, {
-    type: "button",
-    color: "secondary",
-    onClick: onClickBackHome
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: `common.home`
-  })))))));
-};
-
 function useDeviceDetect() {
   const [isMobile, setMobile] = React.useState(false);
   React.useEffect(() => {
@@ -8378,7 +8175,7 @@ const ContactTab = () => {
   const dispatch = useDispatch();
 
   const onClickBackHome = () => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "common.home"
       }),
@@ -8387,13 +8184,13 @@ const ContactTab = () => {
         id: "common.backHome.confirmMessage"
       }),
       onConfirm: () => {
-        dispatch(goBackHomePage$1());
+        dispatch(goBackHomePage());
       }
     }));
   };
 
   const onClickCall = () => {
-    dispatch(showConfirmAlert$1({
+    dispatch(showConfirmAlert({
       title: /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "setting.call"
       }),
@@ -8461,9 +8258,9 @@ const ContactTab = () => {
 };
 
 const GeneralInfo = props => {
-  const [activeTab, setActiveTab] = useState('terms-and-condition');
+  const [activeTab, setActiveTab] = useState$1('terms-and-condition');
   const history = useHistory();
-  useEffect(() => setActiveTab(props.activeTab), [props.activeTab]);
+  useEffect$1(() => setActiveTab(props.activeTab), [props.activeTab]);
   return /*#__PURE__*/React.createElement(Row, {
     className: "general-info"
   }, /*#__PURE__*/React.createElement(Col, {
@@ -8477,32 +8274,6 @@ const GeneralInfo = props => {
   }, /*#__PURE__*/React.createElement(Nav, {
     tabs: true
   }, /*#__PURE__*/React.createElement(NavItem, null, /*#__PURE__*/React.createElement(NavLink, {
-    className: classnames({
-      active: activeTab === 'terms-and-condition'
-    }),
-    onClick: () => {
-      history.push('/app/terms-and-condition');
-    }
-  }, /*#__PURE__*/React.createElement(FileText, {
-    size: 16
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "align-middle ml-50"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "setting.termAndCondition"
-  })))), /*#__PURE__*/React.createElement(NavItem, null, /*#__PURE__*/React.createElement(NavLink, {
-    className: classnames({
-      active: activeTab === 'privacy-policy'
-    }),
-    onClick: () => {
-      history.push('/app/privacy-policy');
-    }
-  }, /*#__PURE__*/React.createElement(Shield, {
-    size: 16
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "align-middle ml-50"
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "setting.privacyPolicy"
-  })))), /*#__PURE__*/React.createElement(NavItem, null, /*#__PURE__*/React.createElement(NavLink, {
     className: classnames({
       active: activeTab === 'language'
     }),
@@ -8531,10 +8302,6 @@ const GeneralInfo = props => {
   }))))), /*#__PURE__*/React.createElement(TabContent, {
     activeTab: activeTab
   }, /*#__PURE__*/React.createElement(TabPane, {
-    tabId: "terms-and-condition"
-  }, /*#__PURE__*/React.createElement(Terms, null)), /*#__PURE__*/React.createElement(TabPane, {
-    tabId: "privacy-policy"
-  }, /*#__PURE__*/React.createElement(Policies, null)), /*#__PURE__*/React.createElement(TabPane, {
     tabId: "language"
   }, /*#__PURE__*/React.createElement(LanguageTab, null)), /*#__PURE__*/React.createElement(TabPane, {
     tabId: "contact"
@@ -8565,8 +8332,8 @@ class CheckBox extends React.Component {
 const SocialLogin = ({
   isLogin
 }) => {
-  const [isOpenModal, setIsOpenModal] = useState(false);
-  const [userInfo, setUserInfo] = useState({});
+  const [isOpenModal, setIsOpenModal] = useState$1(false);
+  const [userInfo, setUserInfo] = useState$1({});
   const dispatch = useDispatch();
 
   const openAddInfoModal = userInfo => {
@@ -8838,14 +8605,13 @@ const formSchema$1 = object().shape({
 });
 
 const Login = () => {
-  const [rememberMe, setRememberMe] = useState(null);
-  const [isRemeberMe, setIsRemeberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState$1(null);
+  const [isRemeberMe, setIsRemeberMe] = useState$1(false);
   const dispatch = useDispatch();
   const {
     isGuest
   } = useSelector(state => state.auth);
-  const loginStatus = useSelector(state => state.auth.loginStatus);
-  useEffect(() => {
+  useEffect$1(() => {
     const user = JSON.parse(localStorage.getItem(REMEMBER_ME_TOKEN));
 
     if (user) {
@@ -8947,7 +8713,11 @@ const Login = () => {
     type: "submit"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "login"
-  })))));
+  }))), isGuest ? /*#__PURE__*/React.createElement("div", {
+    className: "mt-2"
+  }, /*#__PURE__*/React.createElement(SocialLogin, {
+    isLogin: true
+  })) : null));
 };
 
 const formSchema$2 = object().shape({
@@ -8976,8 +8746,8 @@ const formSchema$2 = object().shape({
 const Register = () => {
   var _guest$user, _guest$user2, _guest$user3;
 
-  const [isAppcepted, setIsAppcepted] = useState(false);
-  const [isNotApccepted, setIsNotAccepted] = useState(false);
+  const [isAppcepted, setIsAppcepted] = useState$1(false);
+  const [isNotApccepted, setIsNotAccepted] = useState$1(false);
   const {
     isGuest,
     register: registerInfo,
@@ -8985,7 +8755,7 @@ const Register = () => {
   } = useSelector(state => state.auth);
   const dispatch = useDispatch();
   const history = useHistory();
-  useEffect(() => {
+  useEffect$1(() => {
     window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier("recaptcha-container", {
       size: "invisible",
       callback: recaptchaToken => {
@@ -9021,7 +8791,7 @@ const Register = () => {
   };
 
   const onChangeFullName = (e, form) => {
-    const value = e.target.value.replace(/[^\w\s]/gi, '');
+    const value = e.target.value.replace(/[^0-9a-zàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ\s]/gi, '');
     form.setFieldValue('fullName', value);
   };
 
@@ -9106,8 +8876,8 @@ const formSchema$3 = object().shape({
 });
 
 const ForgotPassword = () => {
-  const [isModalOpen, setIsOpenModal] = useState(false);
-  const [emailSuggestion, setEmailSuggestion] = useState('');
+  const [isModalOpen, setIsOpenModal] = useState$1(false);
+  const [emailSuggestion, setEmailSuggestion] = useState$1('');
   const dispatch = useDispatch();
 
   const onSubmit = (values, actions) => {
@@ -9223,7 +8993,7 @@ const CreatePassword = ({
 }) => {
   const history = useHistory();
   const dispatch = useDispatch();
-  useEffect(() => {
+  useEffect$1(() => {
     _isCreatePassword ? setRegisterToken() : setResetPassword();
   }, []);
 
@@ -9298,13 +9068,13 @@ const CreatePassword = ({
 };
 
 const VerifyOtp = () => {
-  const [otp, setOtp] = useState('');
+  const [otp, setOtp] = useState$1('');
   const registerInfo = useSelector(state => state.auth.register);
   const dispatch = useDispatch();
   const history = useHistory();
   const intl = useIntl();
   const NUM_INPUTS = 6;
-  useEffect(() => {}, []);
+  useEffect$1(() => {}, []);
 
   const onChangeOtp = value => {
     setOtp(value);
@@ -9377,8 +9147,8 @@ const VerifyOtp = () => {
 
 const LandingPageHeader = () => /*#__PURE__*/React.createElement(Context.Consumer, null, context => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
   className: "d-flex justify-content-between align-items-center"
-}, /*#__PURE__*/React.createElement(Link$1, {
-  to: '/'
+}, /*#__PURE__*/React.createElement("a", {
+  href: "https://inon.vn/"
 }, /*#__PURE__*/React.createElement("span", {
   className: "d-block d-lg-none"
 }, /*#__PURE__*/React.createElement("img", {
@@ -9650,9 +9420,9 @@ const PageStyle = styled.div(_t || (_t = _`
 `), IMAGE.LANDING_PAGE_BG);
 
 const LandingPage = props => {
-  const [activeTab, setActiveTab] = useState('');
+  const [activeTab, setActiveTab] = useState$1('');
   const history = useHistory();
-  useEffect(() => {
+  useEffect$1(() => {
     setActiveTab(props.activeTab || 'login');
   }, [props.activeTab]);
 
@@ -9701,8 +9471,8 @@ const LandingPage = props => {
     className: "d-none d-lg-block landing-page-bg"
   }, /*#__PURE__*/React.createElement("div", {
     className: "logo mx-auto"
-  }, /*#__PURE__*/React.createElement(Link$1, {
-    to: '/'
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "https://inon.vn/"
   }, /*#__PURE__*/React.createElement("img", {
     src: IMAGE.LOGO,
     alt: "logo"
@@ -9788,7 +9558,7 @@ const ConfirmAlert = () => {
       onConfirm();
     }
 
-    dispatch(hideConfirmAlert$1());
+    dispatch(hideConfirmAlert());
   };
 
   const onClickCancel = () => {
@@ -9796,7 +9566,7 @@ const ConfirmAlert = () => {
       onCancel();
     }
 
-    dispatch(hideConfirmAlert$1());
+    dispatch(hideConfirmAlert());
   };
 
   return /*#__PURE__*/React.createElement(SweetAlert, Object.assign({
@@ -9826,7 +9596,7 @@ const CheckLocationChange = () => {
   const {
     authToken
   } = useSelector(state => state.auth);
-  useEffect(() => {
+  useEffect$1(() => {
     let id;
 
     if (window.location.href.includes('/app/')) {
@@ -9863,10 +9633,11 @@ const AppRouter = props => {
     loadNavtigation,
     changeIsGuest,
     loadUserRoles,
+    setAppId,
     history,
     message
   } = props;
-  useEffect(() => {
+  useEffect$1(() => {
     const urlParams = new URLSearchParams(document.location.search);
     const code = urlParams.get('code') || (appId === AppId.ELITE_APP ? guest.authToken : authToken);
     const redirectUrl = urlParams.get('redirectUrl');
@@ -9875,9 +9646,8 @@ const AppRouter = props => {
       checkLoginStatus(code, redirectUrl);
     }
 
-    if (authToken) {
-      loadNavtigation(appId);
-      loadUserRoles();
+    if (code) {
+      loadNavtigation(appId, () => loadUserRoles());
     }
   }, [authToken]);
   const appMessage = {
@@ -9954,6 +9724,9 @@ const AppRouter = props => {
         activeTab: item.path
       })
     })), /*#__PURE__*/React.createElement(Route, {
+      path: "/social-login",
+      component: SocialLogin
+    }), /*#__PURE__*/React.createElement(Route, {
       path: "/",
       render: () => children
     })))
@@ -10043,8 +9816,7 @@ const App = ({
   appReducer,
   message,
   apiBaseUrl,
-  history,
-  footerApp
+  history
 }) => {
   const middlewares = [thunk, createDebounce()];
   const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
@@ -10062,8 +9834,7 @@ const App = ({
     message: message,
     appId: appId,
     history: history,
-    children: children,
-    footerApp: footerApp
+    children: children
   })));
 };
 
@@ -10168,13 +9939,13 @@ const ReactTable = props => {
 };
 
 const usePageAuthorities = () => {
-  const [authorities, setAuthorities] = useState([]);
+  const [authorities, setAuthorities] = useState$1([]);
   const {
     userRoles,
     roles
   } = useSelector(state => state.navbar);
   const history = useHistory();
-  useEffect(() => {
+  useEffect$1(() => {
     const roleList = roles.filter(item => history.location.pathname.includes(item.menuPath));
 
     if (!roleList.length) {

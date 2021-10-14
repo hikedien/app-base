@@ -9145,7 +9145,7 @@ html {
     html body p {
       line-height: 1.5rem; }
     html body .false-cjs {
-      background: no-repeat center center;
+      background: no-repeat center center;
       background-size: cover; }
     html body .false-cjs .false-cjs {
       margin-left: 0; }
@@ -9341,8 +9341,6 @@ footer .false-cjs {
     width: 4.5rem; }
   footer .false-cjs .false-cjs {
     width: 25%; }
-  footer .false-cjs span {
-    color: #338955; }
 
 footer.false-cjs {
   box-shadow: 0px -1px 4px 0px rgba(0, 0, 0, 0.15); }
@@ -9794,7 +9792,8 @@ footer.false-cjs {
   color: #626262; }
 
 .false-cjs .false-cjs {
-  color: rgba(255, 255, 255, 0.75); }
+  color: rgba(255, 255, 255, 0.75);
+  margin-right: 5px; }
 
 .false-cjs .false-cjs {
   position: relative;
@@ -13988,6 +13987,8 @@ select.false-cjs:not([multiple="multiple"]) {
       z-index: 2; }
   .false-cjs .false-cjs .false-cjs {
     border-color: #ea5455 !important; }
+  .false-cjs input.false-cjs {
+    border-color: #ea5455 !important; }
   .false-cjs .false-cjs input {
     border: none !important;
     box-shadow: none !important; }
@@ -14928,6 +14929,7 @@ html [type="button"],
       width: 26rem;
       left: 10px !important; }
       .false-cjs .false-cjs .false-cjs .false-cjs {
+        max-height: 423px !important;
         cursor: pointer; }
         .false-cjs .false-cjs .false-cjs .false-cjs .false-cjs {
           padding: 1rem;
