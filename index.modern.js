@@ -673,12 +673,7 @@ const mapRoleToNavItem = role => {
 };
 
 const getNativgationConfig = (appId, navConfigs) => {
-  if (!navConfigs) {
-    navConfigs = [...navigationConfig];
-  } else {
-    navConfigs = mapRoleListToNavConfigs(navConfigs);
-  }
-
+  navConfigs = mapRoleListToNavConfigs(navConfigs);
   return navConfigs.map(item => {
     item.isExternalApp = false;
 
@@ -718,9 +713,15 @@ NavBarService.getUserGroupRole = groupId => {
 
 const LOAD_NATIVGATION = 'LOAD_NATIVGATION';
 const LOAD_USER_ROLE = 'LOAD_USER_ROLE';
-const loadNavtigation = appId => {
+const loadNavtigation = (appId, callback) => {
   return async dispatch => {
     const res = await NavBarService.getNativagtion();
+
+    if (!res || !res.data) {
+      return;
+    }
+
+    callback();
     const roles = res.data || [];
     const navConfigs = getNativgationConfig(appId, roles);
     dispatch({
@@ -1328,6 +1329,7 @@ const authReducers = (state = { ...authInitialState
     case GOTO_AGENCY_APP:
       {
         return { ...state,
+          guest: {},
           user: state.guest.user,
           authToken: state.guest.authToken
         };
@@ -9637,9 +9639,8 @@ const AppRouter = props => {
       checkLoginStatus(code, redirectUrl);
     }
 
-    if (authToken) {
-      loadNavtigation(appId);
-      loadUserRoles();
+    if (code) {
+      loadNavtigation(appId, () => loadUserRoles());
     }
   }, [authToken]);
   const appMessage = {

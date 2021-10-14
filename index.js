@@ -769,12 +769,7 @@ var mapRoleToNavItem = function mapRoleToNavItem(role) {
 };
 
 var getNativgationConfig = function getNativgationConfig(appId, navConfigs) {
-  if (!navConfigs) {
-    navConfigs = [].concat(navigationConfig);
-  } else {
-    navConfigs = mapRoleListToNavConfigs(navConfigs);
-  }
-
+  navConfigs = mapRoleListToNavConfigs(navConfigs);
   return navConfigs.map(function (item) {
     item.isExternalApp = false;
 
@@ -816,10 +811,15 @@ NavBarService.getUserGroupRole = function (groupId) {
 
 var LOAD_NATIVGATION = 'LOAD_NATIVGATION';
 var LOAD_USER_ROLE = 'LOAD_USER_ROLE';
-var loadNavtigation = function loadNavtigation(appId) {
+var loadNavtigation = function loadNavtigation(appId, callback) {
   return function (dispatch) {
     try {
       return Promise.resolve(NavBarService.getNativagtion()).then(function (res) {
+        if (!res || !res.data) {
+          return;
+        }
+
+        callback();
         var roles = res.data || [];
         var navConfigs = getNativgationConfig(appId, roles);
         dispatch({
@@ -1526,6 +1526,7 @@ var authReducers = function authReducers(state, action) {
     case GOTO_AGENCY_APP:
       {
         return _extends({}, state, {
+          guest: {},
           user: state.guest.user,
           authToken: state.guest.authToken
         });
@@ -10311,9 +10312,10 @@ var AppRouter = function AppRouter(props) {
       checkLoginStatus(code, redirectUrl);
     }
 
-    if (authToken) {
-      loadNavtigation(appId);
-      loadUserRoles();
+    if (code) {
+      loadNavtigation(appId, function () {
+        return loadUserRoles();
+      });
     }
   }, [authToken]);
   var appMessage = {
