@@ -535,8 +535,7 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
 
   HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
   HttpClient.interceptors.request.use(function (config) {
-    var appId = store.getState().customizer.appId;
-    var token = appId === AppId.ELITE_APP ? store.getState().auth.guest.authToken : store.getState().auth.authToken;
+    var token = store.getState().auth.guest.authToken || store.getState().auth.authToken;
     var sessionExpireTime = store.getState().auth.sessionExpireTime;
     language = localStorage.getItem('language');
 
