@@ -198,7 +198,7 @@ const getContextPath = appId => {
       return '';
   }
 };
-const getPropObject$1 = (obj, prop) => {
+const getPropObject = (obj, prop) => {
   if (!obj) {
     return null;
   }
@@ -312,7 +312,7 @@ var appConfigs = {
     IC_TYPES_OPTIONS: IC_TYPES_OPTIONS,
     getExternalAppUrl: getExternalAppUrl,
     getContextPath: getContextPath,
-    getPropObject: getPropObject$1,
+    getPropObject: getPropObject,
     USER_ROLE: USER_ROLE,
     IMAGE: IMAGE
 };
@@ -4335,7 +4335,7 @@ const BaseFormGroup = ({
     field,
     form
   }) => /*#__PURE__*/React.createElement(Input, Object.assign({
-    className: `form-control ${_isRequired && getPropObject$1(form.errors, fieldName) && getPropObject$1(form.touched, fieldName) && 'is-invalid'}`
+    className: `form-control ${_isRequired && getPropObject(form.errors, fieldName) && getPropObject(form.touched, fieldName) && 'is-invalid'}`
   }, field, {
     type: type,
     disabled: disabled,
@@ -4344,9 +4344,9 @@ const BaseFormGroup = ({
     placeholder: msg,
     onBlur: e => onBlur(e, form),
     onChange: e => handleChange(e, form)
-  }))), _isRequired && _isShowErrorMessage && getPropObject$1(errors, fieldName) && getPropObject$1(touched, fieldName) ? /*#__PURE__*/React.createElement("div", {
+  }))), _isRequired && _isShowErrorMessage && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
-  }, getPropObject$1(errors, fieldName)) : null, /*#__PURE__*/React.createElement(Label, null, msg))));
+  }, getPropObject(errors, fieldName)) : null, /*#__PURE__*/React.createElement(Label, null, msg))));
 };
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
@@ -7103,9 +7103,9 @@ const DatePicker = props => {
     value: props.value,
     onClose: () => props.onClose && props.onClose(),
     onChange: date => props.onChange && props.onChange(date)
-  }), /*#__PURE__*/React.createElement(Label, null, props.placeholder), props.errors && props.touched && props.isShowErrorMessage && getPropObject$1(props.errors, props.fieldName) && getPropObject$1(props.touched, props.fieldName) ? /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement(Label, null, props.placeholder), props.errors && props.touched && props.isShowErrorMessage && getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
-  }, getPropObject$1(props.errors, props.fieldName)) : null);
+  }, getPropObject(props.errors, props.fieldName)) : null);
 };
 
 const BaseFormDatePicker = ({
@@ -7220,9 +7220,9 @@ const Select = props => {
         primary: '#338955'
       }
     })
-  })), props.required && props.isShowErrorMessage ? getPropObject$1(props.errors, props.fieldName) && getPropObject$1(props.touched, props.fieldName) ? /*#__PURE__*/React.createElement("div", {
+  })), props.required && props.isShowErrorMessage ? getPropObject(props.errors, props.fieldName) && getPropObject(props.touched, props.fieldName) ? /*#__PURE__*/React.createElement("div", {
     className: "text-danger"
-  }, getPropObject$1(props.errors, props.fieldName)) : null : '', /*#__PURE__*/React.createElement("input", {
+  }, getPropObject(props.errors, props.fieldName)) : null : '', /*#__PURE__*/React.createElement("input", {
     className: "d-none",
     placeholder: props.placeholder,
     value: inputValue
@@ -7259,7 +7259,7 @@ const BaseFormGroupSelect = ({
     placeholder: intl.formatMessage({
       id: messageId
     }),
-    className: `${_isRequired && getPropObject$1(errors, fieldName) && getPropObject$1(touched, fieldName) && 'is-invalid'}`,
+    className: `${_isRequired && getPropObject(errors, fieldName) && getPropObject(touched, fieldName) && 'is-invalid'}`,
     type: type,
     isShowErrorMessage: _isShowErrorMessage,
     classNamePrefix: "Select",
@@ -9646,8 +9646,9 @@ const AppRouter = props => {
       checkLoginStatus(code, redirectUrl);
     }
 
-    if (code) {
-      loadNavtigation(appId, () => loadUserRoles());
+    if (authToken) {
+      loadNavtigation(appId);
+      loadUserRoles();
     }
   }, [authToken]);
   const appMessage = {
