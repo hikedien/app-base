@@ -817,15 +817,10 @@ NavBarService.getUserGroupRole = function (groupId) {
 
 var LOAD_NATIVGATION = 'LOAD_NATIVGATION';
 var LOAD_USER_ROLE = 'LOAD_USER_ROLE';
-var loadNavtigation = function loadNavtigation(appId, callback) {
+var loadNavtigation = function loadNavtigation(appId) {
   return function (dispatch) {
     try {
       return Promise.resolve(NavBarService.getNativagtion()).then(function (res) {
-        if (!res || !res.data) {
-          return;
-        }
-
-        callback();
         var roles = res.data || [];
         var navConfigs = getNativgationConfig(appId, roles);
         dispatch({

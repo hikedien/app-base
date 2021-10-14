@@ -721,15 +721,9 @@ NavBarService.getUserGroupRole = groupId => {
 
 const LOAD_NATIVGATION = 'LOAD_NATIVGATION';
 const LOAD_USER_ROLE = 'LOAD_USER_ROLE';
-const loadNavtigation = (appId, callback) => {
+const loadNavtigation = appId => {
   return async dispatch => {
     const res = await NavBarService.getNativagtion();
-
-    if (!res || !res.data) {
-      return;
-    }
-
-    callback();
     const roles = res.data || [];
     const navConfigs = getNativgationConfig(appId, roles);
     dispatch({
