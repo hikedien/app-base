@@ -317,11 +317,11 @@ var appConfigs = {
     IMAGE: IMAGE
 };
 
-let history$1 = createBrowserHistory({
+let history = createBrowserHistory({
   basename: ''
 });
 const setBaseHistory = appHistory => {
-  history$1 = appHistory;
+  history = appHistory;
 };
 
 const generateUUID = () => {
@@ -461,6 +461,7 @@ const setUpHttpClient = (store, apiBaseUrl) => {
         store.dispatch({
           type: LOGOUT_ACTION
         });
+        history.push('/login');
         return;
       }
     }
@@ -511,7 +512,6 @@ const setUpHttpClient = (store, apiBaseUrl) => {
         store.dispatch({
           type: 'LOGOUT_ACTION'
         });
-        history.push('/login');
         break;
 
       case 500:
@@ -761,9 +761,9 @@ const goBackHomePage = () => {
     } = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$auth = _getState.auth) === null || _getState$auth === void 0 ? void 0 : _getState$auth.guest) || {};
 
     if (authToken) {
-      history$1.push('/home');
+      history.push('/home');
     } else {
-      history$1.push('/app/home');
+      history.push('/app/home');
     }
   };
 };
@@ -869,7 +869,7 @@ const loginAction = user => {
               id: "login.needRegisterPartner"
             }),
             onConfirm: () => {
-              history$1.push('/register');
+              history.push('/register');
             }
           }));
           return;
@@ -952,7 +952,7 @@ const createPassword = password => {
       const response = await AuthService.createPassword(password, getState().auth.register.token);
 
       if (response.status === 200 && response.data) {
-        history$1.push('/complete-information');
+        history.push('/complete-information');
       }
     } catch (error) {}
   };
@@ -967,7 +967,7 @@ const register = (values, isGuest) => {
           toastSuccess( /*#__PURE__*/React.createElement(FormattedMessage, {
             id: "register.registerSuccess"
           }));
-          history$1.push('/login');
+          history.push('/login');
         }
       }
     } catch (error) {}
@@ -983,7 +983,7 @@ const compeleteInfo = user => {
         toastSuccess( /*#__PURE__*/React.createElement(FormattedMessage, {
           id: "completeInformation.success"
         }));
-        history$1.push('/login');
+        history.push('/login');
       }
     } catch (error) {
       console.log(error);
@@ -1003,7 +1003,7 @@ const saveRegisterToken = registerToken => {
         }
       });
     } else {
-      history$1.push('/login');
+      history.push('/login');
     }
   };
 };
@@ -1042,7 +1042,7 @@ const forgotPassword = ({
           type: SAVE_RESET_PASSWORD_TOKEN,
           payload: ''
         });
-        history$1.push('/login');
+        history.push('/login');
       }
     } catch (error) {}
   };
@@ -1060,7 +1060,7 @@ const resetPassword = password => {
           type: SAVE_RESET_PASSWORD_TOKEN,
           payload: ''
         });
-        history$1.push('/login');
+        history.push('/login');
       }
     } catch (error) {}
   };
@@ -1075,7 +1075,7 @@ const logoutAction = () => {
     dispatch({
       type: LOGOUT_ACTION
     });
-    history$1.push('/login');
+    history.push('/login');
   };
 };
 const updateUserInfo = (user, avatarImage) => {
@@ -1154,16 +1154,16 @@ const verifyPhoneNumber = values => {
       toastSuccess( /*#__PURE__*/React.createElement(FormattedMessage, {
         id: "verifyAccount.otp.registerSuccess"
       }));
-      history$1.push('/login');
+      history.push('/login');
     }
   };
 };
 
 const redirectMainApp = isGuest => {
   if (isGuest) {
-    history$1.push('/');
+    history.push('/');
   } else {
-    history$1.push('/app/home');
+    history.push('/app/home');
   }
 };
 
@@ -2237,7 +2237,7 @@ const NavbarUser = props => {
 
   const onSuggestionItemClick = item => {
     if (!item.isExternalApp) {
-      history$1.push(`${item.menuPath}`);
+      history.push(`${item.menuPath}`);
     } else {
       window.location.href = item.navLinkExternal;
     }
@@ -2606,9 +2606,9 @@ const goBackHomePage$1 = () => {
     } = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$auth = _getState.auth) === null || _getState$auth === void 0 ? void 0 : _getState$auth.guest) || {};
 
     if (authToken) {
-      history$1.push('/home');
+      history.push('/home');
     } else {
-      history$1.push('/app/home');
+      history.push('/app/home');
     }
   };
 };

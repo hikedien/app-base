@@ -3,7 +3,7 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 var reactIntl = require('react-intl');
 var React = require('react');
 var React__default = _interopDefault(React);
-var history$2 = require('history');
+var history$1 = require('history');
 var Axios = _interopDefault(require('axios'));
 var axiosExtensions = require('axios-extensions');
 var Icon = require('react-feather');
@@ -391,11 +391,11 @@ var appConfigs = {
   IMAGE: IMAGE
 };
 
-var history$1 = history$2.createBrowserHistory({
+var history = history$1.createBrowserHistory({
   basename: ''
 });
 var setBaseHistory = function setBaseHistory(appHistory) {
-  history$1 = appHistory;
+  history = appHistory;
 };
 
 var generateUUID = function generateUUID() {
@@ -551,6 +551,7 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
         store.dispatch({
           type: LOGOUT_ACTION
         });
+        history.push('/login');
         return;
       }
     }
@@ -601,7 +602,6 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
         store.dispatch({
           type: 'LOGOUT_ACTION'
         });
-        history.push('/login');
         break;
 
       case 500:
@@ -866,9 +866,9 @@ var goBackHomePage = function goBackHomePage() {
           authToken = _ref.authToken;
 
       if (authToken) {
-        history$1.push('/home');
+        history.push('/home');
       } else {
-        history$1.push('/app/home');
+        history.push('/app/home');
       }
 
       return Promise.resolve();
@@ -989,7 +989,7 @@ var loginAction = function loginAction(user) {
                       id: "login.needRegisterPartner"
                     }),
                     onConfirm: function onConfirm() {
-                      history$1.push('/register');
+                      history.push('/register');
                     }
                   }));
                   return;
@@ -1084,7 +1084,7 @@ var createPassword = function createPassword(password) {
       var _temp5 = _catch(function () {
         return Promise.resolve(AuthService.createPassword(password, getState().auth.register.token)).then(function (response) {
           if (response.status === 200 && response.data) {
-            history$1.push('/complete-information');
+            history.push('/complete-information');
           }
         });
       }, function () {});
@@ -1105,7 +1105,7 @@ var register = function register(values, isGuest) {
               toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
                 id: "register.registerSuccess"
               }));
-              history$1.push('/login');
+              history.push('/login');
             }
           }
         });
@@ -1127,7 +1127,7 @@ var compeleteInfo = function compeleteInfo(user) {
             toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
               id: "completeInformation.success"
             }));
-            history$1.push('/login');
+            history.push('/login');
           }
         });
       }, function (error) {
@@ -1153,7 +1153,7 @@ var saveRegisterToken = function saveRegisterToken(registerToken) {
             }
           });
         } else {
-          history$1.push('/login');
+          history.push('/login');
         }
       });
     } catch (e) {
@@ -1200,7 +1200,7 @@ var forgotPassword = function forgotPassword(_ref2) {
               type: SAVE_RESET_PASSWORD_TOKEN,
               payload: ''
             });
-            history$1.push('/login');
+            history.push('/login');
           }
         });
       }, function () {});
@@ -1224,7 +1224,7 @@ var resetPassword = function resetPassword(password) {
               type: SAVE_RESET_PASSWORD_TOKEN,
               payload: ''
             });
-            history$1.push('/login');
+            history.push('/login');
           }
         });
       }, function () {});
@@ -1244,7 +1244,7 @@ var logoutAction = function logoutAction() {
         dispatch({
           type: LOGOUT_ACTION
         });
-        history$1.push('/login');
+        history.push('/login');
       });
     } catch (e) {
       return Promise.reject(e);
@@ -1346,7 +1346,7 @@ var verifyPhoneNumber = function verifyPhoneNumber(values) {
           toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
             id: "verifyAccount.otp.registerSuccess"
           }));
-          history$1.push('/login');
+          history.push('/login');
         }
       });
     } catch (e) {
@@ -1357,9 +1357,9 @@ var verifyPhoneNumber = function verifyPhoneNumber(values) {
 
 var redirectMainApp = function redirectMainApp(isGuest) {
   if (isGuest) {
-    history$1.push('/');
+    history.push('/');
   } else {
-    history$1.push('/app/home');
+    history.push('/app/home');
   }
 };
 
@@ -2509,7 +2509,7 @@ var NavbarUser = function NavbarUser(props) {
 
   var onSuggestionItemClick = function onSuggestionItemClick(item) {
     if (!item.isExternalApp) {
-      history$1.push("" + item.menuPath);
+      history.push("" + item.menuPath);
     } else {
       window.location.href = item.navLinkExternal;
     }
@@ -2912,9 +2912,9 @@ var goBackHomePage$1 = function goBackHomePage() {
           authToken = _ref.authToken;
 
       if (authToken) {
-        history$1.push('/home');
+        history.push('/home');
       } else {
-        history$1.push('/app/home');
+        history.push('/app/home');
       }
 
       return Promise.resolve();
