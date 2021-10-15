@@ -2733,18 +2733,9 @@ var Footer = function Footer(props) {
 
   var history = reactRouterDom.useHistory();
   var dispatch = reactRedux.useDispatch();
-  var appId = reactRedux.useSelector(function (state) {
-    return state.customizer.appId;
-  });
 
   var goToPage = function goToPage(e, navLink) {
-    e.preventDefault();
-
-    if (appId === AppId.INSURANCE_APP) {
-      history.push(navLink);
-    } else {
-      window.location.href = getExternalAppUrl(AppId.INSURANCE_APP, navLink);
-    }
+    history.push(navLink);
   };
 
   var onClickBackHome = function onClickBackHome(e) {
@@ -2785,8 +2776,7 @@ var Footer = function Footer(props) {
     })
   }, /*#__PURE__*/React__default.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React__default.createElement("span", {
     onClick: onClickBackHome
   }, /*#__PURE__*/React__default.createElement(Icon.Home, null), /*#__PURE__*/React__default.createElement("div", {
     className: "mt-1"
@@ -2794,8 +2784,7 @@ var Footer = function Footer(props) {
     id: "menu.home"
   })))), /*#__PURE__*/React__default.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React__default.createElement("span", {
     onClick: function onClick(e) {
       return goToPage(e, '/insurance/contracts');
     }
@@ -2805,10 +2794,9 @@ var Footer = function Footer(props) {
     id: "menu.contract"
   })))), /*#__PURE__*/React__default.createElement("div", {
     className: "position-relative w-25"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React__default.createElement("span", {
     onClick: function onClick(e) {
-      return goToPage(e, '/insurance/buy-insurance');
+      return goToPage(e, '/insurance/buy-insurances');
     }
   }, /*#__PURE__*/React__default.createElement("img", {
     src: IMAGE.BUY_INSURANCE,
@@ -2824,8 +2812,7 @@ var Footer = function Footer(props) {
     id: "menu.buyInsurance"
   })))), /*#__PURE__*/React__default.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React__default.createElement("span", {
     onClick: onClickBackHome
   }, /*#__PURE__*/React__default.createElement(Icon.Gift, null), /*#__PURE__*/React__default.createElement("div", {
     className: "mt-1"
@@ -2833,8 +2820,7 @@ var Footer = function Footer(props) {
     id: "menu.promotion"
   })))), /*#__PURE__*/React__default.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React__default.createElement("span", {
     onClick: function onClick(e) {
       return history.push('/app/contact');
     }
@@ -10398,7 +10384,7 @@ var AppRouter = function AppRouter(props) {
       }), /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
         from: "/",
         to: "/intro"
-      })), React__default.createElement(footerApp));
+      })), footerApp && React__default.createElement(footerApp));
     }
   })), /*#__PURE__*/React__default.createElement(CheckLocationChange, null)), /*#__PURE__*/React__default.createElement(reactToastify.ToastContainer, {
     hideProgressBar: true,

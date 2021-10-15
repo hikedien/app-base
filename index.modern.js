@@ -2447,16 +2447,9 @@ const Footer = props => {
   } = useWindowDimensions();
   const history = useHistory();
   const dispatch = useDispatch();
-  const appId = useSelector(state => state.customizer.appId);
 
   const goToPage = (e, navLink) => {
-    e.preventDefault();
-
-    if (appId === AppId.INSURANCE_APP) {
-      history.push(navLink);
-    } else {
-      window.location.href = getExternalAppUrl(AppId.INSURANCE_APP, navLink);
-    }
+    history.push(navLink);
   };
 
   const onClickBackHome = e => {
@@ -2497,8 +2490,7 @@ const Footer = props => {
     })
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React.createElement("span", {
     onClick: onClickBackHome
   }, /*#__PURE__*/React.createElement(Home, null), /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
@@ -2506,8 +2498,7 @@ const Footer = props => {
     id: "menu.home"
   })))), /*#__PURE__*/React.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React.createElement("span", {
     onClick: e => goToPage(e, '/insurance/contracts')
   }, /*#__PURE__*/React.createElement(List, null), /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
@@ -2515,9 +2506,8 @@ const Footer = props => {
     id: "menu.contract"
   })))), /*#__PURE__*/React.createElement("div", {
     className: "position-relative w-25"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#",
-    onClick: e => goToPage(e, '/insurance/buy-insurance')
+  }, /*#__PURE__*/React.createElement("span", {
+    onClick: e => goToPage(e, '/insurance/buy-insurances')
   }, /*#__PURE__*/React.createElement("img", {
     src: IMAGE.BUY_INSURANCE,
     className: "buy-insurance",
@@ -2532,8 +2522,7 @@ const Footer = props => {
     id: "menu.buyInsurance"
   })))), /*#__PURE__*/React.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React.createElement("span", {
     onClick: onClickBackHome
   }, /*#__PURE__*/React.createElement(Gift, null), /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
@@ -2541,8 +2530,7 @@ const Footer = props => {
     id: "menu.promotion"
   })))), /*#__PURE__*/React.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React.createElement("span", {
     onClick: e => history.push('/app/contact')
   }, /*#__PURE__*/React.createElement(MessageSquare, null), /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
@@ -9711,7 +9699,7 @@ const AppRouter = props => {
     }), /*#__PURE__*/React.createElement(Redirect, {
       from: "/",
       to: "/intro"
-    })), React.createElement(footerApp))
+    })), footerApp && React.createElement(footerApp))
   })), /*#__PURE__*/React.createElement(CheckLocationChange, null)), /*#__PURE__*/React.createElement(ToastContainer, {
     hideProgressBar: true,
     position: "top-right",

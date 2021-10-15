@@ -9353,13 +9353,17 @@ footer .footer-mobile {
     bottom: 4%; }
   footer .footer-mobile .buy-insurance {
     position: absolute;
-    top: -1.5rem;
-    left: .5rem;
+    top: -1.7rem;
+    left: .3rem;
     width: 4.5rem; }
   footer .footer-mobile .w-25 {
     width: 25%; }
   footer .footer-mobile span {
+    margin: 0.3rem 0;
     color: #338955; }
+    @media (max-width: 320px) {
+      footer .footer-mobile span {
+        font-size: 8px; } }
 
 footer.navbar-shadow {
   box-shadow: 0px -1px 4px 0px rgba(0, 0, 0, 0.15); }
