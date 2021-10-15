@@ -13786,13 +13786,13 @@ select.form-control:not([multiple="multiple"]) {
       color: #E2D8EE; }
     .dark .form-label-group > input::-moz-placeholder, .dark
     .form-label-group textarea::-moz-placeholder {
-      color: #564962; }
+      color: #716d76; }
     .dark .form-label-group > input:-ms-input-placeholder, .dark
     .form-label-group textarea:-ms-input-placeholder {
-      color: #564962; }
+      color: #716d76; }
     .dark .form-label-group > input::placeholder, .dark
     .form-label-group textarea::placeholder {
-      color: #564962; }
+      color: #716d76; }
     .premier .form-label-group > input::-moz-placeholder, .premier
     .form-label-group textarea::-moz-placeholder {
       color: #E0DCD8; }
@@ -36487,13 +36487,13 @@ select.form-control:not([multiple="multiple"]) {
       color: #E2D8EE; }
     .dark .form-label-group > input::-moz-placeholder, .dark
     .form-label-group textarea::-moz-placeholder {
-      color: #564962; }
+      color: #716d76; }
     .dark .form-label-group > input:-ms-input-placeholder, .dark
     .form-label-group textarea:-ms-input-placeholder {
-      color: #564962; }
+      color: #716d76; }
     .dark .form-label-group > input::placeholder, .dark
     .form-label-group textarea::placeholder {
-      color: #564962; }
+      color: #716d76; }
     .premier .form-label-group > input::-moz-placeholder, .premier
     .form-label-group textarea::-moz-placeholder {
       color: #E0DCD8; }
