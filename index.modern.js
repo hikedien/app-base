@@ -2506,7 +2506,8 @@ const Footer = props => {
     id: "menu.home"
   })))), /*#__PURE__*/React.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "#",
     onClick: e => goToPage(e, '/insurance/contracts')
   }, /*#__PURE__*/React.createElement(List, null), /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
@@ -2514,7 +2515,8 @@ const Footer = props => {
     id: "menu.contract"
   })))), /*#__PURE__*/React.createElement("div", {
     className: "position-relative w-25"
-  }, /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "#",
     onClick: e => goToPage(e, '/insurance/buy-insurance')
   }, /*#__PURE__*/React.createElement("img", {
     src: IMAGE.BUY_INSURANCE,
@@ -2530,7 +2532,8 @@ const Footer = props => {
     id: "menu.buyInsurance"
   })))), /*#__PURE__*/React.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "#",
     onClick: onClickBackHome
   }, /*#__PURE__*/React.createElement(Gift, null), /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
@@ -2538,7 +2541,8 @@ const Footer = props => {
     id: "menu.promotion"
   })))), /*#__PURE__*/React.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "#",
     onClick: e => history.push('/app/contact')
   }, /*#__PURE__*/React.createElement(MessageSquare, null), /*#__PURE__*/React.createElement("div", {
     className: "mt-1"

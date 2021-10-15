@@ -2794,7 +2794,8 @@ var Footer = function Footer(props) {
     id: "menu.home"
   })))), /*#__PURE__*/React__default.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React__default.createElement("span", {
+  }, /*#__PURE__*/React__default.createElement("a", {
+    href: "#",
     onClick: function onClick(e) {
       return goToPage(e, '/insurance/contracts');
     }
@@ -2804,7 +2805,8 @@ var Footer = function Footer(props) {
     id: "menu.contract"
   })))), /*#__PURE__*/React__default.createElement("div", {
     className: "position-relative w-25"
-  }, /*#__PURE__*/React__default.createElement("span", {
+  }, /*#__PURE__*/React__default.createElement("a", {
+    href: "#",
     onClick: function onClick(e) {
       return goToPage(e, '/insurance/buy-insurance');
     }
@@ -2822,7 +2824,8 @@ var Footer = function Footer(props) {
     id: "menu.buyInsurance"
   })))), /*#__PURE__*/React__default.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React__default.createElement("span", {
+  }, /*#__PURE__*/React__default.createElement("a", {
+    href: "#",
     onClick: onClickBackHome
   }, /*#__PURE__*/React__default.createElement(Icon.Gift, null), /*#__PURE__*/React__default.createElement("div", {
     className: "mt-1"
@@ -2830,7 +2833,8 @@ var Footer = function Footer(props) {
     id: "menu.promotion"
   })))), /*#__PURE__*/React__default.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React__default.createElement("span", {
+  }, /*#__PURE__*/React__default.createElement("a", {
+    href: "#",
     onClick: function onClick(e) {
       return history.push('/app/contact');
     }
