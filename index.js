@@ -602,7 +602,6 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
         store.dispatch({
           type: 'LOGOUT_ACTION'
         });
-        history.push('/login');
         break;
 
       case 500:
@@ -890,7 +889,6 @@ var CHANGE_VERIFY_ACCOUNT_STATUS = 'CHANGE_VERIFY_ACCOUNT_STATUS';
 var CHANGE_IS_GUEST = 'CHANGE_IS_GUEST';
 var GOTO_GUEST_APP = 'GOTO_GUEST_APP';
 var GOTO_AGENCY_APP = 'GOTO_AGENCY_APP';
-var sessionTimeout = null;
 var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
   return function (dispatch, getState) {
     try {
@@ -1239,7 +1237,6 @@ var resetPassword = function resetPassword(password) {
 var logoutAction = function logoutAction() {
   return function (dispatch, getState) {
     try {
-      clearTimeout(sessionTimeout);
       var id = getState().auth.user.id;
       return Promise.resolve(AuthService.logout(id)).then(function () {
         dispatch({
@@ -1464,6 +1461,7 @@ var authReducers = function authReducers(state, action) {
 
     case LOGOUT_ACTION:
       {
+        history.push('/login');
         return _extends({}, authInitialState);
       }
 
@@ -2725,18 +2723,9 @@ var Footer = function Footer(props) {
 
   var history = reactRouterDom.useHistory();
   var dispatch = reactRedux.useDispatch();
-  var appId = reactRedux.useSelector(function (state) {
-    return state.customizer.appId;
-  });
 
   var goToPage = function goToPage(e, navLink) {
-    e.preventDefault();
-
-    if (appId === AppId.INSURANCE_APP) {
-      history.push(navLink);
-    } else {
-      window.location.href = getExternalAppUrl(AppId.INSURANCE_APP, navLink);
-    }
+    history.push(navLink);
   };
 
   var onClickBackHome = function onClickBackHome(e) {
@@ -2777,8 +2766,7 @@ var Footer = function Footer(props) {
     })
   }, /*#__PURE__*/React__default.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React__default.createElement("span", {
     onClick: onClickBackHome
   }, /*#__PURE__*/React__default.createElement(Icon.Home, null), /*#__PURE__*/React__default.createElement("div", {
     className: "mt-1"
@@ -2798,7 +2786,7 @@ var Footer = function Footer(props) {
     className: "position-relative w-25"
   }, /*#__PURE__*/React__default.createElement("span", {
     onClick: function onClick(e) {
-      return goToPage(e, '/insurance/buy-insurance');
+      return goToPage(e, '/insurance/buy-insurances');
     }
   }, /*#__PURE__*/React__default.createElement("img", {
     src: IMAGE.BUY_INSURANCE,

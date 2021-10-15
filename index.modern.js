@@ -512,7 +512,6 @@ const setUpHttpClient = (store, apiBaseUrl) => {
         store.dispatch({
           type: 'LOGOUT_ACTION'
         });
-        history.push('/login');
         break;
 
       case 500:
@@ -781,7 +780,6 @@ const CHANGE_VERIFY_ACCOUNT_STATUS = 'CHANGE_VERIFY_ACCOUNT_STATUS';
 const CHANGE_IS_GUEST = 'CHANGE_IS_GUEST';
 const GOTO_GUEST_APP = 'GOTO_GUEST_APP';
 const GOTO_AGENCY_APP = 'GOTO_AGENCY_APP';
-var sessionTimeout = null;
 const checkLoginStatus = (authToken, redirectUrl) => {
   return async (dispatch, getState) => {
     try {
@@ -1069,7 +1067,6 @@ const resetPassword = password => {
 };
 const logoutAction = () => {
   return async (dispatch, getState) => {
-    clearTimeout(sessionTimeout);
     const {
       id
     } = getState().auth.user;
@@ -1264,6 +1261,7 @@ const authReducers = (state = { ...authInitialState
 
     case LOGOUT_ACTION:
       {
+        history.push('/login');
         return { ...authInitialState
         };
       }
@@ -2444,16 +2442,9 @@ const Footer = props => {
   } = useWindowDimensions();
   const history = useHistory();
   const dispatch = useDispatch();
-  const appId = useSelector(state => state.customizer.appId);
 
   const goToPage = (e, navLink) => {
-    e.preventDefault();
-
-    if (appId === AppId.INSURANCE_APP) {
-      history.push(navLink);
-    } else {
-      window.location.href = getExternalAppUrl(AppId.INSURANCE_APP, navLink);
-    }
+    history.push(navLink);
   };
 
   const onClickBackHome = e => {
@@ -2494,8 +2485,7 @@ const Footer = props => {
     })
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-25"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#",
+  }, /*#__PURE__*/React.createElement("span", {
     onClick: onClickBackHome
   }, /*#__PURE__*/React.createElement(Home, null), /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
@@ -2512,7 +2502,7 @@ const Footer = props => {
   })))), /*#__PURE__*/React.createElement("div", {
     className: "position-relative w-25"
   }, /*#__PURE__*/React.createElement("span", {
-    onClick: e => goToPage(e, '/insurance/buy-insurance')
+    onClick: e => goToPage(e, '/insurance/buy-insurances')
   }, /*#__PURE__*/React.createElement("img", {
     src: IMAGE.BUY_INSURANCE,
     className: "buy-insurance",
