@@ -757,12 +757,7 @@ var mapRoleToNavItem = function mapRoleToNavItem(role) {
 };
 
 var getNativgationConfig = function getNativgationConfig(appId, navConfigs) {
-  if (!navConfigs) {
-    navConfigs = [].concat(navigationConfig);
-  } else {
-    navConfigs = mapRoleListToNavConfigs(navConfigs);
-  }
-
+  navConfigs = mapRoleListToNavConfigs(navConfigs);
   return navConfigs.map(function (item) {
     item.isExternalApp = false;
 
@@ -804,10 +799,15 @@ NavBarService.getUserGroupRole = function (groupId) {
 
 var LOAD_NATIVGATION = 'LOAD_NATIVGATION';
 var LOAD_USER_ROLE = 'LOAD_USER_ROLE';
-var loadNavtigation = function loadNavtigation(appId) {
+var loadNavtigation = function loadNavtigation(appId, callback) {
   return function (dispatch) {
     try {
       return Promise.resolve(NavBarService.getNativagtion()).then(function (res) {
+        if (!res || !res.data) {
+          return;
+        }
+
+        callback();
         var roles = res.data || [];
         var navConfigs = getNativgationConfig(appId, roles);
         dispatch({
@@ -10301,8 +10301,9 @@ var AppRouter = function AppRouter(props) {
     }
 
     if (authToken) {
-      loadNavtigation(appId);
-      loadUserRoles();
+      loadNavtigation(appId, function () {
+        return loadUserRoles();
+      });
     }
   }, [authToken]);
   var appMessage = {
