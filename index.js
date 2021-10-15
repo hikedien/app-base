@@ -8,13 +8,13 @@ var Axios = _interopDefault(require('axios'));
 var axiosExtensions = require('axios-extensions');
 var Icon = require('react-feather');
 var reactToastify = require('react-toastify');
-var moment = _interopDefault(require('moment'));
 var reactRedux = require('react-redux');
 var redux = require('redux');
 var createDebounce = _interopDefault(require('redux-debounced'));
 var thunk = _interopDefault(require('redux-thunk'));
 var react = require('redux-persist/integration/react');
 var reduxPersist = require('redux-persist');
+var moment = _interopDefault(require('moment'));
 var storage = _interopDefault(require('redux-persist/es/storage'));
 var reactRouterDom = require('react-router-dom');
 var classnames = _interopDefault(require('classnames'));
@@ -589,7 +589,6 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
         store.dispatch({
           type: 'LOGOUT_ACTION'
         });
-        history.push('/login');
         break;
 
       case 500:
@@ -877,7 +876,6 @@ var CHANGE_VERIFY_ACCOUNT_STATUS = 'CHANGE_VERIFY_ACCOUNT_STATUS';
 var CHANGE_IS_GUEST = 'CHANGE_IS_GUEST';
 var GOTO_GUEST_APP = 'GOTO_GUEST_APP';
 var GOTO_AGENCY_APP = 'GOTO_AGENCY_APP';
-var sessionTimeout = null;
 var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
   return function (dispatch, getState) {
     try {
@@ -1226,7 +1224,6 @@ var resetPassword = function resetPassword(password) {
 var logoutAction = function logoutAction() {
   return function (dispatch, getState) {
     try {
-      clearTimeout(sessionTimeout);
       var id = getState().auth.user.id;
       return Promise.resolve(AuthService.logout(id)).then(function () {
         dispatch({
@@ -1444,6 +1441,7 @@ var authReducers = function authReducers(state, action) {
 
     case LOGOUT_ACTION:
       {
+        history.push('/login');
         return _extends({}, authInitialState);
       }
 

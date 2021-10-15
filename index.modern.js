@@ -8,13 +8,13 @@ import * as Icon from 'react-feather';
 import { AlertTriangle, Check, User, Lock, Link, Users, FileText, Shield, Globe, MessageSquare, Power, Server, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, Download, Clipboard, Sun } from 'react-feather';
 import { toast, ToastContainer } from 'react-toastify';
 export { toast } from 'react-toastify';
-import moment from 'moment';
 import { useDispatch, useSelector, connect, Provider } from 'react-redux';
 import { combineReducers, createStore, applyMiddleware, compose } from 'redux';
 import createDebounce from 'redux-debounced';
 import thunk from 'redux-thunk';
 import { PersistGate } from 'redux-persist/integration/react';
 import { persistReducer, persistStore } from 'redux-persist';
+import moment from 'moment';
 import storage from 'redux-persist/es/storage';
 import { useHistory, Link as Link$1, Router, Switch, Route, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
@@ -499,7 +499,6 @@ const setUpHttpClient = (store, apiBaseUrl) => {
         store.dispatch({
           type: 'LOGOUT_ACTION'
         });
-        history.push('/login');
         break;
 
       case 500:
@@ -768,7 +767,6 @@ const CHANGE_VERIFY_ACCOUNT_STATUS = 'CHANGE_VERIFY_ACCOUNT_STATUS';
 const CHANGE_IS_GUEST = 'CHANGE_IS_GUEST';
 const GOTO_GUEST_APP = 'GOTO_GUEST_APP';
 const GOTO_AGENCY_APP = 'GOTO_AGENCY_APP';
-var sessionTimeout = null;
 const checkLoginStatus = (authToken, redirectUrl) => {
   return async (dispatch, getState) => {
     try {
@@ -1056,7 +1054,6 @@ const resetPassword = password => {
 };
 const logoutAction = () => {
   return async (dispatch, getState) => {
-    clearTimeout(sessionTimeout);
     const {
       id
     } = getState().auth.user;
@@ -1244,6 +1241,7 @@ const authReducers = (state = { ...authInitialState
 
     case LOGOUT_ACTION:
       {
+        history.push('/login');
         return { ...authInitialState
         };
       }
