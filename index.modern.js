@@ -512,6 +512,7 @@ const setUpHttpClient = (store, apiBaseUrl) => {
         store.dispatch({
           type: 'LOGOUT_ACTION'
         });
+        history.push('/login');
         break;
 
       case 500:
@@ -810,11 +811,13 @@ const checkLoginStatus = (authToken, redirectUrl) => {
         dispatch({
           type: LOGOUT_ACTION
         });
+        history.push('/login');
       }
     } catch (error) {
       dispatch({
         type: LOGOUT_ACTION
       });
+      history.push('/login');
     }
   };
 };
@@ -1261,7 +1264,6 @@ const authReducers = (state = { ...authInitialState
 
     case LOGOUT_ACTION:
       {
-        history.push('/login');
         return { ...authInitialState
         };
       }

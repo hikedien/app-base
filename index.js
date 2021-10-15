@@ -602,6 +602,7 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
         store.dispatch({
           type: 'LOGOUT_ACTION'
         });
+        history.push('/login');
         break;
 
       case 500:
@@ -921,6 +922,7 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
               dispatch({
                 type: LOGOUT_ACTION
               });
+              history.push('/login');
             }
           }();
 
@@ -930,6 +932,7 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
         dispatch({
           type: LOGOUT_ACTION
         });
+        history.push('/login');
       });
 
       return Promise.resolve(_temp3 && _temp3.then ? _temp3.then(function () {}) : void 0);
@@ -1461,7 +1464,6 @@ var authReducers = function authReducers(state, action) {
 
     case LOGOUT_ACTION:
       {
-        history.push('/login');
         return _extends({}, authInitialState);
       }
 
