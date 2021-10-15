@@ -10298,4 +10298,3 @@ exports.useDistrictList = useDistrictList;
 exports.usePageAuthorities = usePageAuthorities;
 exports.useWardList = useWardList;
 exports.useWindowDimensions = useWindowDimensions;
-//# sourceMappingURL=index.js.map
