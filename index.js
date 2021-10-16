@@ -600,7 +600,7 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
 
         toastError(e.response.data.message);
         store.dispatch({
-          type: 'LOGOUT_ACTION'
+          type: LOGOUT_ACTION
         });
         history.push('/login');
         break;
@@ -10296,7 +10296,7 @@ var AppRouter = function AppRouter(props) {
       message = props.message;
   React.useEffect(function () {
     var urlParams = new URLSearchParams(document.location.search);
-    var code = urlParams.get('code') || (appId === AppId.ELITE_APP ? guest.authToken : authToken);
+    var code = guest.authToken || authToken;
     var redirectUrl = urlParams.get('redirectUrl');
 
     if (code && loginStatus !== LOGIN_STATUS.SUCCESS) {
