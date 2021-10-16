@@ -716,22 +716,24 @@ const LOAD_NATIVGATION = 'LOAD_NATIVGATION';
 const LOAD_USER_ROLE = 'LOAD_USER_ROLE';
 const loadNavtigation = (appId, callback) => {
   return async dispatch => {
-    const res = await NavBarService.getNativagtion();
+    try {
+      const res = await NavBarService.getNativagtion();
 
-    if (!res || !res.data) {
-      return;
-    }
-
-    callback();
-    const roles = res.data || [];
-    const navConfigs = getNativgationConfig(appId, roles);
-    dispatch({
-      type: LOAD_NATIVGATION,
-      payload: {
-        navConfigs,
-        roles
+      if (!res || !res.data) {
+        return;
       }
-    });
+
+      callback();
+      const roles = res.data || [];
+      const navConfigs = getNativgationConfig(appId, roles);
+      dispatch({
+        type: LOAD_NATIVGATION,
+        payload: {
+          navConfigs,
+          roles
+        }
+      });
+    } catch (e) {}
   };
 };
 const loadUserRoles = () => {
@@ -2223,7 +2225,13 @@ const NavbarUser = props => {
   userSettings = userSettings || {};
   userDetails = userDetails || {};
   useEffect(() => {
-    const newSuggestions = (roles || []).map(item => {
+    let roleData = [];
+
+    if (Array.isArray(roles)) {
+      roleData = [...roles];
+    }
+
+    const newSuggestions = roleData.map(item => {
       item.name = intl.formatMessage({
         id: `menu.${item.keyLang}`
       });
@@ -2504,7 +2512,7 @@ const Footer = props => {
   })))), /*#__PURE__*/React.createElement("div", {
     className: "position-relative w-25"
   }, /*#__PURE__*/React.createElement("span", {
-    onClick: e => goToPage(e, '/insurance/buy-insurances')
+    onClick: e => goToPage(e, '/insurance/buy-insurance')
   }, /*#__PURE__*/React.createElement("img", {
     src: IMAGE.BUY_INSURANCE,
     className: "buy-insurance",
