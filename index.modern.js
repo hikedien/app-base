@@ -673,7 +673,7 @@ const mapRoleToNavItem = role => {
   return item;
 };
 
-const getNativgationConfig = (appId, navConfigs) => {
+const getNativgationConfig = navConfigs => {
   navConfigs = mapRoleListToNavConfigs(navConfigs);
   return navConfigs.map(item => {
     item.isExternalApp = false;
@@ -714,7 +714,7 @@ NavBarService.getUserGroupRole = groupId => {
 
 const LOAD_NATIVGATION = 'LOAD_NATIVGATION';
 const LOAD_USER_ROLE = 'LOAD_USER_ROLE';
-const loadNavtigation = (appId, callback) => {
+const loadNavigation = () => {
   return async dispatch => {
     try {
       const res = await NavBarService.getNativagtion();
@@ -723,9 +723,9 @@ const loadNavtigation = (appId, callback) => {
         return;
       }
 
-      callback();
+      dispatch(loadUserRoles());
       const roles = res.data || [];
-      const navConfigs = getNativgationConfig(appId, roles);
+      const navConfigs = getNativgationConfig(roles);
       dispatch({
         type: LOAD_NATIVGATION,
         payload: {
@@ -805,6 +805,7 @@ const checkLoginStatus = (authToken, redirectUrl) => {
           authToken,
           user: response.data || {}
         };
+        dispatch(loadNavigation());
         dispatch({
           type: LOGIN_ACTION,
           payload
@@ -880,6 +881,7 @@ const loginAction = user => {
           return;
         }
 
+        dispatch(loadNavigation());
         dispatch({
           type: LOGIN_ACTION,
           payload: {
@@ -9639,10 +9641,6 @@ const AppRouter = props => {
     if (code && loginStatus !== LOGIN_STATUS.SUCCESS) {
       checkLoginStatus(code, redirectUrl);
     }
-
-    if (authToken) {
-      loadNavtigation(appId, () => loadUserRoles());
-    }
   }, [authToken]);
   const appMessage = {
     en: { ...messages_en,
@@ -9746,8 +9744,6 @@ const mapStateToProps$3 = state => {
 
 var AppRouter$1 = connect(mapStateToProps$3, {
   checkLoginStatus,
-  loadNavtigation,
-  loadUserRoles,
   loginAction,
   changeIsGuest,
   logoutAction,

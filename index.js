@@ -769,7 +769,7 @@ var mapRoleToNavItem = function mapRoleToNavItem(role) {
   return item;
 };
 
-var getNativgationConfig = function getNativgationConfig(appId, navConfigs) {
+var getNativgationConfig = function getNativgationConfig(navConfigs) {
   navConfigs = mapRoleListToNavConfigs(navConfigs);
   return navConfigs.map(function (item) {
     item.isExternalApp = false;
@@ -812,17 +812,17 @@ NavBarService.getUserGroupRole = function (groupId) {
 
 var LOAD_NATIVGATION = 'LOAD_NATIVGATION';
 var LOAD_USER_ROLE = 'LOAD_USER_ROLE';
-var loadNavtigation = function loadNavtigation(appId, callback) {
+var loadNavigation = function loadNavigation() {
   return function (dispatch) {
-    try {
+    return Promise.resolve(_catch(function () {
       return Promise.resolve(NavBarService.getNativagtion()).then(function (res) {
         if (!res || !res.data) {
           return;
         }
 
-        callback();
+        dispatch(loadUserRoles());
         var roles = res.data || [];
-        var navConfigs = getNativgationConfig(appId, roles);
+        var navConfigs = getNativgationConfig(roles);
         dispatch({
           type: LOAD_NATIVGATION,
           payload: {
@@ -831,9 +831,7 @@ var loadNavtigation = function loadNavtigation(appId, callback) {
           }
         });
       });
-    } catch (e) {
-      return Promise.reject(e);
-    }
+    }, function () {}));
   };
 };
 var loadUserRoles = function loadUserRoles() {
@@ -913,6 +911,7 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
                   authToken: authToken,
                   user: response.data || {}
                 };
+                dispatch(loadNavigation());
                 dispatch({
                   type: LOGIN_ACTION,
                   payload: payload
@@ -997,6 +996,7 @@ var loginAction = function loginAction(user) {
                   return;
                 }
 
+                dispatch(loadNavigation());
                 dispatch({
                   type: LOGIN_ACTION,
                   payload: {
@@ -2492,7 +2492,13 @@ var NavbarUser = function NavbarUser(props) {
   var intl = reactIntl.useIntl();
   userSettings = userSettings || {};
   React.useEffect(function () {
-    var newSuggestions = (roles || []).map(function (item) {
+    var roleData = [];
+
+    if (Array.isArray(roles)) {
+      roleData = [].concat(roles);
+    }
+
+    var newSuggestions = roleData.map(function (item) {
       item.name = intl.formatMessage({
         id: "menu." + item.keyLang
       });
@@ -2788,7 +2794,7 @@ var Footer = function Footer(props) {
     className: "position-relative w-25"
   }, /*#__PURE__*/React__default.createElement("span", {
     onClick: function onClick(e) {
-      return goToPage(e, '/insurance/buy-insurances');
+      return goToPage(e, '/insurance/buy-insurance');
     }
   }, /*#__PURE__*/React__default.createElement("img", {
     src: IMAGE.BUY_INSURANCE,
@@ -10290,8 +10296,6 @@ var AppRouter = function AppRouter(props) {
       guest = props.guest,
       authToken = props.authToken,
       children = props.children,
-      loadNavtigation = props.loadNavtigation,
-      loadUserRoles = props.loadUserRoles,
       history = props.history,
       message = props.message;
   React.useEffect(function () {
@@ -10301,12 +10305,6 @@ var AppRouter = function AppRouter(props) {
 
     if (code && loginStatus !== LOGIN_STATUS.SUCCESS) {
       checkLoginStatus(code, redirectUrl);
-    }
-
-    if (authToken) {
-      loadNavtigation(appId, function () {
-        return loadUserRoles();
-      });
     }
   }, [authToken]);
   var appMessage = {
@@ -10421,8 +10419,6 @@ var mapStateToProps$3 = function mapStateToProps(state) {
 
 var AppRouter$1 = reactRedux.connect(mapStateToProps$3, {
   checkLoginStatus: checkLoginStatus,
-  loadNavtigation: loadNavtigation,
-  loadUserRoles: loadUserRoles,
   loginAction: loginAction,
   changeIsGuest: changeIsGuest,
   logoutAction: logoutAction,
