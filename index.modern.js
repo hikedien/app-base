@@ -5,7 +5,7 @@ import { createBrowserHistory } from 'history';
 import Axios from 'axios';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
 import * as Icon from 'react-feather';
-import { AlertTriangle, Check, User, Lock, Link, Users, FileText, Shield, Globe, MessageSquare, Power, Server, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, Download, Clipboard, Sun } from 'react-feather';
+import { AlertTriangle, Check, User, Lock, Link, Users, FileText, Shield, Globe, MessageSquare, Power, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, Download, Clipboard, Sun } from 'react-feather';
 import { toast, ToastContainer } from 'react-toastify';
 export { toast } from 'react-toastify';
 import moment from 'moment';
@@ -18,12 +18,13 @@ import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/es/storage';
 import { useHistory, Link as Link$1, Router, Switch, Route } from 'react-router-dom';
 import classnames from 'classnames';
-import { FormGroup, Label, DropdownMenu, DropdownItem, Media, Modal, ModalHeader, ModalBody, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, Navbar as Navbar$1, Button, Badge, Input, Row, Col, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, ModalFooter, ButtonGroup, UncontrolledButtonDropdown } from 'reactstrap';
+import { FormGroup, Label, DropdownMenu, DropdownItem, Media, UncontrolledButtonDropdown, DropdownToggle, Modal, ModalHeader, ModalBody, NavItem, NavLink, UncontrolledDropdown, Badge, Navbar as Navbar$1, Button, Input, Row, Col, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, ModalFooter, ButtonGroup } from 'reactstrap';
 export { Button } from 'reactstrap';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'moment/locale/vi';
+import styled from 'styled-components';
 import ScrollToTop from 'react-scroll-up';
 import Hammer from 'react-hammerjs';
 import { object, string, ref } from 'yup';
@@ -37,7 +38,6 @@ import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props
 import GoogleLogin from 'react-google-login';
 import firebase from 'firebase';
 import OtpInput from 'react-otp-input';
-import styled from 'styled-components';
 import SweetAlert from 'react-bootstrap-sweetalert';
 import TopBarProgress from 'react-topbar-progress-indicator';
 import Ripples from 'react-ripples';
@@ -80,7 +80,7 @@ const API_EMAIL_SUGGESTION = '/nth/user/api/authenticate/email-suggestion';
 const API_GET_MY_NOTIFICATIONS = '/nth/notification/api/my-notification';
 const API_CHECK_NEW_NOTIFICATIONS = '/nth/notification/api/notifications-es';
 const API_GET_NOTIFICATION_FROM_ESPUBLIC = '/nth/notification/api/user-notifications-es';
-const API_UPDATE_NOTIFICATION = '/nth/notification/';
+const API_UPDATE_NOTIFICATION = '/nth/notification/api/my-notifications/status';
 const API_UPDATE_ALL_NOTIFICATION_STATUS = '/nth/notification/api/my-notifications-status';
 const API_R_200 = 200;
 const API_GET_CITIES_BY_COUNTRY = '/nth/datacollection/api/citiesbycountry';
@@ -1457,14 +1457,15 @@ NotificationService.updateNotificationStatus = notification => {
 
 NotificationService.updateAllNotificationStatus = () => {
   return HttpClient.put(API_UPDATE_ALL_NOTIFICATION_STATUS, {}, {
-    params: 'READ',
+    params: {
+      status: 'READ'
+    },
     isBackgroundRequest: true
   });
 };
 
 const LOAD_MY_NOTIFICATIONS = 'LOAD_MY_NOTIFICATIONS';
-const RECEIVE_NEW_NOTIFICATIONS = 'RECEIVE_NEW_NOTIFICATIONS';
-const getMyNotification = notifications => {
+const getMyNotifications = () => {
   return async dispatch => {
     const res = await NotificationService.getMyNotifications();
 
@@ -1472,80 +1473,18 @@ const getMyNotification = notifications => {
       return;
     }
 
-    res.data = [{
-      "id": 18,
-      "type": "system",
-      "userId": 2,
-      "read": false,
-      "deleted": false,
-      "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
-      "contentContentType": null,
-      "sendDate": "2021-08-23T20:14:02Z",
-      "updateDate": null,
-      "updateBy": null,
-      "templateId": 1,
-      "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-      "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-    }, {
-      "id": 19,
-      "type": "personal",
-      "userId": 2,
-      "read": false,
-      "deleted": false,
-      "content": "<p><strong>Đây la thông báo cá nhân</strong></p>\n",
-      "contentContentType": null,
-      "sendDate": "2021-08-23T20:14:02Z",
-      "updateDate": null,
-      "updateBy": null,
-      "templateId": 1,
-      "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-      "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-    }, {
-      "id": 20,
-      "type": "promotion",
-      "userId": 2,
-      "read": false,
-      "deleted": false,
-      "content": "<p><strong>Đây là thông báo khuyến mại</strong></p>\n",
-      "contentContentType": null,
-      "sendDate": "2021-08-23T20:14:02Z",
-      "updateDate": null,
-      "updateBy": null,
-      "templateId": 1,
-      "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-      "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-    }, {
-      "id": 21,
-      "type": "system",
-      "userId": 2,
-      "read": false,
-      "deleted": false,
-      "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
-      "contentContentType": null,
-      "sendDate": "2021-08-23T20:14:02Z",
-      "updateDate": null,
-      "updateBy": null,
-      "templateId": 1,
-      "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-      "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-    }, {
-      "id": 22,
-      "type": "system",
-      "userId": 2,
-      "read": false,
-      "deleted": false,
-      "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
-      "contentContentType": null,
-      "sendDate": "2021-08-23T20:14:02Z",
-      "updateDate": null,
-      "updateBy": null,
-      "templateId": 1,
-      "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-      "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-    }];
     dispatch({
       type: LOAD_MY_NOTIFICATIONS,
       payload: res.data
+    });
+    return res.data;
+  };
+};
+const saveMyNotifications = notifications => {
+  return dispatch => {
+    dispatch({
+      type: LOAD_MY_NOTIFICATIONS,
+      payload: notifications
     });
   };
 };
@@ -1561,11 +1500,6 @@ const notificationReducer = (state = { ...initialState$2
     case LOAD_MY_NOTIFICATIONS:
       return { ...state,
         notifications: action.payload
-      };
-
-    case RECEIVE_NEW_NOTIFICATIONS:
-      return { ...state,
-        newNotifications: action.payload
       };
 
     default:
@@ -2109,32 +2043,106 @@ const UserDropdown = () => {
   }))));
 };
 
+let _ = t => t,
+    _t,
+    _t2,
+    _t3;
+const MediaCustom = styled.div(_t || (_t = _`
+  display: flex;
+  justify-content: space-between;
+
+  .read {
+    color: #cccccc;
+  }
+`));
+const CustomImage = styled.img(_t2 || (_t2 = _`
+  width: 20px;
+  height: 20px;
+`));
+const CustomDropdown = styled.div(_t3 || (_t3 = _`
+
+  .dropdown-item {
+    width: 100% !important;
+  }
+
+  .dropleft {
+    .dropdown-menu::before {
+      display: none;
+    }
+  }
+
+`));
+
 const Notifications = () => {
   const dispatch = useDispatch();
-  const intl = useIntl();
   const {
     notifications
   } = useSelector(state => state.notifications);
   const [notificationModal, setNotificationModal] = useState(false);
   const [notification, setNotification] = useState(null);
   useEffect(() => {
-    dispatch(getMyNotification());
+    dispatch(getMyNotifications());
   }, []);
 
-  const onClickOpenNotification = item => {
-    setNotification(item);
+  const onClickOpenNotification = async notification => {
+    setNotification(notification);
     setNotificationModal(true);
-    const notificationRequest = notifications.find(notification => notification.id === item.id);
-    const notificationAllStatus = NotificationService.updateAllNotificationStatus({
-      notificationId: notificationRequest.id,
+    const response = await NotificationService.updateNotificationStatus({
+      notificationId: notification.id,
       status: 'READ'
     });
-    if (notificationAllStatus.status === 200) return;
+
+    if (response.status === 200) {
+      const newNotifications = notifications.map(item => {
+        if (item.id === notification.id) {
+          item.nn_read = true;
+          return item;
+        } else return item;
+      });
+      dispatch(saveMyNotifications([...newNotifications]));
+    }
   };
 
-  const onClickUpdateAllNotificationStatus = () => {
-    const notificationAllStatus = NotificationService.updateAllNotificationStatus();
-    if (notificationAllStatus.status === 200) return;
+  const onClickUpdateAllNotification = async () => {
+    const response = await NotificationService.updateAllNotificationStatus();
+    if (response.status === 200) return;
+  };
+
+  const onClickUpdateNotification = async (notification, status) => {
+    const response = await NotificationService.updateNotificationStatus({
+      notificationId: notification.id,
+      status: status
+    });
+
+    if (response.status === 200) {
+      let newNotifications;
+
+      switch (status) {
+        case 'DELETE':
+          newNotifications = notifications.filter(item => item.id !== notification.id);
+          break;
+
+        case 'READ':
+          newNotifications = notifications.map(item => {
+            if (item.id === notification.id) {
+              item.nn_read = true;
+              return item;
+            } else return item;
+          });
+          break;
+
+        case 'UNREAD':
+          newNotifications = notifications.map(item => {
+            if (item.id === notification.id) {
+              item.nn_read = false;
+              return item;
+            } else return item;
+          });
+          break;
+      }
+
+      dispatch(saveMyNotifications([...newNotifications]));
+    }
   };
 
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("li", {
@@ -2150,50 +2158,72 @@ const Notifications = () => {
     options: {
       wheelPropagation: false
     }
-  }, notifications.map(item => /*#__PURE__*/React.createElement("div", {
-    className: "d-flex justify-content-between",
-    key: item.id,
-    onClick: () => onClickOpenNotification(item)
+  }, notifications.map((item, index) => /*#__PURE__*/React.createElement(MediaCustom, {
+    key: item.id
   }, /*#__PURE__*/React.createElement(Media, {
-    className: "d-flex align-items-start"
+    className: "d-flex align-items-start cursor-default"
   }, /*#__PURE__*/React.createElement(Media, {
-    left: true,
-    href: "#"
-  }, /*#__PURE__*/React.createElement(Server, {
-    className: "font-medium-5 primary",
-    size: 21
-  })), /*#__PURE__*/React.createElement(Media, {
+    left: true
+  }, item.notification_type === "SYSTEM" ? /*#__PURE__*/React.createElement("img", {
+    src: "https://sit2.inon.vn/resources/images/system-information.png"
+  }) : null, item.notification_type === "USER" ? /*#__PURE__*/React.createElement("img", {
+    src: "https://sit2.inon.vn/resources/images/individual-server.png"
+  }) : null, item.notification_type === "PROMOTION" ? /*#__PURE__*/React.createElement("img", {
+    src: "https://sit2.inon.vn/resources/images/gift.png"
+  }) : null), /*#__PURE__*/React.createElement(Media, {
+    onClick: () => onClickOpenNotification(item),
     body: true
   }, /*#__PURE__*/React.createElement(Media, {
     heading: true,
-    className: "primary media-heading",
+    className: "media-heading",
     tag: "h6"
   }, /*#__PURE__*/React.createElement("div", {
-    className: !item.read ? 'font-weight-bold' : ''
-  }, item.title)), /*#__PURE__*/React.createElement("div", {
-    className: !item.read ? 'font-weight-bold' : '',
+    className: item.nn_read ? 'read' : '',
     dangerouslySetInnerHTML: {
-      __html: item.shortContent
+      __html: item.title
     }
-  })), /*#__PURE__*/React.createElement("small", {
+  })), /*#__PURE__*/React.createElement("div", {
+    className: item.nn_read ? 'read' : '',
+    dangerouslySetInnerHTML: {
+      __html: item.short_content
+    }
+  }), /*#__PURE__*/React.createElement("small", {
     className: "mt-1"
   }, /*#__PURE__*/React.createElement("time", {
-    className: "media-meta",
-    dateTime: item.sendDate
-  }, moment().diff(moment(item.sendDate), 'days') >= 1 ? moment(item.sendDate).format("DD/MM/YYYY") : moment(item.sendDate).fromNow())))))), notifications.length > 0 && /*#__PURE__*/React.createElement("li", {
+    className: item.nn_read ? 'read' : '',
+    dateTime: item.send_date
+  }, moment().diff(moment(item.send_date), 'days') >= 1 ? moment(item.send_date).format("DD/MM/YYYY") : moment(item.send_date).fromNow()))), /*#__PURE__*/React.createElement(Media, {
+    right: true,
+    className: "cursor-pointer"
+  }, /*#__PURE__*/React.createElement(CustomDropdown, null, /*#__PURE__*/React.createElement(UncontrolledButtonDropdown, {
+    direction: "left"
+  }, /*#__PURE__*/React.createElement(DropdownToggle, {
+    tag: "span"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "position-relative"
+  }, /*#__PURE__*/React.createElement(CustomImage, {
+    src: "https://sit2.inon.vn/resources/images/ellipsis-v-solid.png",
+    alt: ""
+  }))), /*#__PURE__*/React.createElement(DropdownMenu, null, item.nn_read ? /*#__PURE__*/React.createElement(DropdownItem, {
+    onClick: () => onClickUpdateNotification(item, 'UNREAD')
+  }, "Mark as unread") : /*#__PURE__*/React.createElement(DropdownItem, {
+    onClick: () => onClickUpdateNotification(item, 'READ')
+  }, "Mark as read"), /*#__PURE__*/React.createElement(DropdownItem, {
+    onClick: () => onClickUpdateNotification(item, 'DELETE')
+  }, "Delete"))))))))), notifications.length > 0 && /*#__PURE__*/React.createElement("li", {
     className: "dropdown-menu-footer",
-    onClick: onClickUpdateAllNotificationStatus
+    onClick: () => onClickUpdateAllNotification()
   }, /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     className: "p-1 text-center"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "align-middle"
+    className: "align-middle font-weight-bold"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "menu.readAll"
   })))), notification && /*#__PURE__*/React.createElement(Modal, {
+    className: "modal-lg modal-dialog-centered",
     isOpen: notificationModal,
-    toggle: () => setNotificationModal(!notificationModal),
-    className: "modal-dialog-centered"
+    toggle: () => setNotificationModal(!notificationModal)
   }, /*#__PURE__*/React.createElement(ModalHeader, {
     toggle: () => setNotificationModal(!notificationModal)
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -2210,6 +2240,7 @@ const Notifications = () => {
 };
 
 const NavbarUser = props => {
+  const dispatch = useDispatch();
   let {
     userSettings,
     userDetails,
@@ -2221,6 +2252,10 @@ const NavbarUser = props => {
   let {
     roles = []
   } = useSelector(state => state.navbar);
+  const {
+    notifications
+  } = useSelector(state => state.notifications);
+  const [numberNewNotification, setNumberNewNotification] = useState(0);
   const [navbarSearch, setNavbarSearch] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const intl = useIntl();
@@ -2243,6 +2278,17 @@ const NavbarUser = props => {
     });
     setSuggestions(newSuggestions);
   }, [roles]);
+  useEffect(() => {
+    dispatch(getMyNotifications());
+    const intervalId = setInterval(() => {
+      dispatch(getMyNotifications());
+    }, 1000000);
+    return () => clearInterval(intervalId);
+  }, []);
+  useEffect(() => {
+    const newNotifications = notifications.filter(item => item.nn_read === false);
+    setNumberNewNotification(newNotifications.length);
+  }, [notifications]);
 
   const handleNavbarSearch = () => {
     setNavbarSearch(prevState => !prevState);
@@ -2330,8 +2376,13 @@ const NavbarUser = props => {
     tag: "a",
     className: "nav-link nav-link-label"
   }, /*#__PURE__*/React.createElement(Bell, {
-    size: 21
-  })), /*#__PURE__*/React.createElement(DropdownMenu, {
+    className: "text-primary",
+    size: 22
+  }), /*#__PURE__*/React.createElement(Badge, {
+    pill: true,
+    color: "primary",
+    className: "badge-up"
+  }, numberNewNotification)), /*#__PURE__*/React.createElement(DropdownMenu, {
     tag: "ul",
     right: true,
     className: "dropdown-menu-media"
@@ -4978,10 +5029,10 @@ var flatpickr = createCommonjsModule(function (module, exports) {
             setCalendarWidth();
             var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
             /* TODO: investigate this further
-
+        
               Currently, there is weird positioning behavior in safari causing pages
               to scroll up. https://github.com/chmln/flatpickr/issues/563
-
+        
               However, most browsers are not Safari and positioning is expensive when used
               in scale. https://github.com/chmln/flatpickr/issues/1096
             */
@@ -9404,9 +9455,9 @@ const CompleteInformation = () => {
   })))))));
 };
 
-let _ = t => t,
-    _t;
-const PageStyle = styled.div(_t || (_t = _`
+let _$1 = t => t,
+    _t$1;
+const PageStyle = styled.div(_t$1 || (_t$1 = _$1`
 
   .landing-page-bg {
     background-image: url('${0}');

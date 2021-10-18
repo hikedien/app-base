@@ -23,6 +23,7 @@ var ReactDOM = _interopDefault(require('react-dom'));
 var PropTypes = _interopDefault(require('prop-types'));
 var PerfectScrollbar = _interopDefault(require('react-perfect-scrollbar'));
 require('moment/locale/vi');
+var styled = _interopDefault(require('styled-components'));
 var ScrollToTop = _interopDefault(require('react-scroll-up'));
 var Hammer = _interopDefault(require('react-hammerjs'));
 var Yup = require('yup');
@@ -36,7 +37,6 @@ var FacebookLogin = _interopDefault(require('react-facebook-login/dist/facebook-
 var GoogleLogin = _interopDefault(require('react-google-login'));
 var firebase = _interopDefault(require('firebase'));
 var OtpInput = _interopDefault(require('react-otp-input'));
-var styled = _interopDefault(require('styled-components'));
 var SweetAlert = _interopDefault(require('react-bootstrap-sweetalert'));
 var TopBarProgress = _interopDefault(require('react-topbar-progress-indicator'));
 var Ripples = _interopDefault(require('react-ripples'));
@@ -154,7 +154,7 @@ var API_EMAIL_SUGGESTION = '/nth/user/api/authenticate/email-suggestion';
 var API_GET_MY_NOTIFICATIONS = '/nth/notification/api/my-notification';
 var API_CHECK_NEW_NOTIFICATIONS = '/nth/notification/api/notifications-es';
 var API_GET_NOTIFICATION_FROM_ESPUBLIC = '/nth/notification/api/user-notifications-es';
-var API_UPDATE_NOTIFICATION = '/nth/notification/';
+var API_UPDATE_NOTIFICATION = '/nth/notification/api/my-notifications/status';
 var API_UPDATE_ALL_NOTIFICATION_STATUS = '/nth/notification/api/my-notifications-status';
 var API_R_200 = 200;
 var API_GET_CITIES_BY_COUNTRY = '/nth/datacollection/api/citiesbycountry';
@@ -1654,14 +1654,15 @@ NotificationService.updateNotificationStatus = function (notification) {
 
 NotificationService.updateAllNotificationStatus = function () {
   return HttpClient.put(API_UPDATE_ALL_NOTIFICATION_STATUS, {}, {
-    params: 'READ',
+    params: {
+      status: 'READ'
+    },
     isBackgroundRequest: true
   });
 };
 
 var LOAD_MY_NOTIFICATIONS = 'LOAD_MY_NOTIFICATIONS';
-var RECEIVE_NEW_NOTIFICATIONS = 'RECEIVE_NEW_NOTIFICATIONS';
-var getMyNotification = function getMyNotification(notifications) {
+var getMyNotifications = function getMyNotifications() {
   return function (dispatch) {
     try {
       return Promise.resolve(NotificationService.getMyNotifications()).then(function (res) {
@@ -1669,85 +1670,23 @@ var getMyNotification = function getMyNotification(notifications) {
           return;
         }
 
-        res.data = [{
-          "id": 18,
-          "type": "system",
-          "userId": 2,
-          "read": false,
-          "deleted": false,
-          "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
-          "contentContentType": null,
-          "sendDate": "2021-08-23T20:14:02Z",
-          "updateDate": null,
-          "updateBy": null,
-          "templateId": 1,
-          "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-          "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-        }, {
-          "id": 19,
-          "type": "personal",
-          "userId": 2,
-          "read": false,
-          "deleted": false,
-          "content": "<p><strong>Đây la thông báo cá nhân</strong></p>\n",
-          "contentContentType": null,
-          "sendDate": "2021-08-23T20:14:02Z",
-          "updateDate": null,
-          "updateBy": null,
-          "templateId": 1,
-          "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-          "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-        }, {
-          "id": 20,
-          "type": "promotion",
-          "userId": 2,
-          "read": false,
-          "deleted": false,
-          "content": "<p><strong>Đây là thông báo khuyến mại</strong></p>\n",
-          "contentContentType": null,
-          "sendDate": "2021-08-23T20:14:02Z",
-          "updateDate": null,
-          "updateBy": null,
-          "templateId": 1,
-          "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-          "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-        }, {
-          "id": 21,
-          "type": "system",
-          "userId": 2,
-          "read": false,
-          "deleted": false,
-          "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
-          "contentContentType": null,
-          "sendDate": "2021-08-23T20:14:02Z",
-          "updateDate": null,
-          "updateBy": null,
-          "templateId": 1,
-          "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-          "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-        }, {
-          "id": 22,
-          "type": "system",
-          "userId": 2,
-          "read": false,
-          "deleted": false,
-          "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
-          "contentContentType": null,
-          "sendDate": "2021-08-23T20:14:02Z",
-          "updateDate": null,
-          "updateBy": null,
-          "templateId": 1,
-          "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-          "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-        }];
         dispatch({
           type: LOAD_MY_NOTIFICATIONS,
           payload: res.data
         });
+        return res.data;
       });
     } catch (e) {
       return Promise.reject(e);
     }
+  };
+};
+var saveMyNotifications = function saveMyNotifications(notifications) {
+  return function (dispatch) {
+    dispatch({
+      type: LOAD_MY_NOTIFICATIONS,
+      payload: notifications
+    });
   };
 };
 
@@ -1765,11 +1704,6 @@ var notificationReducer = function notificationReducer(state, action) {
     case LOAD_MY_NOTIFICATIONS:
       return _extends({}, state, {
         notifications: action.payload
-      });
-
-    case RECEIVE_NEW_NOTIFICATIONS:
-      return _extends({}, state, {
-        newNotifications: action.payload
       });
 
     default:
@@ -2344,9 +2278,41 @@ var UserDropdown = function UserDropdown() {
   }))));
 };
 
+function _templateObject3() {
+  var data = _taggedTemplateLiteralLoose(["\n\n  .dropdown-item {\n    width: 100% !important;\n  }\n\n  .dropleft {\n    .dropdown-menu::before {\n      display: none;\n    }\n  }\n\n"]);
+
+  _templateObject3 = function _templateObject3() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject2() {
+  var data = _taggedTemplateLiteralLoose(["\n  width: 20px;\n  height: 20px;\n"]);
+
+  _templateObject2 = function _templateObject2() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject() {
+  var data = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n\n  .read {\n    color: #cccccc;\n  }\n"]);
+
+  _templateObject = function _templateObject() {
+    return data;
+  };
+
+  return data;
+}
+var MediaCustom = styled.div(_templateObject());
+var CustomImage = styled.img(_templateObject2());
+var CustomDropdown = styled.div(_templateObject3());
+
 var Notifications = function Notifications() {
   var dispatch = reactRedux.useDispatch();
-  var intl = reactIntl.useIntl();
 
   var _useSelector = reactRedux.useSelector(function (state) {
     return state.notifications;
@@ -2362,25 +2328,83 @@ var Notifications = function Notifications() {
       setNotification = _useState2[1];
 
   React.useEffect(function () {
-    dispatch(getMyNotification());
+    dispatch(getMyNotifications());
   }, []);
 
-  var onClickOpenNotification = function onClickOpenNotification(item) {
-    setNotification(item);
-    setNotificationModal(true);
-    var notificationRequest = notifications.find(function (notification) {
-      return notification.id === item.id;
-    });
-    var notificationAllStatus = NotificationService.updateAllNotificationStatus({
-      notificationId: notificationRequest.id,
-      status: 'READ'
-    });
-    if (notificationAllStatus.status === 200) return;
+  var onClickOpenNotification = function onClickOpenNotification(notification) {
+    try {
+      setNotification(notification);
+      setNotificationModal(true);
+      return Promise.resolve(NotificationService.updateNotificationStatus({
+        notificationId: notification.id,
+        status: 'READ'
+      })).then(function (response) {
+        if (response.status === 200) {
+          var newNotifications = notifications.map(function (item) {
+            if (item.id === notification.id) {
+              item.nn_read = true;
+              return item;
+            } else return item;
+          });
+          dispatch(saveMyNotifications([].concat(newNotifications)));
+        }
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
   };
 
-  var onClickUpdateAllNotificationStatus = function onClickUpdateAllNotificationStatus() {
-    var notificationAllStatus = NotificationService.updateAllNotificationStatus();
-    if (notificationAllStatus.status === 200) return;
+  var onClickUpdateAllNotification = function onClickUpdateAllNotification() {
+    try {
+      return Promise.resolve(NotificationService.updateAllNotificationStatus()).then(function (response) {
+        if (response.status === 200) return;
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
+  var onClickUpdateNotification = function onClickUpdateNotification(notification, status) {
+    try {
+      return Promise.resolve(NotificationService.updateNotificationStatus({
+        notificationId: notification.id,
+        status: status
+      })).then(function (response) {
+        if (response.status === 200) {
+          var newNotifications;
+
+          switch (status) {
+            case 'DELETE':
+              newNotifications = notifications.filter(function (item) {
+                return item.id !== notification.id;
+              });
+              return;
+
+            case 'READ':
+              newNotifications = notifications.map(function (item) {
+                if (item.id === notification.id) {
+                  item.nn_read = true;
+                  return item;
+                } else return item;
+              });
+              return;
+
+            case 'UNREAD':
+              newNotifications = notifications.map(function (item) {
+                if (item.id === notification.id) {
+                  item.nn_read = false;
+                  return item;
+                } else return item;
+              });
+              return;
+          }
+
+          dispatch(saveMyNotifications([].concat(newNotifications)));
+        }
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
   };
 
   return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("li", {
@@ -2396,56 +2420,86 @@ var Notifications = function Notifications() {
     options: {
       wheelPropagation: false
     }
-  }, notifications.map(function (item) {
-    return /*#__PURE__*/React__default.createElement("div", {
-      className: "d-flex justify-content-between",
-      key: item.id,
+  }, notifications.map(function (item, index) {
+    return /*#__PURE__*/React__default.createElement(MediaCustom, {
+      key: item.id
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      className: "d-flex align-items-start cursor-default"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      left: true
+    }, item.notification_type === "SYSTEM" ? /*#__PURE__*/React__default.createElement("img", {
+      src: "https://sit2.inon.vn/resources/images/system-information.png"
+    }) : null, item.notification_type === "USER" ? /*#__PURE__*/React__default.createElement("img", {
+      src: "https://sit2.inon.vn/resources/images/individual-server.png"
+    }) : null, item.notification_type === "PROMOTION" ? /*#__PURE__*/React__default.createElement("img", {
+      src: "https://sit2.inon.vn/resources/images/gift.png"
+    }) : null), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
       onClick: function onClick() {
         return onClickOpenNotification(item);
-      }
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "d-flex align-items-start"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      left: true,
-      href: "#"
-    }, /*#__PURE__*/React__default.createElement(Icon.Server, {
-      className: "font-medium-5 primary",
-      size: 21
-    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      },
       body: true
     }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
       heading: true,
-      className: "primary media-heading",
+      className: "media-heading",
       tag: "h6"
     }, /*#__PURE__*/React__default.createElement("div", {
-      className: !item.read ? 'font-weight-bold' : ''
-    }, item.title)), /*#__PURE__*/React__default.createElement("div", {
-      className: !item.read ? 'font-weight-bold' : '',
+      className: item.nn_read ? 'read' : '',
       dangerouslySetInnerHTML: {
-        __html: item.shortContent
+        __html: item.title
       }
-    })), /*#__PURE__*/React__default.createElement("small", {
+    })), /*#__PURE__*/React__default.createElement("div", {
+      className: item.nn_read ? 'read' : '',
+      dangerouslySetInnerHTML: {
+        __html: item.short_content
+      }
+    }), /*#__PURE__*/React__default.createElement("small", {
       className: "mt-1"
     }, /*#__PURE__*/React__default.createElement("time", {
-      className: "media-meta",
-      dateTime: item.sendDate
-    }, moment().diff(moment(item.sendDate), 'days') >= 1 ? moment(item.sendDate).format("DD/MM/YYYY") : moment(item.sendDate).fromNow()))));
+      className: item.nn_read ? 'read' : '',
+      dateTime: item.send_date
+    }, moment().diff(moment(item.send_date), 'days') >= 1 ? moment(item.send_date).format("DD/MM/YYYY") : moment(item.send_date).fromNow()))), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      right: true,
+      className: "cursor-pointer"
+    }, /*#__PURE__*/React__default.createElement(CustomDropdown, null, /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledButtonDropdown, {
+      direction: "left"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
+      tag: "span"
+    }, /*#__PURE__*/React__default.createElement("div", {
+      className: "position-relative"
+    }, /*#__PURE__*/React__default.createElement(CustomImage, {
+      src: "https://sit2.inon.vn/resources/images/ellipsis-v-solid.png",
+      alt: ""
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownMenu, null, item.nn_read ? /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+      onClick: function onClick() {
+        return onClickUpdateNotification(item, 'UNREAD');
+      }
+    }, "Mark as unread") : /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+      onClick: function onClick() {
+        return onClickUpdateNotification(item, 'READ');
+      }
+    }, "Mark as read"), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+      onClick: function onClick() {
+        return onClickUpdateNotification(item, 'DELETE');
+      }
+    }, "Delete")))))));
   })), notifications.length > 0 && /*#__PURE__*/React__default.createElement("li", {
     className: "dropdown-menu-footer",
-    onClick: onClickUpdateAllNotificationStatus
+    onClick: function onClick() {
+      return onClickUpdateAllNotification();
+    }
   }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
     tag: "a",
     className: "p-1 text-center"
   }, /*#__PURE__*/React__default.createElement("span", {
-    className: "align-middle"
+    className: "align-middle font-weight-bold"
   }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "menu.readAll"
   })))), notification && /*#__PURE__*/React__default.createElement(reactstrap.Modal, {
+    className: "modal-lg modal-dialog-centered",
     isOpen: notificationModal,
     toggle: function toggle() {
       return setNotificationModal(!notificationModal);
-    },
-    className: "modal-dialog-centered"
+    }
   }, /*#__PURE__*/React__default.createElement(reactstrap.ModalHeader, {
     toggle: function toggle() {
       return setNotificationModal(!notificationModal);
@@ -2464,6 +2518,8 @@ var Notifications = function Notifications() {
 };
 
 var NavbarUser = function NavbarUser(props) {
+  var dispatch = reactRedux.useDispatch();
+
   var _useSelector = reactRedux.useSelector(function (state) {
     return state.auth.user;
   }),
@@ -2481,13 +2537,22 @@ var NavbarUser = function NavbarUser(props) {
       _useSelector3$roles = _useSelector3.roles,
       roles = _useSelector3$roles === void 0 ? [] : _useSelector3$roles;
 
-  var _useState = React.useState(false),
-      navbarSearch = _useState[0],
-      setNavbarSearch = _useState[1];
+  var _useSelector4 = reactRedux.useSelector(function (state) {
+    return state.notifications;
+  }),
+      notifications = _useSelector4.notifications;
 
-  var _useState2 = React.useState([]),
-      suggestions = _useState2[0],
-      setSuggestions = _useState2[1];
+  var _useState = React.useState(0),
+      numberNewNotification = _useState[0],
+      setNumberNewNotification = _useState[1];
+
+  var _useState2 = React.useState(false),
+      navbarSearch = _useState2[0],
+      setNavbarSearch = _useState2[1];
+
+  var _useState3 = React.useState([]),
+      suggestions = _useState3[0],
+      setSuggestions = _useState3[1];
 
   var intl = reactIntl.useIntl();
   userSettings = userSettings || {};
@@ -2508,6 +2573,21 @@ var NavbarUser = function NavbarUser(props) {
     });
     setSuggestions(newSuggestions);
   }, [roles]);
+  React.useEffect(function () {
+    dispatch(getMyNotifications());
+    var intervalId = setInterval(function () {
+      dispatch(getMyNotifications());
+    }, 1000000);
+    return function () {
+      return clearInterval(intervalId);
+    };
+  }, []);
+  React.useEffect(function () {
+    var newNotifications = notifications.filter(function (item) {
+      return item.nn_read === false;
+    });
+    setNumberNewNotification(newNotifications.length);
+  }, [notifications]);
 
   var handleNavbarSearch = function handleNavbarSearch() {
     setNavbarSearch(function (prevState) {
@@ -2601,8 +2681,13 @@ var NavbarUser = function NavbarUser(props) {
     tag: "a",
     className: "nav-link nav-link-label"
   }, /*#__PURE__*/React__default.createElement(Icon.Bell, {
-    size: 21
-  })), /*#__PURE__*/React__default.createElement(reactstrap.DropdownMenu, {
+    className: "text-primary",
+    size: 22
+  }), /*#__PURE__*/React__default.createElement(reactstrap.Badge, {
+    pill: true,
+    color: "primary",
+    className: "badge-up"
+  }, numberNewNotification)), /*#__PURE__*/React__default.createElement(reactstrap.DropdownMenu, {
     tag: "ul",
     right: true,
     className: "dropdown-menu-media"
@@ -5364,10 +5449,10 @@ var flatpickr = createCommonjsModule(function (module, exports) {
             setCalendarWidth();
             var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
             /* TODO: investigate this further
-
+        
               Currently, there is weird positioning behavior in safari causing pages
               to scroll up. https://github.com/chmln/flatpickr/issues/563
-
+        
               However, most browsers are not Safari and positioning is expensive when used
               in scale. https://github.com/chmln/flatpickr/issues/1096
             */
@@ -10059,16 +10144,16 @@ var CompleteInformation = function CompleteInformation() {
   }));
 };
 
-function _templateObject() {
+function _templateObject$1() {
   var data = _taggedTemplateLiteralLoose(["\n\n  .landing-page-bg {\n    background-image: url('", "');\n    background-size: cover;\n    background-position: center;\n  }\n"]);
 
-  _templateObject = function _templateObject() {
+  _templateObject$1 = function _templateObject() {
     return data;
   };
 
   return data;
 }
-var PageStyle = styled.div(_templateObject(), IMAGE.LANDING_PAGE_BG);
+var PageStyle = styled.div(_templateObject$1(), IMAGE.LANDING_PAGE_BG);
 
 var LandingPage = function LandingPage(props) {
   var _useState = React.useState(''),
