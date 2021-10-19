@@ -8,13 +8,13 @@ var Axios = _interopDefault(require('axios'));
 var axiosExtensions = require('axios-extensions');
 var Icon = require('react-feather');
 var reactToastify = require('react-toastify');
-var moment = _interopDefault(require('moment'));
 var reactRedux = require('react-redux');
 var redux = require('redux');
 var createDebounce = _interopDefault(require('redux-debounced'));
 var thunk = _interopDefault(require('redux-thunk'));
 var react = require('redux-persist/integration/react');
 var reduxPersist = require('redux-persist');
+var moment = _interopDefault(require('moment'));
 var storage = _interopDefault(require('redux-persist/es/storage'));
 var reactRouterDom = require('react-router-dom');
 var classnames = _interopDefault(require('classnames'));
@@ -23,7 +23,6 @@ var ReactDOM = _interopDefault(require('react-dom'));
 var PropTypes = _interopDefault(require('prop-types'));
 var PerfectScrollbar = _interopDefault(require('react-perfect-scrollbar'));
 require('moment/locale/vi');
-var styled = _interopDefault(require('styled-components'));
 var ScrollToTop = _interopDefault(require('react-scroll-up'));
 var Hammer = _interopDefault(require('react-hammerjs'));
 var Yup = require('yup');
@@ -33,10 +32,11 @@ var ReactSelect = _interopDefault(require('react-select'));
 var AsyncSelect = _interopDefault(require('react-select/async'));
 var CreatableSelect = _interopDefault(require('react-select/creatable'));
 var QRCode = _interopDefault(require('easyqrcodejs'));
+var firebase = _interopDefault(require('firebase'));
 var FacebookLogin = _interopDefault(require('react-facebook-login/dist/facebook-login-render-props'));
 var GoogleLogin = _interopDefault(require('react-google-login'));
-var firebase = _interopDefault(require('firebase'));
 var OtpInput = _interopDefault(require('react-otp-input'));
+var styled = _interopDefault(require('styled-components'));
 var SweetAlert = _interopDefault(require('react-bootstrap-sweetalert'));
 var TopBarProgress = _interopDefault(require('react-topbar-progress-indicator'));
 var Ripples = _interopDefault(require('react-ripples'));
@@ -154,7 +154,7 @@ var API_EMAIL_SUGGESTION = '/nth/user/api/authenticate/email-suggestion';
 var API_GET_MY_NOTIFICATIONS = '/nth/notification/api/my-notification';
 var API_CHECK_NEW_NOTIFICATIONS = '/nth/notification/api/notifications-es';
 var API_GET_NOTIFICATION_FROM_ESPUBLIC = '/nth/notification/api/user-notifications-es';
-var API_UPDATE_NOTIFICATION = '/nth/notification/api/my-notifications/status';
+var API_UPDATE_NOTIFICATION = '/nth/notification/';
 var API_UPDATE_ALL_NOTIFICATION_STATUS = '/nth/notification/api/my-notifications-status';
 var API_R_200 = 200;
 var API_GET_CITIES_BY_COUNTRY = '/nth/datacollection/api/citiesbycountry';
@@ -536,24 +536,10 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
   HttpClient.defaults.baseURL = apiBaseUrl || API_BASE_URL;
   HttpClient.interceptors.request.use(function (config) {
     var token = store.getState().auth.guest.authToken || store.getState().auth.authToken;
-    var sessionExpireTime = store.getState().auth.sessionExpireTime;
     language = localStorage.getItem('language');
 
     if (token) {
-      store.dispatch(changeActionExpireTime());
       config.headers.Authorization = "Bearer " + token;
-      var isSessionExpired = moment().isAfter(moment(sessionExpireTime));
-
-      if (sessionExpireTime && isSessionExpired) {
-        toastError( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-          id: "common.sessionExpired"
-        }));
-        store.dispatch({
-          type: LOGOUT_ACTION
-        });
-        history.push('/login');
-        return;
-      }
     }
 
     config.headers.appId = store.getState().customizer.appId;
@@ -561,6 +547,7 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
     config.headers.latitude = localStorage.getItem('latitude');
     config.headers.longitude = localStorage.getItem('longitude');
     config.headers.deviceId = deviceId;
+    config.headers.isMobileApp = true;
     config.headers['Accept-Language'] = language;
 
     if (!config.isBackgroundRequest) {
@@ -600,9 +587,8 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
 
         toastError(e.response.data.message);
         store.dispatch({
-          type: LOGOUT_ACTION
+          type: 'LOGOUT_ACTION'
         });
-        history.push('/login');
         break;
 
       case 500:
@@ -769,7 +755,7 @@ var mapRoleToNavItem = function mapRoleToNavItem(role) {
   return item;
 };
 
-var getNativgationConfig = function getNativgationConfig(navConfigs) {
+var getNativgationConfig = function getNativgationConfig(appId, navConfigs) {
   navConfigs = mapRoleListToNavConfigs(navConfigs);
   return navConfigs.map(function (item) {
     item.isExternalApp = false;
@@ -812,17 +798,17 @@ NavBarService.getUserGroupRole = function (groupId) {
 
 var LOAD_NATIVGATION = 'LOAD_NATIVGATION';
 var LOAD_USER_ROLE = 'LOAD_USER_ROLE';
-var loadNavigation = function loadNavigation() {
+var loadNavtigation = function loadNavtigation(appId, callback) {
   return function (dispatch) {
-    return Promise.resolve(_catch(function () {
+    try {
       return Promise.resolve(NavBarService.getNativagtion()).then(function (res) {
         if (!res || !res.data) {
           return;
         }
 
-        dispatch(loadUserRoles());
+        callback();
         var roles = res.data || [];
-        var navConfigs = getNativgationConfig(roles);
+        var navConfigs = getNativgationConfig(appId, roles);
         dispatch({
           type: LOAD_NATIVGATION,
           payload: {
@@ -831,7 +817,9 @@ var loadNavigation = function loadNavigation() {
           }
         });
       });
-    }, function () {}));
+    } catch (e) {
+      return Promise.reject(e);
+    }
   };
 };
 var loadUserRoles = function loadUserRoles() {
@@ -911,7 +899,6 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
                   authToken: authToken,
                   user: response.data || {}
                 };
-                dispatch(loadNavigation());
                 dispatch({
                   type: LOGIN_ACTION,
                   payload: payload
@@ -921,7 +908,6 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
               dispatch({
                 type: LOGOUT_ACTION
               });
-              history.push('/login');
             }
           }();
 
@@ -931,7 +917,6 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
         dispatch({
           type: LOGOUT_ACTION
         });
-        history.push('/login');
       });
 
       return Promise.resolve(_temp3 && _temp3.then ? _temp3.then(function () {}) : void 0);
@@ -996,7 +981,6 @@ var loginAction = function loginAction(user) {
                   return;
                 }
 
-                dispatch(loadNavigation());
                 dispatch({
                   type: LOGIN_ACTION,
                   payload: {
@@ -1332,13 +1316,6 @@ var changeLanguageSetting = function changeLanguageSetting(lang, callBack) {
     }
   };
 };
-var changeActionExpireTime = function changeActionExpireTime() {
-  return function (dispatch) {
-    dispatch({
-      type: CHANGE_SESSION_EXPIRE_TIME
-    });
-  };
-};
 var verifyPhoneNumber = function verifyPhoneNumber(values) {
   return function (dispatch) {
     try {
@@ -1464,6 +1441,7 @@ var authReducers = function authReducers(state, action) {
 
     case LOGOUT_ACTION:
       {
+        history.push('/login');
         return _extends({}, authInitialState);
       }
 
@@ -1550,6 +1528,29 @@ var authReducers = function authReducers(state, action) {
   }
 };
 
+var LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
+var LOAD_USER_ROLE$1 = 'LOAD_USER_ROLE';
+var goBackHomePage$1 = function goBackHomePage() {
+  return function (dispatch, getState) {
+    try {
+      var _getState, _getState$auth;
+
+      var _ref = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$auth = _getState.auth) === null || _getState$auth === void 0 ? void 0 : _getState$auth.guest) || {},
+          authToken = _ref.authToken;
+
+      if (authToken) {
+        history.push('/home');
+      } else {
+        history.push('/app/home');
+      }
+
+      return Promise.resolve();
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+};
+
 var initialState = {
   navConfigs: [],
   roles: [],
@@ -1562,13 +1563,13 @@ var navbarReducer = function navbarReducer(state, action) {
   }
 
   switch (action.type) {
-    case LOAD_NATIVGATION:
+    case LOAD_NATIVGATION$1:
       return _extends({}, state, {
         navConfigs: action.payload.navConfigs,
         roles: action.payload.roles
       });
 
-    case LOAD_USER_ROLE:
+    case LOAD_USER_ROLE$1:
       return _extends({}, state, {
         userRoles: action.payload
       });
@@ -1577,6 +1578,11 @@ var navbarReducer = function navbarReducer(state, action) {
       return state;
   }
 };
+
+var SHOW_LOADING_BAR$1 = 'SHOW_LOADING_BAR';
+var HIDE_LOADING_BAR$1 = 'HIDE_LOADING_BAR';
+var SHOW_CONFIRM_ALERT$1 = 'SHOW_CONFIRM_ALERT';
+var HIDE_CONFIRM_ALERT$1 = 'HIDE_CONFIRM_ALERT';
 
 var DEFAULT_CONFIRM_ALERT = {
   title: '',
@@ -1597,26 +1603,26 @@ var uiReducer = function uiReducer(state, action) {
   }
 
   switch (action.type) {
-    case SHOW_LOADING_BAR:
+    case SHOW_LOADING_BAR$1:
       return _extends({}, state, {
         isLoading: true,
         loading: state.loading.add(action.payload)
       });
 
-    case HIDE_LOADING_BAR:
+    case HIDE_LOADING_BAR$1:
       state.loading["delete"](action.payload);
       return _extends({}, state, {
         isLoading: !!state.loading.size
       });
 
-    case SHOW_CONFIRM_ALERT:
+    case SHOW_CONFIRM_ALERT$1:
       return _extends({}, state, {
         confirmAlert: _extends({
           isShow: true
         }, state.confirmAlert, action.payload)
       });
 
-    case HIDE_CONFIRM_ALERT:
+    case HIDE_CONFIRM_ALERT$1:
       return _extends({}, state, {
         confirmAlert: _extends({}, DEFAULT_CONFIRM_ALERT)
       });
@@ -1654,15 +1660,14 @@ NotificationService.updateNotificationStatus = function (notification) {
 
 NotificationService.updateAllNotificationStatus = function () {
   return HttpClient.put(API_UPDATE_ALL_NOTIFICATION_STATUS, {}, {
-    params: {
-      status: 'READ'
-    },
+    params: 'READ',
     isBackgroundRequest: true
   });
 };
 
 var LOAD_MY_NOTIFICATIONS = 'LOAD_MY_NOTIFICATIONS';
-var getMyNotifications = function getMyNotifications() {
+var RECEIVE_NEW_NOTIFICATIONS = 'RECEIVE_NEW_NOTIFICATIONS';
+var getMyNotification = function getMyNotification(notifications) {
   return function (dispatch) {
     try {
       return Promise.resolve(NotificationService.getMyNotifications()).then(function (res) {
@@ -1670,23 +1675,85 @@ var getMyNotifications = function getMyNotifications() {
           return;
         }
 
+        res.data = [{
+          "id": 18,
+          "type": "system",
+          "userId": 2,
+          "read": false,
+          "deleted": false,
+          "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
+          "contentContentType": null,
+          "sendDate": "2021-08-23T20:14:02Z",
+          "updateDate": null,
+          "updateBy": null,
+          "templateId": 1,
+          "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
+          "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
+        }, {
+          "id": 19,
+          "type": "personal",
+          "userId": 2,
+          "read": false,
+          "deleted": false,
+          "content": "<p><strong>Đây la thông báo cá nhân</strong></p>\n",
+          "contentContentType": null,
+          "sendDate": "2021-08-23T20:14:02Z",
+          "updateDate": null,
+          "updateBy": null,
+          "templateId": 1,
+          "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
+          "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
+        }, {
+          "id": 20,
+          "type": "promotion",
+          "userId": 2,
+          "read": false,
+          "deleted": false,
+          "content": "<p><strong>Đây là thông báo khuyến mại</strong></p>\n",
+          "contentContentType": null,
+          "sendDate": "2021-08-23T20:14:02Z",
+          "updateDate": null,
+          "updateBy": null,
+          "templateId": 1,
+          "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
+          "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
+        }, {
+          "id": 21,
+          "type": "system",
+          "userId": 2,
+          "read": false,
+          "deleted": false,
+          "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
+          "contentContentType": null,
+          "sendDate": "2021-08-23T20:14:02Z",
+          "updateDate": null,
+          "updateBy": null,
+          "templateId": 1,
+          "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
+          "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
+        }, {
+          "id": 22,
+          "type": "system",
+          "userId": 2,
+          "read": false,
+          "deleted": false,
+          "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
+          "contentContentType": null,
+          "sendDate": "2021-08-23T20:14:02Z",
+          "updateDate": null,
+          "updateBy": null,
+          "templateId": 1,
+          "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
+          "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
+        }];
         dispatch({
           type: LOAD_MY_NOTIFICATIONS,
           payload: res.data
         });
-        return res.data;
       });
     } catch (e) {
       return Promise.reject(e);
     }
-  };
-};
-var saveMyNotifications = function saveMyNotifications(notifications) {
-  return function (dispatch) {
-    dispatch({
-      type: LOAD_MY_NOTIFICATIONS,
-      payload: notifications
-    });
   };
 };
 
@@ -1704,6 +1771,11 @@ var notificationReducer = function notificationReducer(state, action) {
     case LOAD_MY_NOTIFICATIONS:
       return _extends({}, state, {
         notifications: action.payload
+      });
+
+    case RECEIVE_NEW_NOTIFICATIONS:
+      return _extends({}, state, {
+        newNotifications: action.payload
       });
 
     default:
@@ -2278,41 +2350,9 @@ var UserDropdown = function UserDropdown() {
   }))));
 };
 
-function _templateObject3() {
-  var data = _taggedTemplateLiteralLoose(["\n\n  .dropdown-item {\n    width: 100% !important;\n  }\n\n  .dropleft {\n    .dropdown-menu::before {\n      display: none;\n    }\n  }\n\n"]);
-
-  _templateObject3 = function _templateObject3() {
-    return data;
-  };
-
-  return data;
-}
-
-function _templateObject2() {
-  var data = _taggedTemplateLiteralLoose(["\n  width: 20px;\n  height: 20px;\n"]);
-
-  _templateObject2 = function _templateObject2() {
-    return data;
-  };
-
-  return data;
-}
-
-function _templateObject() {
-  var data = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n\n  .read {\n    color: #cccccc;\n  }\n"]);
-
-  _templateObject = function _templateObject() {
-    return data;
-  };
-
-  return data;
-}
-var MediaCustom = styled.div(_templateObject());
-var CustomImage = styled.img(_templateObject2());
-var CustomDropdown = styled.div(_templateObject3());
-
 var Notifications = function Notifications() {
   var dispatch = reactRedux.useDispatch();
+  var intl = reactIntl.useIntl();
 
   var _useSelector = reactRedux.useSelector(function (state) {
     return state.notifications;
@@ -2328,83 +2368,25 @@ var Notifications = function Notifications() {
       setNotification = _useState2[1];
 
   React.useEffect(function () {
-    dispatch(getMyNotifications());
+    dispatch(getMyNotification());
   }, []);
 
-  var onClickOpenNotification = function onClickOpenNotification(notification) {
-    try {
-      setNotification(notification);
-      setNotificationModal(true);
-      return Promise.resolve(NotificationService.updateNotificationStatus({
-        notificationId: notification.id,
-        status: 'READ'
-      })).then(function (response) {
-        if (response.status === 200) {
-          var newNotifications = notifications.map(function (item) {
-            if (item.id === notification.id) {
-              item.nn_read = true;
-              return item;
-            } else return item;
-          });
-          dispatch(saveMyNotifications([].concat(newNotifications)));
-        }
-      });
-    } catch (e) {
-      return Promise.reject(e);
-    }
+  var onClickOpenNotification = function onClickOpenNotification(item) {
+    setNotification(item);
+    setNotificationModal(true);
+    var notificationRequest = notifications.find(function (notification) {
+      return notification.id === item.id;
+    });
+    var notificationAllStatus = NotificationService.updateAllNotificationStatus({
+      notificationId: notificationRequest.id,
+      status: 'READ'
+    });
+    if (notificationAllStatus.status === 200) return;
   };
 
-  var onClickUpdateAllNotification = function onClickUpdateAllNotification() {
-    try {
-      return Promise.resolve(NotificationService.updateAllNotificationStatus()).then(function (response) {
-        if (response.status === 200) return;
-      });
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
-
-  var onClickUpdateNotification = function onClickUpdateNotification(notification, status) {
-    try {
-      return Promise.resolve(NotificationService.updateNotificationStatus({
-        notificationId: notification.id,
-        status: status
-      })).then(function (response) {
-        if (response.status === 200) {
-          var newNotifications;
-
-          switch (status) {
-            case 'DELETE':
-              newNotifications = notifications.filter(function (item) {
-                return item.id !== notification.id;
-              });
-              return;
-
-            case 'READ':
-              newNotifications = notifications.map(function (item) {
-                if (item.id === notification.id) {
-                  item.nn_read = true;
-                  return item;
-                } else return item;
-              });
-              return;
-
-            case 'UNREAD':
-              newNotifications = notifications.map(function (item) {
-                if (item.id === notification.id) {
-                  item.nn_read = false;
-                  return item;
-                } else return item;
-              });
-              return;
-          }
-
-          dispatch(saveMyNotifications([].concat(newNotifications)));
-        }
-      });
-    } catch (e) {
-      return Promise.reject(e);
-    }
+  var onClickUpdateAllNotificationStatus = function onClickUpdateAllNotificationStatus() {
+    var notificationAllStatus = NotificationService.updateAllNotificationStatus();
+    if (notificationAllStatus.status === 200) return;
   };
 
   return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("li", {
@@ -2420,86 +2402,56 @@ var Notifications = function Notifications() {
     options: {
       wheelPropagation: false
     }
-  }, notifications.map(function (item, index) {
-    return /*#__PURE__*/React__default.createElement(MediaCustom, {
-      key: item.id
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "d-flex align-items-start cursor-default"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      left: true
-    }, item.notification_type === "SYSTEM" ? /*#__PURE__*/React__default.createElement("img", {
-      src: "https://sit2.inon.vn/resources/images/system-information.png"
-    }) : null, item.notification_type === "USER" ? /*#__PURE__*/React__default.createElement("img", {
-      src: "https://sit2.inon.vn/resources/images/individual-server.png"
-    }) : null, item.notification_type === "PROMOTION" ? /*#__PURE__*/React__default.createElement("img", {
-      src: "https://sit2.inon.vn/resources/images/gift.png"
-    }) : null), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+  }, notifications.map(function (item) {
+    return /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex justify-content-between",
+      key: item.id,
       onClick: function onClick() {
         return onClickOpenNotification(item);
-      },
+      }
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      className: "d-flex align-items-start"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      left: true,
+      href: "#"
+    }, /*#__PURE__*/React__default.createElement(Icon.Server, {
+      className: "font-medium-5 primary",
+      size: 21
+    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
       body: true
     }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
       heading: true,
-      className: "media-heading",
+      className: "primary media-heading",
       tag: "h6"
     }, /*#__PURE__*/React__default.createElement("div", {
-      className: item.nn_read ? 'read' : '',
+      className: !item.read ? 'font-weight-bold' : ''
+    }, item.title)), /*#__PURE__*/React__default.createElement("div", {
+      className: !item.read ? 'font-weight-bold' : '',
       dangerouslySetInnerHTML: {
-        __html: item.title
+        __html: item.shortContent
       }
-    })), /*#__PURE__*/React__default.createElement("div", {
-      className: item.nn_read ? 'read' : '',
-      dangerouslySetInnerHTML: {
-        __html: item.short_content
-      }
-    }), /*#__PURE__*/React__default.createElement("small", {
+    })), /*#__PURE__*/React__default.createElement("small", {
       className: "mt-1"
     }, /*#__PURE__*/React__default.createElement("time", {
-      className: item.nn_read ? 'read' : '',
-      dateTime: item.send_date
-    }, moment().diff(moment(item.send_date), 'days') >= 1 ? moment(item.send_date).format("DD/MM/YYYY") : moment(item.send_date).fromNow()))), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      right: true,
-      className: "cursor-pointer"
-    }, /*#__PURE__*/React__default.createElement(CustomDropdown, null, /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledButtonDropdown, {
-      direction: "left"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
-      tag: "span"
-    }, /*#__PURE__*/React__default.createElement("div", {
-      className: "position-relative"
-    }, /*#__PURE__*/React__default.createElement(CustomImage, {
-      src: "https://sit2.inon.vn/resources/images/ellipsis-v-solid.png",
-      alt: ""
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownMenu, null, item.nn_read ? /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
-      onClick: function onClick() {
-        return onClickUpdateNotification(item, 'UNREAD');
-      }
-    }, "Mark as unread") : /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
-      onClick: function onClick() {
-        return onClickUpdateNotification(item, 'READ');
-      }
-    }, "Mark as read"), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
-      onClick: function onClick() {
-        return onClickUpdateNotification(item, 'DELETE');
-      }
-    }, "Delete")))))));
+      className: "media-meta",
+      dateTime: item.sendDate
+    }, moment().diff(moment(item.sendDate), 'days') >= 1 ? moment(item.sendDate).format("DD/MM/YYYY") : moment(item.sendDate).fromNow()))));
   })), notifications.length > 0 && /*#__PURE__*/React__default.createElement("li", {
     className: "dropdown-menu-footer",
-    onClick: function onClick() {
-      return onClickUpdateAllNotification();
-    }
+    onClick: onClickUpdateAllNotificationStatus
   }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
     tag: "a",
     className: "p-1 text-center"
   }, /*#__PURE__*/React__default.createElement("span", {
-    className: "align-middle font-weight-bold"
+    className: "align-middle"
   }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "menu.readAll"
   })))), notification && /*#__PURE__*/React__default.createElement(reactstrap.Modal, {
-    className: "modal-lg modal-dialog-centered",
     isOpen: notificationModal,
     toggle: function toggle() {
       return setNotificationModal(!notificationModal);
-    }
+    },
+    className: "modal-dialog-centered"
   }, /*#__PURE__*/React__default.createElement(reactstrap.ModalHeader, {
     toggle: function toggle() {
       return setNotificationModal(!notificationModal);
@@ -2518,8 +2470,6 @@ var Notifications = function Notifications() {
 };
 
 var NavbarUser = function NavbarUser(props) {
-  var dispatch = reactRedux.useDispatch();
-
   var _useSelector = reactRedux.useSelector(function (state) {
     return state.auth.user;
   }),
@@ -2537,33 +2487,18 @@ var NavbarUser = function NavbarUser(props) {
       _useSelector3$roles = _useSelector3.roles,
       roles = _useSelector3$roles === void 0 ? [] : _useSelector3$roles;
 
-  var _useSelector4 = reactRedux.useSelector(function (state) {
-    return state.notifications;
-  }),
-      notifications = _useSelector4.notifications;
+  var _useState = React.useState(false),
+      navbarSearch = _useState[0],
+      setNavbarSearch = _useState[1];
 
-  var _useState = React.useState(0),
-      numberNewNotification = _useState[0],
-      setNumberNewNotification = _useState[1];
-
-  var _useState2 = React.useState(false),
-      navbarSearch = _useState2[0],
-      setNavbarSearch = _useState2[1];
-
-  var _useState3 = React.useState([]),
-      suggestions = _useState3[0],
-      setSuggestions = _useState3[1];
+  var _useState2 = React.useState([]),
+      suggestions = _useState2[0],
+      setSuggestions = _useState2[1];
 
   var intl = reactIntl.useIntl();
   userSettings = userSettings || {};
   React.useEffect(function () {
-    var roleData = [];
-
-    if (Array.isArray(roles)) {
-      roleData = [].concat(roles);
-    }
-
-    var newSuggestions = roleData.map(function (item) {
+    var newSuggestions = (roles || []).map(function (item) {
       item.name = intl.formatMessage({
         id: "menu." + item.keyLang
       });
@@ -2573,21 +2508,6 @@ var NavbarUser = function NavbarUser(props) {
     });
     setSuggestions(newSuggestions);
   }, [roles]);
-  React.useEffect(function () {
-    dispatch(getMyNotifications());
-    var intervalId = setInterval(function () {
-      dispatch(getMyNotifications());
-    }, 1000000);
-    return function () {
-      return clearInterval(intervalId);
-    };
-  }, []);
-  React.useEffect(function () {
-    var newNotifications = notifications.filter(function (item) {
-      return item.nn_read === false;
-    });
-    setNumberNewNotification(newNotifications.length);
-  }, [notifications]);
 
   var handleNavbarSearch = function handleNavbarSearch() {
     setNavbarSearch(function (prevState) {
@@ -2681,13 +2601,8 @@ var NavbarUser = function NavbarUser(props) {
     tag: "a",
     className: "nav-link nav-link-label"
   }, /*#__PURE__*/React__default.createElement(Icon.Bell, {
-    className: "text-primary",
-    size: 22
-  }), /*#__PURE__*/React__default.createElement(reactstrap.Badge, {
-    pill: true,
-    color: "primary",
-    className: "badge-up"
-  }, numberNewNotification)), /*#__PURE__*/React__default.createElement(reactstrap.DropdownMenu, {
+    size: 21
+  })), /*#__PURE__*/React__default.createElement(reactstrap.DropdownMenu, {
     tag: "ul",
     right: true,
     className: "dropdown-menu-media"
@@ -2879,7 +2794,7 @@ var Footer = function Footer(props) {
     className: "position-relative w-25"
   }, /*#__PURE__*/React__default.createElement("span", {
     onClick: function onClick(e) {
-      return goToPage(e, '/insurance/buy-insurance');
+      return goToPage(e, '/insurance/buy-insurances');
     }
   }, /*#__PURE__*/React__default.createElement("img", {
     src: IMAGE.BUY_INSURANCE,
@@ -2983,27 +2898,6 @@ var hideScrollToTop = function hideScrollToTop(value) {
       type: "HIDE_SCROLL_TO_TOP",
       value: value
     });
-  };
-};
-
-var goBackHomePage$1 = function goBackHomePage() {
-  return function (dispatch, getState) {
-    try {
-      var _getState, _getState$auth;
-
-      var _ref = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$auth = _getState.auth) === null || _getState$auth === void 0 ? void 0 : _getState$auth.guest) || {},
-          authToken = _ref.authToken;
-
-      if (authToken) {
-        history.push('/home');
-      } else {
-        history.push('/app/home');
-      }
-
-      return Promise.resolve();
-    } catch (e) {
-      return Promise.reject(e);
-    }
   };
 };
 
@@ -8490,7 +8384,7 @@ var ShareWithFriends = function ShareWithFriends() {
   }),
       user = _useSelector.user;
 
-  var _useState = React.useState(null),
+  var _useState = useState(null),
       qrCodeInstance = _useState[0],
       setQRCodeInstance = _useState[1];
 
@@ -8948,6 +8842,262 @@ var CheckBox = /*#__PURE__*/function (_React$Component) {
   return CheckBox;
 }(React__default.Component);
 
+var AppSelection = function AppSelection(_ref) {
+  var isLogin = _ref.isLogin;
+
+  var _useSelector = reactRedux.useSelector(function (state) {
+    return state.auth;
+  }),
+      isGuest = _useSelector.isGuest;
+
+  var dispatch = reactRedux.useDispatch();
+
+  var onClickChangeAppType = function onClickChangeAppType(value) {
+    dispatch(changeIsGuest(value));
+  };
+
+  return /*#__PURE__*/React__default.createElement("div", {
+    className: "text-center mt-2 mb-3"
+  }, /*#__PURE__*/React__default.createElement("p", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: isLogin ? 'socialLogin.youLoginAs' : 'socialLogin.youRegisterAs'
+  })), /*#__PURE__*/React__default.createElement(reactstrap.ButtonGroup, {
+    className: "w-100"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
+    className: "btn-app-selection left",
+    active: !isGuest,
+    type: "button",
+    onClick: function onClick() {
+      return onClickChangeAppType(false);
+    }
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "icon mr-1"
+  }, /*#__PURE__*/React__default.createElement("svg", {
+    width: "40",
+    height: "40",
+    viewBox: "0 0 40 40",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, /*#__PURE__*/React__default.createElement("path", {
+    d: "M20 25C22.7614 25 25 22.7614 25 20C25 17.2386 22.7614 15 20 15C17.2386 15 15 17.2386 15 20C15 22.7614 17.2386 25 20 25Z",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M20 35V35.0167",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M5 15V15.0167",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M35 15V15.0167",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M13.3333 33.4999C11.0589 32.3906 9.1021 30.7238 7.64506 28.6548C6.18802 26.5858 5.2781 24.1818 5 21.6666",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M26.6663 33.4999C28.9407 32.3906 30.8975 30.7238 32.3545 28.6548C33.8116 26.5858 34.7215 24.1818 34.9996 21.6666",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M10.333 8.33345C13.0132 6.14004 16.3697 4.94164 19.833 4.94164C23.2963 4.94164 26.6529 6.14004 29.333 8.33345",
+    stroke: !isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }))), /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "socialLogin.agent"
+  })), /*#__PURE__*/React__default.createElement(reactstrap.Button, {
+    className: "btn-app-selection right",
+    active: isGuest,
+    onClick: function onClick() {
+      return onClickChangeAppType(true);
+    },
+    type: "button"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "icon mr-1"
+  }, /*#__PURE__*/React__default.createElement("svg", {
+    width: "40",
+    height: "40",
+    viewBox: "0 0 40 40",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, /*#__PURE__*/React__default.createElement("path", {
+    d: "M20.0005 18.4999C23.3143 18.4999 26.0007 15.8136 26.0007 12.4997C26.0007 9.1859 23.3143 6.49951 20.0005 6.49951C16.6866 6.49951 14.0002 9.1859 14.0002 12.4997C14.0002 15.8136 16.6866 18.4999 20.0005 18.4999Z",
+    stroke: isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }), /*#__PURE__*/React__default.createElement("path", {
+    d: "M10.9993 33.5004V30.5003C10.9993 28.9089 11.6314 27.3828 12.7567 26.2575C13.8819 25.1322 15.4081 24.5001 16.9995 24.5001H22.9997C24.5911 24.5001 26.1172 25.1322 27.2425 26.2575C28.3678 27.3828 28.9999 28.9089 28.9999 30.5003V33.5004",
+    stroke: isGuest ? '#73C14F' : '#587471',
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  }))), /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "socialLogin.personal"
+  }))));
+};
+
+var formSchema$1 = Yup.object().shape({
+  username: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "login.username.required"
+  })),
+  password: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "login.password.required"
+  })).matches(PASSWORD_REGEX, function () {
+    return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "createPassword.password.invalid"
+    });
+  })
+});
+
+var Login = function Login() {
+  var _useState = React.useState(null),
+      rememberMe = _useState[0],
+      setRememberMe = _useState[1];
+
+  var _useState2 = React.useState(false),
+      isRemeberMe = _useState2[0],
+      setIsRemeberMe = _useState2[1];
+
+  var dispatch = reactRedux.useDispatch();
+
+  var _useSelector = reactRedux.useSelector(function (state) {
+    return state.auth;
+  }),
+      isGuest = _useSelector.isGuest;
+
+  var loginStatus = reactRedux.useSelector(function (state) {
+    return state.auth.loginStatus;
+  });
+  React.useEffect(function () {
+    var user = JSON.parse(localStorage.getItem(REMEMBER_ME_TOKEN));
+
+    if (user) {
+      setRememberMe(user);
+    }
+  }, []);
+
+  var onSubmit = function onSubmit(values, actions) {
+    dispatch(loginAction({
+      username: trimValue(values.username),
+      password: values.password,
+      isGuest: isGuest,
+      isRemeberMe: isRemeberMe
+    }));
+    actions.setSubmitting(false);
+  };
+
+  var onClickNotMe = function onClickNotMe() {
+    localStorage.removeItem(REMEMBER_ME_TOKEN);
+    setRememberMe(null);
+  };
+
+  return /*#__PURE__*/React__default.createElement(formik.Formik, {
+    enableReinitialize: true,
+    initialValues: {
+      username: rememberMe ? rememberMe.username : '',
+      password: ''
+    },
+    onSubmit: onSubmit,
+    validationSchema: formSchema$1
+  }, function (_ref) {
+    var errors = _ref.errors,
+        touched = _ref.touched;
+    return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement(AppSelection, {
+      isLogin: true
+    }), rememberMe ? /*#__PURE__*/React__default.createElement("h4", {
+      className: "text-center mb-2"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "login.sayHi",
+      values: {
+        name: rememberMe.name
+      }
+    })) : /*#__PURE__*/React__default.createElement(BaseFormGroup, {
+      messageId: "login.username",
+      fieldName: "username",
+      errors: errors,
+      touched: touched
+    }), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+      className: "form-label-group position-relative"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "login.password"
+    }, function (msg) {
+      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.FastField, {
+        name: "password"
+      }, function (_ref2) {
+        var field = _ref2.field,
+            form = _ref2.form;
+        return /*#__PURE__*/React__default.createElement(reactstrap.Input, _extends({
+          type: "password",
+          className: "form-control " + (errors.password && touched.password && 'is-invalid'),
+          placeholder: msg
+        }, field, {
+          onChange: function onChange(e) {
+            return form.setFieldValue('password', e.target.value);
+          }
+        }));
+      }), errors.password && touched.password ? /*#__PURE__*/React__default.createElement("div", {
+        className: "text-danger"
+      }, errors.password) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
+    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
+      className: "d-flex justify-content-between align-items-center"
+    }, rememberMe ? /*#__PURE__*/React__default.createElement("a", {
+      className: "text-dark-green",
+      onClick: onClickNotMe
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "login.notMe"
+    })) : /*#__PURE__*/React__default.createElement(CheckBox, {
+      color: "primary",
+      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
+        className: "vx-icon",
+        size: 16
+      }),
+      label: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "login.rememberMe"
+      }),
+      onChange: function onChange(e) {
+        return setIsRemeberMe(e.target.checked);
+      },
+      defaultChecked: isRemeberMe
+    }), /*#__PURE__*/React__default.createElement("div", {
+      className: "divider",
+      style: {
+        height: '30px'
+      }
+    }), /*#__PURE__*/React__default.createElement("div", {
+      className: "float-right"
+    }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
+      to: "/forgot-password",
+      className: "text-secondary font-weight-bold"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "forgotPassword"
+    })))), /*#__PURE__*/React__default.createElement("div", {
+      className: "d-flex justify-content-center"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
+      color: "primary",
+      type: "submit"
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "login"
+    }))));
+  });
+};
+
 var SocialLogin = function SocialLogin(_ref) {
   var isLogin = _ref.isLogin;
 
@@ -9122,263 +9272,6 @@ var SocialLogin = function SocialLogin(_ref) {
       id: "common.ok"
     })))));
   }));
-};
-
-var AppSelection = function AppSelection(_ref) {
-  var isLogin = _ref.isLogin;
-
-  var _useSelector = reactRedux.useSelector(function (state) {
-    return state.auth;
-  }),
-      isGuest = _useSelector.isGuest;
-
-  var dispatch = reactRedux.useDispatch();
-
-  var onClickChangeAppType = function onClickChangeAppType(value) {
-    dispatch(changeIsGuest(value));
-  };
-
-  return /*#__PURE__*/React__default.createElement("div", {
-    className: "text-center mt-2 mb-3"
-  }, /*#__PURE__*/React__default.createElement("p", null, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: isLogin ? 'socialLogin.youLoginAs' : 'socialLogin.youRegisterAs'
-  })), /*#__PURE__*/React__default.createElement(reactstrap.ButtonGroup, {
-    className: "w-100"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
-    className: "btn-app-selection left",
-    active: !isGuest,
-    type: "button",
-    onClick: function onClick() {
-      return onClickChangeAppType(false);
-    }
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "icon mr-1"
-  }, /*#__PURE__*/React__default.createElement("svg", {
-    width: "40",
-    height: "40",
-    viewBox: "0 0 40 40",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, /*#__PURE__*/React__default.createElement("path", {
-    d: "M20 25C22.7614 25 25 22.7614 25 20C25 17.2386 22.7614 15 20 15C17.2386 15 15 17.2386 15 20C15 22.7614 17.2386 25 20 25Z",
-    stroke: !isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }), /*#__PURE__*/React__default.createElement("path", {
-    d: "M20 35V35.0167",
-    stroke: !isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }), /*#__PURE__*/React__default.createElement("path", {
-    d: "M5 15V15.0167",
-    stroke: !isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }), /*#__PURE__*/React__default.createElement("path", {
-    d: "M35 15V15.0167",
-    stroke: !isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }), /*#__PURE__*/React__default.createElement("path", {
-    d: "M13.3333 33.4999C11.0589 32.3906 9.1021 30.7238 7.64506 28.6548C6.18802 26.5858 5.2781 24.1818 5 21.6666",
-    stroke: !isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }), /*#__PURE__*/React__default.createElement("path", {
-    d: "M26.6663 33.4999C28.9407 32.3906 30.8975 30.7238 32.3545 28.6548C33.8116 26.5858 34.7215 24.1818 34.9996 21.6666",
-    stroke: !isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }), /*#__PURE__*/React__default.createElement("path", {
-    d: "M10.333 8.33345C13.0132 6.14004 16.3697 4.94164 19.833 4.94164C23.2963 4.94164 26.6529 6.14004 29.333 8.33345",
-    stroke: !isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }))), /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "socialLogin.agent"
-  })), /*#__PURE__*/React__default.createElement(reactstrap.Button, {
-    className: "btn-app-selection right",
-    active: isGuest,
-    onClick: function onClick() {
-      return onClickChangeAppType(true);
-    },
-    type: "button"
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "icon mr-1"
-  }, /*#__PURE__*/React__default.createElement("svg", {
-    width: "40",
-    height: "40",
-    viewBox: "0 0 40 40",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, /*#__PURE__*/React__default.createElement("path", {
-    d: "M20.0005 18.4999C23.3143 18.4999 26.0007 15.8136 26.0007 12.4997C26.0007 9.1859 23.3143 6.49951 20.0005 6.49951C16.6866 6.49951 14.0002 9.1859 14.0002 12.4997C14.0002 15.8136 16.6866 18.4999 20.0005 18.4999Z",
-    stroke: isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }), /*#__PURE__*/React__default.createElement("path", {
-    d: "M10.9993 33.5004V30.5003C10.9993 28.9089 11.6314 27.3828 12.7567 26.2575C13.8819 25.1322 15.4081 24.5001 16.9995 24.5001H22.9997C24.5911 24.5001 26.1172 25.1322 27.2425 26.2575C28.3678 27.3828 28.9999 28.9089 28.9999 30.5003V33.5004",
-    stroke: isGuest ? '#73C14F' : '#587471',
-    "stroke-width": "2",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  }))), /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "socialLogin.personal"
-  }))));
-};
-
-var formSchema$1 = Yup.object().shape({
-  username: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "login.username.required"
-  })),
-  password: Yup.string().required( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "login.password.required"
-  })).matches(PASSWORD_REGEX, function () {
-    return /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "createPassword.password.invalid"
-    });
-  })
-});
-
-var Login = function Login() {
-  var _useState = React.useState(null),
-      rememberMe = _useState[0],
-      setRememberMe = _useState[1];
-
-  var _useState2 = React.useState(false),
-      isRemeberMe = _useState2[0],
-      setIsRemeberMe = _useState2[1];
-
-  var dispatch = reactRedux.useDispatch();
-
-  var _useSelector = reactRedux.useSelector(function (state) {
-    return state.auth;
-  }),
-      isGuest = _useSelector.isGuest;
-
-  React.useEffect(function () {
-    var user = JSON.parse(localStorage.getItem(REMEMBER_ME_TOKEN));
-
-    if (user) {
-      setRememberMe(user);
-    }
-  }, []);
-
-  var onSubmit = function onSubmit(values, actions) {
-    dispatch(loginAction({
-      username: trimValue(values.username),
-      password: values.password,
-      isGuest: isGuest,
-      isRemeberMe: isRemeberMe
-    }));
-    actions.setSubmitting(false);
-  };
-
-  var onClickNotMe = function onClickNotMe() {
-    localStorage.removeItem(REMEMBER_ME_TOKEN);
-    setRememberMe(null);
-  };
-
-  return /*#__PURE__*/React__default.createElement(formik.Formik, {
-    enableReinitialize: true,
-    initialValues: {
-      username: rememberMe ? rememberMe.username : '',
-      password: ''
-    },
-    onSubmit: onSubmit,
-    validationSchema: formSchema$1
-  }, function (_ref) {
-    var errors = _ref.errors,
-        touched = _ref.touched;
-    return /*#__PURE__*/React__default.createElement(formik.Form, null, /*#__PURE__*/React__default.createElement(AppSelection, {
-      isLogin: true
-    }), rememberMe ? /*#__PURE__*/React__default.createElement("h4", {
-      className: "text-center mb-2"
-    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "login.sayHi",
-      values: {
-        name: rememberMe.name
-      }
-    })) : /*#__PURE__*/React__default.createElement(BaseFormGroup, {
-      messageId: "login.username",
-      fieldName: "username",
-      errors: errors,
-      touched: touched
-    }), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
-      className: "form-label-group position-relative"
-    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "login.password"
-    }, function (msg) {
-      return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(formik.FastField, {
-        name: "password"
-      }, function (_ref2) {
-        var field = _ref2.field,
-            form = _ref2.form;
-        return /*#__PURE__*/React__default.createElement(reactstrap.Input, _extends({
-          type: "password",
-          className: "form-control " + (errors.password && touched.password && 'is-invalid'),
-          placeholder: msg
-        }, field, {
-          onChange: function onChange(e) {
-            return form.setFieldValue('password', e.target.value);
-          }
-        }));
-      }), errors.password && touched.password ? /*#__PURE__*/React__default.createElement("div", {
-        className: "text-danger"
-      }, errors.password) : null, /*#__PURE__*/React__default.createElement(reactstrap.Label, null, msg));
-    })), /*#__PURE__*/React__default.createElement(reactstrap.FormGroup, {
-      className: "d-flex justify-content-between align-items-center"
-    }, rememberMe ? /*#__PURE__*/React__default.createElement("a", {
-      className: "text-dark-green",
-      onClick: onClickNotMe
-    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "login.notMe"
-    })) : /*#__PURE__*/React__default.createElement(CheckBox, {
-      color: "primary",
-      icon: /*#__PURE__*/React__default.createElement(Icon.Check, {
-        className: "vx-icon",
-        size: 16
-      }),
-      label: /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-        id: "login.rememberMe"
-      }),
-      onChange: function onChange(e) {
-        return setIsRemeberMe(e.target.checked);
-      },
-      defaultChecked: isRemeberMe
-    }), /*#__PURE__*/React__default.createElement("div", {
-      className: "divider",
-      style: {
-        height: '30px'
-      }
-    }), /*#__PURE__*/React__default.createElement("div", {
-      className: "float-right"
-    }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
-      to: "/forgot-password",
-      className: "text-secondary font-weight-bold"
-    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "forgotPassword"
-    })))), /*#__PURE__*/React__default.createElement("div", {
-      className: "d-flex justify-content-center"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Button, {
-      color: "primary",
-      type: "submit"
-    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-      id: "login"
-    }))), isGuest ? /*#__PURE__*/React__default.createElement("div", {
-      className: "mt-2"
-    }, /*#__PURE__*/React__default.createElement(SocialLogin, {
-      isLogin: true
-    })) : null);
-  });
 };
 
 var formSchema$2 = Yup.object().shape({
@@ -9863,8 +9756,8 @@ var LandingPageHeader = function LandingPageHeader() {
   return /*#__PURE__*/React__default.createElement(Context.Consumer, null, function (context) {
     return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("div", {
       className: "d-flex justify-content-between align-items-center"
-    }, /*#__PURE__*/React__default.createElement("a", {
-      href: "https://inon.vn/"
+    }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
+      to: '/'
     }, /*#__PURE__*/React__default.createElement("span", {
       className: "d-block d-lg-none"
     }, /*#__PURE__*/React__default.createElement("img", {
@@ -10144,16 +10037,16 @@ var CompleteInformation = function CompleteInformation() {
   }));
 };
 
-function _templateObject$1() {
+function _templateObject() {
   var data = _taggedTemplateLiteralLoose(["\n\n  .landing-page-bg {\n    background-image: url('", "');\n    background-size: cover;\n    background-position: center;\n  }\n"]);
 
-  _templateObject$1 = function _templateObject() {
+  _templateObject = function _templateObject() {
     return data;
   };
 
   return data;
 }
-var PageStyle = styled.div(_templateObject$1(), IMAGE.LANDING_PAGE_BG);
+var PageStyle = styled.div(_templateObject(), IMAGE.LANDING_PAGE_BG);
 
 var LandingPage = function LandingPage(props) {
   var _useState = React.useState(''),
@@ -10212,8 +10105,8 @@ var LandingPage = function LandingPage(props) {
     className: "d-none d-lg-block landing-page-bg"
   }, /*#__PURE__*/React__default.createElement("div", {
     className: "logo mx-auto"
-  }, /*#__PURE__*/React__default.createElement("a", {
-    href: "https://inon.vn/"
+  }, /*#__PURE__*/React__default.createElement(reactRouterDom.Link, {
+    to: '/'
   }, /*#__PURE__*/React__default.createElement("img", {
     src: IMAGE.LOGO,
     alt: "logo"
@@ -10381,15 +10274,24 @@ var AppRouter = function AppRouter(props) {
       guest = props.guest,
       authToken = props.authToken,
       children = props.children,
+      loadNavtigation = props.loadNavtigation,
+      loadUserRoles = props.loadUserRoles,
       history = props.history,
-      message = props.message;
+      message = props.message,
+      footerApp = props.footerApp;
   React.useEffect(function () {
     var urlParams = new URLSearchParams(document.location.search);
-    var code = guest.authToken || authToken;
+    var code = urlParams.get('code') || (appId === AppId.ELITE_APP ? guest.authToken : authToken);
     var redirectUrl = urlParams.get('redirectUrl');
 
     if (code && loginStatus !== LOGIN_STATUS.SUCCESS) {
       checkLoginStatus(code, redirectUrl);
+    }
+
+    if (authToken) {
+      loadNavtigation(appId, function () {
+        return loadUserRoles();
+      });
     }
   }, [authToken]);
   var appMessage = {
@@ -10473,14 +10375,14 @@ var AppRouter = function AppRouter(props) {
           }
         });
       }), /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
-        path: "/social-login",
-        component: SocialLogin
-      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Route, {
         path: "/",
         render: function render() {
           return children;
         }
-      })));
+      }), /*#__PURE__*/React__default.createElement(reactRouterDom.Redirect, {
+        from: "/",
+        to: "/intro"
+      })), footerApp && React__default.createElement(footerApp));
     }
   })), /*#__PURE__*/React__default.createElement(CheckLocationChange, null)), /*#__PURE__*/React__default.createElement(reactToastify.ToastContainer, {
     hideProgressBar: true,
@@ -10504,6 +10406,8 @@ var mapStateToProps$3 = function mapStateToProps(state) {
 
 var AppRouter$1 = reactRedux.connect(mapStateToProps$3, {
   checkLoginStatus: checkLoginStatus,
+  loadNavtigation: loadNavtigation,
+  loadUserRoles: loadUserRoles,
   loginAction: loginAction,
   changeIsGuest: changeIsGuest,
   logoutAction: logoutAction,
@@ -10570,7 +10474,8 @@ var App = function App(_ref) {
       appReducer = _ref.appReducer,
       message = _ref.message,
       apiBaseUrl = _ref.apiBaseUrl,
-      history = _ref.history;
+      history = _ref.history,
+      footerApp = _ref.footerApp;
   var middlewares = [thunk, createDebounce()];
   var composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || redux.compose;
   var store = redux.createStore(rootReducer(appReducer), {}, composeEnhancers(redux.applyMiddleware.apply(void 0, middlewares)));
@@ -10587,7 +10492,8 @@ var App = function App(_ref) {
     message: message,
     appId: appId,
     history: history,
-    children: children
+    children: children,
+    footerApp: footerApp
   })));
 };
 
