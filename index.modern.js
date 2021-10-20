@@ -2296,13 +2296,7 @@ const NavbarUser = props => {
     });
     setSuggestions(newSuggestions);
   }, [roles]);
-  useEffect(() => {
-    dispatch(getMyNotifications());
-    const intervalId = setInterval(() => {
-      dispatch(getMyNotifications());
-    }, 60000);
-    return () => clearInterval(intervalId);
-  }, []);
+  useEffect(() => {}, []);
   useEffect(() => {
     const newNotifications = notifications.filter(item => item.nn_read === false);
     setNumberNewNotification(newNotifications.length);
