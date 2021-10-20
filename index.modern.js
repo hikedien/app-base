@@ -1481,17 +1481,6 @@ const getMyNotifications = () => {
     return res.data;
   };
 };
-const checkReceiveNewNotification = () => {
-  return async () => {
-    const res = await NotificationService.checkNewNotification();
-
-    if (!res || res.status !== 200) {
-      return;
-    }
-
-    return res.data;
-  };
-};
 const saveMyNotifications = notifications => {
   return dispatch => {
     dispatch({
@@ -2301,23 +2290,7 @@ const NavbarUser = props => {
     const newNotifications = notifications.filter(item => item.nn_read === false);
     setNumberNewNotification(newNotifications.length);
   }, [notifications]);
-  useEffect(() => {
-    const notifications = dispatch(checkReceiveNewNotification());
-    checkNewNotifications(notifications);
-    const intervalId = setInterval(() => {
-      const notifications = dispatch(checkReceiveNewNotification());
-      checkNewNotifications(notifications);
-    }, 60000);
-    return () => clearInterval(intervalId);
-  }, []);
-
-  const checkNewNotifications = newNotifications => {
-    if (newNotifications.length > 0) {
-      toastSuccess( /*#__PURE__*/React.createElement(FormattedMessage, {
-        id: "navbar.notifications.newNotificationNotice"
-      }));
-    }
-  };
+  useEffect(() => {}, []);
 
   const handleNavbarSearch = () => {
     setNavbarSearch(prevState => !prevState);
