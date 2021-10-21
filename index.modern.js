@@ -5,7 +5,7 @@ import { createBrowserHistory } from 'history';
 import Axios from 'axios';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
 import * as Icon from 'react-feather';
-import { AlertTriangle, Check, User, Lock, Link, Users, FileText, Shield, Globe, MessageSquare, Power, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, Download, Clipboard, Sun } from 'react-feather';
+import { AlertTriangle, Check, User, Lock, Link, Users, FileText, Shield, Globe, MessageSquare, Power, Bell, Search, X, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, Download, Clipboard, Sun } from 'react-feather';
 import { toast, ToastContainer } from 'react-toastify';
 export { toast } from 'react-toastify';
 import moment from 'moment';
@@ -18,7 +18,7 @@ import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/es/storage';
 import { useHistory, Link as Link$1, Router, Switch, Route, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
-import { FormGroup, Label, DropdownMenu, DropdownItem, Media, UncontrolledButtonDropdown, DropdownToggle, Modal, ModalHeader, ModalBody, NavItem, NavLink, UncontrolledDropdown, Badge, Navbar as Navbar$1, Button, Input, Row, Col, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, ButtonGroup, ModalFooter } from 'reactstrap';
+import { FormGroup, Label, DropdownMenu, DropdownItem, Media, UncontrolledButtonDropdown, DropdownToggle, ButtonDropdown, Badge, Modal, ModalHeader, ModalBody, NavItem, NavLink, UncontrolledDropdown, Navbar as Navbar$1, Button, Input, Row, Col, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, ButtonGroup, ModalFooter } from 'reactstrap';
 export { Button } from 'reactstrap';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
@@ -1435,16 +1435,17 @@ NotificationService.updateNotificationStatus = notification => {
   });
 };
 
-NotificationService.updateAllNotificationStatus = () => {
+NotificationService.updateAllNotificationStatus = status => {
   return HttpClient.put(API_UPDATE_ALL_NOTIFICATION_STATUS, {}, {
     params: {
-      status: 'READ'
+      status
     },
     isBackgroundRequest: true
   });
 };
 
 const LOAD_MY_NOTIFICATIONS = 'LOAD_MY_NOTIFICATIONS';
+const RECEIVE_NEW_NOTIFICATIONS = 'RECEIVE_NEW_NOTIFICATIONS';
 const getMyNotifications = () => {
   return async dispatch => {
     const res = await NotificationService.getMyNotifications();
@@ -1457,6 +1458,17 @@ const getMyNotifications = () => {
       type: LOAD_MY_NOTIFICATIONS,
       payload: res.data
     });
+    return res.data;
+  };
+};
+const checkReceiveNewNotification = () => {
+  return async () => {
+    const res = await NotificationService.checkNewNotification();
+
+    if (!res || res.status !== 200) {
+      return;
+    }
+
     return res.data;
   };
 };
@@ -1480,6 +1492,11 @@ const notificationReducer = (state = { ...initialState$2
     case LOAD_MY_NOTIFICATIONS:
       return { ...state,
         notifications: action.payload
+      };
+
+    case RECEIVE_NEW_NOTIFICATIONS:
+      return { ...state,
+        newNotifications: action.payload
       };
 
     default:
@@ -2031,8 +2048,9 @@ const MediaCustom = styled.div(_t || (_t = _`
   display: flex;
   justify-content: space-between;
 
-  .read {
-    color: #cccccc;
+  .unread {
+    color: black;
+    font-weight: bold;
   }
 `));
 const CustomImage = styled.img(_t2 || (_t2 = _`
@@ -2053,20 +2071,15 @@ const CustomDropdown = styled.div(_t3 || (_t3 = _`
 
 `));
 
-const Notifications = () => {
+const Notifications = ({
+  notifications,
+  readAll,
+  openModal
+}) => {
   const dispatch = useDispatch();
-  const {
-    notifications
-  } = useSelector(state => state.notifications);
-  const [notificationModal, setNotificationModal] = useState$1(false);
-  const [notification, setNotification] = useState$1(null);
-  useEffect(() => {
-    dispatch(getMyNotifications());
-  }, []);
 
   const onClickOpenNotification = async notification => {
-    setNotification(notification);
-    setNotificationModal(true);
+    openModal(notification);
     const response = await NotificationService.updateNotificationStatus({
       notificationId: notification.id,
       status: 'READ'
@@ -2083,9 +2096,10 @@ const Notifications = () => {
     }
   };
 
-  const onClickUpdateAllNotification = async () => {
-    const response = await NotificationService.updateAllNotificationStatus();
-    if (response.status === 200) return;
+  const onClickUpdateAllNotification = async status => {
+    const response = await NotificationService.updateAllNotificationStatus(status);
+    if (response.status !== 200) return;
+    readAll();
   };
 
   const onClickUpdateNotification = async (notification, status) => {
@@ -2126,14 +2140,19 @@ const Notifications = () => {
   };
 
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("li", {
-    className: "dropdown-menu-header"
+    className: "dropdown-menu-header d-flex justify-content-between align-items-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "dropdown-header mt-0 text-left"
   }, /*#__PURE__*/React.createElement("span", {
     className: "notification-title"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "menu.notification"
-  })), /*#__PURE__*/React.createElement("span", null, "(", notifications.length, ")"))), /*#__PURE__*/React.createElement(PerfectScrollbar, {
+  })), /*#__PURE__*/React.createElement("span", null, "(", notifications.length, ")")), /*#__PURE__*/React.createElement("div", {
+    className: "cursor-pointer",
+    onClick: () => onClickUpdateAllNotification('READ')
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "menu.readAll"
+  }))), /*#__PURE__*/React.createElement(PerfectScrollbar, {
     className: "media-list overflow-hidden position-relative",
     options: {
       wheelPropagation: false
@@ -2153,24 +2172,20 @@ const Notifications = () => {
   }) : null), /*#__PURE__*/React.createElement(Media, {
     onClick: () => onClickOpenNotification(item),
     body: true
-  }, /*#__PURE__*/React.createElement(Media, {
-    heading: true,
-    className: "media-heading",
-    tag: "h6"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: item.nn_read ? 'read' : '',
+  }, /*#__PURE__*/React.createElement("p", {
+    className: !item.nn_read ? 'unread' : '',
     dangerouslySetInnerHTML: {
       __html: item.title
     }
-  })), /*#__PURE__*/React.createElement("div", {
-    className: item.nn_read ? 'read' : '',
+  }), /*#__PURE__*/React.createElement("p", {
+    className: !item.nn_read ? 'unread' : '',
     dangerouslySetInnerHTML: {
       __html: item.short_content
     }
   }), /*#__PURE__*/React.createElement("small", {
     className: "mt-1"
   }, /*#__PURE__*/React.createElement("time", {
-    className: item.nn_read ? 'read' : '',
+    className: !item.nn_read ? 'unread' : '',
     dateTime: item.send_date
   }, moment().diff(moment(item.send_date), 'days') >= 1 ? moment(item.send_date).format("DD/MM/YYYY") : moment(item.send_date).fromNow()))), /*#__PURE__*/React.createElement(Media, {
     right: true,
@@ -2186,33 +2201,118 @@ const Notifications = () => {
     alt: ""
   }))), /*#__PURE__*/React.createElement(DropdownMenu, null, item.nn_read ? /*#__PURE__*/React.createElement(DropdownItem, {
     onClick: () => onClickUpdateNotification(item, 'UNREAD')
-  }, "Mark as unread") : /*#__PURE__*/React.createElement(DropdownItem, {
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "navbar.notifications.markAsUnRead"
+  })) : /*#__PURE__*/React.createElement(DropdownItem, {
     onClick: () => onClickUpdateNotification(item, 'READ')
-  }, "Mark as read"), /*#__PURE__*/React.createElement(DropdownItem, {
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "navbar.notifications.markAsRead"
+  })), /*#__PURE__*/React.createElement(DropdownItem, {
     onClick: () => onClickUpdateNotification(item, 'DELETE')
-  }, "Delete"))))))))), notifications.length > 0 && /*#__PURE__*/React.createElement("li", {
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "navbar.notifications.delete"
+  })))))))))), notifications.length > 0 && /*#__PURE__*/React.createElement("li", {
     className: "dropdown-menu-footer",
-    onClick: () => onClickUpdateAllNotification()
+    onClick: () => onClickUpdateAllNotification('DELETE')
   }, /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     className: "p-1 text-center"
   }, /*#__PURE__*/React.createElement("span", {
     className: "align-middle font-weight-bold"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "menu.readAll"
-  })))), notification && /*#__PURE__*/React.createElement(Modal, {
-    className: "modal-lg modal-dialog-centered",
-    isOpen: notificationModal,
-    toggle: () => setNotificationModal(!notificationModal)
+    id: "menu.deleteAll"
+  })))));
+};
+
+const Bells = () => {
+  const dispatch = useDispatch();
+  const {
+    notifications
+  } = useSelector(state => state.notifications);
+  const [dropdownOpen, setDropdownOpen] = useState$1(false);
+  const [notificationModal, setNotificationModal] = useState$1(false);
+  const [numberNewNotification, setNumberNewNotification] = useState$1(0);
+  const [notification, setNotification] = useState$1(null);
+  useEffect(() => {
+    dispatch(getMyNotifications());
+    const intervalId = setInterval(() => {
+      dispatch(getMyNotifications());
+    }, 60000);
+    return () => clearInterval(intervalId);
+  }, []);
+  useEffect(() => {
+    const newNotifications = notifications.filter(item => item.nn_read === false);
+    setNumberNewNotification(newNotifications.length);
+  }, [notifications]);
+  useEffect(() => {
+    const notifications = dispatch(checkReceiveNewNotification());
+    checkNewNotifications(notifications);
+    const intervalId = setInterval(() => {
+      const notifications = dispatch(checkReceiveNewNotification());
+      checkNewNotifications(notifications);
+    }, 60000);
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const toggleDropdown = () => {
+    if (!notificationModal) {
+      setDropdownOpen(!dropdownOpen);
+    }
+  };
+
+  const readAll = () => {
+    dispatch(getMyNotifications());
+  };
+
+  const openModal = notification => {
+    setNotificationModal(true);
+    setNotification(notification);
+  };
+
+  const checkNewNotifications = newNotifications => {
+    if (newNotifications.length > 0) {
+      toastSuccess( /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "navbar.notifications.newNotificationNotice"
+      }));
+    }
+  };
+
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(ButtonDropdown, {
+    isOpen: dropdownOpen,
+    toggle: toggleDropdown,
+    tag: "li",
+    className: "dropdown-notification nav-item"
+  }, /*#__PURE__*/React.createElement(DropdownToggle, {
+    tag: "a",
+    className: "nav-link nav-link-label"
+  }, /*#__PURE__*/React.createElement(Bell, {
+    className: "text-primary",
+    size: 22
+  }), /*#__PURE__*/React.createElement(Badge, {
+    pill: true,
+    color: "primary",
+    className: "badge-up"
+  }, numberNewNotification)), /*#__PURE__*/React.createElement(DropdownMenu, {
+    tag: "ul",
+    right: true,
+    className: "dropdown-menu-media"
+  }, /*#__PURE__*/React.createElement(Notifications, {
+    notifications: notifications,
+    readAll: readAll,
+    openModal: openModal
+  }))), notification && /*#__PURE__*/React.createElement(Modal, {
+    className: "modal-lg modal-dialog-centered custom-modal-notification",
+    isOpen: notificationModal
   }, /*#__PURE__*/React.createElement(ModalHeader, {
     toggle: () => setNotificationModal(!notificationModal)
-  }, /*#__PURE__*/React.createElement(FormattedMessage, {
-    id: "menu.notification"
-  })), /*#__PURE__*/React.createElement(ModalBody, null, /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "font-weight-bold",
     dangerouslySetInnerHTML: {
       __html: notification.title
     }
-  }), /*#__PURE__*/React.createElement("div", {
+  })), /*#__PURE__*/React.createElement(ModalBody, {
+    className: "overflow-auto"
+  }, /*#__PURE__*/React.createElement("div", {
     dangerouslySetInnerHTML: {
       __html: notification.content
     }
@@ -2220,7 +2320,6 @@ const Notifications = () => {
 };
 
 const NavbarUser = props => {
-  const dispatch = useDispatch();
   let {
     userSettings,
     userDetails,
@@ -2232,15 +2331,10 @@ const NavbarUser = props => {
   let {
     roles = []
   } = useSelector(state => state.navbar);
-  const {
-    notifications
-  } = useSelector(state => state.notifications);
-  const [numberNewNotification, setNumberNewNotification] = useState$1(0);
   const [navbarSearch, setNavbarSearch] = useState$1(false);
   const [suggestions, setSuggestions] = useState$1([]);
   const intl = useIntl();
   userSettings = userSettings || {};
-  userDetails = userDetails || {};
   useEffect(() => {
     let roleData = [];
 
@@ -2258,17 +2352,6 @@ const NavbarUser = props => {
     });
     setSuggestions(newSuggestions);
   }, [roles]);
-  useEffect(() => {
-    dispatch(getMyNotifications());
-    const intervalId = setInterval(() => {
-      dispatch(getMyNotifications());
-    }, 1000000);
-    return () => clearInterval(intervalId);
-  }, []);
-  useEffect(() => {
-    const newNotifications = notifications.filter(item => item.nn_read === false);
-    setNumberNewNotification(newNotifications.length);
-  }, [notifications]);
 
   const handleNavbarSearch = () => {
     setNavbarSearch(prevState => !prevState);
@@ -2282,7 +2365,7 @@ const NavbarUser = props => {
     }
   };
 
-  return /*#__PURE__*/React.createElement("ul", {
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("ul", {
     className: "nav navbar-nav navbar-nav-user float-right"
   }, /*#__PURE__*/React.createElement(NavItem, {
     className: "nav-search",
@@ -2349,24 +2432,7 @@ const NavbarUser = props => {
       setNavbarSearch(false);
       props.handleAppOverlay('');
     }
-  })))), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
-    tag: "li",
-    className: "dropdown-notification nav-item"
-  }, /*#__PURE__*/React.createElement(DropdownToggle, {
-    tag: "a",
-    className: "nav-link nav-link-label"
-  }, /*#__PURE__*/React.createElement(Bell, {
-    className: "text-primary",
-    size: 22
-  }), /*#__PURE__*/React.createElement(Badge, {
-    pill: true,
-    color: "primary",
-    className: "badge-up"
-  }, numberNewNotification)), /*#__PURE__*/React.createElement(DropdownMenu, {
-    tag: "ul",
-    right: true,
-    className: "dropdown-menu-media"
-  }, /*#__PURE__*/React.createElement(Notifications, null))), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
+  })))), /*#__PURE__*/React.createElement(Bells, null), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
     tag: "li",
     className: "dropdown-user nav-item"
   }, /*#__PURE__*/React.createElement(DropdownToggle, {
@@ -2384,7 +2450,7 @@ const NavbarUser = props => {
     height: "40",
     width: "40",
     alt: "avatar"
-  }))), /*#__PURE__*/React.createElement(UserDropdown, null)));
+  }))), /*#__PURE__*/React.createElement(UserDropdown, null))));
 };
 
 const ThemeNavbar = props => {
@@ -3695,6 +3761,7 @@ var messages_en = {
 	"menu.allBonusHistory": "All Bonus History",
 	"menu.notification": "Notification",
 	"menu.readAll": "Read All",
+	"menu.deleteAll": "Delete All",
 	"menu.notificationManagement": "Notification Management",
 	"menu.createNotification": "Create Notification",
 	"menu.notificationApproval": "Notification Management",
@@ -3702,6 +3769,10 @@ var messages_en = {
 	"navbar.language.en": "English",
 	"navbar.logout": "Logout",
 	"navbar.logout.confirmMessage": "Do you want to logout?",
+	"navbar.notifications.markAsRead": "Mark as read",
+	"navbar.notifications.markAsUnRead": "Mark as unread",
+	"navbar.notifications.delete": "Delete",
+	"navbar.notifications.newNotificationNotice": "You have a new notification",
 	"footer.copyRight": "© 2020 InOn - All rights reserved",
 	"footer.companySlogan": "Leading insurance provider in Vietnam",
 	setting: setting,
@@ -4073,6 +4144,7 @@ var messages_vi = {
 	"menu.allBonusHistory": "Lịch sử điểm thưởng tất cả",
 	"menu.notification": "Thông báo",
 	"menu.readAll": "Đọc tất cả",
+	"menu.deleteAll": "Xóa tất cả",
 	"menu.notificationManagement": "Quản lý thông báo",
 	"menu.createNotification": "Tạo mới thông báo",
 	"menu.notificationApproval": "Duyệt thông báo",
@@ -4080,6 +4152,10 @@ var messages_vi = {
 	"navbar.language.en": "English",
 	"navbar.logout": "Đăng xuất",
 	"navbar.logout.confirmMessage": "Bạn có muốn đăng xuất tài khoản?",
+	"navbar.notifications.markAsRead": "Đánh dấu đã đọc",
+	"navbar.notifications.markAsUnRead": "Đánh dấu chưa đọc",
+	"navbar.notifications.delete": "Xóa",
+	"navbar.notifications.newNotificationNotice": "Bạn có một thông báo mới",
 	"footer.copyRight": "©2020 InOn - Đã đăng ký bản quyền",
 	"footer.companySlogan": "Nhà cung cấp bảo hiểm hàng đầu Việt Nam",
 	setting: setting$1,
@@ -9981,4 +10057,4 @@ const usePageAuthorities = () => {
   return authorities;
 };
 
-export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, LandingPage, Radio, ReactTable, Select, changeIsGuest, goBackHomePage, goToAgencyApp, hideConfirmAlert, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
+export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, LandingPage, Radio, ReactTable, Select, changeIsGuest, checkReceiveNewNotification, getMyNotifications, goBackHomePage, goToAgencyApp, hideConfirmAlert, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
