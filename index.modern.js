@@ -2160,7 +2160,7 @@ const Notifications = ({
   };
 
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("li", {
-    className: "dropdown-menu-header d-flex justify-content-between"
+    className: "dropdown-menu-header d-flex justify-content-between align-items-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "dropdown-header mt-0 text-left"
   }, /*#__PURE__*/React.createElement("span", {
@@ -2221,11 +2221,17 @@ const Notifications = ({
     alt: ""
   }))), /*#__PURE__*/React.createElement(DropdownMenu, null, item.nn_read ? /*#__PURE__*/React.createElement(DropdownItem, {
     onClick: () => onClickUpdateNotification(item, 'UNREAD')
-  }, "Mark as unread") : /*#__PURE__*/React.createElement(DropdownItem, {
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "navbar.notifications.markAsUnRead"
+  })) : /*#__PURE__*/React.createElement(DropdownItem, {
     onClick: () => onClickUpdateNotification(item, 'READ')
-  }, "Mark as read"), /*#__PURE__*/React.createElement(DropdownItem, {
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "navbar.notifications.markAsRead"
+  })), /*#__PURE__*/React.createElement(DropdownItem, {
     onClick: () => onClickUpdateNotification(item, 'DELETE')
-  }, "Delete"))))))))), notifications.length > 0 && /*#__PURE__*/React.createElement("li", {
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "navbar.notifications.delete"
+  })))))))))), notifications.length > 0 && /*#__PURE__*/React.createElement("li", {
     className: "dropdown-menu-footer",
     onClick: () => onClickUpdateAllNotification('DELETE')
   }, /*#__PURE__*/React.createElement(DropdownItem, {
@@ -2315,11 +2321,12 @@ const Bells = () => {
     readAll: readAll,
     openModal: openModal
   }))), notification && /*#__PURE__*/React.createElement(Modal, {
-    className: "modal-lg modal-dialog-centered",
+    className: "modal-lg modal-dialog-centered custom-modal-notification",
     isOpen: notificationModal
   }, /*#__PURE__*/React.createElement(ModalHeader, {
     toggle: () => setNotificationModal(!notificationModal)
   }, /*#__PURE__*/React.createElement("div", {
+    className: "font-weight-bold",
     dangerouslySetInnerHTML: {
       __html: notification.title
     }
@@ -3784,6 +3791,7 @@ var messages_en = {
 	"navbar.logout.confirmMessage": "Do you want to logout?",
 	"navbar.notifications.markAsRead": "Mark as read",
 	"navbar.notifications.markAsUnRead": "Mark as unread",
+	"navbar.notifications.delete": "Delete",
 	"navbar.notifications.newNotificationNotice": "You have a new notification",
 	"footer.copyRight": "© 2020 InOn - All rights reserved",
 	"footer.companySlogan": "Leading insurance provider in Vietnam",
@@ -4166,6 +4174,7 @@ var messages_vi = {
 	"navbar.logout.confirmMessage": "Bạn có muốn đăng xuất tài khoản?",
 	"navbar.notifications.markAsRead": "Đánh dấu đã đọc",
 	"navbar.notifications.markAsUnRead": "Đánh dấu chưa đọc",
+	"navbar.notifications.delete": "Xóa",
 	"navbar.notifications.newNotificationNotice": "Bạn có một thông báo mới",
 	"footer.copyRight": "©2020 InOn - Đã đăng ký bản quyền",
 	"footer.companySlogan": "Nhà cung cấp bảo hiểm hàng đầu Việt Nam",

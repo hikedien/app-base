@@ -16147,6 +16147,11 @@ _:-ms-lang(x),
 .false-cjs .false-cjs {
   border-color: rgba(0, 0, 0, 0.05); }
 
+.false-cjs .false-cjs .false-cjs {
+  max-height: 90vh; }
+  .false-cjs .false-cjs .false-cjs img {
+    max-width: 100% !important; }
+
 .false-cjs {
   max-width: 400px; }
 
