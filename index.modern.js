@@ -5,7 +5,7 @@ import { createBrowserHistory } from 'history';
 import Axios from 'axios';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
 import * as Icon from 'react-feather';
-import { AlertTriangle, Check, User, Lock, Link, Users, FileText, Shield, Globe, MessageSquare, Power, Search, X, Bell, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, Download, Clipboard, Sun } from 'react-feather';
+import { AlertTriangle, Check, User, Lock, Link, Users, FileText, Shield, Globe, MessageSquare, Power, Bell, Search, X, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, Download, Clipboard, Sun } from 'react-feather';
 import { toast, ToastContainer } from 'react-toastify';
 export { toast } from 'react-toastify';
 import moment from 'moment';
@@ -18,7 +18,7 @@ import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/es/storage';
 import { useHistory, Link as Link$1, Router, Switch, Route } from 'react-router-dom';
 import classnames from 'classnames';
-import { FormGroup, Label, DropdownMenu, DropdownItem, Media, UncontrolledButtonDropdown, DropdownToggle, NavItem, NavLink, ButtonDropdown, Badge, UncontrolledDropdown, Modal, ModalHeader, ModalBody, Navbar as Navbar$1, Button, Input, Row, Col, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, ModalFooter, ButtonGroup } from 'reactstrap';
+import { FormGroup, Label, DropdownMenu, DropdownItem, Media, UncontrolledButtonDropdown, DropdownToggle, ButtonDropdown, Badge, Modal, ModalHeader, ModalBody, NavItem, NavLink, UncontrolledDropdown, Navbar as Navbar$1, Button, Input, Row, Col, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, ModalFooter, ButtonGroup } from 'reactstrap';
 export { Button } from 'reactstrap';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
@@ -1481,6 +1481,17 @@ const getMyNotifications = () => {
     return res.data;
   };
 };
+const checkReceiveNewNotification = () => {
+  return async () => {
+    const res = await NotificationService.checkNewNotification();
+
+    if (!res || res.status !== 200) {
+      return;
+    }
+
+    return res.data;
+  };
+};
 const saveMyNotifications = notifications => {
   return dispatch => {
     dispatch({
@@ -2086,7 +2097,6 @@ const Notifications = ({
   openModal
 }) => {
   const dispatch = useDispatch();
-  const [notification, setNotification] = useState(null);
 
   const onClickOpenNotification = async notification => {
     openModal(notification);
@@ -2228,8 +2238,101 @@ const Notifications = ({
   })))));
 };
 
-const NavbarUser = props => {
+const Bells = () => {
   const dispatch = useDispatch();
+  const {
+    notifications
+  } = useSelector(state => state.notifications);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [notificationModal, setNotificationModal] = useState(false);
+  const [numberNewNotification, setNumberNewNotification] = useState(0);
+  const [notification, setNotification] = useState(null);
+  useEffect(() => {
+    dispatch(getMyNotifications());
+    const intervalId = setInterval(() => {
+      dispatch(getMyNotifications());
+    }, 60000);
+    return () => clearInterval(intervalId);
+  }, []);
+  useEffect(() => {
+    const newNotifications = notifications.filter(item => item.nn_read === false);
+    setNumberNewNotification(newNotifications.length);
+  }, [notifications]);
+  useEffect(() => {
+    const notifications = dispatch(checkReceiveNewNotification());
+    checkNewNotifications(notifications);
+    const intervalId = setInterval(() => {
+      const notifications = dispatch(checkReceiveNewNotification());
+      checkNewNotifications(notifications);
+    }, 60000);
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const toggleDropdown = () => {
+    if (!notificationModal) {
+      setDropdownOpen(!dropdownOpen);
+    }
+  };
+
+  const readAll = () => {
+    dispatch(getMyNotifications());
+  };
+
+  const openModal = notification => {
+    setNotificationModal(true);
+    setNotification(notification);
+  };
+
+  const checkNewNotifications = newNotifications => {
+    if (newNotifications.length > 0) {
+      toastSuccess( /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "navbar.notifications.newNotificationNotice"
+      }));
+    }
+  };
+
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(ButtonDropdown, {
+    isOpen: dropdownOpen,
+    toggle: toggleDropdown,
+    tag: "li",
+    className: "dropdown-notification nav-item"
+  }, /*#__PURE__*/React.createElement(DropdownToggle, {
+    tag: "a",
+    className: "nav-link nav-link-label"
+  }, /*#__PURE__*/React.createElement(Bell, {
+    className: "text-primary",
+    size: 22
+  }), /*#__PURE__*/React.createElement(Badge, {
+    pill: true,
+    color: "primary",
+    className: "badge-up"
+  }, numberNewNotification)), /*#__PURE__*/React.createElement(DropdownMenu, {
+    tag: "ul",
+    right: true,
+    className: "dropdown-menu-media"
+  }, /*#__PURE__*/React.createElement(Notifications, {
+    notifications: notifications,
+    readAll: readAll,
+    openModal: openModal
+  }))), notification && /*#__PURE__*/React.createElement(Modal, {
+    className: "modal-lg modal-dialog-centered",
+    isOpen: notificationModal
+  }, /*#__PURE__*/React.createElement(ModalHeader, {
+    toggle: () => setNotificationModal(!notificationModal)
+  }, /*#__PURE__*/React.createElement("div", {
+    dangerouslySetInnerHTML: {
+      __html: notification.title
+    }
+  })), /*#__PURE__*/React.createElement(ModalBody, {
+    className: "overflow-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    dangerouslySetInnerHTML: {
+      __html: notification.content
+    }
+  }))));
+};
+
+const NavbarUser = props => {
   let {
     userSettings,
     userDetails,
@@ -2241,18 +2344,10 @@ const NavbarUser = props => {
   let {
     roles = []
   } = useSelector(state => state.navbar);
-  const {
-    notifications
-  } = useSelector(state => state.notifications);
-  const [numberNewNotification, setNumberNewNotification] = useState(0);
   const [navbarSearch, setNavbarSearch] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
-  const [notification, setNotification] = useState(null);
-  const [notificationModal, setNotificationModal] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const intl = useIntl();
   userSettings = userSettings || {};
-  userDetails = userDetails || {};
   useEffect(() => {
     let roleData = [];
 
@@ -2270,19 +2365,9 @@ const NavbarUser = props => {
     });
     setSuggestions(newSuggestions);
   }, [roles]);
-  useEffect(() => {}, []);
-  useEffect(() => {
-    const newNotifications = notifications.filter(item => item.nn_read === false);
-    setNumberNewNotification(newNotifications.length);
-  }, [notifications]);
-  useEffect(() => {}, []);
 
   const handleNavbarSearch = () => {
     setNavbarSearch(prevState => !prevState);
-  };
-
-  const readAll = () => {
-    dispatch(getMyNotifications());
   };
 
   const onSuggestionItemClick = item => {
@@ -2290,17 +2375,6 @@ const NavbarUser = props => {
       history.push(`${item.menuPath}`);
     } else {
       window.location.href = item.navLinkExternal;
-    }
-  };
-
-  const openModal = notification => {
-    setNotificationModal(true);
-    setNotification(notification);
-  };
-
-  const toggleDropdown = () => {
-    if (!notificationModal) {
-      setDropdownOpen(!dropdownOpen);
     }
   };
 
@@ -2371,30 +2445,7 @@ const NavbarUser = props => {
       setNavbarSearch(false);
       props.handleAppOverlay('');
     }
-  })))), /*#__PURE__*/React.createElement(ButtonDropdown, {
-    isOpen: dropdownOpen,
-    toggle: toggleDropdown,
-    tag: "li",
-    className: "dropdown-notification nav-item"
-  }, /*#__PURE__*/React.createElement(DropdownToggle, {
-    tag: "a",
-    className: "nav-link nav-link-label"
-  }, /*#__PURE__*/React.createElement(Bell, {
-    className: "text-primary",
-    size: 22
-  }), /*#__PURE__*/React.createElement(Badge, {
-    pill: true,
-    color: "primary",
-    className: "badge-up"
-  }, numberNewNotification)), /*#__PURE__*/React.createElement(DropdownMenu, {
-    tag: "ul",
-    right: true,
-    className: "dropdown-menu-media"
-  }, /*#__PURE__*/React.createElement(Notifications, {
-    notifications: notifications,
-    readAll: readAll,
-    openModal: openModal
-  }))), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
+  })))), /*#__PURE__*/React.createElement(Bells, null), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
     tag: "li",
     className: "dropdown-user nav-item"
   }, /*#__PURE__*/React.createElement(DropdownToggle, {
@@ -2412,22 +2463,7 @@ const NavbarUser = props => {
     height: "40",
     width: "40",
     alt: "avatar"
-  }))), /*#__PURE__*/React.createElement(UserDropdown, null))), notification && /*#__PURE__*/React.createElement(Modal, {
-    className: "modal-lg modal-dialog-centered",
-    isOpen: notificationModal
-  }, /*#__PURE__*/React.createElement(ModalHeader, {
-    toggle: () => setNotificationModal(!notificationModal)
-  }, /*#__PURE__*/React.createElement("div", {
-    dangerouslySetInnerHTML: {
-      __html: notification.title
-    }
-  })), /*#__PURE__*/React.createElement(ModalBody, {
-    className: "overflow-auto"
-  }, /*#__PURE__*/React.createElement("div", {
-    dangerouslySetInnerHTML: {
-      __html: notification.content
-    }
-  }))));
+  }))), /*#__PURE__*/React.createElement(UserDropdown, null))));
 };
 
 const ThemeNavbar = props => {
@@ -10033,4 +10069,4 @@ const usePageAuthorities = () => {
   return authorities;
 };
 
-export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, LandingPage, Notifications, Radio, ReactTable, Select, changeIsGuest, goBackHomePage, goToAgencyApp, hideConfirmAlert, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
+export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, Bells, CheckBox as Checkbox, CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, LandingPage, Radio, ReactTable, Select, changeIsGuest, goBackHomePage, goToAgencyApp, hideConfirmAlert, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
