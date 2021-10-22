@@ -7753,8 +7753,14 @@ var Select = function Select(props) {
     var newProps = _extends({}, componentProps);
 
     if (props.isMulti) {
+      var values = props.value || '';
+
+      if (typeof props.value !== 'string') {
+        values = '';
+      }
+
       newProps.value = props.options.filter(function (item) {
-        return (props.value || '').split(',').includes(item.value);
+        return values.split(',').includes(item.value);
       });
     }
 
