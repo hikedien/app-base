@@ -7258,7 +7258,7 @@ const Select = props => {
     };
 
     if (props.isMulti) {
-      newProps.value = props.options.filter(item => (props.value || []).includes(item.value));
+      newProps.value = props.options.filter(item => (props.value || '').split(',').includes(item.value));
     }
 
     switch (props.type) {
