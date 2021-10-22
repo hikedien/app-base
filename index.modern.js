@@ -7258,8 +7258,13 @@ const Select = props => {
     };
 
     if (props.isMulti) {
-      const values = props.value || '';
-      newProps.value = props.options.filter(item => values.split(',').indexOf(item.value) >= 0);
+      let values = props.value || '';
+
+      if (typeof props.value !== 'string') {
+        values = '';
+      }
+
+      newProps.value = props.options.filter(item => values.split(',').includes(String(item.value)));
     }
 
     switch (props.type) {
