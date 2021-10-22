@@ -7687,7 +7687,7 @@ var Select = function Select(props) {
     if (props.isMulti) {
       var values = props.value || '';
       newProps.value = props.options.filter(function (item) {
-        return values.split(',').includes(item.value);
+        return values.split(',').indexOf(item.value) >= 0;
       });
     }
 

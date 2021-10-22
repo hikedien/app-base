@@ -7259,7 +7259,7 @@ const Select = props => {
 
     if (props.isMulti) {
       const values = props.value || '';
-      newProps.value = props.options.filter(item => values.split(',').includes(item.value));
+      newProps.value = props.options.filter(item => values.split(',').indexOf(item.value) >= 0);
     }
 
     switch (props.type) {
