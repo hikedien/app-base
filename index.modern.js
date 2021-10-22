@@ -1,29 +1,32 @@
-import { FormattedMessage, IntlProvider, useIntl } from 'react-intl';
+import { FormattedMessage, useIntl, IntlProvider } from 'react-intl';
 export { FormattedMessage } from 'react-intl';
 import React, { useState as useState$1, useEffect, Component, PureComponent, useCallback, useRef } from 'react';
 import { createBrowserHistory } from 'history';
 import Axios from 'axios';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
 import * as Icon from 'react-feather';
-import { AlertTriangle, Check, Home, List, PlusCircle, Gift, MessageSquare, ArrowUp, Disc, Circle, X, ChevronRight, Download, Clipboard, User, Lock, Link as Link$1, Globe, Sun } from 'react-feather';
+import { AlertTriangle, Check, User, Lock, Link, Users, FileText, Shield, Globe, MessageSquare, Power, Bell, Search, X, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, Download, Clipboard, Sun } from 'react-feather';
 import { toast, ToastContainer } from 'react-toastify';
 export { toast } from 'react-toastify';
 import moment from 'moment';
-import { useDispatch, connect, useSelector, Provider } from 'react-redux';
+import { useDispatch, useSelector, connect, Provider } from 'react-redux';
 import { combineReducers, createStore, applyMiddleware, compose } from 'redux';
 import createDebounce from 'redux-debounced';
 import thunk from 'redux-thunk';
 import { PersistGate } from 'redux-persist/integration/react';
 import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/es/storage';
-import 'react-dom/test-utils';
-import { useHistory, Link, Router, Switch, Route, Redirect } from 'react-router-dom';
+import { useHistory, Link as Link$1, Router, Switch, Route, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
-import ScrollToTop from 'react-scroll-up';
-import { Button, Badge, FormGroup, Input, Label, Row, Col, Media, Card, CardHeader, CardTitle, CardBody, Nav, NavItem, NavLink, TabContent, TabPane, ButtonGroup, Modal, ModalHeader, ModalBody, ModalFooter, UncontrolledButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+import { FormGroup, Label, DropdownMenu, DropdownItem, Media, UncontrolledButtonDropdown, DropdownToggle, ButtonDropdown, Badge, Modal, ModalHeader, ModalBody, NavItem, NavLink, UncontrolledDropdown, Navbar as Navbar$1, Button, Input, Row, Col, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, ButtonGroup, ModalFooter } from 'reactstrap';
 export { Button } from 'reactstrap';
-import Hammer from 'react-hammerjs';
+import ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
 import PerfectScrollbar from 'react-perfect-scrollbar';
+import 'moment/locale/vi';
+import styled from 'styled-components';
+import ScrollToTop from 'react-scroll-up';
+import Hammer from 'react-hammerjs';
 import { object, string, ref } from 'yup';
 import { Field, Formik, Form, FastField } from 'formik';
 import Flatpickr from 'react-flatpickr';
@@ -35,14 +38,11 @@ import firebase from 'firebase';
 import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
 import GoogleLogin from 'react-google-login';
 import OtpInput from 'react-otp-input';
-import styled from 'styled-components';
 import SweetAlert from 'react-bootstrap-sweetalert';
 import TopBarProgress from 'react-topbar-progress-indicator';
-import PropTypes from 'prop-types';
 import Ripples from 'react-ripples';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import 'react-toastify/dist/ReactToastify.css';
-import ReactDOM from 'react-dom';
 import MaskedInput from 'react-text-mask';
 import createNumberMask from 'text-mask-addons/dist/createNumberMask';
 import Table from 'react-table';
@@ -924,6 +924,14 @@ const changeIsGuest = isGuest => {
     });
   };
 };
+const goToGuestApp = () => {
+  return dispatch => {
+    dispatch({
+      type: GOTO_GUEST_APP
+    });
+    redirectMainApp(true);
+  };
+};
 const goToAgencyApp = () => {
   return dispatch => {
     dispatch({
@@ -1438,8 +1446,7 @@ NotificationService.updateAllNotificationStatus = status => {
 
 const LOAD_MY_NOTIFICATIONS = 'LOAD_MY_NOTIFICATIONS';
 const RECEIVE_NEW_NOTIFICATIONS = 'RECEIVE_NEW_NOTIFICATIONS';
-const UPDATE_NOTIFICATION = 'UPDATE_NOTIFICATION';
-const getAllNotifications = () => {
+const getMyNotifications = () => {
   return async dispatch => {
     const res = await NotificationService.getMyNotifications();
 
@@ -1454,7 +1461,7 @@ const getAllNotifications = () => {
     return res.data;
   };
 };
-const getNewNotifications = () => {
+const checkReceiveNewNotification = () => {
   return async () => {
     const res = await NotificationService.checkNewNotification();
 
@@ -1465,33 +1472,12 @@ const getNewNotifications = () => {
     return res.data;
   };
 };
-const updateNotification = notification => {
-  return async dispatch => {
-    const res = await NotificationService.updateNotificationStatus(notification);
-
-    if (!res || res.status !== 200) {
-      return;
-    }
-
-    dispatch({
-      type: UPDATE_NOTIFICATION,
-      payload: res.data
-    });
-  };
-};
-const updateAllNotifications = status => {
-  return async dispatch => {
-    const res = await NotificationService.updateAllNotificationStatus(status);
-
-    if (!res || res.status !== 200) {
-      return;
-    }
-
+const saveMyNotifications = notifications => {
+  return dispatch => {
     dispatch({
       type: LOAD_MY_NOTIFICATIONS,
-      payload: res.data
+      payload: notifications
     });
-    return res.data;
   };
 };
 
@@ -1513,17 +1499,6 @@ const notificationReducer = (state = { ...initialState$2
         newNotifications: action.payload
       };
 
-    case UPDATE_NOTIFICATION:
-      const notifications = [...state.notifications];
-      const newNotifications = notifications.map(item => {
-        if (item.id === action.payload.id) {
-          return action.payload;
-        } else return item;
-      });
-      return { ...state,
-        notifications: newNotifications
-      };
-
     default:
       return state;
   }
@@ -1541,6 +1516,1010 @@ const rootReducer = appReducer => combineReducers({
   notifications: notificationReducer,
   app: appReducer
 });
+
+class Autocomplete extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.onSuggestionItemClick = (item, e) => {
+      if (this.props.onSuggestionClick) {
+        this.props.onSuggestionClick(item, e);
+      }
+
+      this.setState({
+        activeSuggestion: 0,
+        showSuggestions: false,
+        userInput: e.currentTarget.innerText
+      });
+    };
+
+    this.onSuggestionItemHover = index => {
+      this.setState({
+        activeSuggestion: index
+      });
+    };
+
+    this.onChange = e => {
+      const userInput = e.currentTarget.value;
+      this.setState({
+        activeSuggestion: 0,
+        showSuggestions: true,
+        userInput
+      });
+
+      if (e.target.value < 1) {
+        this.setState({
+          showSuggestions: false
+        });
+      }
+    };
+
+    this.onInputClick = e => {
+      e.stopPropagation();
+    };
+
+    this.onKeyDown = e => {
+      const {
+        activeSuggestion,
+        showSuggestions,
+        userInput
+      } = this.state;
+      const filterKey = this.props.filterKey;
+      let suggestionList = ReactDOM.findDOMNode(this.suggestionList);
+
+      if (e.keyCode === 38 && activeSuggestion !== 0) {
+        this.setState({
+          activeSuggestion: activeSuggestion - 1
+        });
+
+        if (e.target.value.length > -1 && suggestionList !== null && activeSuggestion <= this.filteredData.length / 2) {
+          suggestionList.scrollTop = 0;
+        }
+      } else if (e.keyCode === 40 && activeSuggestion < this.filteredData.length - 1) {
+          this.setState({
+            activeSuggestion: activeSuggestion + 1
+          });
+
+          if (e.target.value.length > -1 && suggestionList !== null && activeSuggestion >= this.filteredData.length / 2) {
+            suggestionList.scrollTop = suggestionList.scrollHeight;
+          }
+        } else if (e.keyCode === 27) {
+            this.setState({
+              showSuggestions: false,
+              userInput: ''
+            });
+          } else if (e.keyCode === 13 && showSuggestions) {
+              this.onSuggestionItemClick(this.filteredData[activeSuggestion], e);
+              this.setState({
+                userInput: this.filteredData[activeSuggestion][filterKey],
+                showSuggestions: false
+              });
+            } else {
+              return;
+            }
+
+      if (this.props.onKeyDown !== undefined && this.props.onKeyDown !== null && this.props.onKeyDown) {
+        this.props.onKeyDown(e, userInput);
+      }
+    };
+
+    this.renderGroupedSuggestion = arr => {
+      const {
+        filterKey,
+        customRender
+      } = this.props;
+      const {
+        onSuggestionItemClick,
+        onSuggestionItemHover,
+        state: {
+          activeSuggestion,
+          userInput
+        }
+      } = this;
+
+      let renderSuggestion = (item, i) => {
+        if (!customRender) {
+          return /*#__PURE__*/React.createElement("li", {
+            className: classnames('suggestion-item', {
+              active: this.filteredData.indexOf(item) === activeSuggestion
+            }),
+            key: item[filterKey],
+            onClick: e => onSuggestionItemClick(item, e),
+            onMouseEnter: () => {
+              this.onSuggestionItemHover(this.filteredData.indexOf(item));
+            }
+          }, item[filterKey]);
+        } else if (customRender) {
+          return customRender(item, i, this.filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover, userInput);
+        } else {
+          return null;
+        }
+      };
+
+      return arr.map((item, i) => {
+        return renderSuggestion(item, i);
+      });
+    };
+
+    this.renderUngroupedSuggestions = () => {
+      const {
+        filterKey,
+        suggestions,
+        customRender,
+        suggestionLimit
+      } = this.props;
+      const {
+        onSuggestionItemClick,
+        onSuggestionItemHover,
+        state: {
+          activeSuggestion,
+          userInput
+        }
+      } = this;
+      this.filteredData = [];
+      let sortSingleData = suggestions.filter(i => {
+        let startCondition = i[filterKey].toLowerCase().startsWith(userInput.toLowerCase()),
+            includeCondition = i[filterKey].toLowerCase().includes(userInput.toLowerCase());
+
+        if (startCondition) {
+          return startCondition;
+        } else if (!startCondition && includeCondition) {
+          return includeCondition;
+        } else {
+          return null;
+        }
+      }).slice(0, suggestionLimit);
+      this.filteredData.push(...sortSingleData);
+      return sortSingleData.length ? sortSingleData.map((suggestion, index) => {
+        if (!customRender) {
+          return /*#__PURE__*/React.createElement("li", {
+            className: classnames('suggestion-item', {
+              active: this.filteredData.indexOf(suggestion) === activeSuggestion
+            }),
+            key: suggestion[filterKey],
+            onClick: e => onSuggestionItemClick(suggestion, e),
+            onMouseEnter: () => this.onSuggestionItemHover(this.filteredData.indexOf(suggestion))
+          }, suggestion[filterKey]);
+        } else if (customRender) {
+          return customRender(suggestion, index, this.filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover, userInput);
+        } else {
+          return null;
+        }
+      }) : /*#__PURE__*/React.createElement("li", {
+        className: "suggestion-item no-result"
+      }, /*#__PURE__*/React.createElement(AlertTriangle, {
+        size: 15
+      }), ' ', /*#__PURE__*/React.createElement("span", {
+        className: "align-middle ml-50"
+      }, /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: 'common.noResults'
+      })));
+    };
+
+    this.renderSuggestions = () => {
+      const {
+        filterKey,
+        grouped,
+        filterHeaderKey,
+        suggestions
+      } = this.props;
+      const {
+        renderUngroupedSuggestions,
+        state: {
+          userInput
+        }
+      } = this;
+
+      if (grouped === undefined || grouped === null || !grouped) {
+        return renderUngroupedSuggestions();
+      } else {
+        this.filteredData = [];
+        return suggestions.map(suggestion => {
+          let sortData = suggestion.data.filter(i => {
+            let startCondition = i[filterKey].toLowerCase().startsWith(userInput.toLowerCase()),
+                includeCondition = i[filterKey].toLowerCase().includes(userInput.toLowerCase());
+
+            if (startCondition) {
+              return startCondition;
+            } else if (!startCondition && includeCondition) {
+              return includeCondition;
+            } else {
+              return null;
+            }
+          }).slice(0, suggestion.searchLimit);
+          this.filteredData.push(...sortData);
+          return /*#__PURE__*/React.createElement(React.Fragment, {
+            key: suggestion[filterHeaderKey]
+          }, /*#__PURE__*/React.createElement("li", {
+            className: "suggestion-item suggestion-title text-primary text-bold-600"
+          }, suggestion[filterHeaderKey]), sortData.length ? this.renderGroupedSuggestion(sortData) : /*#__PURE__*/React.createElement("li", {
+            className: "suggestion-item no-result"
+          }, /*#__PURE__*/React.createElement(AlertTriangle, {
+            size: 15
+          }), ' ', /*#__PURE__*/React.createElement("span", {
+            className: "align-middle ml-50"
+          }, "No Result")));
+        });
+      }
+    };
+
+    this.clearInput = val => {
+      if (this.props.clearInput && !val) {
+        this.setState({
+          userInput: ''
+        });
+      }
+    };
+
+    this.handleExtenalClick = e => {
+      let {
+        container
+      } = this.refs;
+      const {
+        target
+      } = e;
+
+      if (target !== container && !container.contains(target)) {
+        this.setState({
+          showSuggestions: false
+        });
+        if (this.props.externalClick) this.props.externalClick(e);
+      }
+    };
+
+    this.state = {
+      activeSuggestion: 0,
+      showSuggestions: false,
+      userInput: '',
+      focused: false,
+      openUp: false
+    };
+    this.filteredData = [];
+    document.body.addEventListener('click', this.handleExtenalClick);
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    let textInput = ReactDOM.findDOMNode(this.input);
+    let {
+      autoFocus,
+      onSuggestionsShown,
+      clearInput
+    } = this.props;
+
+    if (textInput !== null && autoFocus) {
+      textInput.focus();
+    }
+
+    if (this.props.defaultSuggestions && prevState.showSuggestions === false && this.state.focused) {
+      this.setState({
+        showSuggestions: true
+      });
+    }
+
+    if (clearInput === false && this.state.userInput.length) {
+      this.setState({
+        userInput: ''
+      });
+    }
+
+    if (onSuggestionsShown && this.state.showSuggestions) {
+      onSuggestionsShown(this.state.userInput);
+    }
+
+    if (this.props.defaultSuggestions && prevState.focused === false && this.state.focused === true) {
+      this.setState({
+        showSuggestions: true
+      });
+    }
+  }
+
+  componentDidMount() {
+    if (this.props.defaultSuggestions && this.state.focused) {
+      this.setState({
+        showSuggestions: true
+      });
+    }
+  }
+
+  componentWillUnmount() {
+    document.body.removeEventListener('click', this.handleExtenalClick);
+  }
+
+  render() {
+    const {
+      onChange,
+      onKeyDown,
+      state: {
+        showSuggestions,
+        userInput,
+        openUp
+      }
+    } = this;
+    let suggestionsListComponent;
+
+    if (showSuggestions) {
+      suggestionsListComponent = /*#__PURE__*/React.createElement(PerfectScrollbar, {
+        className: classnames('suggestions-list', {
+          'open-up': openUp
+        }),
+        ref: el => this.suggestionList = el,
+        component: "ul",
+        options: {
+          wheelPropagation: false
+        }
+      }, this.renderSuggestions());
+    }
+
+    return /*#__PURE__*/React.createElement("div", {
+      className: "vx-autocomplete-container",
+      ref: "container"
+    }, /*#__PURE__*/React.createElement(FormGroup, {
+      className: "form-label-group position-relative"
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "text",
+      onChange: e => {
+        onChange(e);
+
+        if (this.props.onChange) {
+          this.props.onChange(e);
+        }
+      },
+      onKeyDown: e => onKeyDown(e),
+      value: userInput,
+      className: `vx-autocomplete-search ${this.props.className ? this.props.className : ''}`,
+      placeholder: this.props.placeholder,
+      onClick: this.onInputClick,
+      ref: el => {
+        return this.input = el;
+      },
+      onFocus: e => {
+        this.setState({
+          focused: true
+        });
+      },
+      autoFocus: this.props.autoFocus,
+      onBlur: e => {
+        if (this.props.onBlur) this.props.onBlur(e);
+        this.setState({
+          focused: false
+        });
+      }
+    }), /*#__PURE__*/React.createElement(Label, null, this.props.placeholder), suggestionsListComponent));
+  }
+
+}
+Autocomplete.propTypes = {
+  suggestions: PropTypes.array.isRequired,
+  filterKey: PropTypes.string.isRequired,
+  filterHeaderKey: PropTypes.string,
+  placeholder: PropTypes.string,
+  suggestionLimit: PropTypes.number,
+  grouped: PropTypes.bool,
+  autoFocus: PropTypes.bool,
+  onKeyDown: PropTypes.func,
+  onChange: PropTypes.func,
+  onSuggestionsShown: PropTypes.func,
+  onSuggestionItemClick: PropTypes.func
+};
+
+const UserDropdown = () => {
+  const history = useHistory();
+  const dispatch = useDispatch();
+
+  const handleNavigation = (e, path) => {
+    e.preventDefault();
+    history.push(path);
+  };
+
+  const onClickGoToGuestApp = e => {
+    e.preventDefault();
+    dispatch(goToGuestApp());
+  };
+
+  const onClickLogout = () => {
+    dispatch(showConfirmAlert({
+      title: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "navbar.logout"
+      }),
+      isShow: true,
+      content: /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "navbar.logout.confirmMessage"
+      }),
+      onConfirm: () => {
+        dispatch(logoutAction());
+      }
+    }));
+  };
+
+  return /*#__PURE__*/React.createElement(DropdownMenu, {
+    right: true
+  }, /*#__PURE__*/React.createElement(DropdownItem, {
+    tag: "a",
+    href: "#",
+    onClick: e => handleNavigation(e, '/app/account-info')
+  }, /*#__PURE__*/React.createElement(User, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "setting.accountInformation"
+  }))), /*#__PURE__*/React.createElement(DropdownItem, {
+    tag: "a",
+    href: "#",
+    onClick: e => handleNavigation(e, '/app/change-password')
+  }, /*#__PURE__*/React.createElement(Lock, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "setting.changePassword"
+  }))), /*#__PURE__*/React.createElement(DropdownItem, {
+    tag: "a",
+    href: "#",
+    onClick: e => handleNavigation(e, '/app/share-with-friends')
+  }, /*#__PURE__*/React.createElement(Link, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "setting.shareWithFriends"
+  }))), /*#__PURE__*/React.createElement(DropdownItem, {
+    divider: true
+  }), /*#__PURE__*/React.createElement(DropdownItem, {
+    tag: "a",
+    href: "#",
+    onClick: e => onClickGoToGuestApp(e)
+  }, /*#__PURE__*/React.createElement(Users, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "setting.goToGuestApp"
+  }))), /*#__PURE__*/React.createElement(DropdownItem, {
+    divider: true
+  }), /*#__PURE__*/React.createElement(DropdownItem, {
+    tag: "a",
+    target: '_blank',
+    href: TERMS_PDF
+  }, /*#__PURE__*/React.createElement(FileText, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "setting.termAndCondition"
+  }))), /*#__PURE__*/React.createElement(DropdownItem, {
+    tag: "a",
+    target: '_blank',
+    href: POLICY_PDF
+  }, /*#__PURE__*/React.createElement(Shield, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "setting.privacyPolicy"
+  }))), /*#__PURE__*/React.createElement(DropdownItem, {
+    tag: "a",
+    href: "#",
+    onClick: e => handleNavigation(e, '/app/language')
+  }, /*#__PURE__*/React.createElement(Globe, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "setting.language"
+  }))), /*#__PURE__*/React.createElement(DropdownItem, {
+    tag: "a",
+    href: "#",
+    onClick: e => handleNavigation(e, '/app/contact')
+  }, /*#__PURE__*/React.createElement(MessageSquare, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "setting.contact"
+  }))), /*#__PURE__*/React.createElement(DropdownItem, {
+    divider: true
+  }), /*#__PURE__*/React.createElement(DropdownItem, {
+    tag: "a",
+    onClick: onClickLogout
+  }, /*#__PURE__*/React.createElement(Power, {
+    size: 14,
+    className: "mr-50"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "align-middle"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "navbar.logout"
+  }))));
+};
+
+let _ = t => t,
+    _t,
+    _t2,
+    _t3;
+const MediaCustom = styled.div(_t || (_t = _`
+  display: flex;
+  justify-content: space-between;
+
+  .unread {
+    color: black;
+    font-weight: bold;
+  }
+`));
+const CustomImage = styled.img(_t2 || (_t2 = _`
+  width: 20px;
+  height: 20px;
+`));
+const CustomDropdown = styled.div(_t3 || (_t3 = _`
+
+  .dropdown-item {
+    width: 100% !important;
+  }
+
+  .dropleft {
+    .dropdown-menu::before {
+      display: none;
+    }
+  }
+
+`));
+
+const Notifications = ({
+  notifications,
+  readAll,
+  openModal
+}) => {
+  const dispatch = useDispatch();
+
+  const onClickOpenNotification = async notification => {
+    openModal(notification);
+    const response = await NotificationService.updateNotificationStatus({
+      notificationId: notification.id,
+      status: 'READ'
+    });
+
+    if (response.status === 200) {
+      const newNotifications = notifications.map(item => {
+        if (item.id === notification.id) {
+          item.nn_read = true;
+          return item;
+        } else return item;
+      });
+      dispatch(saveMyNotifications([...newNotifications]));
+    }
+  };
+
+  const onClickUpdateAllNotification = async status => {
+    const response = await NotificationService.updateAllNotificationStatus(status);
+    if (response.status !== 200) return;
+    readAll();
+  };
+
+  const onClickUpdateNotification = async (notification, status) => {
+    const response = await NotificationService.updateNotificationStatus({
+      notificationId: notification.id,
+      status: status
+    });
+
+    if (response.status === 200) {
+      let newNotifications;
+
+      switch (status) {
+        case 'DELETE':
+          newNotifications = notifications.filter(item => item.id !== notification.id);
+          break;
+
+        case 'READ':
+          newNotifications = notifications.map(item => {
+            if (item.id === notification.id) {
+              item.nn_read = true;
+              return item;
+            } else return item;
+          });
+          break;
+
+        case 'UNREAD':
+          newNotifications = notifications.map(item => {
+            if (item.id === notification.id) {
+              item.nn_read = false;
+              return item;
+            } else return item;
+          });
+          break;
+      }
+
+      dispatch(saveMyNotifications([...newNotifications]));
+    }
+  };
+
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("li", {
+    className: "dropdown-menu-header d-flex justify-content-between align-items-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "dropdown-header mt-0 text-left"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "notification-title"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "menu.notification"
+  })), /*#__PURE__*/React.createElement("span", null, "(", notifications.length, ")")), /*#__PURE__*/React.createElement("div", {
+    className: "cursor-pointer",
+    onClick: () => onClickUpdateAllNotification('READ')
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "menu.readAll"
+  }))), /*#__PURE__*/React.createElement(PerfectScrollbar, {
+    className: "media-list overflow-hidden position-relative",
+    options: {
+      wheelPropagation: false
+    }
+  }, notifications.map((item, index) => /*#__PURE__*/React.createElement(MediaCustom, {
+    key: item.id
+  }, /*#__PURE__*/React.createElement(Media, {
+    className: "d-flex align-items-start cursor-default"
+  }, /*#__PURE__*/React.createElement(Media, {
+    left: true
+  }, item.notification_type === "SYSTEM" ? /*#__PURE__*/React.createElement("img", {
+    src: "https://sit2.inon.vn/resources/images/system-information.png"
+  }) : null, item.notification_type === "USER" ? /*#__PURE__*/React.createElement("img", {
+    src: "https://sit2.inon.vn/resources/images/individual-server.png"
+  }) : null, item.notification_type === "PROMOTION" ? /*#__PURE__*/React.createElement("img", {
+    src: "https://sit2.inon.vn/resources/images/gift.png"
+  }) : null), /*#__PURE__*/React.createElement(Media, {
+    onClick: () => onClickOpenNotification(item),
+    body: true
+  }, /*#__PURE__*/React.createElement("p", {
+    className: !item.nn_read ? 'unread' : '',
+    dangerouslySetInnerHTML: {
+      __html: item.title
+    }
+  }), /*#__PURE__*/React.createElement("p", {
+    className: !item.nn_read ? 'unread' : '',
+    dangerouslySetInnerHTML: {
+      __html: item.short_content
+    }
+  }), /*#__PURE__*/React.createElement("small", {
+    className: "mt-1"
+  }, /*#__PURE__*/React.createElement("time", {
+    className: !item.nn_read ? 'unread' : '',
+    dateTime: item.send_date
+  }, moment().diff(moment(item.send_date), 'days') >= 1 ? moment(item.send_date).format("DD/MM/YYYY") : moment(item.send_date).fromNow()))), /*#__PURE__*/React.createElement(Media, {
+    right: true,
+    className: "cursor-pointer"
+  }, /*#__PURE__*/React.createElement(CustomDropdown, null, /*#__PURE__*/React.createElement(UncontrolledButtonDropdown, {
+    direction: "left"
+  }, /*#__PURE__*/React.createElement(DropdownToggle, {
+    tag: "span"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "position-relative"
+  }, /*#__PURE__*/React.createElement(CustomImage, {
+    src: "https://sit2.inon.vn/resources/images/ellipsis-v-solid.png",
+    alt: ""
+  }))), /*#__PURE__*/React.createElement(DropdownMenu, null, item.nn_read ? /*#__PURE__*/React.createElement(DropdownItem, {
+    onClick: () => onClickUpdateNotification(item, 'UNREAD')
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "navbar.notifications.markAsUnRead"
+  })) : /*#__PURE__*/React.createElement(DropdownItem, {
+    onClick: () => onClickUpdateNotification(item, 'READ')
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "navbar.notifications.markAsRead"
+  })), /*#__PURE__*/React.createElement(DropdownItem, {
+    onClick: () => onClickUpdateNotification(item, 'DELETE')
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "navbar.notifications.delete"
+  })))))))))), notifications.length > 0 && /*#__PURE__*/React.createElement("li", {
+    className: "dropdown-menu-footer",
+    onClick: () => onClickUpdateAllNotification('DELETE')
+  }, /*#__PURE__*/React.createElement(DropdownItem, {
+    tag: "a",
+    className: "p-1 text-center"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "align-middle font-weight-bold"
+  }, /*#__PURE__*/React.createElement(FormattedMessage, {
+    id: "menu.deleteAll"
+  })))));
+};
+
+const Bells = () => {
+  const dispatch = useDispatch();
+  const {
+    notifications
+  } = useSelector(state => state.notifications);
+  const [dropdownOpen, setDropdownOpen] = useState$1(false);
+  const [notificationModal, setNotificationModal] = useState$1(false);
+  const [numberNewNotification, setNumberNewNotification] = useState$1(0);
+  const [notification, setNotification] = useState$1(null);
+  useEffect(() => {
+    dispatch(getMyNotifications());
+    const intervalId = setInterval(() => {
+      dispatch(getMyNotifications());
+    }, 60000);
+    return () => clearInterval(intervalId);
+  }, []);
+  useEffect(() => {
+    const newNotifications = notifications.filter(item => item.nn_read === false);
+    setNumberNewNotification(newNotifications.length);
+  }, [notifications]);
+  useEffect(() => {
+    const notifications = dispatch(checkReceiveNewNotification());
+    checkNewNotifications(notifications);
+    const intervalId = setInterval(() => {
+      const notifications = dispatch(checkReceiveNewNotification());
+      checkNewNotifications(notifications);
+    }, 60000);
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const toggleDropdown = () => {
+    if (!notificationModal) {
+      setDropdownOpen(!dropdownOpen);
+    }
+  };
+
+  const readAll = () => {
+    dispatch(getMyNotifications());
+  };
+
+  const openModal = notification => {
+    setNotificationModal(true);
+    setNotification(notification);
+  };
+
+  const checkNewNotifications = newNotifications => {
+    if (newNotifications.length > 0) {
+      toastSuccess( /*#__PURE__*/React.createElement(FormattedMessage, {
+        id: "navbar.notifications.newNotificationNotice"
+      }));
+    }
+  };
+
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(ButtonDropdown, {
+    isOpen: dropdownOpen,
+    toggle: toggleDropdown,
+    tag: "li",
+    className: "dropdown-notification nav-item"
+  }, /*#__PURE__*/React.createElement(DropdownToggle, {
+    tag: "a",
+    className: "nav-link nav-link-label"
+  }, /*#__PURE__*/React.createElement(Bell, {
+    className: "text-primary",
+    size: 22
+  }), /*#__PURE__*/React.createElement(Badge, {
+    pill: true,
+    color: "primary",
+    className: "badge-up"
+  }, numberNewNotification)), /*#__PURE__*/React.createElement(DropdownMenu, {
+    tag: "ul",
+    right: true,
+    className: "dropdown-menu-media"
+  }, /*#__PURE__*/React.createElement(Notifications, {
+    notifications: notifications,
+    readAll: readAll,
+    openModal: openModal
+  }))), notification && /*#__PURE__*/React.createElement(Modal, {
+    className: "modal-lg modal-dialog-centered custom-modal-notification",
+    isOpen: notificationModal
+  }, /*#__PURE__*/React.createElement(ModalHeader, {
+    toggle: () => setNotificationModal(!notificationModal)
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "font-weight-bold",
+    dangerouslySetInnerHTML: {
+      __html: notification.title
+    }
+  })), /*#__PURE__*/React.createElement(ModalBody, {
+    className: "overflow-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    dangerouslySetInnerHTML: {
+      __html: notification.content
+    }
+  }))));
+};
+
+const NavbarUser = props => {
+  let {
+    userSettings,
+    userDetails,
+    ...user
+  } = useSelector(state => state.auth.user);
+  let {
+    appId
+  } = useSelector(state => state.customizer);
+  let {
+    roles = []
+  } = useSelector(state => state.navbar);
+  const [navbarSearch, setNavbarSearch] = useState$1(false);
+  const [suggestions, setSuggestions] = useState$1([]);
+  const intl = useIntl();
+  userSettings = userSettings || {};
+  useEffect(() => {
+    let roleData = [];
+
+    if (Array.isArray(roles)) {
+      roleData = [...roles];
+    }
+
+    const newSuggestions = roleData.map(item => {
+      item.name = intl.formatMessage({
+        id: `menu.${item.keyLang}`
+      });
+      item.isExternalApp = item.appId !== appId;
+      item.navLinkExternal = getExternalAppUrl(item.appId, item.menuPath);
+      return item;
+    });
+    setSuggestions(newSuggestions);
+  }, [roles]);
+
+  const handleNavbarSearch = () => {
+    setNavbarSearch(prevState => !prevState);
+  };
+
+  const onSuggestionItemClick = item => {
+    if (!item.isExternalApp) {
+      history.push(`${item.menuPath}`);
+    } else {
+      window.location.href = item.navLinkExternal;
+    }
+  };
+
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("ul", {
+    className: "nav navbar-nav navbar-nav-user float-right"
+  }, /*#__PURE__*/React.createElement(NavItem, {
+    className: "nav-search",
+    onClick: handleNavbarSearch
+  }, /*#__PURE__*/React.createElement(NavLink, {
+    className: "nav-link-search pt-2"
+  }, /*#__PURE__*/React.createElement(Search, {
+    size: 21,
+    "data-tour": "search"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: classnames('search-input', {
+      open: navbarSearch,
+      'd-none': navbarSearch === false
+    })
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "search-input-icon"
+  }, /*#__PURE__*/React.createElement(Search, {
+    size: 17,
+    className: "primary"
+  })), /*#__PURE__*/React.createElement(Autocomplete, {
+    className: "form-control",
+    suggestions: suggestions,
+    filterKey: "name",
+    onSuggestionClick: onSuggestionItemClick,
+    autoFocus: true,
+    clearInput: navbarSearch,
+    externalClick: () => {
+      setNavbarSearch(false);
+    },
+    onKeyDown: e => {
+      if (e.keyCode === 27 || e.keyCode === 13) {
+        setNavbarSearch(false);
+        props.handleAppOverlay('');
+      }
+    },
+    customRender: (item, i, filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover) => {
+      const IconTag = Icon[item.icon ? item.icon : 'X'];
+      return /*#__PURE__*/React.createElement("li", {
+        className: classnames('suggestion-item', {
+          active: filteredData.indexOf(item) === activeSuggestion
+        }),
+        key: i,
+        onClick: e => onSuggestionItemClick(item, e),
+        onMouseEnter: () => onSuggestionItemHover(filteredData.indexOf(item))
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "d-flex align-items-center"
+      }, /*#__PURE__*/React.createElement(IconTag, {
+        size: 17
+      }), /*#__PURE__*/React.createElement("div", {
+        className: "ml-2"
+      }, item.name)));
+    },
+    onSuggestionsShown: userInput => {
+      if (navbarSearch) {
+        props.handleAppOverlay(userInput);
+      }
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "search-input-close"
+  }, /*#__PURE__*/React.createElement(X, {
+    size: 24,
+    onClick: e => {
+      e.stopPropagation();
+      setNavbarSearch(false);
+      props.handleAppOverlay('');
+    }
+  })))), /*#__PURE__*/React.createElement(Bells, null), /*#__PURE__*/React.createElement(UncontrolledDropdown, {
+    tag: "li",
+    className: "dropdown-user nav-item"
+  }, /*#__PURE__*/React.createElement(DropdownToggle, {
+    tag: "a",
+    className: "nav-link dropdown-user-link"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "user-nav d-sm-flex d-none"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "user-name text-bold-600 mb-0"
+  }, user.fullName)), /*#__PURE__*/React.createElement("span", {
+    "data-tour": "user"
+  }, /*#__PURE__*/React.createElement("img", {
+    src: userSettings.avatar || '',
+    className: "round",
+    height: "40",
+    width: "40",
+    alt: "avatar"
+  }))), /*#__PURE__*/React.createElement(UserDropdown, null))));
+};
+
+const ThemeNavbar = props => {
+  const colorsArr = ['primary', 'danger', 'success', 'info', 'warning', 'dark'];
+  const navbarTypes = ['floating', 'static', 'sticky', 'hidden'];
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "content-overlay"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "header-navbar-shadow"
+  }), /*#__PURE__*/React.createElement(Navbar$1, {
+    className: classnames('header-navbar navbar-expand-lg navbar navbar-with-menu navbar-shadow', {
+      'navbar-light': props.navbarColor === 'default' || !colorsArr.includes(props.navbarColor),
+      'navbar-dark': colorsArr.includes(props.navbarColor),
+      'bg-primary': props.navbarColor === 'primary' && props.navbarType !== 'static',
+      'bg-danger': props.navbarColor === 'danger' && props.navbarType !== 'static',
+      'bg-success': props.navbarColor === 'success' && props.navbarType !== 'static',
+      'bg-info': props.navbarColor === 'info' && props.navbarType !== 'static',
+      'bg-warning': props.navbarColor === 'warning' && props.navbarType !== 'static',
+      'bg-dark': props.navbarColor === 'dark' && props.navbarType !== 'static',
+      'd-none': props.navbarType === 'hidden' && !props.horizontal,
+      'floating-nav': props.navbarType === 'floating' && !props.horizontal || !navbarTypes.includes(props.navbarType) && !props.horizontal,
+      'navbar-static-top': props.navbarType === 'static' && !props.horizontal,
+      'fixed-top': props.navbarType === 'sticky' || props.horizontal,
+      scrolling: props.horizontal && props.scrolling
+    })
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "navbar-wrapper"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "navbar-container content"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "navbar-collapse d-flex justify-content-between align-items-center",
+    id: "navbar-mobile"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bookmark-wrapper"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mr-auto float-left bookmark-wrapper d-flex align-items-center"
+  }, /*#__PURE__*/React.createElement("ul", {
+    className: "navbar-nav d-xl-none"
+  }, /*#__PURE__*/React.createElement(NavItem, {
+    className: "mobile-menu mr-auto"
+  }, /*#__PURE__*/React.createElement(NavLink, {
+    className: "nav-menu-main menu-toggle hidden-xs is-active",
+    onClick: props.sidebarVisibility
+  }, /*#__PURE__*/React.createElement(Menu, {
+    className: "ficon"
+  })))), /*#__PURE__*/React.createElement("ul", {
+    className: "nav navbar-nav d-none d-xl-flex bookmark-icons"
+  }, Array(5).fill(0).map((_, index) => /*#__PURE__*/React.createElement(NavItem, {
+    key: index
+  }, /*#__PURE__*/React.createElement("img", {
+    className: "img-fluid",
+    src: IMAGE[`NAV_ICON_${index + 1}`]
+  })))))), /*#__PURE__*/React.createElement(NavbarUser, {
+    handleAppOverlay: props.handleAppOverlay
+  }))))));
+};
+
+const mapStateToProps = state => {
+  return {
+    user: state.auth.user,
+    isAuthenticated: !!state.auth.name,
+    roles: state.navbar.roles,
+    authToken: state.auth.authToken
+  };
+};
+
+var Navbar = connect(mapStateToProps, {
+  logoutAction
+})(ThemeNavbar);
 
 function getWindowDimensions() {
   const {
@@ -1855,7 +2834,7 @@ class SideMenuGroup extends React.Component {
     return /*#__PURE__*/React.createElement("ul", {
       className: "menu-content"
     }, item.children ? item.children.map(child => {
-      const CustomAnchorTag = child.isExternalApp ? `a` : Link;
+      const CustomAnchorTag = child.isExternalApp ? `a` : Link$1;
 
       if (!this.parentArray.includes(item.id) && this.flag) {
         this.parentArray.push(item.id);
@@ -2053,7 +3032,7 @@ class SideMenuContent extends React.Component {
 
   render() {
     const menuItems = this.props.navConfigs.map(item => {
-      const CustomAnchorTag = item.isExternalApp ? `a` : Link;
+      const CustomAnchorTag = item.isExternalApp ? `a` : Link$1;
 
       if (item.type === 'groupHeader') {
         return /*#__PURE__*/React.createElement("li", {
@@ -2354,7 +3333,7 @@ class Sidebar extends Component {
 
 }
 
-const mapStateToProps = state => {
+const mapStateToProps$1 = state => {
   return {
     currentUser: state.auth,
     appId: state.customizer.appId,
@@ -2362,7 +3341,7 @@ const mapStateToProps = state => {
   };
 };
 
-var Sidebar$1 = connect(mapStateToProps)(Sidebar);
+var Sidebar$1 = connect(mapStateToProps$1)(Sidebar);
 
 class Layout extends PureComponent {
   constructor(...args) {
@@ -2554,6 +3533,18 @@ class Layout extends PureComponent {
       permission: '',
       deviceWidth: this.state.width
     };
+    const navbarProps = {
+      toggleSidebarMenu: this.toggleSidebarMenu,
+      sidebarState: this.state.sidebarState,
+      appId: this.props.appId,
+      sidebarVisibility: this.handleSidebarVisibility,
+      currentLang: this.state.currentLang,
+      changeCurrentLang: this.handleCurrentLanguage,
+      handleAppOverlay: this.handleAppOverlay,
+      appOverlayState: this.state.appOverlay,
+      navbarColor: appProps.navbarColor,
+      navbarType: appProps.navbarType
+    };
     const footerProps = {
       appId: this.props.appId,
       footerType: appProps.footerType,
@@ -2574,7 +3565,7 @@ class Layout extends PureComponent {
         'show-overlay': this.state.appOverlay === true
       }),
       onClick: this.handleAppOverlayClick
-    }, /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement(Navbar, navbarProps), /*#__PURE__*/React.createElement("div", {
       className: "content-wrapper pb-4 pb-md-0"
     }, this.props.children)), /*#__PURE__*/React.createElement(Footer, footerProps), /*#__PURE__*/React.createElement("div", {
       className: "sidenav-overlay",
@@ -2584,13 +3575,13 @@ class Layout extends PureComponent {
 
 }
 
-const mapStateToProps$1 = state => {
+const mapStateToProps$2 = state => {
   return {
     customizer: state.customizer
   };
 };
 
-var Layout$1 = connect(mapStateToProps$1, {
+var Layout$1 = connect(mapStateToProps$2, {
   changeTheme,
   collapseSidebar,
   changeNavbarColor,
@@ -2769,7 +3760,6 @@ var messages_en = {
 	"menu.partnerBonusHistory": "Partner Bonus History",
 	"menu.allBonusHistory": "All Bonus History",
 	"menu.notification": "Notification",
-	"menu.notificationDetail": "Notification Detail",
 	"menu.readAll": "Read All",
 	"menu.deleteAll": "Delete All",
 	"menu.notificationManagement": "Notification Management",
@@ -3153,7 +4143,6 @@ var messages_vi = {
 	"menu.partnerBonusHistory": "Lịch sử điểm thưởng đối tác",
 	"menu.allBonusHistory": "Lịch sử điểm thưởng tất cả",
 	"menu.notification": "Thông báo",
-	"menu.notificationDetail": "Thông báo chi tiết",
 	"menu.readAll": "Đọc tất cả",
 	"menu.deleteAll": "Xóa tất cả",
 	"menu.notificationManagement": "Quản lý thông báo",
@@ -7142,7 +8131,7 @@ const AccountSettings = props => {
     onClick: () => {
       history.push('/app/share-with-friends');
     }
-  }, /*#__PURE__*/React.createElement(Link$1, {
+  }, /*#__PURE__*/React.createElement(Link, {
     size: 16
   }), /*#__PURE__*/React.createElement("span", {
     className: "align-middle ml-50"
@@ -7657,7 +8646,7 @@ const Login = () => {
     }
   }), /*#__PURE__*/React.createElement("div", {
     className: "float-right"
-  }, /*#__PURE__*/React.createElement(Link, {
+  }, /*#__PURE__*/React.createElement(Link$1, {
     to: "/forgot-password",
     className: "text-secondary font-weight-bold"
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
@@ -8053,7 +9042,7 @@ const ForgotPassword = () => {
     className: "d-flex justify-content-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "col-md-4"
-  }, /*#__PURE__*/React.createElement(Link, {
+  }, /*#__PURE__*/React.createElement(Link$1, {
     to: '/'
   }, /*#__PURE__*/React.createElement(Button, {
     className: "btn-second"
@@ -8258,7 +9247,7 @@ const VerifyOtp = () => {
 
 const LandingPageHeader = () => /*#__PURE__*/React.createElement(Context.Consumer, null, context => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
   className: "d-flex justify-content-between align-items-center"
-}, /*#__PURE__*/React.createElement(Link, {
+}, /*#__PURE__*/React.createElement(Link$1, {
   to: '/'
 }, /*#__PURE__*/React.createElement("span", {
   className: "d-block d-lg-none"
@@ -8502,7 +9491,7 @@ const CompleteInformation = () => {
     className: "d-flex justify-content-center mt-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "col-sm-5 col-md-4"
-  }, /*#__PURE__*/React.createElement(Link, {
+  }, /*#__PURE__*/React.createElement(Link$1, {
     to: "/create-password"
   }, /*#__PURE__*/React.createElement(Button, {
     className: "btn-second",
@@ -8519,9 +9508,9 @@ const CompleteInformation = () => {
   })))))));
 };
 
-let _ = t => t,
-    _t;
-const PageStyle = styled.div(_t || (_t = _`
+let _$1 = t => t,
+    _t$1;
+const PageStyle = styled.div(_t$1 || (_t$1 = _$1`
 
   .landing-page-bg {
     background-image: url('${0}');
@@ -8582,7 +9571,7 @@ const LandingPage = props => {
     className: "d-none d-lg-block landing-page-bg"
   }, /*#__PURE__*/React.createElement("div", {
     className: "logo mx-auto"
-  }, /*#__PURE__*/React.createElement(Link, {
+  }, /*#__PURE__*/React.createElement(Link$1, {
     to: '/'
   }, /*#__PURE__*/React.createElement("img", {
     src: IMAGE.LOGO,
@@ -8846,7 +9835,7 @@ const AppRouter = props => {
   }), /*#__PURE__*/React.createElement(ConfirmAlert, null));
 };
 
-const mapStateToProps$2 = state => {
+const mapStateToProps$3 = state => {
   return {
     isAuthentication: !!state.auth.authToken,
     authToken: state.auth.authToken,
@@ -8857,7 +9846,7 @@ const mapStateToProps$2 = state => {
   };
 };
 
-var AppRouter$1 = connect(mapStateToProps$2, {
+var AppRouter$1 = connect(mapStateToProps$3, {
   checkLoginStatus,
   loginAction,
   changeIsGuest,
@@ -8968,391 +9957,6 @@ class FallbackSpinner extends React.Component {
 
 }
 
-class Autocomplete extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.onSuggestionItemClick = (item, e) => {
-      if (this.props.onSuggestionClick) {
-        this.props.onSuggestionClick(item, e);
-      }
-
-      this.setState({
-        activeSuggestion: 0,
-        showSuggestions: false,
-        userInput: e.currentTarget.innerText
-      });
-    };
-
-    this.onSuggestionItemHover = index => {
-      this.setState({
-        activeSuggestion: index
-      });
-    };
-
-    this.onChange = e => {
-      const userInput = e.currentTarget.value;
-      this.setState({
-        activeSuggestion: 0,
-        showSuggestions: true,
-        userInput
-      });
-
-      if (e.target.value < 1) {
-        this.setState({
-          showSuggestions: false
-        });
-      }
-    };
-
-    this.onInputClick = e => {
-      e.stopPropagation();
-    };
-
-    this.onKeyDown = e => {
-      const {
-        activeSuggestion,
-        showSuggestions,
-        userInput
-      } = this.state;
-      const filterKey = this.props.filterKey;
-      let suggestionList = ReactDOM.findDOMNode(this.suggestionList);
-
-      if (e.keyCode === 38 && activeSuggestion !== 0) {
-        this.setState({
-          activeSuggestion: activeSuggestion - 1
-        });
-
-        if (e.target.value.length > -1 && suggestionList !== null && activeSuggestion <= this.filteredData.length / 2) {
-          suggestionList.scrollTop = 0;
-        }
-      } else if (e.keyCode === 40 && activeSuggestion < this.filteredData.length - 1) {
-          this.setState({
-            activeSuggestion: activeSuggestion + 1
-          });
-
-          if (e.target.value.length > -1 && suggestionList !== null && activeSuggestion >= this.filteredData.length / 2) {
-            suggestionList.scrollTop = suggestionList.scrollHeight;
-          }
-        } else if (e.keyCode === 27) {
-            this.setState({
-              showSuggestions: false,
-              userInput: ''
-            });
-          } else if (e.keyCode === 13 && showSuggestions) {
-              this.onSuggestionItemClick(this.filteredData[activeSuggestion], e);
-              this.setState({
-                userInput: this.filteredData[activeSuggestion][filterKey],
-                showSuggestions: false
-              });
-            } else {
-              return;
-            }
-
-      if (this.props.onKeyDown !== undefined && this.props.onKeyDown !== null && this.props.onKeyDown) {
-        this.props.onKeyDown(e, userInput);
-      }
-    };
-
-    this.renderGroupedSuggestion = arr => {
-      const {
-        filterKey,
-        customRender
-      } = this.props;
-      const {
-        onSuggestionItemClick,
-        onSuggestionItemHover,
-        state: {
-          activeSuggestion,
-          userInput
-        }
-      } = this;
-
-      let renderSuggestion = (item, i) => {
-        if (!customRender) {
-          return /*#__PURE__*/React.createElement("li", {
-            className: classnames('suggestion-item', {
-              active: this.filteredData.indexOf(item) === activeSuggestion
-            }),
-            key: item[filterKey],
-            onClick: e => onSuggestionItemClick(item, e),
-            onMouseEnter: () => {
-              this.onSuggestionItemHover(this.filteredData.indexOf(item));
-            }
-          }, item[filterKey]);
-        } else if (customRender) {
-          return customRender(item, i, this.filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover, userInput);
-        } else {
-          return null;
-        }
-      };
-
-      return arr.map((item, i) => {
-        return renderSuggestion(item, i);
-      });
-    };
-
-    this.renderUngroupedSuggestions = () => {
-      const {
-        filterKey,
-        suggestions,
-        customRender,
-        suggestionLimit
-      } = this.props;
-      const {
-        onSuggestionItemClick,
-        onSuggestionItemHover,
-        state: {
-          activeSuggestion,
-          userInput
-        }
-      } = this;
-      this.filteredData = [];
-      let sortSingleData = suggestions.filter(i => {
-        let startCondition = i[filterKey].toLowerCase().startsWith(userInput.toLowerCase()),
-            includeCondition = i[filterKey].toLowerCase().includes(userInput.toLowerCase());
-
-        if (startCondition) {
-          return startCondition;
-        } else if (!startCondition && includeCondition) {
-          return includeCondition;
-        } else {
-          return null;
-        }
-      }).slice(0, suggestionLimit);
-      this.filteredData.push(...sortSingleData);
-      return sortSingleData.length ? sortSingleData.map((suggestion, index) => {
-        if (!customRender) {
-          return /*#__PURE__*/React.createElement("li", {
-            className: classnames('suggestion-item', {
-              active: this.filteredData.indexOf(suggestion) === activeSuggestion
-            }),
-            key: suggestion[filterKey],
-            onClick: e => onSuggestionItemClick(suggestion, e),
-            onMouseEnter: () => this.onSuggestionItemHover(this.filteredData.indexOf(suggestion))
-          }, suggestion[filterKey]);
-        } else if (customRender) {
-          return customRender(suggestion, index, this.filteredData, activeSuggestion, onSuggestionItemClick, onSuggestionItemHover, userInput);
-        } else {
-          return null;
-        }
-      }) : /*#__PURE__*/React.createElement("li", {
-        className: "suggestion-item no-result"
-      }, /*#__PURE__*/React.createElement(AlertTriangle, {
-        size: 15
-      }), ' ', /*#__PURE__*/React.createElement("span", {
-        className: "align-middle ml-50"
-      }, /*#__PURE__*/React.createElement(FormattedMessage, {
-        id: 'common.noResults'
-      })));
-    };
-
-    this.renderSuggestions = () => {
-      const {
-        filterKey,
-        grouped,
-        filterHeaderKey,
-        suggestions
-      } = this.props;
-      const {
-        renderUngroupedSuggestions,
-        state: {
-          userInput
-        }
-      } = this;
-
-      if (grouped === undefined || grouped === null || !grouped) {
-        return renderUngroupedSuggestions();
-      } else {
-        this.filteredData = [];
-        return suggestions.map(suggestion => {
-          let sortData = suggestion.data.filter(i => {
-            let startCondition = i[filterKey].toLowerCase().startsWith(userInput.toLowerCase()),
-                includeCondition = i[filterKey].toLowerCase().includes(userInput.toLowerCase());
-
-            if (startCondition) {
-              return startCondition;
-            } else if (!startCondition && includeCondition) {
-              return includeCondition;
-            } else {
-              return null;
-            }
-          }).slice(0, suggestion.searchLimit);
-          this.filteredData.push(...sortData);
-          return /*#__PURE__*/React.createElement(React.Fragment, {
-            key: suggestion[filterHeaderKey]
-          }, /*#__PURE__*/React.createElement("li", {
-            className: "suggestion-item suggestion-title text-primary text-bold-600"
-          }, suggestion[filterHeaderKey]), sortData.length ? this.renderGroupedSuggestion(sortData) : /*#__PURE__*/React.createElement("li", {
-            className: "suggestion-item no-result"
-          }, /*#__PURE__*/React.createElement(AlertTriangle, {
-            size: 15
-          }), ' ', /*#__PURE__*/React.createElement("span", {
-            className: "align-middle ml-50"
-          }, "No Result")));
-        });
-      }
-    };
-
-    this.clearInput = val => {
-      if (this.props.clearInput && !val) {
-        this.setState({
-          userInput: ''
-        });
-      }
-    };
-
-    this.handleExtenalClick = e => {
-      let {
-        container
-      } = this.refs;
-      const {
-        target
-      } = e;
-
-      if (target !== container && !container.contains(target)) {
-        this.setState({
-          showSuggestions: false
-        });
-        if (this.props.externalClick) this.props.externalClick(e);
-      }
-    };
-
-    this.state = {
-      activeSuggestion: 0,
-      showSuggestions: false,
-      userInput: '',
-      focused: false,
-      openUp: false
-    };
-    this.filteredData = [];
-    document.body.addEventListener('click', this.handleExtenalClick);
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    let textInput = ReactDOM.findDOMNode(this.input);
-    let {
-      autoFocus,
-      onSuggestionsShown,
-      clearInput
-    } = this.props;
-
-    if (textInput !== null && autoFocus) {
-      textInput.focus();
-    }
-
-    if (this.props.defaultSuggestions && prevState.showSuggestions === false && this.state.focused) {
-      this.setState({
-        showSuggestions: true
-      });
-    }
-
-    if (clearInput === false && this.state.userInput.length) {
-      this.setState({
-        userInput: ''
-      });
-    }
-
-    if (onSuggestionsShown && this.state.showSuggestions) {
-      onSuggestionsShown(this.state.userInput);
-    }
-
-    if (this.props.defaultSuggestions && prevState.focused === false && this.state.focused === true) {
-      this.setState({
-        showSuggestions: true
-      });
-    }
-  }
-
-  componentDidMount() {
-    if (this.props.defaultSuggestions && this.state.focused) {
-      this.setState({
-        showSuggestions: true
-      });
-    }
-  }
-
-  componentWillUnmount() {
-    document.body.removeEventListener('click', this.handleExtenalClick);
-  }
-
-  render() {
-    const {
-      onChange,
-      onKeyDown,
-      state: {
-        showSuggestions,
-        userInput,
-        openUp
-      }
-    } = this;
-    let suggestionsListComponent;
-
-    if (showSuggestions) {
-      suggestionsListComponent = /*#__PURE__*/React.createElement(PerfectScrollbar, {
-        className: classnames('suggestions-list', {
-          'open-up': openUp
-        }),
-        ref: el => this.suggestionList = el,
-        component: "ul",
-        options: {
-          wheelPropagation: false
-        }
-      }, this.renderSuggestions());
-    }
-
-    return /*#__PURE__*/React.createElement("div", {
-      className: "vx-autocomplete-container",
-      ref: "container"
-    }, /*#__PURE__*/React.createElement(FormGroup, {
-      className: "form-label-group position-relative"
-    }, /*#__PURE__*/React.createElement("input", {
-      type: "text",
-      onChange: e => {
-        onChange(e);
-
-        if (this.props.onChange) {
-          this.props.onChange(e);
-        }
-      },
-      onKeyDown: e => onKeyDown(e),
-      value: userInput,
-      className: `vx-autocomplete-search ${this.props.className ? this.props.className : ''}`,
-      placeholder: this.props.placeholder,
-      onClick: this.onInputClick,
-      ref: el => {
-        return this.input = el;
-      },
-      onFocus: e => {
-        this.setState({
-          focused: true
-        });
-      },
-      autoFocus: this.props.autoFocus,
-      onBlur: e => {
-        if (this.props.onBlur) this.props.onBlur(e);
-        this.setState({
-          focused: false
-        });
-      }
-    }), /*#__PURE__*/React.createElement(Label, null, this.props.placeholder), suggestionsListComponent));
-  }
-
-}
-Autocomplete.propTypes = {
-  suggestions: PropTypes.array.isRequired,
-  filterKey: PropTypes.string.isRequired,
-  filterHeaderKey: PropTypes.string,
-  placeholder: PropTypes.string,
-  suggestionLimit: PropTypes.number,
-  grouped: PropTypes.bool,
-  autoFocus: PropTypes.bool,
-  onKeyDown: PropTypes.func,
-  onChange: PropTypes.func,
-  onSuggestionsShown: PropTypes.func,
-  onSuggestionItemClick: PropTypes.func
-};
-
 const defaultMaskOptions = {
   prefix: '',
   suffix: '',
@@ -9453,4 +10057,4 @@ const usePageAuthorities = () => {
   return authorities;
 };
 
-export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, LandingPage, Radio, ReactTable, Select, changeIsGuest, getAllNotifications, getNewNotifications, goBackHomePage, goToAgencyApp, hideConfirmAlert, logoutAction, showConfirmAlert, updateAllNotifications, updateNotification, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
+export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, LandingPage, Radio, ReactTable, Select, changeIsGuest, checkReceiveNewNotification, getMyNotifications, goBackHomePage, goToAgencyApp, hideConfirmAlert, logoutAction, showConfirmAlert, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };

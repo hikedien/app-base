@@ -9162,7 +9162,7 @@ html {
     html body p {
       line-height: 1.5rem; }
     html body .bg-full-screen-image {
-      background: no-repeat center center;
+      background: no-repeat center center;
       background-size: cover; }
     html body .blank-page .content {
       margin-left: 0; }
@@ -16214,6 +16214,11 @@ _:-ms-lang(x),
 
 .modal .modal-footer {
   border-color: rgba(0, 0, 0, 0.05); }
+
+.modal .custom-modal-notification .modal-content {
+  max-height: 90vh; }
+  .modal .custom-modal-notification .modal-content img {
+    max-width: 100% !important; }
 
 .modal-sm {
   max-width: 400px; }

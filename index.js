@@ -8,13 +8,13 @@ var Axios = _interopDefault(require('axios'));
 var axiosExtensions = require('axios-extensions');
 var Icon = require('react-feather');
 var reactToastify = require('react-toastify');
+var moment = _interopDefault(require('moment'));
 var reactRedux = require('react-redux');
 var redux = require('redux');
 var createDebounce = _interopDefault(require('redux-debounced'));
 var thunk = _interopDefault(require('redux-thunk'));
 var react = require('redux-persist/integration/react');
 var reduxPersist = require('redux-persist');
-var moment = _interopDefault(require('moment'));
 var storage = _interopDefault(require('redux-persist/es/storage'));
 var reactRouterDom = require('react-router-dom');
 var classnames = _interopDefault(require('classnames'));
@@ -23,6 +23,7 @@ var ReactDOM = _interopDefault(require('react-dom'));
 var PropTypes = _interopDefault(require('prop-types'));
 var PerfectScrollbar = _interopDefault(require('react-perfect-scrollbar'));
 require('moment/locale/vi');
+var styled = _interopDefault(require('styled-components'));
 var ScrollToTop = _interopDefault(require('react-scroll-up'));
 var Hammer = _interopDefault(require('react-hammerjs'));
 var Yup = require('yup');
@@ -36,7 +37,6 @@ var firebase = _interopDefault(require('firebase'));
 var FacebookLogin = _interopDefault(require('react-facebook-login/dist/facebook-login-render-props'));
 var GoogleLogin = _interopDefault(require('react-google-login'));
 var OtpInput = _interopDefault(require('react-otp-input'));
-var styled = _interopDefault(require('styled-components'));
 var SweetAlert = _interopDefault(require('react-bootstrap-sweetalert'));
 var TopBarProgress = _interopDefault(require('react-topbar-progress-indicator'));
 var Ripples = _interopDefault(require('react-ripples'));
@@ -154,7 +154,7 @@ var API_EMAIL_SUGGESTION = '/nth/user/api/authenticate/email-suggestion';
 var API_GET_MY_NOTIFICATIONS = '/nth/notification/api/my-notification';
 var API_CHECK_NEW_NOTIFICATIONS = '/nth/notification/api/notifications-es';
 var API_GET_NOTIFICATION_FROM_ESPUBLIC = '/nth/notification/api/user-notifications-es';
-var API_UPDATE_NOTIFICATION = '/nth/notification/';
+var API_UPDATE_NOTIFICATION = '/nth/notification/api/my-notifications/status';
 var API_UPDATE_ALL_NOTIFICATION_STATUS = '/nth/notification/api/my-notifications-status';
 var API_R_200 = 200;
 var API_GET_CITIES_BY_COUNTRY = '/nth/datacollection/api/citiesbycountry';
@@ -587,8 +587,9 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
 
         toastError(e.response.data.message);
         store.dispatch({
-          type: 'LOGOUT_ACTION'
+          type: LOGOUT_ACTION
         });
+        history.push('/login');
         break;
 
       case 500:
@@ -755,7 +756,7 @@ var mapRoleToNavItem = function mapRoleToNavItem(role) {
   return item;
 };
 
-var getNativgationConfig = function getNativgationConfig(appId, navConfigs) {
+var getNativgationConfig = function getNativgationConfig(navConfigs) {
   navConfigs = mapRoleListToNavConfigs(navConfigs);
   return navConfigs.map(function (item) {
     item.isExternalApp = false;
@@ -798,17 +799,17 @@ NavBarService.getUserGroupRole = function (groupId) {
 
 var LOAD_NATIVGATION = 'LOAD_NATIVGATION';
 var LOAD_USER_ROLE = 'LOAD_USER_ROLE';
-var loadNavtigation = function loadNavtigation(appId, callback) {
+var loadNavigation = function loadNavigation() {
   return function (dispatch) {
-    try {
+    return Promise.resolve(_catch(function () {
       return Promise.resolve(NavBarService.getNativagtion()).then(function (res) {
         if (!res || !res.data) {
           return;
         }
 
-        callback();
+        dispatch(loadUserRoles());
         var roles = res.data || [];
-        var navConfigs = getNativgationConfig(appId, roles);
+        var navConfigs = getNativgationConfig(roles);
         dispatch({
           type: LOAD_NATIVGATION,
           payload: {
@@ -817,9 +818,7 @@ var loadNavtigation = function loadNavtigation(appId, callback) {
           }
         });
       });
-    } catch (e) {
-      return Promise.reject(e);
-    }
+    }, function () {}));
   };
 };
 var loadUserRoles = function loadUserRoles() {
@@ -899,6 +898,7 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
                   authToken: authToken,
                   user: response.data || {}
                 };
+                dispatch(loadNavigation());
                 dispatch({
                   type: LOGIN_ACTION,
                   payload: payload
@@ -908,6 +908,7 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
               dispatch({
                 type: LOGOUT_ACTION
               });
+              history.push('/login');
             }
           }();
 
@@ -917,6 +918,7 @@ var checkLoginStatus = function checkLoginStatus(authToken, redirectUrl) {
         dispatch({
           type: LOGOUT_ACTION
         });
+        history.push('/login');
       });
 
       return Promise.resolve(_temp3 && _temp3.then ? _temp3.then(function () {}) : void 0);
@@ -981,6 +983,7 @@ var loginAction = function loginAction(user) {
                   return;
                 }
 
+                dispatch(loadNavigation());
                 dispatch({
                   type: LOGIN_ACTION,
                   payload: {
@@ -1441,7 +1444,6 @@ var authReducers = function authReducers(state, action) {
 
     case LOGOUT_ACTION:
       {
-        history.push('/login');
         return _extends({}, authInitialState);
       }
 
@@ -1528,29 +1530,6 @@ var authReducers = function authReducers(state, action) {
   }
 };
 
-var LOAD_NATIVGATION$1 = 'LOAD_NATIVGATION';
-var LOAD_USER_ROLE$1 = 'LOAD_USER_ROLE';
-var goBackHomePage$1 = function goBackHomePage() {
-  return function (dispatch, getState) {
-    try {
-      var _getState, _getState$auth;
-
-      var _ref = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$auth = _getState.auth) === null || _getState$auth === void 0 ? void 0 : _getState$auth.guest) || {},
-          authToken = _ref.authToken;
-
-      if (authToken) {
-        history.push('/home');
-      } else {
-        history.push('/app/home');
-      }
-
-      return Promise.resolve();
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
-};
-
 var initialState = {
   navConfigs: [],
   roles: [],
@@ -1563,13 +1542,13 @@ var navbarReducer = function navbarReducer(state, action) {
   }
 
   switch (action.type) {
-    case LOAD_NATIVGATION$1:
+    case LOAD_NATIVGATION:
       return _extends({}, state, {
         navConfigs: action.payload.navConfigs,
         roles: action.payload.roles
       });
 
-    case LOAD_USER_ROLE$1:
+    case LOAD_USER_ROLE:
       return _extends({}, state, {
         userRoles: action.payload
       });
@@ -1578,11 +1557,6 @@ var navbarReducer = function navbarReducer(state, action) {
       return state;
   }
 };
-
-var SHOW_LOADING_BAR$1 = 'SHOW_LOADING_BAR';
-var HIDE_LOADING_BAR$1 = 'HIDE_LOADING_BAR';
-var SHOW_CONFIRM_ALERT$1 = 'SHOW_CONFIRM_ALERT';
-var HIDE_CONFIRM_ALERT$1 = 'HIDE_CONFIRM_ALERT';
 
 var DEFAULT_CONFIRM_ALERT = {
   title: '',
@@ -1603,26 +1577,26 @@ var uiReducer = function uiReducer(state, action) {
   }
 
   switch (action.type) {
-    case SHOW_LOADING_BAR$1:
+    case SHOW_LOADING_BAR:
       return _extends({}, state, {
         isLoading: true,
         loading: state.loading.add(action.payload)
       });
 
-    case HIDE_LOADING_BAR$1:
+    case HIDE_LOADING_BAR:
       state.loading["delete"](action.payload);
       return _extends({}, state, {
         isLoading: !!state.loading.size
       });
 
-    case SHOW_CONFIRM_ALERT$1:
+    case SHOW_CONFIRM_ALERT:
       return _extends({}, state, {
         confirmAlert: _extends({
           isShow: true
         }, state.confirmAlert, action.payload)
       });
 
-    case HIDE_CONFIRM_ALERT$1:
+    case HIDE_CONFIRM_ALERT:
       return _extends({}, state, {
         confirmAlert: _extends({}, DEFAULT_CONFIRM_ALERT)
       });
@@ -1658,16 +1632,18 @@ NotificationService.updateNotificationStatus = function (notification) {
   });
 };
 
-NotificationService.updateAllNotificationStatus = function () {
+NotificationService.updateAllNotificationStatus = function (status) {
   return HttpClient.put(API_UPDATE_ALL_NOTIFICATION_STATUS, {}, {
-    params: 'READ',
+    params: {
+      status: status
+    },
     isBackgroundRequest: true
   });
 };
 
 var LOAD_MY_NOTIFICATIONS = 'LOAD_MY_NOTIFICATIONS';
 var RECEIVE_NEW_NOTIFICATIONS = 'RECEIVE_NEW_NOTIFICATIONS';
-var getMyNotification = function getMyNotification(notifications) {
+var getMyNotifications = function getMyNotifications() {
   return function (dispatch) {
     try {
       return Promise.resolve(NotificationService.getMyNotifications()).then(function (res) {
@@ -1675,85 +1651,38 @@ var getMyNotification = function getMyNotification(notifications) {
           return;
         }
 
-        res.data = [{
-          "id": 18,
-          "type": "system",
-          "userId": 2,
-          "read": false,
-          "deleted": false,
-          "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
-          "contentContentType": null,
-          "sendDate": "2021-08-23T20:14:02Z",
-          "updateDate": null,
-          "updateBy": null,
-          "templateId": 1,
-          "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-          "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-        }, {
-          "id": 19,
-          "type": "personal",
-          "userId": 2,
-          "read": false,
-          "deleted": false,
-          "content": "<p><strong>Đây la thông báo cá nhân</strong></p>\n",
-          "contentContentType": null,
-          "sendDate": "2021-08-23T20:14:02Z",
-          "updateDate": null,
-          "updateBy": null,
-          "templateId": 1,
-          "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-          "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-        }, {
-          "id": 20,
-          "type": "promotion",
-          "userId": 2,
-          "read": false,
-          "deleted": false,
-          "content": "<p><strong>Đây là thông báo khuyến mại</strong></p>\n",
-          "contentContentType": null,
-          "sendDate": "2021-08-23T20:14:02Z",
-          "updateDate": null,
-          "updateBy": null,
-          "templateId": 1,
-          "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-          "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-        }, {
-          "id": 21,
-          "type": "system",
-          "userId": 2,
-          "read": false,
-          "deleted": false,
-          "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
-          "contentContentType": null,
-          "sendDate": "2021-08-23T20:14:02Z",
-          "updateDate": null,
-          "updateBy": null,
-          "templateId": 1,
-          "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-          "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-        }, {
-          "id": 22,
-          "type": "system",
-          "userId": 2,
-          "read": false,
-          "deleted": false,
-          "content": "<p><strong>Đây la thông báo hệ thống</strong></p>\n",
-          "contentContentType": null,
-          "sendDate": "2021-08-23T20:14:02Z",
-          "updateDate": null,
-          "updateBy": null,
-          "templateId": 1,
-          "title": "Giấy chứng nhận bảo hiểm CC2101BB5842",
-          "shortContent": "<p><strong>Hợp đồng bảo hiểm số CC2101BB5842</strong></p>\n"
-        }];
         dispatch({
           type: LOAD_MY_NOTIFICATIONS,
           payload: res.data
         });
+        return res.data;
       });
     } catch (e) {
       return Promise.reject(e);
     }
+  };
+};
+var checkReceiveNewNotification = function checkReceiveNewNotification() {
+  return function () {
+    try {
+      return Promise.resolve(NotificationService.checkNewNotification()).then(function (res) {
+        if (!res || res.status !== 200) {
+          return;
+        }
+
+        return res.data;
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+};
+var saveMyNotifications = function saveMyNotifications(notifications) {
+  return function (dispatch) {
+    dispatch({
+      type: LOAD_MY_NOTIFICATIONS,
+      payload: notifications
+    });
   };
 };
 
@@ -2350,9 +2279,222 @@ var UserDropdown = function UserDropdown() {
   }))));
 };
 
-var Notifications = function Notifications() {
+function _templateObject3() {
+  var data = _taggedTemplateLiteralLoose(["\n\n  .dropdown-item {\n    width: 100% !important;\n  }\n\n  .dropleft {\n    .dropdown-menu::before {\n      display: none;\n    }\n  }\n\n"]);
+
+  _templateObject3 = function _templateObject3() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject2() {
+  var data = _taggedTemplateLiteralLoose(["\n  width: 20px;\n  height: 20px;\n"]);
+
+  _templateObject2 = function _templateObject2() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject() {
+  var data = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n\n  .unread {\n    color: black;\n    font-weight: bold;\n  }\n"]);
+
+  _templateObject = function _templateObject() {
+    return data;
+  };
+
+  return data;
+}
+var MediaCustom = styled.div(_templateObject());
+var CustomImage = styled.img(_templateObject2());
+var CustomDropdown = styled.div(_templateObject3());
+
+var Notifications = function Notifications(_ref) {
+  var notifications = _ref.notifications,
+      readAll = _ref.readAll,
+      openModal = _ref.openModal;
   var dispatch = reactRedux.useDispatch();
-  var intl = reactIntl.useIntl();
+
+  var onClickOpenNotification = function onClickOpenNotification(notification) {
+    try {
+      openModal(notification);
+      return Promise.resolve(NotificationService.updateNotificationStatus({
+        notificationId: notification.id,
+        status: 'READ'
+      })).then(function (response) {
+        if (response.status === 200) {
+          var newNotifications = notifications.map(function (item) {
+            if (item.id === notification.id) {
+              item.nn_read = true;
+              return item;
+            } else return item;
+          });
+          dispatch(saveMyNotifications([].concat(newNotifications)));
+        }
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
+  var onClickUpdateAllNotification = function onClickUpdateAllNotification(status) {
+    try {
+      return Promise.resolve(NotificationService.updateAllNotificationStatus(status)).then(function (response) {
+        if (response.status !== 200) return;
+        readAll();
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
+  var onClickUpdateNotification = function onClickUpdateNotification(notification, status) {
+    try {
+      return Promise.resolve(NotificationService.updateNotificationStatus({
+        notificationId: notification.id,
+        status: status
+      })).then(function (response) {
+        if (response.status === 200) {
+          var newNotifications;
+
+          switch (status) {
+            case 'DELETE':
+              newNotifications = notifications.filter(function (item) {
+                return item.id !== notification.id;
+              });
+              return;
+
+            case 'READ':
+              newNotifications = notifications.map(function (item) {
+                if (item.id === notification.id) {
+                  item.nn_read = true;
+                  return item;
+                } else return item;
+              });
+              return;
+
+            case 'UNREAD':
+              newNotifications = notifications.map(function (item) {
+                if (item.id === notification.id) {
+                  item.nn_read = false;
+                  return item;
+                } else return item;
+              });
+              return;
+          }
+
+          dispatch(saveMyNotifications([].concat(newNotifications)));
+        }
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("li", {
+    className: "dropdown-menu-header d-flex justify-content-between align-items-center"
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "dropdown-header mt-0 text-left"
+  }, /*#__PURE__*/React__default.createElement("span", {
+    className: "notification-title"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "menu.notification"
+  })), /*#__PURE__*/React__default.createElement("span", null, "(", notifications.length, ")")), /*#__PURE__*/React__default.createElement("div", {
+    className: "cursor-pointer",
+    onClick: function onClick() {
+      return onClickUpdateAllNotification('READ');
+    }
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "menu.readAll"
+  }))), /*#__PURE__*/React__default.createElement(PerfectScrollbar, {
+    className: "media-list overflow-hidden position-relative",
+    options: {
+      wheelPropagation: false
+    }
+  }, notifications.map(function (item, index) {
+    return /*#__PURE__*/React__default.createElement(MediaCustom, {
+      key: item.id
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      className: "d-flex align-items-start cursor-default"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      left: true
+    }, item.notification_type === "SYSTEM" ? /*#__PURE__*/React__default.createElement("img", {
+      src: "https://sit2.inon.vn/resources/images/system-information.png"
+    }) : null, item.notification_type === "USER" ? /*#__PURE__*/React__default.createElement("img", {
+      src: "https://sit2.inon.vn/resources/images/individual-server.png"
+    }) : null, item.notification_type === "PROMOTION" ? /*#__PURE__*/React__default.createElement("img", {
+      src: "https://sit2.inon.vn/resources/images/gift.png"
+    }) : null), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      onClick: function onClick() {
+        return onClickOpenNotification(item);
+      },
+      body: true
+    }, /*#__PURE__*/React__default.createElement("p", {
+      className: !item.nn_read ? 'unread' : '',
+      dangerouslySetInnerHTML: {
+        __html: item.title
+      }
+    }), /*#__PURE__*/React__default.createElement("p", {
+      className: !item.nn_read ? 'unread' : '',
+      dangerouslySetInnerHTML: {
+        __html: item.short_content
+      }
+    }), /*#__PURE__*/React__default.createElement("small", {
+      className: "mt-1"
+    }, /*#__PURE__*/React__default.createElement("time", {
+      className: !item.nn_read ? 'unread' : '',
+      dateTime: item.send_date
+    }, moment().diff(moment(item.send_date), 'days') >= 1 ? moment(item.send_date).format("DD/MM/YYYY") : moment(item.send_date).fromNow()))), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      right: true,
+      className: "cursor-pointer"
+    }, /*#__PURE__*/React__default.createElement(CustomDropdown, null, /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledButtonDropdown, {
+      direction: "left"
+    }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
+      tag: "span"
+    }, /*#__PURE__*/React__default.createElement("div", {
+      className: "position-relative"
+    }, /*#__PURE__*/React__default.createElement(CustomImage, {
+      src: "https://sit2.inon.vn/resources/images/ellipsis-v-solid.png",
+      alt: ""
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownMenu, null, item.nn_read ? /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+      onClick: function onClick() {
+        return onClickUpdateNotification(item, 'UNREAD');
+      }
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "navbar.notifications.markAsUnRead"
+    })) : /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+      onClick: function onClick() {
+        return onClickUpdateNotification(item, 'READ');
+      }
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "navbar.notifications.markAsRead"
+    })), /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+      onClick: function onClick() {
+        return onClickUpdateNotification(item, 'DELETE');
+      }
+    }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+      id: "navbar.notifications.delete"
+    }))))))));
+  })), notifications.length > 0 && /*#__PURE__*/React__default.createElement("li", {
+    className: "dropdown-menu-footer",
+    onClick: function onClick() {
+      return onClickUpdateAllNotification('DELETE');
+    }
+  }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+    tag: "a",
+    className: "p-1 text-center"
+  }, /*#__PURE__*/React__default.createElement("span", {
+    className: "align-middle font-weight-bold"
+  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+    id: "menu.deleteAll"
+  })))));
+};
+
+var Bells = function Bells() {
+  var dispatch = reactRedux.useDispatch();
 
   var _useSelector = reactRedux.useSelector(function (state) {
     return state.notifications;
@@ -2360,109 +2502,109 @@ var Notifications = function Notifications() {
       notifications = _useSelector.notifications;
 
   var _useState = React.useState(false),
-      notificationModal = _useState[0],
-      setNotificationModal = _useState[1];
+      dropdownOpen = _useState[0],
+      setDropdownOpen = _useState[1];
 
-  var _useState2 = React.useState(null),
-      notification = _useState2[0],
-      setNotification = _useState2[1];
+  var _useState2 = React.useState(false),
+      notificationModal = _useState2[0],
+      setNotificationModal = _useState2[1];
+
+  var _useState3 = React.useState(0),
+      numberNewNotification = _useState3[0],
+      setNumberNewNotification = _useState3[1];
+
+  var _useState4 = React.useState(null),
+      notification = _useState4[0],
+      setNotification = _useState4[1];
 
   React.useEffect(function () {
-    dispatch(getMyNotification());
+    dispatch(getMyNotifications());
+    var intervalId = setInterval(function () {
+      dispatch(getMyNotifications());
+    }, 60000);
+    return function () {
+      return clearInterval(intervalId);
+    };
+  }, []);
+  React.useEffect(function () {
+    var newNotifications = notifications.filter(function (item) {
+      return item.nn_read === false;
+    });
+    setNumberNewNotification(newNotifications.length);
+  }, [notifications]);
+  React.useEffect(function () {
+    var notifications = dispatch(checkReceiveNewNotification());
+    checkNewNotifications(notifications);
+    var intervalId = setInterval(function () {
+      var notifications = dispatch(checkReceiveNewNotification());
+      checkNewNotifications(notifications);
+    }, 60000);
+    return function () {
+      return clearInterval(intervalId);
+    };
   }, []);
 
-  var onClickOpenNotification = function onClickOpenNotification(item) {
-    setNotification(item);
-    setNotificationModal(true);
-    var notificationRequest = notifications.find(function (notification) {
-      return notification.id === item.id;
-    });
-    var notificationAllStatus = NotificationService.updateAllNotificationStatus({
-      notificationId: notificationRequest.id,
-      status: 'READ'
-    });
-    if (notificationAllStatus.status === 200) return;
-  };
-
-  var onClickUpdateAllNotificationStatus = function onClickUpdateAllNotificationStatus() {
-    var notificationAllStatus = NotificationService.updateAllNotificationStatus();
-    if (notificationAllStatus.status === 200) return;
-  };
-
-  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("li", {
-    className: "dropdown-menu-header"
-  }, /*#__PURE__*/React__default.createElement("div", {
-    className: "dropdown-header mt-0 text-left"
-  }, /*#__PURE__*/React__default.createElement("span", {
-    className: "notification-title"
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "menu.notification"
-  })), /*#__PURE__*/React__default.createElement("span", null, "(", notifications.length, ")"))), /*#__PURE__*/React__default.createElement(PerfectScrollbar, {
-    className: "media-list overflow-hidden position-relative",
-    options: {
-      wheelPropagation: false
+  var toggleDropdown = function toggleDropdown() {
+    if (!notificationModal) {
+      setDropdownOpen(!dropdownOpen);
     }
-  }, notifications.map(function (item) {
-    return /*#__PURE__*/React__default.createElement("div", {
-      className: "d-flex justify-content-between",
-      key: item.id,
-      onClick: function onClick() {
-        return onClickOpenNotification(item);
-      }
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "d-flex align-items-start"
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      left: true,
-      href: "#"
-    }, /*#__PURE__*/React__default.createElement(Icon.Server, {
-      className: "font-medium-5 primary",
-      size: 21
-    })), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      body: true
-    }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      heading: true,
-      className: "primary media-heading",
-      tag: "h6"
-    }, /*#__PURE__*/React__default.createElement("div", {
-      className: !item.read ? 'font-weight-bold' : ''
-    }, item.title)), /*#__PURE__*/React__default.createElement("div", {
-      className: !item.read ? 'font-weight-bold' : '',
-      dangerouslySetInnerHTML: {
-        __html: item.shortContent
-      }
-    })), /*#__PURE__*/React__default.createElement("small", {
-      className: "mt-1"
-    }, /*#__PURE__*/React__default.createElement("time", {
-      className: "media-meta",
-      dateTime: item.sendDate
-    }, moment().diff(moment(item.sendDate), 'days') >= 1 ? moment(item.sendDate).format("DD/MM/YYYY") : moment(item.sendDate).fromNow()))));
-  })), notifications.length > 0 && /*#__PURE__*/React__default.createElement("li", {
-    className: "dropdown-menu-footer",
-    onClick: onClickUpdateAllNotificationStatus
-  }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+  };
+
+  var readAll = function readAll() {
+    dispatch(getMyNotifications());
+  };
+
+  var openModal = function openModal(notification) {
+    setNotificationModal(true);
+    setNotification(notification);
+  };
+
+  var checkNewNotifications = function checkNewNotifications(newNotifications) {
+    if (newNotifications.length > 0) {
+      toastSuccess( /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
+        id: "navbar.notifications.newNotificationNotice"
+      }));
+    }
+  };
+
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(reactstrap.ButtonDropdown, {
+    isOpen: dropdownOpen,
+    toggle: toggleDropdown,
+    tag: "li",
+    className: "dropdown-notification nav-item"
+  }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
     tag: "a",
-    className: "p-1 text-center"
-  }, /*#__PURE__*/React__default.createElement("span", {
-    className: "align-middle"
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "menu.readAll"
-  })))), notification && /*#__PURE__*/React__default.createElement(reactstrap.Modal, {
-    isOpen: notificationModal,
-    toggle: function toggle() {
-      return setNotificationModal(!notificationModal);
-    },
-    className: "modal-dialog-centered"
+    className: "nav-link nav-link-label"
+  }, /*#__PURE__*/React__default.createElement(Icon.Bell, {
+    className: "text-primary",
+    size: 22
+  }), /*#__PURE__*/React__default.createElement(reactstrap.Badge, {
+    pill: true,
+    color: "primary",
+    className: "badge-up"
+  }, numberNewNotification)), /*#__PURE__*/React__default.createElement(reactstrap.DropdownMenu, {
+    tag: "ul",
+    right: true,
+    className: "dropdown-menu-media"
+  }, /*#__PURE__*/React__default.createElement(Notifications, {
+    notifications: notifications,
+    readAll: readAll,
+    openModal: openModal
+  }))), notification && /*#__PURE__*/React__default.createElement(reactstrap.Modal, {
+    className: "modal-lg modal-dialog-centered custom-modal-notification",
+    isOpen: notificationModal
   }, /*#__PURE__*/React__default.createElement(reactstrap.ModalHeader, {
     toggle: function toggle() {
       return setNotificationModal(!notificationModal);
     }
-  }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
-    id: "menu.notification"
-  })), /*#__PURE__*/React__default.createElement(reactstrap.ModalBody, null, /*#__PURE__*/React__default.createElement("div", {
+  }, /*#__PURE__*/React__default.createElement("div", {
+    className: "font-weight-bold",
     dangerouslySetInnerHTML: {
       __html: notification.title
     }
-  }), /*#__PURE__*/React__default.createElement("div", {
+  })), /*#__PURE__*/React__default.createElement(reactstrap.ModalBody, {
+    className: "overflow-auto"
+  }, /*#__PURE__*/React__default.createElement("div", {
     dangerouslySetInnerHTML: {
       __html: notification.content
     }
@@ -2498,7 +2640,13 @@ var NavbarUser = function NavbarUser(props) {
   var intl = reactIntl.useIntl();
   userSettings = userSettings || {};
   React.useEffect(function () {
-    var newSuggestions = (roles || []).map(function (item) {
+    var roleData = [];
+
+    if (Array.isArray(roles)) {
+      roleData = [].concat(roles);
+    }
+
+    var newSuggestions = roleData.map(function (item) {
       item.name = intl.formatMessage({
         id: "menu." + item.keyLang
       });
@@ -2523,7 +2671,7 @@ var NavbarUser = function NavbarUser(props) {
     }
   };
 
-  return /*#__PURE__*/React__default.createElement("ul", {
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("ul", {
     className: "nav navbar-nav navbar-nav-user float-right"
   }, /*#__PURE__*/React__default.createElement(reactstrap.NavItem, {
     className: "nav-search",
@@ -2594,19 +2742,7 @@ var NavbarUser = function NavbarUser(props) {
       setNavbarSearch(false);
       props.handleAppOverlay('');
     }
-  })))), /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledDropdown, {
-    tag: "li",
-    className: "dropdown-notification nav-item"
-  }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
-    tag: "a",
-    className: "nav-link nav-link-label"
-  }, /*#__PURE__*/React__default.createElement(Icon.Bell, {
-    size: 21
-  })), /*#__PURE__*/React__default.createElement(reactstrap.DropdownMenu, {
-    tag: "ul",
-    right: true,
-    className: "dropdown-menu-media"
-  }, /*#__PURE__*/React__default.createElement(Notifications, null))), /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledDropdown, {
+  })))), /*#__PURE__*/React__default.createElement(Bells, null), /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledDropdown, {
     tag: "li",
     className: "dropdown-user nav-item"
   }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownToggle, {
@@ -2624,7 +2760,7 @@ var NavbarUser = function NavbarUser(props) {
     height: "40",
     width: "40",
     alt: "avatar"
-  }))), /*#__PURE__*/React__default.createElement(UserDropdown, null)));
+  }))), /*#__PURE__*/React__default.createElement(UserDropdown, null))));
 };
 
 var ThemeNavbar = function ThemeNavbar(props) {
@@ -2794,7 +2930,7 @@ var Footer = function Footer(props) {
     className: "position-relative w-25"
   }, /*#__PURE__*/React__default.createElement("span", {
     onClick: function onClick(e) {
-      return goToPage(e, '/insurance/buy-insurances');
+      return goToPage(e, '/insurance/buy-insurance');
     }
   }, /*#__PURE__*/React__default.createElement("img", {
     src: IMAGE.BUY_INSURANCE,
@@ -2898,6 +3034,27 @@ var hideScrollToTop = function hideScrollToTop(value) {
       type: "HIDE_SCROLL_TO_TOP",
       value: value
     });
+  };
+};
+
+var goBackHomePage$1 = function goBackHomePage() {
+  return function (dispatch, getState) {
+    try {
+      var _getState, _getState$auth;
+
+      var _ref = ((_getState = getState()) === null || _getState === void 0 ? void 0 : (_getState$auth = _getState.auth) === null || _getState$auth === void 0 ? void 0 : _getState$auth.guest) || {},
+          authToken = _ref.authToken;
+
+      if (authToken) {
+        history.push('/home');
+      } else {
+        history.push('/app/home');
+      }
+
+      return Promise.resolve();
+    } catch (e) {
+      return Promise.reject(e);
+    }
   };
 };
 
@@ -4022,6 +4179,7 @@ var messages_en = {
 	"menu.allBonusHistory": "All Bonus History",
 	"menu.notification": "Notification",
 	"menu.readAll": "Read All",
+	"menu.deleteAll": "Delete All",
 	"menu.notificationManagement": "Notification Management",
 	"menu.createNotification": "Create Notification",
 	"menu.notificationApproval": "Notification Management",
@@ -4029,6 +4187,10 @@ var messages_en = {
 	"navbar.language.en": "English",
 	"navbar.logout": "Logout",
 	"navbar.logout.confirmMessage": "Do you want to logout?",
+	"navbar.notifications.markAsRead": "Mark as read",
+	"navbar.notifications.markAsUnRead": "Mark as unread",
+	"navbar.notifications.delete": "Delete",
+	"navbar.notifications.newNotificationNotice": "You have a new notification",
 	"footer.copyRight": "© 2020 InOn - All rights reserved",
 	"footer.companySlogan": "Leading insurance provider in Vietnam",
 	setting: setting,
@@ -4400,6 +4562,7 @@ var messages_vi = {
 	"menu.allBonusHistory": "Lịch sử điểm thưởng tất cả",
 	"menu.notification": "Thông báo",
 	"menu.readAll": "Đọc tất cả",
+	"menu.deleteAll": "Xóa tất cả",
 	"menu.notificationManagement": "Quản lý thông báo",
 	"menu.createNotification": "Tạo mới thông báo",
 	"menu.notificationApproval": "Duyệt thông báo",
@@ -4407,6 +4570,10 @@ var messages_vi = {
 	"navbar.language.en": "English",
 	"navbar.logout": "Đăng xuất",
 	"navbar.logout.confirmMessage": "Bạn có muốn đăng xuất tài khoản?",
+	"navbar.notifications.markAsRead": "Đánh dấu đã đọc",
+	"navbar.notifications.markAsUnRead": "Đánh dấu chưa đọc",
+	"navbar.notifications.delete": "Xóa",
+	"navbar.notifications.newNotificationNotice": "Bạn có một thông báo mới",
 	"footer.copyRight": "©2020 InOn - Đã đăng ký bản quyền",
 	"footer.companySlogan": "Nhà cung cấp bảo hiểm hàng đầu Việt Nam",
 	setting: setting$1,
@@ -10037,16 +10204,16 @@ var CompleteInformation = function CompleteInformation() {
   }));
 };
 
-function _templateObject() {
+function _templateObject$1() {
   var data = _taggedTemplateLiteralLoose(["\n\n  .landing-page-bg {\n    background-image: url('", "');\n    background-size: cover;\n    background-position: center;\n  }\n"]);
 
-  _templateObject = function _templateObject() {
+  _templateObject$1 = function _templateObject() {
     return data;
   };
 
   return data;
 }
-var PageStyle = styled.div(_templateObject(), IMAGE.LANDING_PAGE_BG);
+var PageStyle = styled.div(_templateObject$1(), IMAGE.LANDING_PAGE_BG);
 
 var LandingPage = function LandingPage(props) {
   var _useState = React.useState(''),
@@ -10274,24 +10441,16 @@ var AppRouter = function AppRouter(props) {
       guest = props.guest,
       authToken = props.authToken,
       children = props.children,
-      loadNavtigation = props.loadNavtigation,
-      loadUserRoles = props.loadUserRoles,
       history = props.history,
       message = props.message,
       footerApp = props.footerApp;
   React.useEffect(function () {
     var urlParams = new URLSearchParams(document.location.search);
-    var code = urlParams.get('code') || (appId === AppId.ELITE_APP ? guest.authToken : authToken);
+    var code = guest.authToken || authToken;
     var redirectUrl = urlParams.get('redirectUrl');
 
     if (code && loginStatus !== LOGIN_STATUS.SUCCESS) {
       checkLoginStatus(code, redirectUrl);
-    }
-
-    if (authToken) {
-      loadNavtigation(appId, function () {
-        return loadUserRoles();
-      });
     }
   }, [authToken]);
   var appMessage = {
@@ -10406,8 +10565,6 @@ var mapStateToProps$3 = function mapStateToProps(state) {
 
 var AppRouter$1 = reactRedux.connect(mapStateToProps$3, {
   checkLoginStatus: checkLoginStatus,
-  loadNavtigation: loadNavtigation,
-  loadUserRoles: loadUserRoles,
   loginAction: loginAction,
   changeIsGuest: changeIsGuest,
   logoutAction: logoutAction,
@@ -10678,6 +10835,8 @@ exports.Radio = Radio;
 exports.ReactTable = ReactTable;
 exports.Select = Select;
 exports.changeIsGuest = changeIsGuest;
+exports.checkReceiveNewNotification = checkReceiveNewNotification;
+exports.getMyNotifications = getMyNotifications;
 exports.goBackHomePage = goBackHomePage;
 exports.goToAgencyApp = goToAgencyApp;
 exports.hideConfirmAlert = hideConfirmAlert;
