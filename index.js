@@ -7760,7 +7760,7 @@ var Select = function Select(props) {
       }
 
       newProps.value = props.options.filter(function (item) {
-        return values.split(',').includes(item.value);
+        return values.split(',').indexOf(item.value) >= 0;
       });
     }
 

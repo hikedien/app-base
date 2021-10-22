@@ -7323,7 +7323,7 @@ const Select = props => {
         values = '';
       }
 
-      newProps.value = props.options.filter(item => values.split(',').includes(item.value));
+      newProps.value = props.options.filter(item => values.split(',').indexOf(item.value) >= 0);
     }
 
     switch (props.type) {
