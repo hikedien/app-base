@@ -1537,7 +1537,7 @@ const notificationReducer = (state = { ...initialState$2
         if (item.id === action.payload.id) {
           return action.payload;
         } else return item;
-      });
+      }).filter(item => item.deleted === false);
       return { ...state,
         notifications: newNotifications
       };
@@ -2093,7 +2093,7 @@ const MediaCustom = styled.div(_t || (_t = _`
 
   .notification-icon {
     border-radius: 50%;
-    background-color: #00cfe8;
+    background-color: rgb(237 237 237);
     img {
       width: 50px;
     }
