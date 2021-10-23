@@ -1449,7 +1449,7 @@ NotificationService.checkNewNotification = () => {
   });
 };
 
-NotificationService.updateNotificationStatus = notification => {
+NotificationService.updateNotification = notification => {
   return HttpClient.put(API_UPDATE_NOTIFICATION, notification, {
     isBackgroundRequest: true
   });
@@ -1466,6 +1466,7 @@ NotificationService.updateAllNotificationStatus = status => {
 
 const LOAD_MY_NOTIFICATIONS = 'LOAD_MY_NOTIFICATIONS';
 const RECEIVE_NEW_NOTIFICATIONS = 'RECEIVE_NEW_NOTIFICATIONS';
+const UPDATE_NOTIFICATION = 'UPDATE_NOTIFICATION';
 const getMyNotifications = () => {
   return async dispatch => {
     const res = await NotificationService.getMyNotifications();
@@ -1478,7 +1479,6 @@ const getMyNotifications = () => {
       type: LOAD_MY_NOTIFICATIONS,
       payload: res.data
     });
-    return res.data;
   };
 };
 const checkReceiveNewNotification = () => {
@@ -1492,11 +1492,23 @@ const checkReceiveNewNotification = () => {
     return res.data;
   };
 };
-const saveMyNotifications = notifications => {
-  return dispatch => {
+const updateNotification = notification => {
+  return async dispatch => {
+    const res = await NotificationService.updateNotification(notification);
+    if (!res || res.status !== 200) return;
+    dispatch({
+      type: UPDATE_NOTIFICATION,
+      payload: res.data
+    });
+  };
+};
+const updateAllNotifications = status => {
+  return async dispatch => {
+    const res = await NotificationService.updateAllNotificationStatus(status);
+    if (!res || res.status !== 200) return;
     dispatch({
       type: LOAD_MY_NOTIFICATIONS,
-      payload: notifications
+      payload: res.data
     });
   };
 };
@@ -1517,6 +1529,17 @@ const notificationReducer = (state = { ...initialState$2
     case RECEIVE_NEW_NOTIFICATIONS:
       return { ...state,
         newNotifications: action.payload
+      };
+
+    case UPDATE_NOTIFICATION:
+      const notifications = [...state.notifications];
+      const newNotifications = notifications.map(item => {
+        if (item.id === action.payload.id) {
+          return action.payload;
+        } else return item;
+      });
+      return { ...state,
+        notifications: newNotifications
       };
 
     default:
@@ -2068,7 +2091,15 @@ const MediaCustom = styled.div(_t || (_t = _`
   display: flex;
   justify-content: space-between;
 
-  .unread {
+  .notification-icon {
+    border-radius: 50%;
+    background-color: #00cfe8;
+    img {
+      width: 50px;
+    }
+  }
+
+  .media-unread {
     color: black;
     font-weight: bold;
   }
@@ -2093,70 +2124,38 @@ const CustomDropdown = styled.div(_t3 || (_t3 = _`
 
 const Notifications = ({
   notifications,
-  readAll,
   openModal
 }) => {
   const dispatch = useDispatch();
 
   const onClickOpenNotification = async notification => {
     openModal(notification);
-    const response = await NotificationService.updateNotificationStatus({
-      notificationId: notification.id,
-      status: 'READ'
-    });
-
-    if (response.status === 200) {
-      const newNotifications = notifications.map(item => {
-        if (item.id === notification.id) {
-          item.nn_read = true;
-          return item;
-        } else return item;
-      });
-      dispatch(saveMyNotifications([...newNotifications]));
-    }
+    const newNotification = { ...notification
+    };
+    newNotification.read = true;
+    dispatch(updateNotification(removePropertyNotification(newNotification)));
   };
 
-  const onClickUpdateAllNotification = async status => {
-    const response = await NotificationService.updateAllNotificationStatus(status);
-    if (response.status !== 200) return;
-    readAll();
+  const onClickUpdateAllNotifications = status => {
+    dispatch(updateAllNotifications(status));
   };
 
-  const onClickUpdateNotification = async (notification, status) => {
-    const response = await NotificationService.updateNotificationStatus({
-      notificationId: notification.id,
-      status: status
-    });
+  const onClickUpdateNotification = (notification, status) => {
+    const newNotification = { ...notification
+    };
 
-    if (response.status === 200) {
-      let newNotifications;
+    if (status === 'DELETE') {
+      newNotification.deleted = true;
+    } else newNotification.read = status;
 
-      switch (status) {
-        case 'DELETE':
-          newNotifications = notifications.filter(item => item.id !== notification.id);
-          break;
+    dispatch(updateNotification(removePropertyNotification(newNotification)));
+  };
 
-        case 'READ':
-          newNotifications = notifications.map(item => {
-            if (item.id === notification.id) {
-              item.nn_read = true;
-              return item;
-            } else return item;
-          });
-          break;
-
-        case 'UNREAD':
-          newNotifications = notifications.map(item => {
-            if (item.id === notification.id) {
-              item.nn_read = false;
-              return item;
-            } else return item;
-          });
-          break;
-      }
-
-      dispatch(saveMyNotifications([...newNotifications]));
-    }
+  const removePropertyNotification = notification => {
+    delete notification.title;
+    delete notification.content;
+    delete notification.shortContent;
+    return notification;
   };
 
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("li", {
@@ -2169,7 +2168,7 @@ const Notifications = ({
     id: "menu.notification"
   })), /*#__PURE__*/React.createElement("span", null, "(", notifications.length, ")")), /*#__PURE__*/React.createElement("div", {
     className: "cursor-pointer",
-    onClick: () => onClickUpdateAllNotification('READ')
+    onClick: () => onClickUpdateAllNotifications('READ')
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "menu.readAll"
   }))), /*#__PURE__*/React.createElement(PerfectScrollbar, {
@@ -2177,37 +2176,39 @@ const Notifications = ({
     options: {
       wheelPropagation: false
     }
-  }, notifications.map((item, index) => /*#__PURE__*/React.createElement(MediaCustom, {
+  }, notifications.map(item => /*#__PURE__*/React.createElement(MediaCustom, {
     key: item.id
   }, /*#__PURE__*/React.createElement(Media, {
-    className: "d-flex align-items-start cursor-default"
+    className: item.read === true ? 'media-read' : 'media-unread'
   }, /*#__PURE__*/React.createElement(Media, {
     left: true
-  }, item.notification_type === "SYSTEM" ? /*#__PURE__*/React.createElement("img", {
-    src: "https://sit2.inon.vn/resources/images/system-information.png"
-  }) : null, item.notification_type === "USER" ? /*#__PURE__*/React.createElement("img", {
-    src: "https://sit2.inon.vn/resources/images/individual-server.png"
-  }) : null, item.notification_type === "PROMOTION" ? /*#__PURE__*/React.createElement("img", {
-    src: "https://sit2.inon.vn/resources/images/gift.png"
-  }) : null), /*#__PURE__*/React.createElement(Media, {
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "notification-icon"
+  }, item.notificationType === "SYSTEM" ? /*#__PURE__*/React.createElement("img", {
+    src: "https://sit2.inon.vn/resources/images/system-notification.png",
+    alt: "System notification"
+  }) : null, item.notificationType === "USER" ? /*#__PURE__*/React.createElement("img", {
+    src: "https://sit2.inon.vn/resources/images/user-notification.png",
+    alt: "User notification"
+  }) : null, item.notificationType === "PROMOTION" ? /*#__PURE__*/React.createElement("img", {
+    src: "https://sit2.inon.vn/resources/images/promotion-notification.png",
+    alt: "Promotion notification"
+  }) : null)), /*#__PURE__*/React.createElement(Media, {
     onClick: () => onClickOpenNotification(item),
     body: true
   }, /*#__PURE__*/React.createElement("p", {
-    className: !item.nn_read ? 'unread' : '',
     dangerouslySetInnerHTML: {
       __html: item.title
     }
   }), /*#__PURE__*/React.createElement("p", {
-    className: !item.nn_read ? 'unread' : '',
     dangerouslySetInnerHTML: {
-      __html: item.short_content
+      __html: item.shortContent
     }
   }), /*#__PURE__*/React.createElement("small", {
     className: "mt-1"
   }, /*#__PURE__*/React.createElement("time", {
-    className: !item.nn_read ? 'unread' : '',
-    dateTime: item.send_date
-  }, moment().diff(moment(item.send_date), 'days') >= 1 ? moment(item.send_date).format("DD/MM/YYYY") : moment(item.send_date).fromNow()))), /*#__PURE__*/React.createElement(Media, {
+    dateTime: item.sendDate
+  }, moment().diff(moment(item.sendDate), 'days') >= 1 ? moment(item.sendDate).format("DD/MM/YYYY") : moment(item.sendDate).fromNow()))), /*#__PURE__*/React.createElement(Media, {
     right: true,
     className: "cursor-pointer"
   }, /*#__PURE__*/React.createElement(CustomDropdown, null, /*#__PURE__*/React.createElement(UncontrolledButtonDropdown, {
@@ -2219,12 +2220,12 @@ const Notifications = ({
   }, /*#__PURE__*/React.createElement(CustomImage, {
     src: "https://sit2.inon.vn/resources/images/ellipsis-v-solid.png",
     alt: ""
-  }))), /*#__PURE__*/React.createElement(DropdownMenu, null, item.nn_read ? /*#__PURE__*/React.createElement(DropdownItem, {
-    onClick: () => onClickUpdateNotification(item, 'UNREAD')
+  }))), /*#__PURE__*/React.createElement(DropdownMenu, null, item.read ? /*#__PURE__*/React.createElement(DropdownItem, {
+    onClick: () => onClickUpdateNotification(item, false)
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "navbar.notifications.markAsUnRead"
   })) : /*#__PURE__*/React.createElement(DropdownItem, {
-    onClick: () => onClickUpdateNotification(item, 'READ')
+    onClick: () => onClickUpdateNotification(item, true)
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "navbar.notifications.markAsRead"
   })), /*#__PURE__*/React.createElement(DropdownItem, {
@@ -2233,7 +2234,7 @@ const Notifications = ({
     id: "navbar.notifications.delete"
   })))))))))), notifications.length > 0 && /*#__PURE__*/React.createElement("li", {
     className: "dropdown-menu-footer",
-    onClick: () => onClickUpdateAllNotification('DELETE')
+    onClick: () => onClickUpdateAllNotifications('DELETE')
   }, /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     className: "p-1 text-center"
@@ -2261,7 +2262,7 @@ const Bells = () => {
     return () => clearInterval(intervalId);
   }, []);
   useEffect(() => {
-    const newNotifications = notifications.filter(item => item.nn_read === false);
+    const newNotifications = notifications.filter(item => item.read === false);
     setNumberNewNotification(newNotifications.length);
   }, [notifications]);
   useEffect(() => {
@@ -2278,10 +2279,6 @@ const Bells = () => {
     if (!notificationModal) {
       setDropdownOpen(!dropdownOpen);
     }
-  };
-
-  const readAll = () => {
-    dispatch(getMyNotifications());
   };
 
   const openModal = notification => {
@@ -2318,7 +2315,6 @@ const Bells = () => {
     className: "dropdown-menu-media"
   }, /*#__PURE__*/React.createElement(Notifications, {
     notifications: notifications,
-    readAll: readAll,
     openModal: openModal
   }))), notification && /*#__PURE__*/React.createElement(Modal, {
     className: "modal-lg modal-dialog-centered custom-modal-notification",
