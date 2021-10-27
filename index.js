@@ -5,7 +5,7 @@ var React = require('react');
 var React__default = _interopDefault(React);
 var history$1 = require('history');
 var Axios = _interopDefault(require('axios'));
-var axiosExtensions = require('axios-extensions');
+require('axios-extensions');
 var Icon = require('react-feather');
 var reactToastify = require('react-toastify');
 var moment = _interopDefault(require('moment'));
@@ -195,7 +195,7 @@ var LOGIN_METHODS = {
   GOOGLE: 'GOOGLE',
   PASSWORD: 'PASSWORD'
 };
-var API_TIME_OUT = 70000;
+var API_TIME_OUT = 3 * 60 * 1000;
 var MAX_FILE_SIZE = 5;
 var CONTACT_PHONE = '0899.300.800';
 var SESSION_TIMEOUT = 30;
@@ -494,23 +494,7 @@ var hideConfirmAlert = function hideConfirmAlert() {
 };
 
 var HttpClient = Axios.create({
-  timeout: API_TIME_OUT,
-  adapter: axiosExtensions.throttleAdapterEnhancer(axiosExtensions.cacheAdapterEnhancer(Axios.defaults.adapter, {
-    threshold: 15 * 60 * 1000
-  })),
-  invalidate: function (config, request) {
-    try {
-      var _temp2 = function () {
-        if (request.clearCacheEntry) {
-          return Promise.resolve(config.store.removeItem(config.uuid)).then(function () {});
-        }
-      }();
-
-      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  }
+  timeout: API_TIME_OUT
 });
 HttpClient.defaults.headers['Content-Type'] = 'application/json';
 var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
@@ -562,26 +546,30 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
     config.headers.longitude = localStorage.getItem('longitude');
     config.headers.deviceId = deviceId;
     config.headers['Accept-Language'] = language;
+    config.requestUUID = generateUUID();
 
     if (!config.isBackgroundRequest) {
       store.dispatch({
         type: SHOW_LOADING_BAR,
-        payload: ''
+        payload: config.requestUUID
       });
     }
 
     return config;
   });
   HttpClient.interceptors.response.use(function (response) {
-    store.dispatch({
-      type: HIDE_LOADING_BAR,
-      payload: ''
-    });
+    if (response && !response.config.isBackgroundRequest) {
+      store.dispatch({
+        type: HIDE_LOADING_BAR,
+        payload: response.config.requestUUID
+      });
+    }
+
     return response;
   }, function (e) {
     store.dispatch({
       type: HIDE_LOADING_BAR,
-      payload: ''
+      payload: 'ALL'
     });
 
     if (!e.response) {
@@ -611,6 +599,10 @@ var setUpHttpClient = function setUpHttpClient(store, apiBaseUrl) {
         }));
     }
 
+    store.dispatch({
+      type: HIDE_LOADING_BAR,
+      payload: e.response.config.requestUUID
+    });
     return e.response;
   });
 };
@@ -1596,17 +1588,26 @@ var uiReducer = function uiReducer(state, action) {
     state = initialState$1;
   }
 
+  var loadingSet = new Set(state.loading.values());
+
   switch (action.type) {
     case SHOW_LOADING_BAR:
+      loadingSet.add(action.payload);
       return _extends({}, state, {
         isLoading: true,
-        loading: state.loading.add(action.payload)
+        loading: loadingSet
       });
 
     case HIDE_LOADING_BAR:
-      state.loading["delete"](action.payload);
+      if (action.payload === 'ALL') {
+        loadingSet = new Set();
+      } else {
+        loadingSet["delete"](action.payload);
+      }
+
       return _extends({}, state, {
-        isLoading: !!state.loading.size
+        isLoading: !!loadingSet.size,
+        loading: loadingSet
       });
 
     case SHOW_CONFIRM_ALERT:
@@ -1646,7 +1647,7 @@ NotificationService.checkNewNotification = function () {
   });
 };
 
-NotificationService.updateNotificationStatus = function (notification) {
+NotificationService.updateNotification = function (notification) {
   return HttpClient.put(API_UPDATE_NOTIFICATION, notification, {
     isBackgroundRequest: true
   });
@@ -1663,6 +1664,7 @@ NotificationService.updateAllNotificationStatus = function (status) {
 
 var LOAD_MY_NOTIFICATIONS = 'LOAD_MY_NOTIFICATIONS';
 var RECEIVE_NEW_NOTIFICATIONS = 'RECEIVE_NEW_NOTIFICATIONS';
+var UPDATE_NOTIFICATION = 'UPDATE_NOTIFICATION';
 var getMyNotifications = function getMyNotifications() {
   return function (dispatch) {
     try {
@@ -1675,7 +1677,6 @@ var getMyNotifications = function getMyNotifications() {
           type: LOAD_MY_NOTIFICATIONS,
           payload: res.data
         });
-        return res.data;
       });
     } catch (e) {
       return Promise.reject(e);
@@ -1697,12 +1698,34 @@ var checkReceiveNewNotification = function checkReceiveNewNotification() {
     }
   };
 };
-var saveMyNotifications = function saveMyNotifications(notifications) {
+var updateNotification = function updateNotification(notification) {
   return function (dispatch) {
-    dispatch({
-      type: LOAD_MY_NOTIFICATIONS,
-      payload: notifications
-    });
+    try {
+      return Promise.resolve(NotificationService.updateNotification(notification)).then(function (res) {
+        if (!res || res.status !== 200) return;
+        dispatch({
+          type: UPDATE_NOTIFICATION,
+          payload: res.data
+        });
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+};
+var updateAllNotifications = function updateAllNotifications(status) {
+  return function (dispatch) {
+    try {
+      return Promise.resolve(NotificationService.updateAllNotificationStatus(status)).then(function (res) {
+        if (!res || res.status !== 200) return;
+        dispatch({
+          type: LOAD_MY_NOTIFICATIONS,
+          payload: res.data
+        });
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
   };
 };
 
@@ -1725,6 +1748,19 @@ var notificationReducer = function notificationReducer(state, action) {
     case RECEIVE_NEW_NOTIFICATIONS:
       return _extends({}, state, {
         newNotifications: action.payload
+      });
+
+    case UPDATE_NOTIFICATION:
+      var notifications = [].concat(state.notifications);
+      var newNotifications = notifications.map(function (item) {
+        if (item.id === action.payload.id) {
+          return action.payload;
+        } else return item;
+      }).filter(function (item) {
+        return item.deleted === false;
+      });
+      return _extends({}, state, {
+        notifications: newNotifications
       });
 
     default:
@@ -2320,7 +2356,7 @@ function _templateObject2() {
 }
 
 function _templateObject() {
-  var data = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n\n  .unread {\n    color: black;\n    font-weight: bold;\n  }\n"]);
+  var data = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n\n  .notification-icon {\n    border-radius: 50%;\n    background-color: rgb(237 237 237);\n    img {\n      width: 50px;\n    }\n  }\n\n  .media-unread {\n    color: black;\n    font-weight: bold;\n  }\n"]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -2334,84 +2370,42 @@ var CustomDropdown = styled.div(_templateObject3());
 
 var Notifications = function Notifications(_ref) {
   var notifications = _ref.notifications,
-      readAll = _ref.readAll,
       openModal = _ref.openModal;
   var dispatch = reactRedux.useDispatch();
 
   var onClickOpenNotification = function onClickOpenNotification(notification) {
     try {
       openModal(notification);
-      return Promise.resolve(NotificationService.updateNotificationStatus({
-        notificationId: notification.id,
-        status: 'READ'
-      })).then(function (response) {
-        if (response.status === 200) {
-          var newNotifications = notifications.map(function (item) {
-            if (item.id === notification.id) {
-              item.nn_read = true;
-              return item;
-            } else return item;
-          });
-          dispatch(saveMyNotifications([].concat(newNotifications)));
-        }
-      });
+
+      var newNotification = _extends({}, notification);
+
+      newNotification.read = true;
+      dispatch(updateNotification(removePropertyNotification(newNotification)));
+      return Promise.resolve();
     } catch (e) {
       return Promise.reject(e);
     }
   };
 
-  var onClickUpdateAllNotification = function onClickUpdateAllNotification(status) {
-    try {
-      return Promise.resolve(NotificationService.updateAllNotificationStatus(status)).then(function (response) {
-        if (response.status !== 200) return;
-        readAll();
-      });
-    } catch (e) {
-      return Promise.reject(e);
-    }
+  var onClickUpdateAllNotifications = function onClickUpdateAllNotifications(status) {
+    dispatch(updateAllNotifications(status));
   };
 
   var onClickUpdateNotification = function onClickUpdateNotification(notification, status) {
-    try {
-      return Promise.resolve(NotificationService.updateNotificationStatus({
-        notificationId: notification.id,
-        status: status
-      })).then(function (response) {
-        if (response.status === 200) {
-          var newNotifications;
+    var newNotification = _extends({}, notification);
 
-          switch (status) {
-            case 'DELETE':
-              newNotifications = notifications.filter(function (item) {
-                return item.id !== notification.id;
-              });
-              return;
+    if (status === 'DELETE') {
+      newNotification.deleted = true;
+    } else newNotification.read = status;
 
-            case 'READ':
-              newNotifications = notifications.map(function (item) {
-                if (item.id === notification.id) {
-                  item.nn_read = true;
-                  return item;
-                } else return item;
-              });
-              return;
+    dispatch(updateNotification(removePropertyNotification(newNotification)));
+  };
 
-            case 'UNREAD':
-              newNotifications = notifications.map(function (item) {
-                if (item.id === notification.id) {
-                  item.nn_read = false;
-                  return item;
-                } else return item;
-              });
-              return;
-          }
-
-          dispatch(saveMyNotifications([].concat(newNotifications)));
-        }
-      });
-    } catch (e) {
-      return Promise.reject(e);
-    }
+  var removePropertyNotification = function removePropertyNotification(notification) {
+    delete notification.title;
+    delete notification.content;
+    delete notification.shortContent;
+    return notification;
   };
 
   return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("li", {
@@ -2425,7 +2419,7 @@ var Notifications = function Notifications(_ref) {
   })), /*#__PURE__*/React__default.createElement("span", null, "(", notifications.length, ")")), /*#__PURE__*/React__default.createElement("div", {
     className: "cursor-pointer",
     onClick: function onClick() {
-      return onClickUpdateAllNotification('READ');
+      return onClickUpdateAllNotifications('READ');
     }
   }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
     id: "menu.readAll"
@@ -2434,40 +2428,42 @@ var Notifications = function Notifications(_ref) {
     options: {
       wheelPropagation: false
     }
-  }, notifications.map(function (item, index) {
+  }, notifications.map(function (item) {
     return /*#__PURE__*/React__default.createElement(MediaCustom, {
       key: item.id
     }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
-      className: "d-flex align-items-start cursor-default"
+      className: item.read === true ? 'media-read' : 'media-unread'
     }, /*#__PURE__*/React__default.createElement(reactstrap.Media, {
       left: true
-    }, item.notification_type === "SYSTEM" ? /*#__PURE__*/React__default.createElement("img", {
-      src: "https://sit2.inon.vn/resources/images/system-information.png"
-    }) : null, item.notification_type === "USER" ? /*#__PURE__*/React__default.createElement("img", {
-      src: "https://sit2.inon.vn/resources/images/individual-server.png"
-    }) : null, item.notification_type === "PROMOTION" ? /*#__PURE__*/React__default.createElement("img", {
-      src: "https://sit2.inon.vn/resources/images/gift.png"
-    }) : null), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+    }, /*#__PURE__*/React__default.createElement("div", {
+      className: "notification-icon"
+    }, item.notificationType === "SYSTEM" ? /*#__PURE__*/React__default.createElement("img", {
+      src: "https://sit2.inon.vn/resources/images/system-notification.png",
+      alt: "System notification"
+    }) : null, item.notificationType === "USER" ? /*#__PURE__*/React__default.createElement("img", {
+      src: "https://sit2.inon.vn/resources/images/user-notification.png",
+      alt: "User notification"
+    }) : null, item.notificationType === "PROMOTION" ? /*#__PURE__*/React__default.createElement("img", {
+      src: "https://sit2.inon.vn/resources/images/promotion-notification.png",
+      alt: "Promotion notification"
+    }) : null)), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
       onClick: function onClick() {
         return onClickOpenNotification(item);
       },
       body: true
     }, /*#__PURE__*/React__default.createElement("p", {
-      className: !item.nn_read ? 'unread' : '',
       dangerouslySetInnerHTML: {
         __html: item.title
       }
     }), /*#__PURE__*/React__default.createElement("p", {
-      className: !item.nn_read ? 'unread' : '',
       dangerouslySetInnerHTML: {
-        __html: item.short_content
+        __html: item.shortContent
       }
     }), /*#__PURE__*/React__default.createElement("small", {
       className: "mt-1"
     }, /*#__PURE__*/React__default.createElement("time", {
-      className: !item.nn_read ? 'unread' : '',
-      dateTime: item.send_date
-    }, moment().diff(moment(item.send_date), 'days') >= 1 ? moment(item.send_date).format("DD/MM/YYYY") : moment(item.send_date).fromNow()))), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
+      dateTime: item.sendDate
+    }, moment().diff(moment(item.sendDate), 'days') >= 1 ? moment(item.sendDate).format("DD/MM/YYYY") : moment(item.sendDate).fromNow()))), /*#__PURE__*/React__default.createElement(reactstrap.Media, {
       right: true,
       className: "cursor-pointer"
     }, /*#__PURE__*/React__default.createElement(CustomDropdown, null, /*#__PURE__*/React__default.createElement(reactstrap.UncontrolledButtonDropdown, {
@@ -2479,15 +2475,15 @@ var Notifications = function Notifications(_ref) {
     }, /*#__PURE__*/React__default.createElement(CustomImage, {
       src: "https://sit2.inon.vn/resources/images/ellipsis-v-solid.png",
       alt: ""
-    }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownMenu, null, item.nn_read ? /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
+    }))), /*#__PURE__*/React__default.createElement(reactstrap.DropdownMenu, null, item.read ? /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
       onClick: function onClick() {
-        return onClickUpdateNotification(item, 'UNREAD');
+        return onClickUpdateNotification(item, false);
       }
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "navbar.notifications.markAsUnRead"
     })) : /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
       onClick: function onClick() {
-        return onClickUpdateNotification(item, 'READ');
+        return onClickUpdateNotification(item, true);
       }
     }, /*#__PURE__*/React__default.createElement(reactIntl.FormattedMessage, {
       id: "navbar.notifications.markAsRead"
@@ -2501,7 +2497,7 @@ var Notifications = function Notifications(_ref) {
   })), notifications.length > 0 && /*#__PURE__*/React__default.createElement("li", {
     className: "dropdown-menu-footer",
     onClick: function onClick() {
-      return onClickUpdateAllNotification('DELETE');
+      return onClickUpdateAllNotifications('DELETE');
     }
   }, /*#__PURE__*/React__default.createElement(reactstrap.DropdownItem, {
     tag: "a",
@@ -2548,7 +2544,7 @@ var Bells = function Bells() {
   }, []);
   React.useEffect(function () {
     var newNotifications = notifications.filter(function (item) {
-      return item.nn_read === false;
+      return item.read === false;
     });
     setNumberNewNotification(newNotifications.length);
   }, [notifications]);
@@ -2568,10 +2564,6 @@ var Bells = function Bells() {
     if (!notificationModal) {
       setDropdownOpen(!dropdownOpen);
     }
-  };
-
-  var readAll = function readAll() {
-    dispatch(getMyNotifications());
   };
 
   var openModal = function openModal(notification) {
@@ -2608,7 +2600,6 @@ var Bells = function Bells() {
     className: "dropdown-menu-media"
   }, /*#__PURE__*/React__default.createElement(Notifications, {
     notifications: notifications,
-    readAll: readAll,
     openModal: openModal
   }))), notification && /*#__PURE__*/React__default.createElement(reactstrap.Modal, {
     className: "modal-lg modal-dialog-centered custom-modal-notification",
@@ -7760,7 +7751,7 @@ var Select = function Select(props) {
       }
 
       newProps.value = props.options.filter(function (item) {
-        return values.split(',').indexOf(item.value) >= 0;
+        return values.split(',').includes(String(item.value));
       });
     }
 

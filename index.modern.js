@@ -3,7 +3,7 @@ export { FormattedMessage } from 'react-intl';
 import React, { useState, useEffect, Component, PureComponent, useCallback, useRef } from 'react';
 import { createBrowserHistory } from 'history';
 import Axios from 'axios';
-import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
+import 'axios-extensions';
 import * as Icon from 'react-feather';
 import { AlertTriangle, Check, User, Lock, Link, Users, FileText, Shield, Globe, MessageSquare, Power, Bell, Search, X, Menu, Home, List, PlusCircle, Gift, ArrowUp, Disc, Circle, ChevronRight, Download, Clipboard, Sun } from 'react-feather';
 import { toast, ToastContainer } from 'react-toastify';
@@ -412,15 +412,7 @@ const hideConfirmAlert = () => {
 };
 
 const HttpClient = Axios.create({
-  timeout: API_TIME_OUT,
-  adapter: throttleAdapterEnhancer(cacheAdapterEnhancer(Axios.defaults.adapter, {
-    threshold: 15 * 60 * 1000
-  })),
-  invalidate: async (config, request) => {
-    if (request.clearCacheEntry) {
-      await config.store.removeItem(config.uuid);
-    }
-  }
+  timeout: API_TIME_OUT
 });
 HttpClient.defaults.headers['Content-Type'] = 'application/json';
 const setUpHttpClient = (store, apiBaseUrl) => {
@@ -472,26 +464,30 @@ const setUpHttpClient = (store, apiBaseUrl) => {
     config.headers.longitude = localStorage.getItem('longitude');
     config.headers.deviceId = deviceId;
     config.headers['Accept-Language'] = language;
+    config.requestUUID = generateUUID();
 
     if (!config.isBackgroundRequest) {
       store.dispatch({
         type: SHOW_LOADING_BAR,
-        payload: ''
+        payload: config.requestUUID
       });
     }
 
     return config;
   });
   HttpClient.interceptors.response.use(response => {
-    store.dispatch({
-      type: HIDE_LOADING_BAR,
-      payload: ''
-    });
+    if (response && !response.config.isBackgroundRequest) {
+      store.dispatch({
+        type: HIDE_LOADING_BAR,
+        payload: response.config.requestUUID
+      });
+    }
+
     return response;
   }, e => {
     store.dispatch({
       type: HIDE_LOADING_BAR,
-      payload: ''
+      payload: 'ALL'
     });
 
     if (!e.response) {
@@ -521,6 +517,10 @@ const setUpHttpClient = (store, apiBaseUrl) => {
         }));
     }
 
+    store.dispatch({
+      type: HIDE_LOADING_BAR,
+      payload: e.response.config.requestUUID
+    });
     return e.response;
   });
 };
@@ -1396,17 +1396,26 @@ const initialState$1 = {
 };
 
 const uiReducer = (state = initialState$1, action) => {
+  let loadingSet = new Set(state.loading.values());
+
   switch (action.type) {
     case SHOW_LOADING_BAR:
+      loadingSet.add(action.payload);
       return { ...state,
         isLoading: true,
-        loading: state.loading.add(action.payload)
+        loading: loadingSet
       };
 
     case HIDE_LOADING_BAR:
-      state.loading.delete(action.payload);
+      if (action.payload === 'ALL') {
+        loadingSet = new Set();
+      } else {
+        loadingSet.delete(action.payload);
+      }
+
       return { ...state,
-        isLoading: !!state.loading.size
+        isLoading: !!loadingSet.size,
+        loading: loadingSet
       };
 
     case SHOW_CONFIRM_ALERT:
