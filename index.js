@@ -1594,7 +1594,7 @@ var uiReducer = function uiReducer(state, action) {
     case SHOW_LOADING_BAR:
       loadingSet.add(action.payload);
       return _extends({}, state, {
-        isLoading: true,
+        isLoading: !!loadingSet.size,
         loading: loadingSet
       });
 
@@ -10599,6 +10599,7 @@ var LoadingSpinner = function LoadingSpinner() {
   }),
       isLoading = _useSelector.isLoading;
 
+  console.log(isLoading);
   return isLoading ? /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement("div", {
     className: "app-loading"
   }, /*#__PURE__*/React__default.createElement("div", {
