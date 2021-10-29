@@ -16,7 +16,6 @@ import thunk from 'redux-thunk';
 import { PersistGate } from 'redux-persist/integration/react';
 import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/es/storage';
-import 'react-dom/test-utils';
 import { useHistory, Link as Link$1, Router, Switch, Route, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
 import { FormGroup, Label, DropdownMenu, DropdownItem, Media, UncontrolledButtonDropdown, DropdownToggle, ButtonDropdown, Badge, Modal, ModalHeader, ModalBody, NavItem, NavLink, UncontrolledDropdown, Navbar as Navbar$1, Button, Input, Row, Col, Card, CardHeader, CardTitle, CardBody, Nav, TabContent, TabPane, ButtonGroup, ModalFooter } from 'reactstrap';
@@ -1430,25 +1429,24 @@ NotificationService.checkNewNotification = () => {
   });
 };
 
-NotificationService.updateNotificationStatus = notification => {
+NotificationService.updateNotification = notification => {
   return HttpClient.put(API_UPDATE_NOTIFICATION, notification, {
     isBackgroundRequest: true
   });
 };
 
-NotificationService.updateAllNotificationStatus = status => {
-  return HttpClient.put(API_UPDATE_ALL_NOTIFICATION_STATUS, {}, {
+NotificationService.updateAllNotificationStatus = notifications => {
+  return HttpClient.put(API_UPDATE_ALL_NOTIFICATION_STATUS, notifications, {
     params: {
-      status
-    },
-    isBackgroundRequest: true
+      isBackgroundRequest: true
+    }
   });
 };
 
 const LOAD_MY_NOTIFICATIONS = 'LOAD_MY_NOTIFICATIONS';
 const RECEIVE_NEW_NOTIFICATIONS = 'RECEIVE_NEW_NOTIFICATIONS';
 const UPDATE_NOTIFICATION = 'UPDATE_NOTIFICATION';
-const getAllNotifications = () => {
+const getMyNotifications = () => {
   return async dispatch => {
     const res = await NotificationService.getMyNotifications();
 
@@ -1460,10 +1458,9 @@ const getAllNotifications = () => {
       type: LOAD_MY_NOTIFICATIONS,
       payload: res.data
     });
-    return res.data;
   };
 };
-const getNewNotifications = () => {
+const checkReceiveNewNotification = () => {
   return async () => {
     const res = await NotificationService.checkNewNotification();
 
@@ -1476,31 +1473,22 @@ const getNewNotifications = () => {
 };
 const updateNotification = notification => {
   return async dispatch => {
-    const res = await NotificationService.updateNotificationStatus(notification);
-
-    if (!res || res.status !== 200) {
-      return;
-    }
-
+    const res = await NotificationService.updateNotification(notification);
+    if (!res || res.status !== 200) return;
     dispatch({
       type: UPDATE_NOTIFICATION,
-      payload: res.data
+      payload: notification
     });
   };
 };
-const updateAllNotifications = status => {
+const updateAllNotifications = (newNotificationsRequest, newNotifications) => {
   return async dispatch => {
-    const res = await NotificationService.updateAllNotificationStatus(status);
-
-    if (!res || res.status !== 200) {
-      return;
-    }
-
+    const res = await NotificationService.updateAllNotificationStatus(newNotificationsRequest);
+    if (!res || res.status !== 200) return;
     dispatch({
       type: LOAD_MY_NOTIFICATIONS,
-      payload: res.data
+      payload: newNotifications
     });
-    return res.data;
   };
 };
 
@@ -1524,10 +1512,15 @@ const notificationReducer = (state = { ...initialState$2
 
     case UPDATE_NOTIFICATION:
       const notifications = [...state.notifications];
-      const newNotifications = notifications.map(item => {
-        if (item.id === action.payload.id) {
-          return action.payload;
-        } else return item;
+      const newNotifications = [];
+      notifications.forEach(item => {
+        const notification = { ...item
+        };
+
+        if (notification.notificationTemplateHisId === action.payload.notificationTemplateHisId && action.payload.deleted === false) {
+          notification.readed = action.payload.read;
+          newNotifications.push(notification);
+        } else if (notification.notificationTemplateHisId !== action.payload.notificationTemplateHisId) newNotifications.push(notification);
       });
       return { ...state,
         notifications: newNotifications
@@ -2082,7 +2075,28 @@ const MediaCustom = styled.div(_t || (_t = _`
   display: flex;
   justify-content: space-between;
 
-  .unread {
+  .media {
+    .notification-icon {
+      border-radius: 50%;
+      background-color: rgb(237 237 237);
+
+      img {
+        width: 50px;
+      }
+    }
+
+    .media-body {
+      width: 150px;
+
+      p {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
+  .media-unread {
     color: black;
     font-weight: bold;
   }
@@ -2107,69 +2121,88 @@ const CustomDropdown = styled.div(_t3 || (_t3 = _`
 
 const Notifications = ({
   notifications,
-  readAll,
   openModal
 }) => {
   const dispatch = useDispatch();
 
   const onClickOpenNotification = async notification => {
     openModal(notification);
-    const response = await NotificationService.updateNotificationStatus({
-      notificationId: notification.id,
-      status: 'READ'
-    });
+    dispatch(updateNotification(createNotificationRequest(notification, true)));
+  };
 
-    if (response.status === 200) {
-      const newNotifications = notifications.map(item => {
-        if (item.id === notification.id) {
-          item.read = true;
-          return item;
-        } else return item;
+  const onClickUpdateAllNotifications = status => {
+    let newNotificationsRequest;
+
+    if (status === 'DELETE') {
+      newNotificationsRequest = notifications.map(item => {
+        const notification = {};
+        notification.deleted = true;
+        notification.read = item.readed;
+        notification.templateId = item.id;
+        notification.notificationTemplateHisId = item.notificationTemplateHisId;
+        return notification;
       });
-      dispatch(updateNotification([...newNotifications]));
+    } else {
+      newNotificationsRequest = notifications.map(item => {
+        const notification = {};
+        notification.deleted = false;
+        notification.read = status;
+        notification.templateId = item.id;
+        notification.notificationTemplateHisId = item.notificationTemplateHisId;
+        return notification;
+      });
     }
-  };
 
-  const onClickUpdateAllNotification = async status => {
-    const response = await NotificationService.updateAllNotificationStatus(status);
-    if (response.status !== 200) return;
-    readAll();
-  };
+    let newNotifications;
 
-  const onClickUpdateNotification = async (notification, status) => {
-    const response = await NotificationService.updateNotificationStatus({
-      notificationId: notification.id,
-      status: status
+    if (status === 'DELETE') {
+      newNotifications = [];
+    } else newNotifications = notifications.map(item => {
+      item.readed = status;
+      return item;
     });
 
-    if (response.status === 200) {
-      let newNotifications;
+    dispatch(updateAllNotifications(newNotificationsRequest, newNotifications));
+  };
 
-      switch (status) {
-        case 'DELETE':
-          newNotifications = notifications.filter(item => item.id !== notification.id);
-          break;
+  const onClickUpdateNotification = (notification, status) => {
+    dispatch(updateNotification(createNotificationRequest(notification, status)));
+  };
 
-        case 'READ':
-          newNotifications = notifications.map(item => {
-            if (item.id === notification.id) {
-              item.read = true;
-              return item;
-            } else return item;
-          });
-          break;
+  const createNotificationRequest = (notification, status) => {
+    const newNotification = {};
+    newNotification.templateId = notification.id;
+    newNotification.notificationTemplateHisId = notification.notificationTemplateHisId;
 
-        case 'UNREAD':
-          newNotifications = notifications.map(item => {
-            if (item.id === notification.id) {
-              item.read = false;
-              return item;
-            } else return item;
-          });
-          break;
-      }
+    if (status === 'DELETE') {
+      newNotification.deleted = true;
+      newNotification.read = notification.readed;
+    } else {
+      newNotification.deleted = false;
+      newNotification.read = status;
+    }
 
-      dispatch(updateNotification([...newNotifications]));
+    return newNotification;
+  };
+
+  const getNotificationType = item => {
+    console.log(JSON.stringify(item));
+
+    if (item.code) {
+      if (item.code.includes('SYSTEM')) {
+        return /*#__PURE__*/React.createElement("img", {
+          src: "https://sit2.inon.vn/resources/images/system-notification.png",
+          alt: "System notification"
+        });
+      } else if (item.code.includes('USER')) {
+        return /*#__PURE__*/React.createElement("img", {
+          src: "https://sit2.inon.vn/resources/images/user-notification.png",
+          alt: "User notification"
+        });
+      } else return /*#__PURE__*/React.createElement("img", {
+        src: "https://sit2.inon.vn/resources/images/promotion-notification.png",
+        alt: "Promotion notification"
+      });
     }
   };
 
@@ -2183,7 +2216,7 @@ const Notifications = ({
     id: "menu.notification"
   })), /*#__PURE__*/React.createElement("span", null, "(", notifications.length, ")")), /*#__PURE__*/React.createElement("div", {
     className: "cursor-pointer",
-    onClick: () => onClickUpdateAllNotification('READ')
+    onClick: () => onClickUpdateAllNotifications(true)
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "menu.readAll"
   }))), /*#__PURE__*/React.createElement(PerfectScrollbar, {
@@ -2191,35 +2224,28 @@ const Notifications = ({
     options: {
       wheelPropagation: false
     }
-  }, notifications.map((item, index) => /*#__PURE__*/React.createElement(MediaCustom, {
-    key: item.id
+  }, notifications.map(item => /*#__PURE__*/React.createElement(MediaCustom, {
+    key: item.notificationTemplateHisId
   }, /*#__PURE__*/React.createElement(Media, {
-    className: "d-flex align-items-start cursor-default"
+    className: item.readed === true ? 'media-read' : 'media-unread'
   }, /*#__PURE__*/React.createElement(Media, {
     left: true
-  }, item.notificationType === "SYSTEM" ? /*#__PURE__*/React.createElement("img", {
-    src: "https://sit2.inon.vn/resources/images/system-information.png"
-  }) : null, item.notificationType === "USER" ? /*#__PURE__*/React.createElement("img", {
-    src: "https://sit2.inon.vn/resources/images/individual-server.png"
-  }) : null, item.notificationType === "PROMOTION" ? /*#__PURE__*/React.createElement("img", {
-    src: "https://sit2.inon.vn/resources/images/gift.png"
-  }) : null), /*#__PURE__*/React.createElement(Media, {
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "notification-icon"
+  }, getNotificationType(item))), /*#__PURE__*/React.createElement(Media, {
     onClick: () => onClickOpenNotification(item),
     body: true
   }, /*#__PURE__*/React.createElement("p", {
-    className: !item.read ? 'unread' : '',
     dangerouslySetInnerHTML: {
       __html: item.title
     }
   }), /*#__PURE__*/React.createElement("p", {
-    className: !item.read ? 'unread' : '',
     dangerouslySetInnerHTML: {
       __html: item.shortContent
     }
   }), /*#__PURE__*/React.createElement("small", {
     className: "mt-1"
   }, /*#__PURE__*/React.createElement("time", {
-    className: !item.read ? 'unread' : '',
     dateTime: item.sendDate
   }, moment().diff(moment(item.sendDate), 'days') >= 1 ? moment(item.sendDate).format("DD/MM/YYYY") : moment(item.sendDate).fromNow()))), /*#__PURE__*/React.createElement(Media, {
     right: true,
@@ -2233,12 +2259,12 @@ const Notifications = ({
   }, /*#__PURE__*/React.createElement(CustomImage, {
     src: "https://sit2.inon.vn/resources/images/ellipsis-v-solid.png",
     alt: ""
-  }))), /*#__PURE__*/React.createElement(DropdownMenu, null, item.nn_read ? /*#__PURE__*/React.createElement(DropdownItem, {
-    onClick: () => onClickUpdateNotification(item, 'UNREAD')
+  }))), /*#__PURE__*/React.createElement(DropdownMenu, null, item.readed ? /*#__PURE__*/React.createElement(DropdownItem, {
+    onClick: () => onClickUpdateNotification(item, false)
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "navbar.notifications.markAsUnRead"
   })) : /*#__PURE__*/React.createElement(DropdownItem, {
-    onClick: () => onClickUpdateNotification(item, 'READ')
+    onClick: () => onClickUpdateNotification(item, true)
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "navbar.notifications.markAsRead"
   })), /*#__PURE__*/React.createElement(DropdownItem, {
@@ -2247,7 +2273,7 @@ const Notifications = ({
     id: "navbar.notifications.delete"
   })))))))))), notifications.length > 0 && /*#__PURE__*/React.createElement("li", {
     className: "dropdown-menu-footer",
-    onClick: () => onClickUpdateAllNotification('DELETE')
+    onClick: () => onClickUpdateAllNotifications('DELETE')
   }, /*#__PURE__*/React.createElement(DropdownItem, {
     tag: "a",
     className: "p-1 text-center"
@@ -2268,23 +2294,23 @@ const Bells = () => {
   const [numberNewNotification, setNumberNewNotification] = useState$1(0);
   const [notification, setNotification] = useState$1(null);
   useEffect(() => {
-    dispatch(getAllNotifications());
+    dispatch(getMyNotifications());
     const intervalId = setInterval(() => {
-      dispatch(getAllNotifications());
-    }, 60000);
+      dispatch(getMyNotifications());
+    }, 30000);
     return () => clearInterval(intervalId);
   }, []);
   useEffect(() => {
-    const newNotifications = notifications.filter(item => item.read === false);
+    const newNotifications = notifications.filter(item => item.readed === false);
     setNumberNewNotification(newNotifications.length);
   }, [notifications]);
   useEffect(() => {
-    const notifications = dispatch(getNewNotifications());
+    const notifications = dispatch(checkReceiveNewNotification());
     checkNewNotifications(notifications);
     const intervalId = setInterval(() => {
-      const notifications = dispatch(getNewNotifications());
+      const notifications = dispatch(checkReceiveNewNotification());
       checkNewNotifications(notifications);
-    }, 60000);
+    }, 30000);
     return () => clearInterval(intervalId);
   }, []);
 
@@ -2292,10 +2318,6 @@ const Bells = () => {
     if (!notificationModal) {
       setDropdownOpen(!dropdownOpen);
     }
-  };
-
-  const readAll = () => {
-    dispatch(getAllNotifications());
   };
 
   const openModal = notification => {
@@ -2332,7 +2354,6 @@ const Bells = () => {
     className: "dropdown-menu-media"
   }, /*#__PURE__*/React.createElement(Notifications, {
     notifications: notifications,
-    readAll: readAll,
     openModal: openModal
   }))), notification && /*#__PURE__*/React.createElement(Modal, {
     className: "modal-lg modal-dialog-centered custom-modal-notification",
@@ -3820,6 +3841,7 @@ var messages_en = {
 	"setting.personalSetting": "Personal Settings",
 	"setting.generalInformation": "General Information",
 	"setting.notification": "Notification",
+	"setting.notificationDetail": "Notification detail",
 	"setting.deviceManagement": "Device Management",
 	"setting.language": "Language",
 	"setting.termAndCondition": "Terms & condition",
@@ -4204,6 +4226,7 @@ var messages_vi = {
 	"setting.personalSetting": "Cài đặt Cá nhân",
 	"setting.generalInformation": "Thông tin chung",
 	"setting.notification": "Thông báo",
+	"setting.notificationDetail": "Thông báo chi tiết",
 	"setting.deviceManagement": "Quản lý thiết bị",
 	"setting.language": "Ngôn ngữ",
 	"setting.termAndCondition": "Điều khoản & Điều kiện",
@@ -10093,4 +10116,4 @@ const usePageAuthorities = () => {
   return authorities;
 };
 
-export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, LandingPage, Radio, ReactTable, Select, changeIsGuest, getAllNotifications, getNewNotifications, goBackHomePage, goToAgencyApp, hideConfirmAlert, logoutAction, showConfirmAlert, updateAllNotifications, updateNotification, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };
+export { AccountSettings, AppId, Autocomplete as AutoComplete, App as BaseApp, appConfigs as BaseAppConfigs, index as BaseAppUltils, BaseFormDatePicker, BaseFormGroup, BaseFormGroupSelect, CheckBox as Checkbox, CurrencyInput, DatePicker, FallbackSpinner, GeneralInfo, HttpClient, LandingPage, Radio, ReactTable, Select, changeIsGuest, goBackHomePage, goToAgencyApp, hideConfirmAlert, logoutAction, showConfirmAlert, updateAllNotifications, updateNotification, useBankList, useCityList, useDeviceDetect, useDistrictList, usePageAuthorities, useWardList, useWindowDimensions };

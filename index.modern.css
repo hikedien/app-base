@@ -14932,7 +14932,7 @@ html [type="button"],
     .false-cjs .false-cjs ul.false-cjs li .false-cjs {
       position: relative; }
     .false-cjs .false-cjs .false-cjs {
-      width: 26rem;
+      width: 418px;
       left: 10px !important; }
       .false-cjs .false-cjs .false-cjs .false-cjs {
         max-height: 423px !important;
@@ -14949,7 +14949,8 @@ html [type="button"],
           border-bottom: none; }
       .false-cjs .false-cjs .false-cjs .false-cjs {
         border-bottom: 1px solid #dae1e7;
-        padding: 1.25rem; }
+        padding: 1.25rem;
+        height: 50px; }
         .false-cjs .false-cjs .false-cjs .false-cjs .false-cjs {
           padding: 0; }
       .false-cjs .false-cjs .false-cjs .false-cjs a {
