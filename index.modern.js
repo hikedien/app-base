@@ -1464,12 +1464,11 @@ NotificationService.updateNotification = notification => {
   });
 };
 
-NotificationService.updateAllNotificationStatus = status => {
-  return HttpClient.put(API_UPDATE_ALL_NOTIFICATION_STATUS, {}, {
+NotificationService.updateAllNotificationStatus = notifications => {
+  return HttpClient.put(API_UPDATE_ALL_NOTIFICATION_STATUS, notifications, {
     params: {
-      status
-    },
-    isBackgroundRequest: true
+      isBackgroundRequest: true
+    }
   });
 };
 
@@ -1507,17 +1506,17 @@ const updateNotification = notification => {
     if (!res || res.status !== 200) return;
     dispatch({
       type: UPDATE_NOTIFICATION,
-      payload: res.data
+      payload: notification
     });
   };
 };
-const updateAllNotifications = status => {
+const updateAllNotifications = (newNotificationsRequest, newNotifications) => {
   return async dispatch => {
-    const res = await NotificationService.updateAllNotificationStatus(status);
+    const res = await NotificationService.updateAllNotificationStatus(newNotificationsRequest);
     if (!res || res.status !== 200) return;
     dispatch({
       type: LOAD_MY_NOTIFICATIONS,
-      payload: res.data
+      payload: newNotifications
     });
   };
 };
@@ -1542,11 +1541,16 @@ const notificationReducer = (state = { ...initialState$2
 
     case UPDATE_NOTIFICATION:
       const notifications = [...state.notifications];
-      const newNotifications = notifications.map(item => {
-        if (item.id === action.payload.id) {
-          return action.payload;
-        } else return item;
-      }).filter(item => item.deleted === false);
+      const newNotifications = [];
+      notifications.forEach(item => {
+        const notification = { ...item
+        };
+
+        if (notification.notificationTemplateHisId === action.payload.notificationTemplateHisId && action.payload.deleted === false) {
+          notification.readed = action.payload.read;
+          newNotifications.push(notification);
+        } else if (notification.notificationTemplateHisId !== action.payload.notificationTemplateHisId) newNotifications.push(notification);
+      });
       return { ...state,
         notifications: newNotifications
       };
@@ -2100,11 +2104,24 @@ const MediaCustom = styled.div(_t || (_t = _`
   display: flex;
   justify-content: space-between;
 
-  .notification-icon {
-    border-radius: 50%;
-    background-color: rgb(237 237 237);
-    img {
-      width: 50px;
+  .media {
+    .notification-icon {
+      border-radius: 50%;
+      background-color: rgb(237 237 237);
+
+      img {
+        width: 50px;
+      }
+    }
+
+    .media-body {
+      width: 150px;
+
+      p {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
   }
 
@@ -2139,32 +2156,83 @@ const Notifications = ({
 
   const onClickOpenNotification = async notification => {
     openModal(notification);
-    const newNotification = { ...notification
-    };
-    newNotification.read = true;
-    dispatch(updateNotification(removePropertyNotification(newNotification)));
+    dispatch(updateNotification(createNotificationRequest(notification, true)));
   };
 
   const onClickUpdateAllNotifications = status => {
-    dispatch(updateAllNotifications(status));
+    let newNotificationsRequest;
+
+    if (status === 'DELETE') {
+      newNotificationsRequest = notifications.map(item => {
+        const notification = {};
+        notification.deleted = true;
+        notification.read = item.readed;
+        notification.templateId = item.id;
+        notification.notificationTemplateHisId = item.notificationTemplateHisId;
+        return notification;
+      });
+    } else {
+      newNotificationsRequest = notifications.map(item => {
+        const notification = {};
+        notification.deleted = false;
+        notification.read = status;
+        notification.templateId = item.id;
+        notification.notificationTemplateHisId = item.notificationTemplateHisId;
+        return notification;
+      });
+    }
+
+    let newNotifications;
+
+    if (status === 'DELETE') {
+      newNotifications = [];
+    } else newNotifications = notifications.map(item => {
+      item.readed = status;
+      return item;
+    });
+
+    dispatch(updateAllNotifications(newNotificationsRequest, newNotifications));
   };
 
   const onClickUpdateNotification = (notification, status) => {
-    const newNotification = { ...notification
-    };
+    dispatch(updateNotification(createNotificationRequest(notification, status)));
+  };
+
+  const createNotificationRequest = (notification, status) => {
+    const newNotification = {};
+    newNotification.templateId = notification.id;
+    newNotification.notificationTemplateHisId = notification.notificationTemplateHisId;
 
     if (status === 'DELETE') {
       newNotification.deleted = true;
-    } else newNotification.read = status;
+      newNotification.read = notification.readed;
+    } else {
+      newNotification.deleted = false;
+      newNotification.read = status;
+    }
 
-    dispatch(updateNotification(removePropertyNotification(newNotification)));
+    return newNotification;
   };
 
-  const removePropertyNotification = notification => {
-    delete notification.title;
-    delete notification.content;
-    delete notification.shortContent;
-    return notification;
+  const getNotificationType = item => {
+    console.log(JSON.stringify(item));
+
+    if (item.code) {
+      if (item.code.includes('SYSTEM')) {
+        return /*#__PURE__*/React.createElement("img", {
+          src: "https://sit2.inon.vn/resources/images/system-notification.png",
+          alt: "System notification"
+        });
+      } else if (item.code.includes('USER')) {
+        return /*#__PURE__*/React.createElement("img", {
+          src: "https://sit2.inon.vn/resources/images/user-notification.png",
+          alt: "User notification"
+        });
+      } else return /*#__PURE__*/React.createElement("img", {
+        src: "https://sit2.inon.vn/resources/images/promotion-notification.png",
+        alt: "Promotion notification"
+      });
+    }
   };
 
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("li", {
@@ -2177,7 +2245,7 @@ const Notifications = ({
     id: "menu.notification"
   })), /*#__PURE__*/React.createElement("span", null, "(", notifications.length, ")")), /*#__PURE__*/React.createElement("div", {
     className: "cursor-pointer",
-    onClick: () => onClickUpdateAllNotifications('READ')
+    onClick: () => onClickUpdateAllNotifications(true)
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "menu.readAll"
   }))), /*#__PURE__*/React.createElement(PerfectScrollbar, {
@@ -2186,23 +2254,14 @@ const Notifications = ({
       wheelPropagation: false
     }
   }, notifications.map(item => /*#__PURE__*/React.createElement(MediaCustom, {
-    key: item.id
+    key: item.notificationTemplateHisId
   }, /*#__PURE__*/React.createElement(Media, {
-    className: item.read === true ? 'media-read' : 'media-unread'
+    className: item.readed === true ? 'media-read' : 'media-unread'
   }, /*#__PURE__*/React.createElement(Media, {
     left: true
   }, /*#__PURE__*/React.createElement("div", {
     className: "notification-icon"
-  }, item.notificationType === "SYSTEM" ? /*#__PURE__*/React.createElement("img", {
-    src: "https://sit2.inon.vn/resources/images/system-notification.png",
-    alt: "System notification"
-  }) : null, item.notificationType === "USER" ? /*#__PURE__*/React.createElement("img", {
-    src: "https://sit2.inon.vn/resources/images/user-notification.png",
-    alt: "User notification"
-  }) : null, item.notificationType === "PROMOTION" ? /*#__PURE__*/React.createElement("img", {
-    src: "https://sit2.inon.vn/resources/images/promotion-notification.png",
-    alt: "Promotion notification"
-  }) : null)), /*#__PURE__*/React.createElement(Media, {
+  }, getNotificationType(item))), /*#__PURE__*/React.createElement(Media, {
     onClick: () => onClickOpenNotification(item),
     body: true
   }, /*#__PURE__*/React.createElement("p", {
@@ -2229,7 +2288,7 @@ const Notifications = ({
   }, /*#__PURE__*/React.createElement(CustomImage, {
     src: "https://sit2.inon.vn/resources/images/ellipsis-v-solid.png",
     alt: ""
-  }))), /*#__PURE__*/React.createElement(DropdownMenu, null, item.read ? /*#__PURE__*/React.createElement(DropdownItem, {
+  }))), /*#__PURE__*/React.createElement(DropdownMenu, null, item.readed ? /*#__PURE__*/React.createElement(DropdownItem, {
     onClick: () => onClickUpdateNotification(item, false)
   }, /*#__PURE__*/React.createElement(FormattedMessage, {
     id: "navbar.notifications.markAsUnRead"
@@ -2267,11 +2326,11 @@ const Bells = () => {
     dispatch(getMyNotifications());
     const intervalId = setInterval(() => {
       dispatch(getMyNotifications());
-    }, 60000);
+    }, 30000);
     return () => clearInterval(intervalId);
   }, []);
   useEffect(() => {
-    const newNotifications = notifications.filter(item => item.read === false);
+    const newNotifications = notifications.filter(item => item.readed === false);
     setNumberNewNotification(newNotifications.length);
   }, [notifications]);
   useEffect(() => {
@@ -2280,7 +2339,7 @@ const Bells = () => {
     const intervalId = setInterval(() => {
       const notifications = dispatch(checkReceiveNewNotification());
       checkNewNotifications(notifications);
-    }, 60000);
+    }, 30000);
     return () => clearInterval(intervalId);
   }, []);
 
