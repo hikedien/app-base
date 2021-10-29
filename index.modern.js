@@ -1,6 +1,6 @@
 import { FormattedMessage, useIntl, IntlProvider } from 'react-intl';
 export { FormattedMessage } from 'react-intl';
-import React, { useState as useState$1, useEffect, Component, PureComponent, useCallback, useRef } from 'react';
+import React, { useState, useEffect, Component, PureComponent, useCallback, useRef } from 'react';
 import { createBrowserHistory } from 'history';
 import Axios from 'axios';
 import { throttleAdapterEnhancer, cacheAdapterEnhancer } from 'axios-extensions';
@@ -2289,10 +2289,10 @@ const Bells = () => {
   const {
     notifications
   } = useSelector(state => state.notifications);
-  const [dropdownOpen, setDropdownOpen] = useState$1(false);
-  const [notificationModal, setNotificationModal] = useState$1(false);
-  const [numberNewNotification, setNumberNewNotification] = useState$1(0);
-  const [notification, setNotification] = useState$1(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [notificationModal, setNotificationModal] = useState(false);
+  const [numberNewNotification, setNumberNewNotification] = useState(0);
+  const [notification, setNotification] = useState(null);
   useEffect(() => {
     dispatch(getMyNotifications());
     const intervalId = setInterval(() => {
@@ -2386,8 +2386,8 @@ const NavbarUser = props => {
   let {
     roles = []
   } = useSelector(state => state.navbar);
-  const [navbarSearch, setNavbarSearch] = useState$1(false);
-  const [suggestions, setSuggestions] = useState$1([]);
+  const [navbarSearch, setNavbarSearch] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
   const intl = useIntl();
   userSettings = userSettings || {};
   useEffect(() => {
@@ -2588,7 +2588,7 @@ function getWindowDimensions() {
 }
 
 function useWindowDimensions() {
-  const [windowDimensions, setWindowDimensions] = useState$1(getWindowDimensions());
+  const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
   useEffect(() => {
     function handleResize() {
       setWindowDimensions(getWindowDimensions());
@@ -7315,8 +7315,8 @@ const BaseFormDatePicker = ({
 };
 
 const Select = props => {
-  const [inputValue, setInputValue] = useState$1(props.value);
-  const [isFocused, setIsFocused] = useState$1(false);
+  const [inputValue, setInputValue] = useState(props.value);
+  const [isFocused, setIsFocused] = useState(false);
   useEffect(() => {
     setInputValue(props.value);
   }, [props.value]);
@@ -7514,7 +7514,7 @@ const mapDataToSelectOptions = (data, lang) => {
 };
 
 const useCityList = countryCode => {
-  const [cities, setCities] = useState$1([]);
+  const [cities, setCities] = useState([]);
   const {
     locale
   } = useIntl();
@@ -7538,7 +7538,7 @@ const useCityList = countryCode => {
   };
 };
 const useDistrictList = cityCode => {
-  const [districts, setDistricts] = useState$1([]);
+  const [districts, setDistricts] = useState([]);
   const {
     locale
   } = useIntl();
@@ -7562,7 +7562,7 @@ const useDistrictList = cityCode => {
   };
 };
 const useWardList = districtCode => {
-  const [wards, setWards] = useState$1([]);
+  const [wards, setWards] = useState([]);
   const {
     locale
   } = useIntl();
@@ -7586,7 +7586,7 @@ const useWardList = districtCode => {
   };
 };
 const useBankList = () => {
-  const [banks, setBanks] = useState$1([]);
+  const [banks, setBanks] = useState([]);
   const {
     locale
   } = useIntl();
@@ -7679,7 +7679,7 @@ const UserAccountTab = () => {
   const {
     banks
   } = useBankList();
-  const [avatar, setAvatar] = useState$1({
+  const [avatar, setAvatar] = useState({
     url: userSettings.avatar,
     file: null
   });
@@ -8144,7 +8144,7 @@ const ShareWithFriends = () => {
 };
 
 const AccountSettings = props => {
-  const [activeTab, setActiveTab] = useState$1('account-info');
+  const [activeTab, setActiveTab] = useState('account-info');
   const history = useHistory();
   useEffect(() => setActiveTab(props.activeTab), [props.activeTab]);
   return /*#__PURE__*/React.createElement(Row, null, /*#__PURE__*/React.createElement(Col, {
@@ -8246,7 +8246,7 @@ class Radio extends React.Component {
 const LanguageTab = () => {
   const dispatch = useDispatch();
   const intl = useIntl();
-  const [lang, setLang] = useState$1(localStorage.getItem('language'));
+  const [lang, setLang] = useState(localStorage.getItem('language'));
 
   const onClickBackHome = () => {
     dispatch(showConfirmAlert({
@@ -8420,7 +8420,7 @@ const ContactTab = () => {
 };
 
 const GeneralInfo = props => {
-  const [activeTab, setActiveTab] = useState$1('terms-and-condition');
+  const [activeTab, setActiveTab] = useState('terms-and-condition');
   const history = useHistory();
   useEffect(() => setActiveTab(props.activeTab), [props.activeTab]);
   return /*#__PURE__*/React.createElement(Row, {
@@ -8608,8 +8608,8 @@ const formSchema$1 = object().shape({
 });
 
 const Login = () => {
-  const [rememberMe, setRememberMe] = useState$1(null);
-  const [isRemeberMe, setIsRemeberMe] = useState$1(false);
+  const [rememberMe, setRememberMe] = useState(null);
+  const [isRemeberMe, setIsRemeberMe] = useState(false);
   const dispatch = useDispatch();
   const {
     isGuest
@@ -8723,8 +8723,8 @@ const Login = () => {
 const SocialLogin = ({
   isLogin
 }) => {
-  const [isOpenModal, setIsOpenModal] = useState$1(false);
-  const [userInfo, setUserInfo] = useState$1({});
+  const [isOpenModal, setIsOpenModal] = useState(false);
+  const [userInfo, setUserInfo] = useState({});
   const dispatch = useDispatch();
 
   const openAddInfoModal = userInfo => {
@@ -8905,8 +8905,8 @@ const formSchema$2 = object().shape({
 const Register = () => {
   var _guest$user, _guest$user2, _guest$user3;
 
-  const [isAppcepted, setIsAppcepted] = useState$1(false);
-  const [isNotApccepted, setIsNotAccepted] = useState$1(false);
+  const [isAppcepted, setIsAppcepted] = useState(false);
+  const [isNotApccepted, setIsNotAccepted] = useState(false);
   const {
     isGuest,
     register: registerInfo,
@@ -9035,8 +9035,8 @@ const formSchema$3 = object().shape({
 });
 
 const ForgotPassword = () => {
-  const [isModalOpen, setIsOpenModal] = useState$1(false);
-  const [emailSuggestion, setEmailSuggestion] = useState$1('');
+  const [isModalOpen, setIsOpenModal] = useState(false);
+  const [emailSuggestion, setEmailSuggestion] = useState('');
   const dispatch = useDispatch();
 
   const onSubmit = (values, actions) => {
@@ -9227,7 +9227,7 @@ const CreatePassword = ({
 };
 
 const VerifyOtp = () => {
-  const [otp, setOtp] = useState$1('');
+  const [otp, setOtp] = useState('');
   const registerInfo = useSelector(state => state.auth.register);
   const dispatch = useDispatch();
   const history = useHistory();
@@ -9579,7 +9579,7 @@ const PageStyle = styled.div(_t$1 || (_t$1 = _$1`
 `), IMAGE.LANDING_PAGE_BG);
 
 const LandingPage = props => {
-  const [activeTab, setActiveTab] = useState$1('');
+  const [activeTab, setActiveTab] = useState('');
   const history = useHistory();
   useEffect(() => {
     setActiveTab(props.activeTab || 'login');
@@ -10094,7 +10094,7 @@ const ReactTable = props => {
 };
 
 const usePageAuthorities = () => {
-  const [authorities, setAuthorities] = useState$1([]);
+  const [authorities, setAuthorities] = useState([]);
   const {
     userRoles,
     roles
